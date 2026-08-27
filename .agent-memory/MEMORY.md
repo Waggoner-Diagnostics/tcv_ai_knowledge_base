@@ -1,0 +1,1 @@
+- [Update KB after passing tasks](update-kb-after-passing-tasks.md) — after each passed task in ANY of the 3 repos (TCV-Backend, TCV-Frontend, TCV-Website), hand-update the KB prose and regenerate the indexes. ALL docs live in the KB ONLY — never create/edit doc files in the code repos. Index regen needs no Docker and no DB (php-parser is vendored in the KB).

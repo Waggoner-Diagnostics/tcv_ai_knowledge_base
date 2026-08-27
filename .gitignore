@@ -1,0 +1,8 @@
+# nikic/php-parser is vendored here purely to run tools/*.php.
+# Run `composer install` after cloning — see GUIDES/HOW_TO_REGENERATE.md.
+/vendor/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp

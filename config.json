@@ -1,0 +1,8 @@
+{
+  "_comment": "Single source of truth for TCV repo locations. Paths are relative to THIS KB repo root — the repos are siblings under one parent (all repos cloned side-by-side in one folder). If you move the project to a new machine or a different layout, update ONLY this file: the PHP tools (tools/extract.php, tools/extract-clients.php, tools/render.php) and PATHS.md read from here. Prose docs refer to repos by bare name (TCV-Backend, TCV-Frontend, TCV-Website) and resolve their location via this file / PATHS.md.",
+  "repos": {
+    "backend": "../TCV-Backend",
+    "frontend": "../TCV-Frontend",
+    "website": "../TCV-Website"
+  }
+}
