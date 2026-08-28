@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/*.keystore)",
+      "Read(**/id_rsa)",
+      "Read(**/id_rsa.*)",
+      "Read(**/id_ed25519)",
+      "Read(**/credentials)",
+      "Read(**/credentials.json)",
+      "Read(**/*.credentials)",
+      "Read(**/secrets.json)",
+      "Read(**/secrets.yml)",
+      "Read(**/secrets.yaml)",
+      "Read(**/auth.json)",
+      "Read(**/.npmrc)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/id_rsa)",
+
+      "Read(**/*.db)",
+      "Read(**/*.sqlite)",
+      "Read(**/*.sqlite3)",
+      "Read(**/database/database.sqlite)",
+      "Read(**/storage/logs/**)",
+      "Read(**/patients*.csv)",
+      "Read(**/patient-export*)",
+      "Read(**/*test-results*.csv)",
+      "Read(**/*test-results*.xlsx)"
+    ]
+  }
+}

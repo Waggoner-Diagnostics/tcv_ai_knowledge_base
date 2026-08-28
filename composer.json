@@ -1,0 +1,25 @@
+{
+    "name": "tcv/ai-knowledge-base",
+    "description": "Tooling for the TCV AI knowledge base. php-parser is vendored HERE so the generators never depend on TCV-Backend having a vendor/ directory.",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "nikic/php-parser": "^5.4"
+    },
+    "scripts": {
+        "extract": [
+            "@php tools/extract.php",
+            "@php tools/extract-clients.php"
+        ],
+        "render": "@php tools/render.php",
+        "verify": "@php tools/verify.php",
+        "review": "@php tools/review.php",
+        "regenerate": [
+            "@php tools/extract.php",
+            "@php tools/extract-clients.php",
+            "@php tools/render.php",
+            "@php tools/verify.php"
+        ]
+    }
+}

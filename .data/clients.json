@@ -1,0 +1,1866 @@
+{
+    "generated_at": "2026-08-19T14:19:13+02:00",
+    "frontend": {
+        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Frontend",
+        "spa_routes": [
+            {
+                "kind": "public",
+                "path": "/login",
+                "element": "Login",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 25
+            },
+            {
+                "kind": "public",
+                "path": "/register",
+                "element": "Register",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 26
+            },
+            {
+                "kind": "public",
+                "path": "/forgot-password",
+                "element": "ForgotPassword",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 27
+            },
+            {
+                "kind": "public",
+                "path": "/reset-password/:token",
+                "element": "ResetPassword",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 28
+            },
+            {
+                "kind": "public",
+                "path": "/set-password/:token",
+                "element": "SetPassword",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 29
+            },
+            {
+                "kind": "public",
+                "path": "/verify-email",
+                "element": "VerifyEmail",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 30
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/verify/:token",
+                "element": "VerifyTestUser",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 31
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/verified/:token/add-patient",
+                "element": "VerifiedUserAddPAtient",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 32
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/instruction/:uniqueTestId",
+                "element": "InstructionPageForTest",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 33
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/prepare/:uniqueTestId",
+                "element": "PrepareScreen",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 34
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/countdown/:uniqueTestId",
+                "element": "CountdownScreen",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 35
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/test/:uniqueTestId",
+                "element": "TestPage",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 36
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/section-complete/:uniqueTestId",
+                "element": "SectionCompleteScreen",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 37
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/transition/:uniqueTestId",
+                "element": "TransitionScreen",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 38
+            },
+            {
+                "kind": "public",
+                "path": "/test-invitation/test/start-test/result/:uniqueTestId",
+                "element": "ResultPage",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 39
+            },
+            {
+                "kind": "public",
+                "path": "/payment/return",
+                "element": "PaymentReturn",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 40
+            },
+            {
+                "kind": "public",
+                "path": "/organization/patients/add",
+                "element": "OrganizationPatient",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 41
+            },
+            {
+                "kind": "public",
+                "path": "/organization/verified/default-user",
+                "element": "VerifiedDefaultUser",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 42
+            },
+            {
+                "kind": "public",
+                "path": "/organization/verified/tests",
+                "element": "OrganizationTestHome",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 43
+            },
+            {
+                "kind": "public",
+                "path": "/organization/instruction/:uniqueTestId",
+                "element": "InstructionPageForTest",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 44
+            },
+            {
+                "kind": "public",
+                "path": "/test/resume/:token",
+                "element": "ResumeTest",
+                "file": "src/router/routes/publicRoutes.js",
+                "line": 45
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel",
+                "element": "UserPanelHome",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 60
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/patients",
+                "element": "PatientPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 63
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/patients/add",
+                "element": "AddPatient",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 64
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/patients/edit/:patientId",
+                "element": "AddPatient",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 65
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/patient-tests/:patientId",
+                "element": "PatientTestList",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 66
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/:testId/patients",
+                "element": "PatientPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 69
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/:testId/patients/add",
+                "element": "AddPatient",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 70
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/:testId/confirm/:patientId",
+                "element": "StartTestConfirmPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 71
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/instruction",
+                "element": "InstructionPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 74
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/test",
+                "element": "TestPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 75
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/instruction/:uniqueTestId",
+                "element": "InstructionPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 78
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/prepare/:uniqueTestId",
+                "element": "PrepareScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 79
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/countdown/:uniqueTestId",
+                "element": "CountdownScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 80
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/test/:uniqueTestId",
+                "element": "TestPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 81
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/section-complete/:uniqueTestId",
+                "element": "SectionCompleteScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 82
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/transition/:uniqueTestId",
+                "element": "TransitionScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 83
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/start-test/result/:uniqueTestId",
+                "element": "ResultPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 84
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/credit",
+                "element": "CreditPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 86
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/contact",
+                "element": "ContactUs",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 87
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/patient-tests",
+                "element": "PatientTestList",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 88
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/settings",
+                "element": "SettingsPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 89
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/checkout",
+                "element": "CheckoutPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 90
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/payment-status",
+                "element": "PaymentStatusPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 91
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/done",
+                "element": "DonePage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 92
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/next",
+                "element": "NextScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 93
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/result",
+                "element": "ResultPage",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 94
+            },
+            {
+                "kind": "protected",
+                "path": "/user-panel/timer",
+                "element": "TimerScreen",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 95
+            },
+            {
+                "kind": "protected",
+                "path": "/dashboard",
+                "element": "DashboardWrapper",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 97
+            },
+            {
+                "kind": "protected",
+                "path": "/users",
+                "element": "Users",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 98
+            },
+            {
+                "kind": "protected",
+                "path": "/pricing",
+                "element": "Pricing",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 99
+            },
+            {
+                "kind": "protected",
+                "path": "/admin",
+                "element": "Admin",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 100
+            },
+            {
+                "kind": "protected",
+                "path": "/discount",
+                "element": "DiscountCodes",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 101
+            },
+            {
+                "kind": "protected",
+                "path": "/test",
+                "element": "Test",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 102
+            },
+            {
+                "kind": "protected",
+                "path": "/reports",
+                "element": "ReportsWrapper",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 103
+            },
+            {
+                "kind": "protected:child",
+                "path": "user-tests",
+                "element": "UserTests",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 106
+            },
+            {
+                "kind": "protected:child",
+                "path": "discount-code",
+                "element": "DiscountCode",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 107
+            },
+            {
+                "kind": "protected",
+                "path": "/reports/user-tests/patient/:patientId/:userName",
+                "element": "UserTestDetail",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 110
+            },
+            {
+                "kind": "protected",
+                "path": "/organisation",
+                "element": "Organisation",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 111
+            },
+            {
+                "kind": "protected",
+                "path": "/view-test-plate",
+                "element": "ViewTestPlate",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 112
+            },
+            {
+                "kind": "protected",
+                "path": "/settings",
+                "element": "Settings",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 114
+            },
+            {
+                "kind": "protected:child",
+                "path": "profile-summary",
+                "element": "ProfileSummary",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 117
+            },
+            {
+                "kind": "protected:child",
+                "path": "test-email-template-configuraion",
+                "element": "TestEmailTemplate",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 118
+            },
+            {
+                "kind": "protected:child",
+                "path": "profile",
+                "element": "ProfileSettings",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 119
+            },
+            {
+                "kind": "protected:child",
+                "path": "test-qa",
+                "element": "TestQA",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 120
+            },
+            {
+                "kind": "protected:child",
+                "path": "restricted-ips",
+                "element": "RestrictedIps",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 121
+            },
+            {
+                "kind": "protected:child",
+                "path": "webgl-result",
+                "element": "WebglReports",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 122
+            },
+            {
+                "kind": "protected",
+                "path": "/public-pages",
+                "element": "PublicPagesWraper",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 125
+            },
+            {
+                "kind": "protected:child",
+                "path": "page-categories",
+                "element": "PageCategories",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 128
+            },
+            {
+                "kind": "protected:child",
+                "path": "public-pages",
+                "element": "PublicPages",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 129
+            },
+            {
+                "kind": "protected",
+                "path": "/credit-history",
+                "element": "CreditHistory",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 132
+            },
+            {
+                "kind": "protected",
+                "path": "/add-credits",
+                "element": "AddCredits",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 133
+            },
+            {
+                "kind": "protected",
+                "path": "/view-webgl-report",
+                "element": "ViewWebglReport",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 134
+            },
+            {
+                "kind": "shared",
+                "path": "/shared",
+                "element": "SharedComponent",
+                "file": "src/router/routes/sharedRoutes.js",
+                "line": 6
+            }
+        ],
+        "route_config": {
+            "SUPER_ADMIN": {
+                "parentRoutes": [
+                    "/logout",
+                    "/dashboard",
+                    "/users",
+                    "/admin",
+                    "/pricing",
+                    "/discount",
+                    "/test",
+                    "/reports",
+                    "/view-webgl-report",
+                    "/organisation",
+                    "/settings",
+                    "/credit-history",
+                    "/add-credits",
+                    "/page-categories",
+                    "/public-pages",
+                    "/view-test-plate",
+                    "/user-panel",
+                    "/user-panel/patients",
+                    "/user-panel/patients/add",
+                    "/user-panel/patients/edit/:patientId",
+                    "/user-panel/patient-tests",
+                    "/user-panel/patient-tests/:patientId",
+                    "/user-panel/start-test/:testId/patients",
+                    "/user-panel/start-test/:testId/patients/add",
+                    "/user-panel/start-test/:testId/confirm/:patientId",
+                    "/user-panel/start-test/instruction/:uniqueTestId",
+                    "/user-panel/start-test/prepare/:uniqueTestId",
+                    "/user-panel/start-test/countdown/:uniqueTestId",
+                    "/user-panel/start-test/test/:uniqueTestId",
+                    "/user-panel/start-test/section-complete/:uniqueTestId",
+                    "/user-panel/start-test/transition/:uniqueTestId",
+                    "/user-panel/start-test/result/:uniqueTestId",
+                    "/user-panel/instruction",
+                    "/user-panel/test",
+                    "/user-panel/contact",
+                    "/user-panel/credit",
+                    "/user-panel/settings",
+                    "/user-panel/checkout",
+                    "/user-panel/payment-status",
+                    "/user-panel/done",
+                    "/user-panel/next",
+                    "/user-panel/result",
+                    "/user-panel/result/:uniqueTestId",
+                    "/user-panel/timer",
+                    "/reports",
+                    "/reports/user-tests/patient/:patientId/:userName"
+                ],
+                "childRoutes": {
+                    "/settings": [
+                        "profile-summary",
+                        "restricted-ips",
+                        "test-qa",
+                        "profile",
+                        "setting",
+                        "webgl-result"
+                    ],
+                    "/public-pages": [
+                        "page-categories",
+                        "public-pages"
+                    ],
+                    "/reports": [
+                        "user-tests",
+                        "discount-code"
+                    ]
+                }
+            },
+            "CUSTOMER": {
+                "parentRoutes": [
+                    "/logout",
+                    "/dashboard",
+                    "/users",
+                    "/admin",
+                    "/profile",
+                    "/settings",
+                    "/pricing",
+                    "/test",
+                    "/user-panel",
+                    "/user-panel/patients",
+                    "/user-panel/patients/add",
+                    "/user-panel/patients/edit/:patientId",
+                    "/user-panel/patient-tests",
+                    "/user-panel/patient-tests/:patientId",
+                    "/user-panel/start-test/:testId/patients",
+                    "/user-panel/start-test/:testId/patients/add",
+                    "/user-panel/start-test/:testId/confirm/:patientId",
+                    "/user-panel/start-test/instruction/:uniqueTestId",
+                    "/user-panel/start-test/prepare/:uniqueTestId",
+                    "/user-panel/start-test/countdown/:uniqueTestId",
+                    "/user-panel/start-test/test/:uniqueTestId",
+                    "/user-panel/start-test/section-complete/:uniqueTestId",
+                    "/user-panel/start-test/transition/:uniqueTestId",
+                    "/user-panel/start-test/result/:uniqueTestId",
+                    "/user-panel/instruction",
+                    "/user-panel/test",
+                    "/user-panel/contact",
+                    "/user-panel/credit",
+                    "/user-panel/settings",
+                    "/user-panel/checkout",
+                    "/user-panel/payment-status",
+                    "/user-panel/done",
+                    "/user-panel/next",
+                    "/user-panel/result",
+                    "/user-panel/result/:uniqueTestId",
+                    "/user-panel/timer"
+                ],
+                "childRoutes": {
+                    "/settings": [
+                        "profile-summary",
+                        "restricted-ips",
+                        "test-qa",
+                        "profile",
+                        "setting"
+                    ]
+                }
+            },
+            "ORGANIZATION": {
+                "parentRoutes": [
+                    "/logout",
+                    "/dashboard",
+                    "/users",
+                    "/profile",
+                    "/settings",
+                    "/organisation",
+                    "/view-test-plate",
+                    "/view-webgl-report",
+                    "/user-panel",
+                    "/user-panel/patients",
+                    "/user-panel/patients/add",
+                    "/user-panel/patients/edit/:patientId",
+                    "/user-panel/patient-tests",
+                    "/user-panel/patient-tests/:patientId",
+                    "/user-panel/start-test/:testId/patients",
+                    "/user-panel/start-test/:testId/patients/add",
+                    "/user-panel/start-test/:testId/confirm/:patientId",
+                    "/user-panel/start-test/instruction/:uniqueTestId",
+                    "/user-panel/start-test/prepare/:uniqueTestId",
+                    "/user-panel/start-test/countdown/:uniqueTestId",
+                    "/user-panel/start-test/test/:uniqueTestId",
+                    "/user-panel/start-test/section-complete/:uniqueTestId",
+                    "/user-panel/start-test/transition/:uniqueTestId",
+                    "/user-panel/start-test/result/:uniqueTestId",
+                    "/user-panel/instruction",
+                    "/user-panel/test",
+                    "/user-panel/contact",
+                    "/user-panel/credit",
+                    "/user-panel/settings",
+                    "/user-panel/checkout",
+                    "/user-panel/payment-status",
+                    "/user-panel/done",
+                    "/user-panel/next",
+                    "/user-panel/result",
+                    "/user-panel/result/:uniqueTestId",
+                    "/user-panel/timer"
+                ],
+                "childRoutes": {
+                    "/settings": [
+                        "profile-summary",
+                        "restricted-ips",
+                        "test-qa",
+                        "profile",
+                        "setting"
+                    ]
+                }
+            }
+        },
+        "api_calls": [
+            {
+                "method": "GET",
+                "path": "/api/auth/ping-api",
+                "raw": "${process.env.REACT_APP_BASE_URL}/api/auth/ping-api?${queryParams}",
+                "file": "src/constants/testDescriptionConstants.js",
+                "line": 553,
+                "orphan": true
+            },
+            {
+                "method": "POST",
+                "path": "/api/contact",
+                "raw": "/api/contact",
+                "file": "src/apis/miscApis.js",
+                "line": 87,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/countries-with-states",
+                "raw": "/api/countries-with-states",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 182,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/discount-codes",
+                "raw": "/api/discount-codes",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/discount-codes",
+                "raw": "/api/discount-codes",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 46,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/discount-codes/form-options",
+                "raw": "/api/discount-codes/form-options",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 34,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/discount-codes/stats",
+                "raw": "/api/discount-codes/stats",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 22,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/discount-codes/validate",
+                "raw": "/api/discount-codes/validate",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 94,
+                "orphan": false
+            },
+            {
+                "method": "DELETE",
+                "path": "/api/discount-codes/{param}",
+                "raw": "/api/discount-codes/${id}",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 70,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/discount-codes/{param}",
+                "raw": "/api/discount-codes/${id}",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 58,
+                "orphan": false
+            },
+            {
+                "method": "PATCH",
+                "path": "/api/discount-codes/{param}/toggle",
+                "raw": "/api/discount-codes/${id}/toggle",
+                "file": "src/redux/slices/discount/discountSlice.js",
+                "line": 82,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/dropdown/compliances",
+                "raw": "/api/dropdown/compliances",
+                "file": "src/apis/miscApis.js",
+                "line": 43,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/dropdown/organization-settings-options",
+                "raw": "/api/dropdown/organization-settings-options",
+                "file": "src/apis/miscApis.js",
+                "line": 70,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/dropdown/organization-types",
+                "raw": "/api/dropdown/organization-types",
+                "file": "src/apis/miscApis.js",
+                "line": 34,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/dropdown/privileges",
+                "raw": "/api/dropdown/privileges",
+                "file": "src/apis/miscApis.js",
+                "line": 52,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/impersonate/{param}",
+                "raw": "/api/impersonate/${id}",
+                "file": "src/redux/slices/impersonateSlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/login",
+                "raw": "api/login",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/logout",
+                "raw": "/api/logout",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 72,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/organization/patient/default",
+                "raw": "/api/organization/patient/default?${queryParams}",
+                "file": "src/redux/slices/patientSlice.js",
+                "line": 38,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/organization/patientForm",
+                "raw": "/api/organization/patientForm",
+                "file": "src/redux/slices/patientSlice.js",
+                "line": 20,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/organization/privileges",
+                "raw": "/api/organization/privileges",
+                "file": "src/apis/miscApis.js",
+                "line": 61,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/organization/redirect-url",
+                "raw": "/api/organization/redirect-url",
+                "file": "src/apis/miscApis.js",
+                "line": 79,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/organization/tests/default",
+                "raw": "/api/organization/tests/default",
+                "file": "src/redux/slices/tests/organizationTestSlice.js",
+                "line": 9,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/organization/verify-signature",
+                "raw": "/api/organization/verify-signature",
+                "file": "src/redux/slices/auth/signatureVerificationSlice.js",
+                "line": 9,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/organizations",
+                "raw": "/api/organizations",
+                "file": "src/apis/fetchOrganisationPaginated.js",
+                "line": 18,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/organizations/{param}/upload-logo",
+                "raw": "/api/organizations/${id}/upload-logo",
+                "file": "src/redux/slices/Organisation/OrganisationSlice.js",
+                "line": 13,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/password/change",
+                "raw": "/api/password/change",
+                "file": "src/redux/slices/userProfile/passwordChangeSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/password/forgot",
+                "raw": "api/password/forgot",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 85,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/password/reset",
+                "raw": "api/password/reset",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 134,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/password/verify-setup-token",
+                "raw": "api/password/verify-setup-token",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 147,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/patient-tests/{param}/revoke-credit",
+                "raw": "/api/patient-tests/${identifier}/revoke-credit",
+                "file": "src/redux/slices/tests/patientTestSlice.js",
+                "line": 43,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/patients/{param}",
+                "raw": "/api/patients/${id}",
+                "file": "src/redux/slices/patientSlice.js",
+                "line": 52,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/patients/{param}/tests",
+                "raw": "/api/patients/${patientId}/tests",
+                "file": "src/redux/slices/tests/patientTestSlice.js",
+                "line": 11,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/payment/confirm",
+                "raw": "/api/payment/confirm",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 60,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/payment/confirm",
+                "raw": "/api/payment/confirm",
+                "file": "src/services/paymentProviders/StripeProvider.js",
+                "line": 63,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/payment/initialize",
+                "raw": "/api/payment/initialize",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 22,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/payment/initialize",
+                "raw": "/api/payment/initialize",
+                "file": "src/services/paymentProviders/StripeProvider.js",
+                "line": 47,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/payment/providers",
+                "raw": "/api/payment/providers",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 96,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/payment/setup-intent",
+                "raw": "/api/payment/setup-intent",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/profile",
+                "raw": "/api/profile",
+                "file": "src/redux/slices/userProfile/profileSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/profile",
+                "raw": "/api/profile",
+                "file": "src/redux/slices/userProfile/profileSlice.js",
+                "line": 27,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/resend-test-link",
+                "raw": "/api/resend-test-link",
+                "file": "src/redux/slices/tests/patientTestSlice.js",
+                "line": 27,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/resend-verification-by-token",
+                "raw": "/api/resend-verification-by-token",
+                "file": "src/apis/miscApis.js",
+                "line": 92,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/resend_email_verification_link",
+                "raw": "api/resend_email_verification_link",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 52,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/stop-impersonate/{param}",
+                "raw": "/api/stop-impersonate/${userId}",
+                "file": "src/redux/slices/impersonateSlice.js",
+                "line": 20,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/stripe/payment-methods",
+                "raw": "/api/stripe/payment-methods",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 72,
+                "orphan": false
+            },
+            {
+                "method": "DELETE",
+                "path": "/api/stripe/payment-methods/{param}",
+                "raw": "/api/stripe/payment-methods/${paymentMethodId}",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 84,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/stripe/transactions",
+                "raw": "/api/stripe/transactions",
+                "file": "src/redux/slices/transaction/transactionSlice.js",
+                "line": 9,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/super-admin/dashboard",
+                "raw": "/api/super-admin/dashboard",
+                "file": "src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-email-templates",
+                "raw": "/api/test-email-templates",
+                "file": "src/redux/slices/admin/adminTestEmailTemplateSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/test-email-templates/{param}",
+                "raw": "/api/test-email-templates/${id}",
+                "file": "src/redux/slices/admin/adminTestEmailTemplateSlice.js",
+                "line": 27,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test-invitation/check-validity",
+                "raw": "/api/test-invitation/check-validity",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 116,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test-invitation/verify-code",
+                "raw": "/api/test-invitation/verify-code",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 99,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test-invitations/send",
+                "raw": "/api/test-invitations/send",
+                "file": "src/redux/slices/tests/sendTestSlice.js",
+                "line": 15,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-invitations/unregistered",
+                "raw": "/api/test-invitations/unregistered",
+                "file": "src/redux/slices/tests/sendTestSlice.js",
+                "line": 38,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test-invitations/{param}/cancel",
+                "raw": "/api/test-invitations/${invitationId}/cancel",
+                "file": "src/redux/slices/tests/sendTestSlice.js",
+                "line": 72,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test-invitations/{param}/resend",
+                "raw": "/api/test-invitations/${invitationId}/resend",
+                "file": "src/redux/slices/tests/sendTestSlice.js",
+                "line": 55,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-result/{param}",
+                "raw": "/api/test-result/${uniqueTestId}",
+                "file": "src/redux/slices/tests/testResultSlice.js",
+                "line": 9,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-result/{param}/download-pdf",
+                "raw": "/api/test-result/${uniqueTestId}/download-pdf",
+                "file": "src/apis/testResultService.js",
+                "line": 5,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-session/{param}",
+                "raw": "/api/test-session/${uniqueTestId}",
+                "file": "src/redux/slices/tests/testExecutionSlice.js",
+                "line": 9,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-session/{param}/plate/{param}/url",
+                "raw": "/api/test-session/${uniqueTestId}/plate/${testAnswerId}/url",
+                "file": "src/redux/slices/tests/testExecutionSlice.js",
+                "line": 60,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/test-session/{param}/section/{param}/plates",
+                "raw": "/api/test-session/${uniqueTestId}/section/${sectionId}/plates",
+                "file": "src/redux/slices/tests/testExecutionSlice.js",
+                "line": 25,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test/resume",
+                "raw": "/api/test/resume",
+                "file": "src/redux/slices/tests/testResumeSlice.js",
+                "line": 23,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/test/send-resume-email",
+                "raw": "/api/test/send-resume-email",
+                "file": "src/redux/slices/tests/testResumeSlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/tests/assign",
+                "raw": "/api/tests/assign",
+                "file": "src/redux/slices/tests/testSessionSlice.js",
+                "line": 13,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/tests/check-active",
+                "raw": "/api/tests/check-active",
+                "file": "src/redux/slices/tests/testSessionSlice.js",
+                "line": 60,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/tests/perform",
+                "raw": "/api/tests/perform",
+                "file": "src/redux/slices/tests/testExecutionSlice.js",
+                "line": 43,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/tests/result-pdf",
+                "raw": "/api/tests/result-pdf",
+                "file": "src/redux/slices/tests/testSessionSlice.js",
+                "line": 36,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/tests/sent-invitations",
+                "raw": "/api/tests/sent-invitations",
+                "file": "src/redux/slices/tests/sendTestSlice.js",
+                "line": 89,
+                "orphan": false
+            },
+            {
+                "method": "DELETE",
+                "path": "/api/user-email-template",
+                "raw": "/api/user-email-template",
+                "file": "src/redux/slices/userProfile/userEmailTemplateSlice.js",
+                "line": 48,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user-email-template",
+                "raw": "/api/user-email-template",
+                "file": "src/redux/slices/userProfile/userEmailTemplateSlice.js",
+                "line": 10,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/user-email-template",
+                "raw": "/api/user-email-template",
+                "file": "src/redux/slices/userProfile/userEmailTemplateSlice.js",
+                "line": 27,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user/credit-history",
+                "raw": "/api/user/credit-history",
+                "file": "src/redux/slices/creditHistory/creditHistorySlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user/credits",
+                "raw": "/api/user/credits",
+                "file": "src/redux/slices/userCredits/userCreditSlice.js",
+                "line": 12,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user/tests/all",
+                "raw": "/api/user/tests/all",
+                "file": "src/hooks/useTestAssignment.js",
+                "line": 34,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user/tests/all",
+                "raw": "/api/user/tests/all",
+                "file": "src/redux/slices/tests/testVisibilitySlice.js",
+                "line": 13,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/user/tests/bulk-update-assignment",
+                "raw": "/api/user/tests/bulk-update-assignment",
+                "file": "src/redux/slices/tests/testAssignmentSlice.js",
+                "line": 24,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/user/tests/bulk-update-visibility",
+                "raw": "/api/user/tests/bulk-update-visibility",
+                "file": "src/redux/slices/tests/testVisibilitySlice.js",
+                "line": 44,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/user/tests/{param}",
+                "raw": "/api/user/tests/${id}",
+                "file": "src/redux/slices/tests/userTestSlice.js",
+                "line": 15,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/api/users/change-password",
+                "raw": "/api/users/change-password",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 162,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/users/{param}",
+                "raw": "/api/users/${user.id}",
+                "file": "src/redux/slices/auth/loginSlice.js",
+                "line": 222,
+                "orphan": false
+            },
+            {
+                "method": "PATCH",
+                "path": "/api/users/{param}",
+                "raw": "/api/users/${user.id}",
+                "file": "src/pages/Setting/Profile.js",
+                "line": 78,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/validate-token",
+                "raw": "api/validate-token",
+                "file": "src/pages/AuthInit.js",
+                "line": 43,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/verify-email-token",
+                "raw": "/api/verify-email-token",
+                "file": "src/apis/miscApis.js",
+                "line": 98,
+                "orphan": false
+            },
+            {
+                "method": "POST",
+                "path": "/api/verify-password",
+                "raw": "api/verify-password",
+                "file": "src/redux/slices/auth/passwordVerificationSlice.js",
+                "line": 8,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/{param}",
+                "raw": "${baseUrl}?${query.toString()}",
+                "file": "src/redux/slices/createpaginatedslice.js",
+                "line": 65,
+                "orphan": false
+            },
+            {
+                "method": "DELETE",
+                "path": "/{param}/{param}",
+                "raw": "${baseUrl}/${id}",
+                "file": "src/redux/slices/createSlice.js",
+                "line": 94,
+                "orphan": false
+            },
+            {
+                "method": "DELETE",
+                "path": "/{param}/{param}",
+                "raw": "${baseUrl}/${id}",
+                "file": "src/redux/slices/createpaginatedslice.js",
+                "line": 161,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/{param}/{param}",
+                "raw": "${baseUrl}/${id}",
+                "file": "src/redux/slices/createSlice.js",
+                "line": 77,
+                "orphan": false
+            },
+            {
+                "method": "PUT",
+                "path": "/{param}/{param}",
+                "raw": "${baseUrl}/${id}",
+                "file": "src/redux/slices/createpaginatedslice.js",
+                "line": 144,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/{param}{param}",
+                "raw": "${viewProfileImageApi}${id}/",
+                "file": "src/apis/miscApis.js",
+                "line": 7,
+                "orphan": false
+            }
+        ],
+        "slices": [
+            "src/redux/slices/MainAdmin/MainAdminSlice.js",
+            "src/redux/slices/Organisation/OrganisationSlice.js",
+            "src/redux/slices/RestrictedIp/RestrictedIp.js",
+            "src/redux/slices/admin/adminSlice.js",
+            "src/redux/slices/admin/adminTestEmailTemplateSlice.js",
+            "src/redux/slices/auth/loginSlice.js",
+            "src/redux/slices/auth/passwordVerificationSlice.js",
+            "src/redux/slices/auth/registerSlice.js",
+            "src/redux/slices/auth/signatureVerificationSlice.js",
+            "src/redux/slices/createSlice.js",
+            "src/redux/slices/createpaginatedslice.js",
+            "src/redux/slices/creditHistory/creditHistorySlice.js",
+            "src/redux/slices/credits/creditsSlice.js",
+            "src/redux/slices/discount/discountSlice.js",
+            "src/redux/slices/impersonateSlice.js",
+            "src/redux/slices/patientSlice.js",
+            "src/redux/slices/payment/paymentSlice.js",
+            "src/redux/slices/pricing/pricingSlice.js",
+            "src/redux/slices/registerSlice.js",
+            "src/redux/slices/reports/discountCodesReportSlice.js",
+            "src/redux/slices/reports/patientTestsSlice.js",
+            "src/redux/slices/reports/userTestsReportSlice.js",
+            "src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js",
+            "src/redux/slices/testSession/testSessionSlice.js",
+            "src/redux/slices/tests/organizationTestSlice.js",
+            "src/redux/slices/tests/patientTestSlice.js",
+            "src/redux/slices/tests/sendTestSlice.js",
+            "src/redux/slices/tests/testAssignmentSlice.js",
+            "src/redux/slices/tests/testExecutionSlice.js",
+            "src/redux/slices/tests/testResultSlice.js",
+            "src/redux/slices/tests/testResumeSlice.js",
+            "src/redux/slices/tests/testSessionSlice.js",
+            "src/redux/slices/tests/testSlice.js",
+            "src/redux/slices/tests/testVisibilitySlice.js",
+            "src/redux/slices/tests/userTestSlice.js",
+            "src/redux/slices/transaction/transactionSlice.js",
+            "src/redux/slices/userCredits/userCreditSlice.js",
+            "src/redux/slices/userProfile/passwordChangeSlice.js",
+            "src/redux/slices/userProfile/profileSlice.js",
+            "src/redux/slices/userProfile/userEmailTemplateSlice.js"
+        ],
+        "hooks": [
+            "src/hooks/UseAdminLogin.js",
+            "src/hooks/useCarousel.js",
+            "src/hooks/useClickOutside.js",
+            "src/hooks/useCurrentTest.js",
+            "src/hooks/useEnterToSubmit.js",
+            "src/hooks/useErrorHandler.js",
+            "src/hooks/useLogOut.js",
+            "src/hooks/useOccupationalForm.js",
+            "src/hooks/usePatientForm.js",
+            "src/hooks/useProfileForm.js",
+            "src/hooks/useTestAssignment.js",
+            "src/hooks/useTestConfig.js",
+            "src/hooks/useTestPlateTimer.js",
+            "src/hooks/useTestProfileVisibility.js",
+            "src/hooks/useUserType.js"
+        ],
+        "env": [
+            "PUBLIC_URL",
+            "REACT_APP_BASE_URL",
+            "REACT_APP_STRIPE_PUBLIC_KEY",
+            "REACT_APP_TURNSTILE_SITE_KEY"
+        ],
+        "counts": {
+            "source_files": 248,
+            "spa_routes": 74,
+            "api_calls": 91,
+            "slices": 40,
+            "hooks": 15,
+            "pages": 84,
+            "components": 46,
+            "loc": 33407
+        }
+    },
+    "website": {
+        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Website",
+        "pages": [
+            {
+                "route": "/",
+                "kind": "layout",
+                "file": "app/layout.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/",
+                "kind": "not-found",
+                "file": "app/not-found.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/",
+                "kind": "page",
+                "file": "app/page.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/about",
+                "kind": "page",
+                "file": "app/about/page.jsx",
+                "use_client": false,
+                "view": "AboutClient"
+            },
+            {
+                "route": "/advice",
+                "kind": "page",
+                "file": "app/advice/page.jsx",
+                "use_client": false,
+                "view": "AdviceClient"
+            },
+            {
+                "route": "/advice/parents",
+                "kind": "page",
+                "file": "app/advice/parents/page.jsx",
+                "use_client": false,
+                "view": "ParentsClient"
+            },
+            {
+                "route": "/advice/problems",
+                "kind": "page",
+                "file": "app/advice/problems/page.jsx",
+                "use_client": false,
+                "view": "ProblemsClient"
+            },
+            {
+                "route": "/advice/schools",
+                "kind": "page",
+                "file": "app/advice/schools/page.jsx",
+                "use_client": false,
+                "view": "SchoolsClient"
+            },
+            {
+                "route": "/advice/students",
+                "kind": "page",
+                "file": "app/advice/students/page.jsx",
+                "use_client": false,
+                "view": "StudentsClient"
+            },
+            {
+                "route": "/advice/teachers",
+                "kind": "page",
+                "file": "app/advice/teachers/page.jsx",
+                "use_client": false,
+                "view": "TeachersClient"
+            },
+            {
+                "route": "/colorblindness",
+                "kind": "layout",
+                "file": "app/colorblindness/layout.jsx",
+                "use_client": true,
+                "view": ""
+            },
+            {
+                "route": "/colorblindness/anomalous-trichromacy",
+                "kind": "page",
+                "file": "app/colorblindness/anomalous-trichromacy/page.jsx",
+                "use_client": false,
+                "view": "AnomalousTrichromacyClient"
+            },
+            {
+                "route": "/colorblindness/deutan",
+                "kind": "page",
+                "file": "app/colorblindness/deutan/page.jsx",
+                "use_client": false,
+                "view": "DeutanClient"
+            },
+            {
+                "route": "/colorblindness/dichromacy",
+                "kind": "page",
+                "file": "app/colorblindness/dichromacy/page.jsx",
+                "use_client": false,
+                "view": "DichromacyClient"
+            },
+            {
+                "route": "/colorblindness/how-people-see",
+                "kind": "page",
+                "file": "app/colorblindness/how-people-see/page.jsx",
+                "use_client": false,
+                "view": "HowPeopleSeeClient"
+            },
+            {
+                "route": "/colorblindness/interesting-links",
+                "kind": "page",
+                "file": "app/colorblindness/interesting-links/page.jsx",
+                "use_client": false,
+                "view": "InterestingLinksClient"
+            },
+            {
+                "route": "/colorblindness/monochromacy",
+                "kind": "page",
+                "file": "app/colorblindness/monochromacy/page.jsx",
+                "use_client": false,
+                "view": "MonochromacyClient"
+            },
+            {
+                "route": "/colorblindness/protan",
+                "kind": "page",
+                "file": "app/colorblindness/protan/page.jsx",
+                "use_client": false,
+                "view": "ProtanClient"
+            },
+            {
+                "route": "/colorblindness/tritan",
+                "kind": "page",
+                "file": "app/colorblindness/tritan/page.jsx",
+                "use_client": false,
+                "view": "TritanClient"
+            },
+            {
+                "route": "/colorblindness/what-is",
+                "kind": "page",
+                "file": "app/colorblindness/what-is/page.jsx",
+                "use_client": false,
+                "view": "WhatIsClient"
+            },
+            {
+                "route": "/colorblindness/why",
+                "kind": "page",
+                "file": "app/colorblindness/why/page.jsx",
+                "use_client": false,
+                "view": "WhyClient"
+            },
+            {
+                "route": "/distributors",
+                "kind": "page",
+                "file": "app/distributors/page.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/distributors/signup",
+                "kind": "page",
+                "file": "app/distributors/signup/page.jsx",
+                "use_client": false,
+                "view": "DistributorSignupClient"
+            },
+            {
+                "route": "/faq",
+                "kind": "page",
+                "file": "app/faq/page.jsx",
+                "use_client": false,
+                "view": "FaqClient"
+            },
+            {
+                "route": "/pricing",
+                "kind": "page",
+                "file": "app/pricing/page.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/test",
+                "kind": "layout",
+                "file": "app/test/layout.jsx",
+                "use_client": true,
+                "view": ""
+            },
+            {
+                "route": "/test/adult-instructions",
+                "kind": "page",
+                "file": "app/test/adult-instructions/page.jsx",
+                "use_client": false,
+                "view": "AdultTestInstructionsClient"
+            },
+            {
+                "route": "/test/credibility",
+                "kind": "page",
+                "file": "app/test/credibility/page.jsx",
+                "use_client": false,
+                "view": "TestCredibilityClient"
+            },
+            {
+                "route": "/test/examples",
+                "kind": "page",
+                "file": "app/test/examples/page.jsx",
+                "use_client": false,
+                "view": "TestExamplesClient"
+            },
+            {
+                "route": "/test/faqs",
+                "kind": "page",
+                "file": "app/test/faqs/page.jsx",
+                "use_client": false,
+                "view": "FaqClient"
+            },
+            {
+                "route": "/test/hospital",
+                "kind": "page",
+                "file": "app/test/hospital/page.jsx",
+                "use_client": false,
+                "view": "HospitalInfoClient"
+            },
+            {
+                "route": "/test/instructions",
+                "kind": "page",
+                "file": "app/test/instructions/page.jsx",
+                "use_client": false,
+                "view": "TestInstructionsClient"
+            },
+            {
+                "route": "/test/overview",
+                "kind": "page",
+                "file": "app/test/overview/page.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/test/pediatric-instructions",
+                "kind": "page",
+                "file": "app/test/pediatric-instructions/page.jsx",
+                "use_client": false,
+                "view": "PediatricTestInstructionsClient"
+            },
+            {
+                "route": "/test/platform",
+                "kind": "page",
+                "file": "app/test/platform/page.jsx",
+                "use_client": false,
+                "view": ""
+            },
+            {
+                "route": "/test/uses",
+                "kind": "page",
+                "file": "app/test/uses/page.jsx",
+                "use_client": false,
+                "view": "TestUsesClient"
+            }
+        ],
+        "api_routes": [
+            {
+                "route": "/api/auth",
+                "methods": [
+                    "POST"
+                ],
+                "proxies": [
+                    "/api/login"
+                ],
+                "file": "app/api/auth/route.js"
+            },
+            {
+                "route": "/api/countries",
+                "methods": [
+                    "GET"
+                ],
+                "proxies": [
+                    "/api/countries-with-states"
+                ],
+                "file": "app/api/countries/route.js"
+            },
+            {
+                "route": "/api/logout",
+                "methods": [
+                    "POST"
+                ],
+                "proxies": [
+                    "/api/logout"
+                ],
+                "file": "app/api/logout/route.js"
+            },
+            {
+                "route": "/api/register",
+                "methods": [
+                    "POST"
+                ],
+                "proxies": [
+                    "/api/register"
+                ],
+                "file": "app/api/register/route.js"
+            }
+        ],
+        "views": [
+            "views/AboutClient.jsx",
+            "views/AdultTestInstructionsClient.jsx",
+            "views/AdviceClient.jsx",
+            "views/AnomalousTrichromacyClient.jsx",
+            "views/DeutanClient.jsx",
+            "views/DichromacyClient.jsx",
+            "views/DistributorSignupClient.jsx",
+            "views/FaqClient.jsx",
+            "views/HospitalInfoClient.jsx",
+            "views/HowPeopleSeeClient.jsx",
+            "views/InterestingLinksClient.jsx",
+            "views/MonochromacyClient.jsx",
+            "views/ParentsClient.jsx",
+            "views/PediatricTestInstructionsClient.jsx",
+            "views/ProblemsClient.jsx",
+            "views/ProtanClient.jsx",
+            "views/SchoolsClient.jsx",
+            "views/StudentsClient.jsx",
+            "views/TeachersClient.jsx",
+            "views/TestCredibilityClient.jsx",
+            "views/TestExamplesClient.jsx",
+            "views/TestInstructionsClient.jsx",
+            "views/TestUsesClient.jsx",
+            "views/TritanClient.jsx",
+            "views/WhatIsClient.jsx",
+            "views/WhyClient.jsx"
+        ],
+        "components": [
+            "components/AuthModal.jsx",
+            "components/AwarenessSection.jsx",
+            "components/Button.jsx",
+            "components/ColorTypesSection.jsx",
+            "components/ColorblindnessSidebar.jsx",
+            "components/DistributorsClient.jsx",
+            "components/Footer.jsx",
+            "components/Header.jsx",
+            "components/Hero.jsx",
+            "components/HeroCarousel.jsx",
+            "components/HowItWorks.jsx",
+            "components/InfoPageLayout.jsx",
+            "components/Pricing.jsx",
+            "components/ScrollToTop.jsx",
+            "components/Sidebar.jsx",
+            "components/SmoothScrollProvider.jsx",
+            "components/SocialProofBar.jsx",
+            "components/TaglineBar.jsx",
+            "components/TestOverviewClient.jsx",
+            "components/TestPlatformClient.jsx",
+            "components/TestimonialsSection.jsx",
+            "components/TestingPath.jsx",
+            "components/TestsSidebar.jsx",
+            "components/VisionModeBanner.jsx",
+            "components/VisionModePanel.jsx",
+            "components/WhoNeedsTesting.jsx"
+        ],
+        "env": [
+            "API_URL"
+        ],
+        "counts": {
+            "source_files": 94,
+            "pages": 32,
+            "layouts": 3,
+            "api_routes": 4,
+            "views": 26,
+            "components": 26,
+            "loc": 10397
+        }
+    }
+}
