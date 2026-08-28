@@ -8,13 +8,13 @@ of two group blocks. Use [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_IN
 ## The three zones
 
 ```php
-// ── Zone 1: top of file, NO middleware ───────────────── 21 endpoints, fully public
-Route::post('/login', …);  Route::post('/register', …);  Route::post('/test-invitations/send', …);  …
+// ── Zone 1: top of file, NO middleware ───────────────── 20 endpoints, fully public
+Route::post('/login', …);  Route::post('/register', …);  Route::post('/password/forgot', …);  …
 
 // ── Zone 2: session-token routes ─────────────────────── 23 endpoints
 Route::middleware('FlexibleAuthMiddleware')->group(function () { … });
 
-// ── Zone 3: Sanctum-only routes ──────────────────────── 133 endpoints
+// ── Zone 3: Sanctum-only routes ──────────────────────── 132 endpoints
 Route::middleware('auth:sanctum')->group(function () { … });
 ```
 
@@ -43,7 +43,6 @@ never used** ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)).
 |---|---|
 | Precedes a token, legitimately | `login`, `register`, `password/forgot`, `password/reset`, `password/verify-setup-token`, `verify-email-token`, `resend-verification-by-token`, `resend_email_verification_link`, `validate-token`, `countries-with-states` |
 | Authenticates by its own emailed/embedded token | `test-invitation/verify-code`, `test-invitation/check-validity`, `test/resume`, `organization/verify-signature` |
-| ⚠️ **Should not be public** | `test-invitations/send` ([S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)) |
 | ⚠️ Public but broken — every handler needs `Auth::user()` | all five `stripe/*` routes ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | Leftover | `reset-password/{token}` (a closure echoing the token back) |
 
@@ -108,8 +107,8 @@ Route::apiResource('discount-codes', DiscountCodeController::class);   // litera
 2. **Literal segments before parameterised ones** within the same prefix.
 3. **Name the route** if the SPA or a notification links to it (`->name('…')`).
 4. **Throttle anything that sends mail or costs money.** Today only `POST api/contact` has
-   `throttle:10,1` — `test-invitations/send` (≤500 emails), `password/forgot` and the resend endpoints
-   have none.
+   `throttle:10,1` — `test-invitations/send` (≤500 emails, now `auth:sanctum` but still unthrottled),
+   `password/forgot` and the resend endpoints have none.
 5. **Re-run the generator** and check the diff of `PUBLIC_ROUTE_AUDIT.md`
    ([GUIDES/HOW_TO_REGENERATE.md](GUIDES/HOW_TO_REGENERATE.md)).
 

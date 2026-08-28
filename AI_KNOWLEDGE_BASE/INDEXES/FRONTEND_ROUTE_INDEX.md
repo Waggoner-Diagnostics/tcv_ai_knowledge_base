@@ -31,17 +31,17 @@ but **unreachable by every role**.
 | `FE-020` | public | `/set-password/:token` | `SetPassword` | _n/a — public_ |
 | `FE-021` | protected | `/settings` | `Settings` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-022` | shared | `/shared` | `SharedComponent` | _n/a — shared_ |
-| `FE-023` | protected | `/test` | `Test` | SUPER_ADMIN, CUSTOMER |
-| `FE-024` | public | `/test-invitation/test/instruction/:uniqueTestId` | `InstructionPageForTest` | _n/a — public_ |
-| `FE-025` | public | `/test-invitation/test/start-test/countdown/:uniqueTestId` | `CountdownScreen` | _n/a — public_ |
-| `FE-026` | public | `/test-invitation/test/start-test/prepare/:uniqueTestId` | `PrepareScreen` | _n/a — public_ |
-| `FE-027` | public | `/test-invitation/test/start-test/result/:uniqueTestId` | `ResultPage` | _n/a — public_ |
-| `FE-028` | public | `/test-invitation/test/start-test/section-complete/:uniqueTestId` | `SectionCompleteScreen` | _n/a — public_ |
-| `FE-029` | public | `/test-invitation/test/start-test/test/:uniqueTestId` | `TestPage` | _n/a — public_ |
-| `FE-030` | public | `/test-invitation/test/start-test/transition/:uniqueTestId` | `TransitionScreen` | _n/a — public_ |
-| `FE-031` | public | `/test-invitation/verified/:token/add-patient` | `VerifiedUserAddPAtient` | _n/a — public_ |
-| `FE-032` | public | `/test-invitation/verify/:token` | `VerifyTestUser` | _n/a — public_ |
-| `FE-033` | public | `/test/resume/:token` | `ResumeTest` | _n/a — public_ |
+| `FE-023` | public | `/test-invitation/test/instruction/:uniqueTestId` | `InstructionPageForTest` | _n/a — public_ |
+| `FE-024` | public | `/test-invitation/test/start-test/countdown/:uniqueTestId` | `CountdownScreen` | _n/a — public_ |
+| `FE-025` | public | `/test-invitation/test/start-test/prepare/:uniqueTestId` | `PrepareScreen` | _n/a — public_ |
+| `FE-026` | public | `/test-invitation/test/start-test/result/:uniqueTestId` | `ResultPage` | _n/a — public_ |
+| `FE-027` | public | `/test-invitation/test/start-test/section-complete/:uniqueTestId` | `SectionCompleteScreen` | _n/a — public_ |
+| `FE-028` | public | `/test-invitation/test/start-test/test/:uniqueTestId` | `TestPage` | _n/a — public_ |
+| `FE-029` | public | `/test-invitation/test/start-test/transition/:uniqueTestId` | `TransitionScreen` | _n/a — public_ |
+| `FE-030` | public | `/test-invitation/verified/:token/add-patient` | `VerifiedUserAddPAtient` | _n/a — public_ |
+| `FE-031` | public | `/test-invitation/verify/:token` | `VerifyTestUser` | _n/a — public_ |
+| `FE-032` | public | `/test/resume/:token` | `ResumeTest` | _n/a — public_ |
+| `FE-033` | protected | `/tests` | `Test` | SUPER_ADMIN, CUSTOMER |
 | `FE-034` | protected | `/user-panel` | `UserPanelHome` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-035` | protected | `/user-panel/checkout` | `CheckoutPage` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-036` | protected | `/user-panel/contact` | `ContactUs` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
@@ -118,4 +118,4 @@ role can do — read the table above, not `routeConfig.js`, to answer "can this 
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-19. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._

@@ -1,6 +1,6 @@
 {
-    "routes": 177,
-    "public": 21,
+    "routes": 176,
+    "public": 20,
     "classes": 186,
     "methods": 710,
     "functions": 0,
@@ -17,7 +17,7 @@
     "listeners": 3,
     "relations": 69,
     "spa_routes": 64,
-    "spa_api_calls": 86,
+    "spa_api_calls": 87,
     "spa_drift": 7,
     "spa_slices": 40,
     "website_pages": 32,

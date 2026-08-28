@@ -1,7 +1,8 @@
 # Security — Posture and Known Gaps
 
 > **What this is.** Findings from *reading* TCV-Backend's auth, routing, session and payment paths at
-> `85586469`. No exploit was attempted and no pen test was run. Each finding names the file and line it
+> `85586469`, re-checked against `develop` at `26ba2022` (2026-08-27). No exploit was attempted and no
+> pen test was run. Each finding names the file and line it
 > came from so you can re-verify it in one read. Treat severities as this document's judgement, not a
 > customer-facing rating.
 
@@ -56,9 +57,17 @@ shared between both, splitting it (or gating on `$this->user()`) is the change.
 
 ### S-13 — Public `test-invitations/send` spends any user's credits, 500 emails at a time
 
-**Severity: critical.**
+**Severity: critical.** — **FIXED 2026-08-26** (`c6beafb8`, ws-371; on `develop` since `26ba2022`).
 
-`POST /api/test-invitations/send` is registered at the top of `routes/api.php` with **no middleware**.
+**What the fix did:** the route moved inside the `auth:sanctum` group in `routes/api.php`, and
+`sendInvitations()` dropped `user_id` from its validation rules entirely — the owner is now
+`$request->user()`. A body-supplied `user_id` is no longer honoured for anyone, super-admin included.
+The `is_resend` branch went with it, so a resend now takes the same credit check as a first send
+instead of skipping it. The description below is kept for history.
+
+---
+
+`POST /api/test-invitations/send` was registered at the top of `routes/api.php` with **no middleware**.
 [`TestInvitationController::sendInvitations()`](../../TCV-Backend/app/Http/Controllers/TestInvitationController.php)
 then validates:
 
@@ -77,8 +86,9 @@ It also calls `set_time_limit(0)` first, so there is no execution-time ceiling o
 Two distinct impacts: **credit theft** (drain an arbitrary account's balance) and **mail abuse** (send
 branded test invitations to 500 arbitrary addresses per request, attributed to a real customer).
 
-**Fix shape:** move the route inside the `auth:sanctum` group and take `user_id` from `$request->user()`,
-keeping a body-supplied `user_id` only for a super-admin acting on someone's behalf.
+**Fix shape (as applied):** the route moved inside the `auth:sanctum` group and `user_id` now comes
+from `$request->user()`. The shipped fix went further than this sketch — it removed the body-supplied
+`user_id` outright rather than keeping it for super-admins.
 
 ### S-02 — Test-session endpoints never check that the caller owns the test
 
@@ -289,22 +299,30 @@ See [ERROR_HANDLING.md](ERROR_HANDLING.md).
 
 ### S-15 — Terminal LMS session tokens still authenticate
 
-**Severity: medium.**
+**Severity: low — reclassified 2026-08-21 (`0a6d7c22`, ws-361). This is now a deliberate design, not a
+defect.** The earlier reading of this finding was wrong; it is corrected here rather than deleted.
 
-`LmsSession::TERMINAL_STATUSES` (`reported`, `failed`) and `LmsSession::isTerminal()` both exist, but
-`isTerminal()` has **zero callers** — the only consumers of `TERMINAL_STATUSES` are the two completion
-listeners, which filter queries. `FlexibleAuthMiddleware` checks `token_expires_at` and returns
-`session_expired`, and never checks the status at all, so it can never return the `session_ended`
-response its own test expects.
+`FlexibleAuthMiddleware` still does not check session status — it checks `token_expires_at` only, so a
+`reported`/`failed` session's bearer token keeps authenticating until that timestamp passes. **That is
+on purpose (PR #180).** Delivery is queued, so a session can flip to `reported` while the patient is
+still sitting on the result page; blocking terminal sessions at the auth layer broke the result page.
 
-The effect: once a session reaches `reported`, its bearer token keeps working until
-`token_expires_at` passes. The LMS believes the session is over and has already been sent the results;
-the token can still read `api/organization/privileges` and anything else behind that guard.
+The compensating control is at the route layer, not the auth layer: every state-mutating LMS route
+carries `lms.status:<allowed states>` (`LmsSessionStatusMiddleware`, registered in `bootstrap/app.php`),
+and **no terminal status appears in any allow list**. A finished session that tries to drive the test
+flow gets **409 `SESSION_STATUS_MISMATCH`**.
 
-`tests/Feature/Lms/LmsLaunchTest.php::test_terminal_session_is_blocked` asserts the intended behaviour
-and **fails** (403 expected, 200 returned). It went unnoticed because the whole suite was unrunnable
-from 2026-04-17 to 2026-08-21 ([TESTING.md](TESTING.md)) — the test encodes the correct fix, so
-making `FlexibleAuthMiddleware` reject `isTerminal()` sessions should turn it green.
+Two passing tests pin both halves of the trade-off:
+- `LmsLaunchTest::test_terminal_session_can_still_read_result_related_endpoints` — `organization/privileges`
+  and `organization/redirect-url` must stay readable.
+- `LmsLaunchTest::test_terminal_session_cannot_advance_the_test_flow` — `POST api/tests/assign` must 409.
+
+*(The previously documented `test_terminal_session_is_blocked` no longer exists. It asserted the
+opposite behaviour and was removed, not fixed — do not "restore" it.)*
+
+**Residual risk, and it is real:** a terminal token remains a valid read credential for the
+`FlexibleAuthMiddleware`-guarded endpoints until `token_expires_at`. Narrowing that means shortening
+the token lifetime on completion, not reinstating an auth-layer block.
 
 ---
 
@@ -312,7 +330,7 @@ making `FlexibleAuthMiddleware` reject `isTerminal()` sessions should turn it gr
 | ID | Finding | Severity | Where |
 |---|---|---|---|
 | `S-01` | Public registration accepts `usertype: 1` | **critical** | `UserRequest` · `AuthController::register()` |
-| `S-13` | Public invitation send spends any user's credits (≤500 emails) | **critical** | `TestInvitationController::sendInvitations()` |
+| `S-13` | ✅ **fixed 2026-08-26** — public invitation send spent any user's credits (≤500 emails) | ~~critical~~ | `TestInvitationController::sendInvitations()` |
 | `S-02` | No test-ownership check on session endpoints | **high** | `TestController` · `TestExecutionService` |
 | `S-03` | `sendResumeEmail` accepts arbitrary test + address | **high** | `TestResumeController` |
 | `S-14` | `patients/{id}` unscoped + `update()` uses `$request->all()` | **high** | `PatientController` |
@@ -321,7 +339,7 @@ making `FlexibleAuthMiddleware` reject `isTerminal()` sessions should turn it gr
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
 | `S-07` | `login()` Bearer short-circuit skips account gates | medium | `AuthController::login()` |
 | `S-08` | `email_verified` vs `email_verified_at` disagree | medium | `User` · `AuthController` |
-| `S-15` | Terminal (`reported`/`failed`) LMS session tokens still authenticate | medium | `FlexibleAuthMiddleware` · `LmsSession::isTerminal()` |
+| `S-15` | Terminal LMS tokens keep **read** access by design; mutations 409 via `lms.status` | low | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware` |
 | `S-09` | `stopImpersonation` deletes nothing | low | `AuthController::stopImpersonation()` |
 | `S-10` | Global IP middleware, uncached DB hit per request | low | `RestrictIpMiddleware` |
 | `S-11` | `revokeAccess()` leaves the S3 URL live | low | `SecureImageService` |
@@ -332,7 +350,7 @@ making `FlexibleAuthMiddleware` reject `isTerminal()` sessions should turn it gr
 ## Rules for new code
 
 1. **Never trust an id from the request when a session already implies it.** Derive it from the session.
-2. **Guard by default.** A route added outside the two middleware groups is public — 21 already are
+2. **Guard by default.** A route added outside the two middleware groups is public — 20 already are
    ([PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md)). Check the audit after every route change.
 3. **Return `ApiResponse::error(HttpStatus::…)` explicitly** for authorisation failures. If you rely on
    an exception, the handler turns it into a 500 and the client cannot distinguish it from a crash.

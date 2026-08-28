@@ -71,7 +71,7 @@ copy their shape.
 
 | Path | When | Amount | `event_type` recorded |
 |---|---|---|---|
-| `TestInvitationController::sendInvitations()` | at **send** time, per email | 1 per invited address | `test_invitation` |
+| `TestInvitationController::sendInvitations()` | at **send** time, per email | 1 per invited address (always the authenticated caller since 2026-08-26) | `test_invitation` |
 | `TestAssignmentService` (via `TestController::assignTest()`) | at **assign** time — *unless* `test_invitation_id` is present | 1 | ⚠️ `test_completion` |
 | — | never actually at completion | — | — |
 
@@ -112,9 +112,13 @@ patient's link stops working.
 5. **`GET api/credits/{coupon-code}` is unreachable.** `Route::resource('credits', …)` is registered on
    the line *above* it, so `GET credits/{credit}` (the resource `show`) matches first and
    `checkDiscountCodeValidity()` is dead code. See [ROUTES.md](../ROUTES.md#ordering-traps).
-6. **`sendInvitations` spends the credits of a `user_id` taken from an unauthenticated request body.**
-   [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) —
-   the highest-impact bug touching this subsystem.
+6. ~~**`sendInvitations` spends the credits of a `user_id` taken from an unauthenticated request body.**~~
+   ✅ **Fixed 2026-08-26** —
+   [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time).
+   The route is now `auth:sanctum` and the spend is always billed to `$request->user()`; `user_id` is no
+   longer a validated input. **A short balance still truncates instead of failing** — `sendInvitations()`
+   sends only the first `credit` addresses and returns 200, so a caller can ask for 500 and be charged
+   for 3 without an error.
 7. **`CreditsController::show($userId)` calls `->get($userId)`**, passing an int where Eloquent expects a
    column list. It is not routed (the resource `show` is), so it is currently unreachable — do not
    "restore" it without fixing the call.

@@ -72,6 +72,15 @@ recreates them. **Only `discount_code_users` is live.**
 - Only **four** models soft-delete: `User`, `Patient`, `DiscountCode`, `LmsProviderConfig`. A
   soft-deleted parent silently drops children from any query that joins through it —
   [PATIENT_CONTEXT trap 3](CONTEXT/PATIENT_CONTEXT.md).
+  **Soft-deleted rows still hold their unique keys.** `users.email` and `discount_codes.code` carry plain
+  unique indexes that the DB enforces regardless of `deleted_at`, so a deleted user's address and a
+  deleted code's name are **not** reusable. Both call sites now say so rather than 500-ing:
+  `UserRequest` validates without a `whereNull('deleted_at')` clause ([REQUESTS.md](REQUESTS.md)) and
+  `DiscountCodeController::codeAvailable()` queries `withTrashed()`.
+- **`countries` and `states` have no `created_at`/`updated_at`.** They come from the `nnjeim/world`
+  package, so `Country` and `State` set `public $timestamps = false` (2026-08-27). Writing to either
+  model without that flag throws `Unknown column 'updated_at'`. Treat the whole `nnjeim/world` set as
+  timestamp-less reference data.
 - Money is `decimal:2` on `transactions`; `organizations.registration_fee_paid` is cast **`float`**.
   Follow the decimal, not the float.
 - Booleans are usually `tinyint` cast in the model. `test_answers.answered` / `.correct` are `0`/`1`

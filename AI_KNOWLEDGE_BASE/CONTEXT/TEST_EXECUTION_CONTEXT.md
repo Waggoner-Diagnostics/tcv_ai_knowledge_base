@@ -10,7 +10,7 @@
 | `app/Services/TestSectionTerminationService.php` | Early-exit rule ("last N all wrong") |
 | `app/Services/TestSectionProgressionService.php` | Conditional section skipping |
 | `app/Services/TestResultService.php` | Builds the stored result snapshot |
-| `app/Services/ColorVisionDiagnosisService.php` (559 lines) | ⭐ The diagnosis algorithm |
+| `app/Services/ColorVisionDiagnosisService.php` (550 lines) | ⭐ The diagnosis algorithm |
 | `app/Services/SecureImageService.php` | S3 pre-signed plate URLs |
 | `app/Http/Controllers/TestController.php` (679 lines) | Thin HTTP layer over the above |
 | SPA: `src/pages/UserPannel/TestPage/TestPage.js`, `src/constants/testConfig.js` | The player |
@@ -76,6 +76,17 @@ Runs inside `DB::transaction` with `lockForUpdate()` on the `PatientTest`:
 `ColorVisionDiagnosisService` does **not** change any already-completed test's result. That is
 deliberate (results are clinical records) — remember it before "fixing" a historical result.
 
+### How `routeCalculation()` picks an algorithm
+
+In order: **FAA** → **Baseline** → **single-section** → **Extended/Diagnostic** (the fallback).
+
+☠️ **FAA is matched by exact test name only** — `$testName === 'FAA Color Vision Test'`. The old
+`isFAATest()` shape heuristic (any 4 sections whose categories normalise to `[1,2,3,4]`) was **deleted**
+on 2026-08-26 (ws-371) because it captured 4-section Adult Diagnostic tests and scored them with the FAA
+rules. Consequence to know: **rename the FAA test in the `tests` table and it silently falls through to
+`calculateExtendedTestResult()`.** Baseline still keeps its `isBaselineTest()` shape fallback, so the two
+are not symmetric.
+
 ---
 
 ## `skip_reason` — three distinct meanings
@@ -89,6 +100,12 @@ deliberate (results are clinical records) — remember it before "fixing" a hist
 A section counts as **skipped** (not completed) only when *every* non-demo plate in it carries
 `SKIP_PRIOR_SECTION_PASSED` — that exact `havingRaw` is in `getSessionDetails()`. Adding a fourth skip
 reason without updating that query silently mis-reports section state.
+
+**Skipped sections are excluded from the diagnosis breakdown** (changed 2026-08-26, ws-371).
+`ColorVisionDiagnosisService` skips any section flagged `is_skipped` when building its per-section
+severity list. Before that, a bypassed section arrived with `correct = 0` and read as an outright
+failure, which is what collapsed Adult Diagnostic results to a bare PASS/FAIL. A section the patient
+never saw a plate for must not score.
 
 ## Early termination
 `shouldTerminateSection()` looks at the last *N* **non-demo answered** plates and terminates when their
@@ -128,7 +145,7 @@ The 880/900 split is deliberate: the cache must expire before the URL does, neve
 3. **`lms.status:test_assigned` on these routes is a no-op for non-LMS sessions.** The middleware
    returns early when no `LmsSession` is attached — invitation and resume flows pass through ungated.
    See [MIDDLEWARE.md](../MIDDLEWARE.md).
-4. **The diagnosis algorithm exists twice.** `ColorVisionDiagnosisService.php` (559 lines) is a port of
+4. **The diagnosis algorithm exists twice.** `ColorVisionDiagnosisService.php` (550 lines) is a port of
    `TCV-Frontend/src/utils/calculateColorVisionResult.js` (349 lines) — its own docblock says so. The JS
    copy is **exported but imported nowhere**, i.e. dead. Change the **PHP** one; do not "sync" the JS
    copy, delete it. See [FULLSTACK_MAP.md](../FULLSTACK_MAP.md).

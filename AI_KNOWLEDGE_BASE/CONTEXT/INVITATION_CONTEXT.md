@@ -32,19 +32,28 @@ All three are stored **in plaintext**. Only the LMS session token is hashed
 ## Send flow
 
 ```
-POST api/test-invitations/send   ← PUBLIC. { user_id, test_id, emails[≤500], unique_test_id? }
-  ├─ Credits::getAvailableCredits(user_id)      → 402 when short  (guarded for 'Unlimited')
+POST api/test-invitations/send   ← auth:sanctum. { test_id, emails[≤500], unique_test_id? }
+  ├─ owner = $request->user()                   ← NOT from the body
+  ├─ Credits::getAvailableCredits(owner->id)    → 402 when short  (guarded for 'Unlimited')
   ├─ per email: token = Str::random(32), code = upper(random(6)), expires_at = now + 7d
   ├─ mail the link
-  └─ unless is_resend:  CreditConsume::consume(user, n, 'test_invitation', [ids])
+  └─ CreditConsume::consume(user, n, 'test_invitation', [ids])
 ```
 
-☠️ **This route is unauthenticated and spends the credits of a body-supplied `user_id`, up to 500
-addresses per call, after `set_time_limit(0)`.** It is the highest-impact defect in the codebase —
+**`user_id` is no longer accepted in the body.** It was dropped from the validation rules when the route
+moved into the `auth:sanctum` group on 2026-08-26 — the owner is always `$request->user()`, super-admin
+included. That closed
 [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time).
+`set_time_limit(0)` is still called, so a 500-address call still has no execution-time ceiling, and the
+route is still unthrottled.
 
-**Resends do not re-charge.** `is_resend = true` skips the `CreditConsume::consume()` call, and
-`resendUnregisteredInvitation()` issues a *fresh* token + code with a *fresh* 7-day window.
+**Short balance truncates rather than rejects.** When `credit < count(emails)` the call sends only the
+first `credit` addresses and returns 200 — it does not 402. Only a balance below 1 is a 402.
+
+**Resend is a separate endpoint and does not re-charge.** The `is_resend` body flag on `send` is **gone**
+(removed with the S-13 fix, so a resend can no longer be used to skip the credit check on `send`).
+`POST api/test-invitations/{id}/resend` → `resendUnregisteredInvitation()` issues a *fresh* token + code
+with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = auth()->id()`.
 
 ---
 
@@ -102,7 +111,7 @@ a customer's behalf, the credit lands in the wrong account. Compare with
 
 ## ☠️ Traps
 
-1. **`POST api/test-invitations/send` is public and spends someone else's credits.** [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time).
+1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Still unthrottled, and still `set_time_limit(0)` for ≤500 addresses.
 2. **Cancel refunds the caller, not the owner** (above).
 3. **Expiry is compared as a date in some paths and a datetime in others** — `verifyCode()`/`checkTokenStatus()`
    comment their check as date-based ("expires_at < today") while `TestResumeToken::isExpired()` is a

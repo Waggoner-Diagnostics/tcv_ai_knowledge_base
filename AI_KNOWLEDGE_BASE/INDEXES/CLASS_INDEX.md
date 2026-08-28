@@ -9,7 +9,7 @@
 | `CTRL-003` | `ContactController` | class | Controller | [app/Http/Controllers/ContactController.php:13](../../../TCV-Backend/app/Http/Controllers/ContactController.php#L13) | 2 |
 | `CTRL-004` | `Controller` | class | BaseController | [app/Http/Controllers/Controller.php:8](../../../TCV-Backend/app/Http/Controllers/Controller.php#L8) | 0 |
 | `CTRL-005` | `CreditsController` | class | Controller | [app/Http/Controllers/CreditsController.php:19](../../../TCV-Backend/app/Http/Controllers/CreditsController.php#L19) | 6 |
-| `CTRL-006` | `DiscountCodeController` | class | Controller | [app/Http/Controllers/DiscountCodeController.php:18](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L18) | 11 |
+| `CTRL-006` | `DiscountCodeController` | class | Controller | [app/Http/Controllers/DiscountCodeController.php:18](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L18) | 12 |
 | `CTRL-007` | `DropdownValuesController` | class | Controller | [app/Http/Controllers/DropdownValuesController.php:13](../../../TCV-Backend/app/Http/Controllers/DropdownValuesController.php#L13) | 7 |
 | `CTRL-008` | `ForgotPasswordController` | class | Controller | [app/Http/Controllers/Auth/ForgotPasswordController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/ForgotPasswordController.php#L8) | 0 |
 | `CTRL-009` | `LmsAdminController` | class | Controller | [app/Http/Controllers/LmsAdminController.php:15](../../../TCV-Backend/app/Http/Controllers/LmsAdminController.php#L15) | 9 |
@@ -35,7 +35,7 @@
 | `CTRL-029` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:14](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L14) | 3 |
 | `CTRL-030` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-031` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
-| `CTRL-032` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:24](../../../TCV-Backend/app/Http/Controllers/UserController.php#L24) | 9 |
+| `CTRL-032` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:25](../../../TCV-Backend/app/Http/Controllers/UserController.php#L25) | 9 |
 | `CTRL-033` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:12](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L12) | 4 |
 | `CTRL-034` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
@@ -80,7 +80,7 @@
 | `MODEL-040` | `UserStripeDetail` | class | Model | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | 1 |
 | `SVC-001` | `AuditLogger` | class | — | [app/Services/Audit/AuditLogger.php:7](../../../TCV-Backend/app/Services/Audit/AuditLogger.php#L7) | 1 |
 | `SVC-002` | `BasePaymentProvider` | class | — | [app/Services/PaymentProviders/BasePaymentProvider.php:10](../../../TCV-Backend/app/Services/PaymentProviders/BasePaymentProvider.php#L10) | 10 |
-| `SVC-003` | `ColorVisionDiagnosisService` | class | — | [app/Services/ColorVisionDiagnosisService.php:15](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php#L15) | 14 |
+| `SVC-003` | `ColorVisionDiagnosisService` | class | — | [app/Services/ColorVisionDiagnosisService.php:15](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php#L15) | 13 |
 | `SVC-004` | `CornerstoneProvider` | class | — | [app/Services/Lms/Providers/CornerstoneProvider.php:18](../../../TCV-Backend/app/Services/Lms/Providers/CornerstoneProvider.php#L18) | 7 |
 | `SVC-005` | `DeliveryResult` | class | — | [app/Services/Lms/Contracts/DeliveryResult.php:5](../../../TCV-Backend/app/Services/Lms/Contracts/DeliveryResult.php#L5) | 3 |
 | `SVC-006` | `DiscountCodeReportService` | class | — | [app/Services/Reports/DiscountCodeReportService.php:7](../../../TCV-Backend/app/Services/Reports/DiscountCodeReportService.php#L7) | 3 |
@@ -134,7 +134,7 @@
 | `REQ-017` | `TestSectionPlateRequest` | class | FormRequest | [app/Http/Requests/TestSectionPlateRequest.php:7](../../../TCV-Backend/app/Http/Requests/TestSectionPlateRequest.php#L7) | 2 |
 | `REQ-018` | `TestSectionRequest` | class | FormRequest | [app/Http/Requests/TestSectionRequest.php:7](../../../TCV-Backend/app/Http/Requests/TestSectionRequest.php#L7) | 2 |
 | `REQ-019` | `UpdateDiscountCodeRequest` | class | FormRequest | [app/Http/Requests/UpdateDiscountCodeRequest.php:8](../../../TCV-Backend/app/Http/Requests/UpdateDiscountCodeRequest.php#L8) | 4 |
-| `REQ-020` | `UpdateProfileRequest` | class | FormRequest | [app/Http/Requests/UpdateProfileRequest.php:8](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php#L8) | 4 |
+| `REQ-020` | `UpdateProfileRequest` | class | FormRequest | [app/Http/Requests/UpdateProfileRequest.php:9](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php#L9) | 4 |
 | `REQ-021` | `UpdateSettingsRequest` | class | FormRequest | [app/Http/Requests/UpdateSettingsRequest.php:7](../../../TCV-Backend/app/Http/Requests/UpdateSettingsRequest.php#L7) | 2 |
 | `REQ-022` | `UpdateUserEmailTemplateRequest` | class | FormRequest | [app/Http/Requests/UpdateUserEmailTemplateRequest.php:9](../../../TCV-Backend/app/Http/Requests/UpdateUserEmailTemplateRequest.php#L9) | 5 |
 | `REQ-023` | `UserRequest` | class | FormRequest | [app/Http/Requests/UserRequest.php:10](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L10) | 2 |
@@ -198,4 +198,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-19. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._

@@ -181,3 +181,13 @@ Regenerated every run; the current state:
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
 - **Adding a page = 3 files**: `protectedRoutes.js`, `routeConfig.js`, and (for user-panel pages)
   `USER_PANEL_WITH_HEADER` in `Router.js`.
+- **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on
+  2026-08-27 (ws-359) had to touch all four; miss `routeConfig.js` and the page 403s for every role,
+  miss `Sidebar.js` and the nav entry silently stops matching.
+
+**Two tests are hidden by title, in the client only** (`src/constants/testConstants.js`, ws-359):
+`HIDDEN_TEST_TITLES` drops *FAA Color Vision Test* from the admin Tests listing and
+`ORG_EXCLUDED_TEST_TITLES` drops it from the org "allow test" picker. Both are `Set`s keyed on the
+**exact title string**, and the backend enforces neither — the API still returns and accepts the test.
+Renaming that test in the `tests` table un-hides it here *and* changes its diagnosis path server-side
+([TEST_EXECUTION_CONTEXT](CONTEXT/TEST_EXECUTION_CONTEXT.md)); the title is load-bearing in both repos.

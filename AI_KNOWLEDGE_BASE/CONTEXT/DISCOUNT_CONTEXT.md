@@ -6,7 +6,7 @@
 | File | Role |
 |---|---|
 | `app/Services/DiscountCodeService.php` | ⭐ `validate()`, `calculate()`, `syncRestrictions()`, `countUses()` |
-| `app/Http/Controllers/DiscountCodeController.php` (234 lines) | CRUD + `stats`, `formOptions`, `validateCode`, `toggle` |
+| `app/Http/Controllers/DiscountCodeController.php` (255 lines) | CRUD + `stats`, `formOptions`, `validateCode`, `toggle`, `codeAvailable` |
 | `app/Models/DiscountCode.php` · `DiscountCodePriceTier.php` · `DiscountCodeUser.php` | |
 | `app/Http/Requests/StoreDiscountCodeRequest.php` · `UpdateDiscountCodeRequest.php` · `ValidateDiscountCodeRequest.php` | |
 | `app/Services/Reports/DiscountCodeReportService.php` · `app/Exports/DiscountCodeReportExport.php` | Reporting |
@@ -20,12 +20,14 @@
 ```
 GET   api/discount-codes/stats
 GET   api/discount-codes/form-options
+GET   api/discount-codes/code-available     ?code=…&ignore_id=…   (added 2026-08-26)
 POST  api/discount-codes/validate
 PATCH api/discount-codes/{discount_code}/toggle
       api/discount-codes            ← apiResource (index/store/show/update/destroy)
 ```
-The three literal paths are registered **before** the `apiResource`, which is what keeps
-`/stats`, `/form-options` and `/validate` from being swallowed by `GET discount-codes/{discount_code}`.
+The four literal paths are registered **before** the `apiResource`, which is what keeps
+`/stats`, `/form-options`, `/code-available` and `/validate` from being swallowed by
+`GET discount-codes/{discount_code}`.
 **Preserve that order** — it is deliberate, and the `credits` group gets it wrong
 ([ROUTES.md](../ROUTES.md#ordering-traps)).
 
@@ -74,6 +76,11 @@ Codes are matched **upper-cased and trimmed**. Store them upper-cased or lookups
 4. **`value` and `minimum_order_amount` are `decimal:2` casts** — they arrive as strings from Eloquent.
    `$amount < $discount->minimum_order_amount` works via PHP's numeric-string comparison, but do not
    assume you are holding a float.
+
+**`code-available` counts soft-deleted codes as taken.** `codeAvailable()` queries `withTrashed()`
+deliberately: `discount_codes.code` carries a plain unique index, so a trashed row still owns its code
+and an insert would collide. An admin who deletes a code cannot immediately reuse its name. It answers
+`available: true` for an empty `code`, and `ignore_id` excludes the row being edited.
 
 5. **Validation happens twice on different inputs.** `POST api/discount-codes/validate` validates against
    a client-supplied `amount`/`credits`; `POST api/payment/initialize` validates again with the real

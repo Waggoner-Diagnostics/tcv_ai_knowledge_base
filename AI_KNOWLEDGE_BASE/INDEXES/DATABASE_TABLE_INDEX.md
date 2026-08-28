@@ -14,7 +14,7 @@ the only authority before you write a migration against a column.
 | `TABLE-004` | `cache_locks` | 3 | `0001_01_01_000001_create_cache_table.php` | 2 |
 | `TABLE-005` | `compliances` | 2 | `2025_06_23_093258_create_compliances_table.php` | 2 |
 | `TABLE-006` | `credit_consume` | 4 | `2026_05_04_090222_create_credit_consume_table.php` | 2 |
-| `TABLE-007` | `credits` | 10 | `2025_10_15_123918_create_credits_table.php` | 8 |
+| `TABLE-007` | `credits` | 10 | `2025_10_15_123918_create_credits_table.php` | 6 |
 | `TABLE-008` | `discount_code_price_tiers` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
 | `TABLE-009` | `discount_code_user` | 2 | `2025_06_26_092920_create_discount_code_user_table.php` | 3 |
 | `TABLE-010` | `discount_code_users` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
@@ -729,4 +729,4 @@ _Dropped later by a migration (may still be listed above): `usertype`, `includeW
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-19. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._

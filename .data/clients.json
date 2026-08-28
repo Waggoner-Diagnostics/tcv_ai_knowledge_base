@@ -1,7 +1,7 @@
 {
-    "generated_at": "2026-08-19T14:19:13+02:00",
+    "generated_at": "2026-08-28T11:47:36+02:00",
     "frontend": {
-        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Frontend",
+        "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
             {
                 "kind": "public",
@@ -376,7 +376,7 @@
             },
             {
                 "kind": "protected",
-                "path": "/test",
+                "path": "/tests",
                 "element": "Test",
                 "file": "src/router/routes/protectedRoutes.js",
                 "line": 102
@@ -531,7 +531,7 @@
                     "/admin",
                     "/pricing",
                     "/discount",
-                    "/test",
+                    "/tests",
                     "/reports",
                     "/view-webgl-report",
                     "/organisation",
@@ -600,7 +600,7 @@
                     "/profile",
                     "/settings",
                     "/pricing",
-                    "/test",
+                    "/tests",
                     "/user-panel",
                     "/user-panel/patients",
                     "/user-panel/patients/add",
@@ -704,7 +704,7 @@
                 "path": "/api/contact",
                 "raw": "/api/contact",
                 "file": "src/apis/miscApis.js",
-                "line": 87,
+                "line": 90,
                 "orphan": false
             },
             {
@@ -729,6 +729,14 @@
                 "raw": "/api/discount-codes",
                 "file": "src/redux/slices/discount/discountSlice.js",
                 "line": 46,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/api/discount-codes/code-available",
+                "raw": "/api/discount-codes/code-available",
+                "file": "src/apis/miscApis.js",
+                "line": 110,
                 "orphan": false
             },
             {
@@ -1032,7 +1040,7 @@
                 "path": "/api/resend-verification-by-token",
                 "raw": "/api/resend-verification-by-token",
                 "file": "src/apis/miscApis.js",
-                "line": 92,
+                "line": 95,
                 "orphan": false
             },
             {
@@ -1352,7 +1360,7 @@
                 "path": "/api/validate-token",
                 "raw": "api/validate-token",
                 "file": "src/pages/AuthInit.js",
-                "line": 43,
+                "line": 51,
                 "orphan": false
             },
             {
@@ -1360,7 +1368,7 @@
                 "path": "/api/verify-email-token",
                 "raw": "/api/verify-email-token",
                 "file": "src/apis/miscApis.js",
-                "line": 98,
+                "line": 101,
                 "orphan": false
             },
             {
@@ -1486,18 +1494,18 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 248,
+            "source_files": 251,
             "spa_routes": 74,
-            "api_calls": 91,
+            "api_calls": 92,
             "slices": 40,
             "hooks": 15,
             "pages": 84,
-            "components": 46,
-            "loc": 33407
+            "components": 47,
+            "loc": 33931
         }
     },
     "website": {
-        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Website",
+        "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Website",
         "pages": [
             {
                 "route": "/",
@@ -1851,7 +1859,8 @@
             "components/WhoNeedsTesting.jsx"
         ],
         "env": [
-            "API_URL"
+            "API_URL",
+            "NODE_ENV"
         ],
         "counts": {
             "source_files": 94,
@@ -1860,7 +1869,7 @@
             "api_routes": 4,
             "views": 26,
             "components": 26,
-            "loc": 10397
+            "loc": 10403
         }
     }
 }

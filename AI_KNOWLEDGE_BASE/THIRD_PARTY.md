@@ -48,6 +48,14 @@ One method, `submitEnquiry()`, called from `ContactController::submit()`
 returns 500 **with the exception message in the response body**; that is the only place a third-party
 error reaches a client verbatim.
 
+☠️ **Empty properties are stripped before the upsert, on purpose.** `submitEnquiry()` runs the property
+array through `array_filter(… !== '' && !== null)` before searching HubSpot. The upsert path **PATCHes
+the whole array onto an existing contact**, so an empty value would overwrite whatever the CRM already
+holds — a returning enquirer who omits `company_name` would blank the company on their HubSpot record.
+Omitting a property leaves it untouched on update and unset on create. Do not "simplify" that filter
+away. `company_name` became optional in `ContactFormRequest` on 2026-08-26 (ws-361), which is what made
+this reachable; the ticket subject also drops the `(company)` suffix when it is absent.
+
 ## Cloudflare Turnstile
 
 `TurnstileService::verify($token, $ip)` posts to `challenges.cloudflare.com/turnstile/v0/siteverify`.

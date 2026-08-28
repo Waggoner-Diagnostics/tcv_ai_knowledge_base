@@ -39,13 +39,23 @@ the rules on `$this->user()`, is the fix.
     ['nullable', 'integer', 'exists:states,id']
 ),
 ```
+`UpdateProfileRequest` adopted the same rule on 2026-08-27 and **tightened the rest of the address**:
+`address`, `city`, `zip_code` and `country_id` went from `nullable` to `required`. A profile-update
+client that used to omit them now gets a 422 — the conditional `state_id` is what keeps that from
+forcing a state on countries that have none.
 
-**Unique-ignoring-soft-deletes** — the same class:
+**Email uniqueness now spans soft-deleted users** — changed 2026-08-27 (ws-352):
 ```php
-Rule::unique('users', 'email')->ignore($id)->whereNull('deleted_at'),
+Rule::unique('users', 'email')->ignore($id),      // was: ->whereNull('deleted_at')
 ```
-This matters because `User` soft-deletes; without `whereNull('deleted_at')` a deleted account would
-block re-registration forever.
+The `whereNull('deleted_at')` clause was **removed**. It had let a soft-deleted account's email pass
+validation and then hit the plain unique index on `users.email`, surfacing as a 500. Validation now
+matches what the database will actually accept, so the collision is a 422 on the `email` field.
+
+The trade-off is deliberate: a deleted account's address is **not** re-registrable. `UserController`
+`store()`/`update()` additionally catch `UniqueConstraintViolationException` and translate it to the
+same 422 — belt-and-braces for the race between validation and insert. (The comment on that catch still
+describes the old rule; the rule itself is what changed.)
 
 **Domain helpers on the request** — `PerformTestRequest::isAutoSubmit()` and
 `CreateTestRequest::EYE_TESTED_BOTH` put small pieces of domain vocabulary where the controller can use

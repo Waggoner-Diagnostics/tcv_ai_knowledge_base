@@ -110,6 +110,45 @@ foreach (['backend' => 'backend', 'frontend' => 'frontend', 'website' => 'websit
     $facts['git'][$key] = ['sha' => $sha, 'branch' => $br, 'date' => $date];
 }
 
+// `artisan route:list --json` prints middleware as fully-qualified class names
+// (`Illuminate\Auth\Middleware\Authenticate:sanctum`), while the AST parser and every prose
+// doc in this KB speak Laravel's alias vocabulary (`auth:sanctum`, `signed`, `throttle:60,1`).
+// Normalise the artisan form to the alias form so the two route sources stay interchangeable —
+// otherwise guarded() in render.php stops recognising authenticated routes and the
+// public-route audit balloons (130 guarded routes once reported themselves public this way).
+function normaliseMiddleware(string $m): string
+{
+    static $aliases = [
+        'Illuminate\Auth\Middleware\Authenticate'                 => 'auth',
+        'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth'    => 'auth.basic',
+        'Illuminate\Session\Middleware\AuthenticateSession'       => 'auth.session',
+        'Illuminate\Auth\Middleware\Authorize'                    => 'can',
+        'Illuminate\Auth\Middleware\RedirectIfAuthenticated'      => 'guest',
+        'Illuminate\Auth\Middleware\EnsureEmailIsVerified'        => 'verified',
+        'Illuminate\Auth\Middleware\RequirePassword'              => 'password.confirm',
+        'Illuminate\Routing\Middleware\SubstituteBindings'        => 'bindings',
+        'Illuminate\Routing\Middleware\ThrottleRequests'          => 'throttle',
+        'Illuminate\Routing\Middleware\ThrottleRequestsWithRedis' => 'throttle',
+        'Illuminate\Routing\Middleware\ValidateSignature'         => 'signed',
+        'Illuminate\Http\Middleware\SetCacheHeaders'              => 'cache.headers',
+    ];
+
+    $class  = $m;
+    $params = '';
+    if (($pos = strpos($m, ':')) !== false) {
+        $class  = substr($m, 0, $pos);
+        $params = substr($m, $pos);          // keeps the leading ':'
+    }
+
+    if (isset($aliases[$class])) return $aliases[$class] . $params;
+
+    // Not a Laravel alias: keep the short class name (App\Http\Middleware\FlexibleAuthMiddleware
+    // → FlexibleAuthMiddleware) — how the prose and the AST path already refer to app middleware.
+    if (($slash = strrpos($class, '\\')) !== false) return substr($class, $slash + 1) . $params;
+
+    return $m;
+}
+
 // ── Pass 1: classes, methods, functions, constants, relationships ────────────
 foreach (['app', 'database/seeders', 'database/factories'] as $sub) {
     foreach (phpFiles($root . '/' . $sub) as $file) {
@@ -291,7 +330,7 @@ if (is_file($root . '/vendor/autoload.php')) {
                 'method'     => $r['method'] ?? '',
                 'uri'        => $r['uri'] ?? '',
                 'action'     => $r['action'] ?? '',
-                'middleware' => (array) ($r['middleware'] ?? []),
+                'middleware' => array_map('normaliseMiddleware', (array) ($r['middleware'] ?? [])),
                 'name'       => $r['name'] ?? '',
                 'line'       => 0,
                 'source'     => 'artisan',

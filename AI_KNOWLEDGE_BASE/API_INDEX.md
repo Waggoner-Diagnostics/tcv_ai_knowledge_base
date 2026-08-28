@@ -1,8 +1,8 @@
 # API — Shape and Conventions
 
 The exhaustive table is generated: [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md)
-(**177 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
-(**21 of 177 endpoints are public**). This page is the shape.
+(**176 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
+(**20 of 176 endpoints are public**). This page is the shape.
 
 ## Base
 
@@ -22,8 +22,8 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 | `api/credits`, `api/user/credits`, `api/patient-tests/*/revoke-credit` | ~9 | `auth:sanctum` | |
 | `api/payment/*` | 5 | `auth:sanctum` | the current payment surface |
 | `api/stripe/*` | 5 | **public** | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) |
-| `api/discount-codes/*` | 9 | `auth:sanctum` | |
-| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | ⚠️ `test-invitations/send` is public — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) |
+| `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; counts soft-deleted codes as taken) |
+| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design |
 | `api/admin/lms/*` | 8 | `auth:sanctum` | no role check |
 | `api/reports/*`, `api/super-admin/dashboard` | 4 | `auth:sanctum` | no role check |
 | `api/dropdown/*`, `api/countries-with-states`, `api/restricted-ips`, `api/price-details` | ~12 | mixed | reference data |

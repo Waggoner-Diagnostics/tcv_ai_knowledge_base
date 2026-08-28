@@ -117,6 +117,7 @@ jsconfig.json        @/* → repo root
 ## Where documentation lives
 
 **All TCV documentation lives in this KB.** The two client repos each ship a `CLAUDE.md` that predates
-it; those files are left in place but are **not** the authority — the website's in particular is stale
-(it claims the site has no API routes). Do not add new doc files to the code repos; extend the KB
-instead.
+it; those files are left in place but are **not** the authority. (The website's no longer claims the site
+has no API routes — that was corrected upstream on 2026-08-26 — but it links to a legacy `docs/` folder
+that sits outside this KB and is not maintained here.) Do not add new doc files to the code repos;
+extend the KB instead.

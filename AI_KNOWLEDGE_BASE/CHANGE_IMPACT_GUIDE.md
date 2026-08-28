@@ -43,6 +43,8 @@ Read the row for the thing you are about to change **before** you change it.
 | `test_sections.section_instruction` wording | `TestHelper::extractEyeFromSectionInstruction()` regexes `Eye: (OU|OD|OS)` out of that free text ([HELPERS.md](HELPERS.md)) |
 | `SecureImageService` constants | 880 (cache) **must** stay below 900 (URL validity) ([CACHE.md](CACHE.md)) |
 | `TestAssignmentService::createBothEyesTests()` | `parent_test_id` pairing, the `OS`-is-canonical rule, and the pending→inprogress promotion |
+| **Renaming a row in the `tests` table** | the title is load-bearing in **both** repos. `routeCalculation()` matches `'FAA Color Vision Test'` and `'Baseline Test'` by exact string; the SPA's `HIDDEN_TEST_TITLES` / `ORG_EXCLUDED_TEST_TITLES` sets do too. A rename silently changes the diagnosis algorithm *and* un-hides the test |
+| Adding a section skip path | `ColorVisionDiagnosisService` drops `is_skipped` sections from the severity breakdown — a new skip that does not set that flag scores as a failure |
 
 ---
 

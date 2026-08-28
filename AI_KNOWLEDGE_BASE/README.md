@@ -7,10 +7,10 @@ work on the project **without rescanning ~61,700 lines across 506 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `main` |
+| **Branches indexed** | `develop` · `develop` · `website-integration` (identical to the website's `develop` at `ce410d5`) |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `85586469` (2026-08-18) · `TCV-Frontend` `d7cdbc8` (2026-08-18) · `TCV-Website` `9ea8202` (2026-05-22) |
-| **Backend scale** | 186 classes/interfaces/traits · 710 methods · 177 API endpoints · 52 tables · 109 migrations |
+| **Code state at sync** | `TCV-Backend` `26ba2022` (2026-08-27) · `TCV-Frontend` `875cfb6` (2026-08-27) · `TCV-Website` `ce410d5` (2026-08-26) |
+| **Backend scale** | 186 classes/interfaces/traits · 710 methods · 176 API endpoints · 52 tables · 109 migrations |
 | **Client scale** | 64 top-level routes · 40 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -137,8 +137,8 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 177 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **21 public** |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 176 |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 186 |
 | [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 710 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |

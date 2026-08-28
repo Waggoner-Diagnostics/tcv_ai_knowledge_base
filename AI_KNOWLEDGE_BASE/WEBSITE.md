@@ -6,15 +6,17 @@
 |---|---|
 | Stack | Next.js 15 (App Router) · React 19 · Tailwind CSS 4 (`@tailwindcss/postcss`) · GSAP 3 (ScrollTrigger + ScrollSmoother) |
 | Scale | 94 source files · ~10k lines · 32 marketing pages · 3 layouts · 4 server API routes · 26 client views |
-| Package manager | **yarn** (a `yarn.lock` and a `package-lock.json` both exist — use yarn) |
+| Package manager | **yarn** — `package-lock.json` was deleted on 2026-08-26, so `yarn.lock` is now the only lockfile |
 | Ports | dev `3001`, start `3001` (the SPA runs on `3000`) |
 | Build | `output: 'standalone'`, Turbopack root pinned to the repo |
-| Env | **`API_URL`** — server-side only, no `NEXT_PUBLIC_` prefix |
+| Env | **`API_URL`** (server-side only, no `NEXT_PUBLIC_` prefix) · **`NEXT_PUBLIC_DASHBOARD_URL`** (client, used by `Pricing.jsx`). Both are documented in `.env.example`, added 2026-08-26 |
 
 Generated view: [INDEXES/WEBSITE_ROUTE_INDEX.md](INDEXES/WEBSITE_ROUTE_INDEX.md)
 
-The repo ships its own `CLAUDE.md`. ⚠️ **It is out of date on one important point**: it states *"No API
-routes, no database, static content only."* There are now **four API routes** (below). Trust this page.
+The repo ships its own `CLAUDE.md`. **The "no API routes, static content only" claim was corrected on
+2026-08-26** — it now describes the four proxy routes accurately. Two caveats remain: it points at
+`../docs/07-website.md`, a **legacy doc set outside this KB** that nothing here maintains, and it is
+still not the authority. Trust this page.
 
 ---
 
@@ -52,10 +54,12 @@ forwards server-side. Consequences worth knowing:
   hands off; the SPA at `/app` owns the session.
 - **`API_URL` is server-only.** If it is unset, every proxy returns `500 "API_URL is not configured on
   the server."` — a deliberate guard, not a crash.
-- Each proxy checks `content-type` before calling `.json()` and returns **502** with the first 400
-  characters of the body when the backend replies with HTML instead of JSON. That is the fastest signal
-  that the backend is down or misrouted; look for `[/api/auth] Backend returned non-JSON` in the server
-  log.
+- Each proxy checks `content-type` before calling `.json()` and returns **502** when the backend replies
+  with HTML instead of JSON, logging the first 400 characters. That is the fastest signal that the
+  backend is down or misrouted; look for `[/api/auth] Backend returned non-JSON` in the server log.
+  ⚠️ **`/api/register` alone also puts the upstream status and body into the 502 *response* — but only
+  when `NODE_ENV === 'development'`** (added 2026-08-26). Production keeps the generic message. Do not
+  copy that branch into the other three proxies without the same `isDev` guard.
 - All four backend targets exist today — verified in
   [INDEXES/CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md#tcv-website-proxy-routes).
 

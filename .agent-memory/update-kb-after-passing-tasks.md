@@ -20,8 +20,9 @@ form and error-status contracts, so a change often spans more than one (see the 
 `CLAUDE.md`, etc.) inside `TCV-Backend`, `TCV-Frontend` or `TCV-Website`. Code fixes belong in the code
 repo; **all prose/architecture documentation belongs in the KB**. `TCV-Frontend` and `TCV-Website` each
 already contain a legacy `CLAUDE.md` that predates the KB — leave those files alone, do not extend them,
-and treat the KB as the authority (the website's is stale: it claims the site has no API routes, and it
-has four).
+and treat the KB as the authority. (The website's `CLAUDE.md` claimed the site had no API routes; that
+was corrected upstream on 2026-08-26 and it now describes the four proxies. It still points at the
+legacy `docs/` folder outside the KB — that folder is not maintained here.)
 
 **How to apply:**
 - Hand-update only the affected KB prose docs (`CONTEXT/*` packs, `CHANGE_IMPACT_GUIDE.md`,

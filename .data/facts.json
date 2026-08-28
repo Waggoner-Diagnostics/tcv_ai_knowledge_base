@@ -1,21 +1,21 @@
 {
-    "generated_at": "2026-08-19T14:19:11+02:00",
-    "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Backend",
+    "generated_at": "2026-08-28T11:47:33+02:00",
+    "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "e3b8164a",
+            "sha": "26ba2022",
             "branch": "develop",
-            "date": "2026-08-19"
+            "date": "2026-08-27"
         },
         "frontend": {
-            "sha": "c992527",
+            "sha": "875cfb6",
             "branch": "develop",
-            "date": "2026-08-19"
+            "date": "2026-08-27"
         },
         "website": {
-            "sha": "9ea8202",
-            "branch": "main",
-            "date": "2026-05-22"
+            "sha": "ce410d5",
+            "branch": "website-integration",
+            "date": "2026-08-26"
         }
     },
     "classes": [
@@ -1567,7 +1567,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
             "line": 18,
-            "end_line": 234,
+            "end_line": 255,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1773,9 +1773,30 @@
                     ]
                 },
                 {
-                    "name": "formatDiscount",
+                    "name": "codeAvailable",
                     "line": 204,
-                    "end_line": 233,
+                    "end_line": 221,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "JsonResponse",
+                    "doc": "",
+                    "calls": [
+                        "query",
+                        "json",
+                        "exists",
+                        "when",
+                        "where",
+                        "DiscountCode::withTrashed",
+                        "whereKeyNot"
+                    ]
+                },
+                {
+                    "name": "formatDiscount",
+                    "line": 225,
+                    "end_line": 254,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2113,7 +2134,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
             "line": 30,
-            "end_line": 876,
+            "end_line": 883,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2136,7 +2157,7 @@
                 {
                     "name": "index",
                     "line": 38,
-                    "end_line": 152,
+                    "end_line": 159,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2155,6 +2176,7 @@
                         "orderBy",
                         "select",
                         "join",
+                        "leftJoin",
                         "groupBy",
                         "selectRaw",
                         "DB::table",
@@ -2176,8 +2198,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 154,
-                    "end_line": 216,
+                    "line": 161,
+                    "end_line": 223,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2214,8 +2236,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 218,
-                    "end_line": 229,
+                    "line": 225,
+                    "end_line": 236,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2234,8 +2256,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 231,
-                    "end_line": 326,
+                    "line": 238,
+                    "end_line": 333,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2276,8 +2298,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 328,
-                    "end_line": 352,
+                    "line": 335,
+                    "end_line": 359,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2301,8 +2323,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 354,
-                    "end_line": 381,
+                    "line": 361,
+                    "end_line": 388,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2327,8 +2349,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 387,
-                    "end_line": 452,
+                    "line": 394,
+                    "end_line": 459,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2358,8 +2380,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 458,
-                    "end_line": 582,
+                    "line": 465,
+                    "end_line": 589,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2391,8 +2413,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 587,
-                    "end_line": 656,
+                    "line": 594,
+                    "end_line": 663,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2410,8 +2432,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 662,
-                    "end_line": 702,
+                    "line": 669,
+                    "end_line": 709,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2434,8 +2456,8 @@
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 709,
-                    "end_line": 751,
+                    "line": 716,
+                    "end_line": 758,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2458,8 +2480,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 758,
-                    "end_line": 795,
+                    "line": 765,
+                    "end_line": 802,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2485,8 +2507,8 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 808,
-                    "end_line": 849,
+                    "line": 815,
+                    "end_line": 856,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2515,8 +2537,8 @@
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 854,
-                    "end_line": 875,
+                    "line": 861,
+                    "end_line": 882,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4674,7 +4696,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
             "line": 20,
-            "end_line": 560,
+            "end_line": 547,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4696,7 +4718,7 @@
                 {
                     "name": "sendInvitations",
                     "line": 27,
-                    "end_line": 212,
+                    "end_line": 199,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4706,10 +4728,9 @@
                     "doc": "",
                     "calls": [
                         "validate",
-                        "boolean",
-                        "App\\Models\\User::find",
-                        "json",
+                        "user",
                         "Credits::getAvailableCredits",
+                        "json",
                         "Log::info",
                         "Test::findOrFail",
                         "Str::random",
@@ -4730,8 +4751,8 @@
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 218,
-                    "end_line": 268,
+                    "line": 205,
+                    "end_line": 255,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4763,8 +4784,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 274,
-                    "end_line": 303,
+                    "line": 261,
+                    "end_line": 290,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4792,8 +4813,8 @@
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 308,
-                    "end_line": 344,
+                    "line": 295,
+                    "end_line": 331,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4821,8 +4842,8 @@
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 346,
-                    "end_line": 389,
+                    "line": 333,
+                    "end_line": 376,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4847,8 +4868,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 394,
-                    "end_line": 492,
+                    "line": 381,
+                    "end_line": 479,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4878,8 +4899,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 497,
-                    "end_line": 558,
+                    "line": 484,
+                    "end_line": 545,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5251,8 +5272,8 @@
             "fqcn": "App\\Http\\Controllers\\UserController",
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
-            "line": 24,
-            "end_line": 361,
+            "line": 25,
+            "end_line": 381,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5260,8 +5281,8 @@
             "methods": [
                 {
                     "name": "index",
-                    "line": 30,
-                    "end_line": 44,
+                    "line": 31,
+                    "end_line": 45,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5283,8 +5304,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 49,
-                    "end_line": 116,
+                    "line": 50,
+                    "end_line": 124,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5312,13 +5333,14 @@
                         "Log::error",
                         "getMessage",
                         "ApiResponse::success",
+                        "Log::warning",
                         "ApiResponse::error"
                     ]
                 },
                 {
                     "name": "edit",
-                    "line": 121,
-                    "end_line": 126,
+                    "line": 129,
+                    "end_line": 134,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5335,8 +5357,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 129,
-                    "end_line": 157,
+                    "line": 137,
+                    "end_line": 171,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5352,14 +5374,15 @@
                         "update",
                         "Log::info",
                         "json",
+                        "Log::warning",
                         "Log::error",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "show",
-                    "line": 160,
-                    "end_line": 170,
+                    "line": 174,
+                    "end_line": 184,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -5376,8 +5399,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 175,
-                    "end_line": 190,
+                    "line": 189,
+                    "end_line": 204,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5398,8 +5421,8 @@
                 },
                 {
                     "name": "userWithType",
-                    "line": 198,
-                    "end_line": 303,
+                    "line": 212,
+                    "end_line": 323,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5440,8 +5463,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 305,
-                    "end_line": 317,
+                    "line": 325,
+                    "end_line": 337,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -5457,8 +5480,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 322,
-                    "end_line": 360,
+                    "line": 342,
+                    "end_line": 380,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6672,8 +6695,8 @@
             "fqcn": "App\\Http\\Requests\\UpdateProfileRequest",
             "kind": "class",
             "file": "app/Http/Requests/UpdateProfileRequest.php",
-            "line": 8,
-            "end_line": 79,
+            "line": 9,
+            "end_line": 89,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6681,8 +6704,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 13,
-                    "end_line": 17,
+                    "line": 14,
+                    "end_line": 18,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6692,21 +6715,25 @@
                 },
                 {
                     "name": "rules",
-                    "line": 24,
-                    "end_line": 39,
+                    "line": 25,
+                    "end_line": 48,
                     "visibility": "public",
                     "static": false,
                     "params": [],
                     "returns": "array",
                     "doc": "Get the validation rules that apply to the request.",
                     "calls": [
-                        "user"
+                        "user",
+                        "input",
+                        "Rule::when",
+                        "exists",
+                        "State::where"
                     ]
                 },
                 {
                     "name": "messages",
-                    "line": 46,
-                    "end_line": 57,
+                    "line": 55,
+                    "end_line": 67,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6716,8 +6743,8 @@
                 },
                 {
                     "name": "prepareForValidation",
-                    "line": 64,
-                    "end_line": 78,
+                    "line": 74,
+                    "end_line": 88,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -6858,7 +6885,7 @@
             "kind": "class",
             "file": "app/Http/Requests/UserRequest.php",
             "line": 10,
-            "end_line": 58,
+            "end_line": 57,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6878,7 +6905,7 @@
                 {
                     "name": "rules",
                     "line": 25,
-                    "end_line": 57,
+                    "end_line": 56,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6890,7 +6917,6 @@
                     "calls": [
                         "route",
                         "input",
-                        "whereNull",
                         "ignore",
                         "Rule::unique",
                         "Illuminate\\Validation\\Rule::when",
@@ -7252,7 +7278,7 @@
             "kind": "class",
             "file": "app/Models/Country.php",
             "line": 8,
-            "end_line": 21,
+            "end_line": 24,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -7262,8 +7288,8 @@
             "methods": [
                 {
                     "name": "states",
-                    "line": 17,
-                    "end_line": 20,
+                    "line": 20,
+                    "end_line": 23,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7280,7 +7306,7 @@
                     "method": "states",
                     "type": "hasMany",
                     "target": "State",
-                    "line": 17
+                    "line": 20
                 }
             ]
         },
@@ -9205,7 +9231,7 @@
             "kind": "class",
             "file": "app/Models/State.php",
             "line": 8,
-            "end_line": 21,
+            "end_line": 24,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -9215,8 +9241,8 @@
             "methods": [
                 {
                     "name": "country",
-                    "line": 17,
-                    "end_line": 20,
+                    "line": 20,
+                    "end_line": 23,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9233,7 +9259,7 @@
                     "method": "country",
                     "type": "belongsTo",
                     "target": "Country",
-                    "line": 17
+                    "line": 20
                 }
             ]
         },
@@ -11283,7 +11309,7 @@
             "kind": "class",
             "file": "app/Services/ColorVisionDiagnosisService.php",
             "line": 15,
-            "end_line": 559,
+            "end_line": 550,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -11342,7 +11368,6 @@
                     "returns": "array",
                     "doc": "Route to appropriate calculation based on test type",
                     "calls": [
-                        "isFAATest",
                         "calculateFAATestResult",
                         "isBaselineTest",
                         "calculateBaselineTestResult",
@@ -11351,24 +11376,9 @@
                     ]
                 },
                 {
-                    "name": "isFAATest",
-                    "line": 127,
-                    "end_line": 137,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "array $sections"
-                    ],
-                    "returns": "bool",
-                    "doc": "Check if sections match FAA test pattern",
-                    "calls": [
-                        "normalizeCategoryToNumber"
-                    ]
-                },
-                {
                     "name": "isBaselineTest",
-                    "line": 142,
-                    "end_line": 165,
+                    "line": 127,
+                    "end_line": 150,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11380,8 +11390,8 @@
                 },
                 {
                     "name": "normalizeCategoryToNumber",
-                    "line": 174,
-                    "end_line": 189,
+                    "line": 159,
+                    "end_line": 174,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11393,8 +11403,8 @@
                 },
                 {
                     "name": "calculateSectionSeverity",
-                    "line": 197,
-                    "end_line": 234,
+                    "line": 182,
+                    "end_line": 219,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11408,8 +11418,8 @@
                 },
                 {
                     "name": "isSectionPass",
-                    "line": 242,
-                    "end_line": 262,
+                    "line": 227,
+                    "end_line": 247,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11423,8 +11433,8 @@
                 },
                 {
                     "name": "calculateBaselineTestResult",
-                    "line": 271,
-                    "end_line": 336,
+                    "line": 256,
+                    "end_line": 321,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11441,8 +11451,8 @@
                 },
                 {
                     "name": "calculateFAATestResult",
-                    "line": 346,
-                    "end_line": 391,
+                    "line": 331,
+                    "end_line": 376,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11458,8 +11468,8 @@
                 },
                 {
                     "name": "calculateExtendedTestResult",
-                    "line": 400,
-                    "end_line": 473,
+                    "line": 385,
+                    "end_line": 464,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11475,8 +11485,8 @@
                 },
                 {
                     "name": "calculateSingleSectionResult",
-                    "line": 481,
-                    "end_line": 520,
+                    "line": 472,
+                    "end_line": 511,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11492,8 +11502,8 @@
                 },
                 {
                     "name": "findSection",
-                    "line": 529,
-                    "end_line": 537,
+                    "line": 520,
+                    "end_line": 528,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11508,8 +11518,8 @@
                 },
                 {
                     "name": "findSectionByTypeContains",
-                    "line": 547,
-                    "end_line": 558,
+                    "line": 538,
+                    "end_line": 549,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11775,7 +11785,7 @@
             "kind": "class",
             "file": "app/Services/HubSpotService.php",
             "line": 10,
-            "end_line": 151,
+            "end_line": 158,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -11824,7 +11834,7 @@
                 {
                     "name": "upsertContact",
                     "line": 56,
-                    "end_line": 106,
+                    "end_line": 112,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11845,8 +11855,8 @@
                 },
                 {
                     "name": "createTicket",
-                    "line": 113,
-                    "end_line": 150,
+                    "line": 119,
+                    "end_line": 157,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -19022,16 +19032,6 @@
                     "file": "database/migrations/2026_04_07_122826_add_indexes_to_credits_table.php",
                     "op": "table",
                     "line": 26
-                },
-                {
-                    "file": "database/migrations/2026_04_17_090859_update_source_column_comment_in_credits_table.php",
-                    "op": "table",
-                    "line": 15
-                },
-                {
-                    "file": "database/migrations/2026_04_17_090859_update_source_column_comment_in_credits_table.php",
-                    "op": "table",
-                    "line": 25
                 }
             ]
         },
@@ -20499,499 +20499,511 @@
     ],
     "routes": [
         {
-            "method": "GET",
-            "uri": "",
+            "method": "GET|HEAD",
+            "uri": "/",
             "action": "Closure",
             "middleware": [
                 "web"
             ],
             "name": "",
-            "line": 6,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/admin/lms/dead-letters",
-            "action": "LmsAdminController@deadLetters",
+            "action": "App\\Http\\Controllers\\LmsAdminController@deadLetters",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 257,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/admin/lms/dead-letters/{id}/dismiss",
-            "action": "LmsAdminController@dismiss",
+            "action": "App\\Http\\Controllers\\LmsAdminController@dismiss",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 259,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/admin/lms/dead-letters/{id}/replay",
-            "action": "LmsAdminController@replay",
+            "action": "App\\Http\\Controllers\\LmsAdminController@replay",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 258,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/admin/lms/delivery-status",
-            "action": "LmsAdminController@deliveryStatus",
+            "action": "App\\Http\\Controllers\\LmsAdminController@deliveryStatus",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 260,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/admin/lms/provider-configs",
-            "action": "LmsAdminController@listProviderConfigs",
+            "action": "App\\Http\\Controllers\\LmsAdminController@listProviderConfigs",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 253,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/admin/lms/provider-configs",
-            "action": "LmsAdminController@upsertProviderConfig",
+            "action": "App\\Http\\Controllers\\LmsAdminController@upsertProviderConfig",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 254,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/admin/lms/provider-configs/{id}/rotate-key",
-            "action": "LmsAdminController@rotateSigningKey",
+            "action": "App\\Http\\Controllers\\LmsAdminController@rotateSigningKey",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 256,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/admin/lms/provider-configs/{id}/signing-key",
-            "action": "LmsAdminController@revealSigningKey",
+            "action": "App\\Http\\Controllers\\LmsAdminController@revealSigningKey",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 255,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/contact",
-            "action": "ContactController@submit",
+            "action": "App\\Http\\Controllers\\ContactController@submit",
             "middleware": [
                 "api",
                 "auth:sanctum",
                 "throttle:10,1"
             ],
             "name": "",
-            "line": 249,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/countries-with-states",
-            "action": "DropdownValuesController@getCountriesWithStates",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@getCountriesWithStates",
             "middleware": [
                 "api"
             ],
             "name": "countries.states",
-            "line": 53,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/credits",
-            "action": "CreditsController@index",
+            "action": "App\\Http\\Controllers\\CreditsController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/credits",
-            "action": "CreditsController@store",
+            "action": "App\\Http\\Controllers\\CreditsController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/credits/create",
-            "action": "CreditsController@create",
+            "action": "App\\Http\\Controllers\\CreditsController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/credits/{coupon-code}",
-            "action": "CreditsController@checkDiscountCodeValidity",
+            "action": "App\\Http\\Controllers\\CreditsController@checkDiscountCodeValidity",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "credits.checkDiscountCodeValidity",
-            "line": 176,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/credits/{credit}",
-            "action": "CreditsController@destroy",
+            "action": "App\\Http\\Controllers\\CreditsController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/credits/{credit}",
-            "action": "CreditsController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/credits/{credit}",
-            "action": "CreditsController@update",
+            "action": "App\\Http\\Controllers\\CreditsController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/credits/{credit}",
+            "action": "App\\Http\\Controllers\\CreditsController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "credits.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/credits/{credit}/edit",
-            "action": "CreditsController@edit",
+            "action": "App\\Http\\Controllers\\CreditsController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 175,
-            "source": "ast:resource"
+            "name": "credits.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/discount-codes",
-            "action": "DiscountCodeController@index",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 213,
-            "source": "ast:apiResource"
+            "name": "discount-codes.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/discount-codes",
-            "action": "DiscountCodeController@store",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@store",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "discount-codes.store",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/discount-codes/code-available",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@codeAvailable",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 213,
-            "source": "ast:apiResource"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/discount-codes/form-options",
-            "action": "DiscountCodeController@formOptions",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@formOptions",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 210,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/discount-codes/stats",
-            "action": "DiscountCodeController@stats",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@stats",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 209,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/discount-codes/validate",
-            "action": "DiscountCodeController@validateCode",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@validateCode",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 211,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/discount-codes/{discount_code}",
-            "action": "DiscountCodeController@destroy",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 213,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/discount-codes/{discount_code}",
-            "action": "DiscountCodeController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 213,
-            "source": "ast:apiResource"
+            "name": "discount-codes.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/discount-codes/{discount_code}",
-            "action": "DiscountCodeController@update",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 213,
-            "source": "ast:apiResource"
+            "name": "discount-codes.update",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "DELETE",
+            "uri": "api/discount-codes/{discount_code}",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "discount-codes.destroy",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PATCH",
             "uri": "api/discount-codes/{discount_code}/toggle",
-            "action": "DiscountCodeController@toggle",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@toggle",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 212,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/dropdown/allowed-tests",
-            "action": "DropdownValuesController@activeAllowedTests",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@activeAllowedTests",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 201,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/dropdown/compliances",
-            "action": "DropdownValuesController@activeCompliances",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@activeCompliances",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 200,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/dropdown/organization-settings-options",
-            "action": "DropdownValuesController@activeOrgSettingsOptions",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@activeOrgSettingsOptions",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 203,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/dropdown/organization-types",
-            "action": "DropdownValuesController@activeOrganizationTypes",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@activeOrganizationTypes",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 199,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/dropdown/privileges",
-            "action": "DropdownValuesController@activePrivileges",
+            "action": "App\\Http\\Controllers\\DropdownValuesController@activePrivileges",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 202,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/impersonate/{id}",
-            "action": "AuthController@impersonateUser",
+            "action": "App\\Http\\Controllers\\AuthController@impersonateUser",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 218,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/login",
-            "action": "AuthController@login",
+            "action": "App\\Http\\Controllers\\AuthController@login",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 33,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/logout",
-            "action": "AuthController@logout",
+            "action": "App\\Http\\Controllers\\AuthController@logout",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 191,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/organization/patient/default",
-            "action": "OrganizationPatientController@storeDefaultPatient",
+            "action": "App\\Http\\Controllers\\OrganizationPatientController@storeDefaultPatient",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:launched,identity_resolved"
+                "LmsSessionStatusMiddleware:launched,identity_resolved"
             ],
             "name": "",
-            "line": 84,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/organization/patient/prolific",
-            "action": "OrganizationPatientController@storeProlificPatient",
+            "action": "App\\Http\\Controllers\\OrganizationPatientController@storeProlificPatient",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:launched,identity_resolved"
+                "LmsSessionStatusMiddleware:launched,identity_resolved"
             ],
             "name": "",
-            "line": 82,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organization/patientForm",
-            "action": "OrganizationController@getPatientForm",
+            "action": "App\\Http\\Controllers\\OrganizationController@getPatientForm",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "",
-            "line": 80,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organization/privileges",
-            "action": "OrganizationController@getOrganizationPrivileges",
+            "action": "App\\Http\\Controllers\\OrganizationController@getOrganizationPrivileges",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "organization.privileges",
-            "line": 87,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organization/redirect-url",
-            "action": "OrganizationController@getOrganizationRedirectUrl",
+            "action": "App\\Http\\Controllers\\OrganizationController@getOrganizationRedirectUrl",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "organization.redirect_url",
-            "line": 89,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organization/test",
             "action": "Closure",
             "middleware": [
@@ -21000,1637 +21012,1737 @@
                 "signed"
             ],
             "name": "organization.test",
-            "line": 195,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organization/tests/default",
-            "action": "OrganizationController@getDefaultTests",
+            "action": "App\\Http\\Controllers\\OrganizationController@getDefaultTests",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "",
-            "line": 78,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/organization/verify-signature",
-            "action": "OrganizationController@verifySignature",
+            "action": "App\\Http\\Controllers\\OrganizationController@verifySignature",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 57,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/organizations",
-            "action": "OrganizationController@index",
+            "action": "App\\Http\\Controllers\\OrganizationController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 192,
-            "source": "ast:apiResource"
+            "name": "organizations.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/organizations",
-            "action": "OrganizationController@store",
+            "action": "App\\Http\\Controllers\\OrganizationController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 192,
-            "source": "ast:apiResource"
+            "name": "organizations.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/organizations/{id}/upload-logo",
-            "action": "OrganizationController@uploadLogo",
+            "action": "App\\Http\\Controllers\\OrganizationController@uploadLogo",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 193,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/organizations/{organization}",
-            "action": "OrganizationController@destroy",
+            "action": "App\\Http\\Controllers\\OrganizationController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 192,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/organizations/{organization}",
-            "action": "OrganizationController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 192,
-            "source": "ast:apiResource"
+            "name": "organizations.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/organizations/{organization}",
-            "action": "OrganizationController@update",
+            "action": "App\\Http\\Controllers\\OrganizationController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 192,
-            "source": "ast:apiResource"
+            "name": "organizations.update",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "DELETE",
+            "uri": "api/organizations/{organization}",
+            "action": "App\\Http\\Controllers\\OrganizationController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "organizations.destroy",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT",
             "uri": "api/password/change",
-            "action": "PasswordController@update",
+            "action": "App\\Http\\Controllers\\PasswordController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 135,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/password/forgot",
-            "action": "AuthController@sendResetLinkEmail",
+            "action": "App\\Http\\Controllers\\AuthController@sendResetLinkEmail",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 41,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/password/reset",
-            "action": "AuthController@setOrResetPassword",
+            "action": "App\\Http\\Controllers\\AuthController@setOrResetPassword",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 42,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/password/verify-setup-token",
-            "action": "AuthController@verifySetupToken",
+            "action": "App\\Http\\Controllers\\AuthController@verifySetupToken",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 43,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/patient-tests/{identifier}/revoke-credit",
-            "action": "CreditsController@revokeCredit",
+            "action": "App\\Http\\Controllers\\CreditsController@revokeCredit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 166,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/patients",
-            "action": "PatientController@index",
+            "action": "App\\Http\\Controllers\\PatientController@index",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/patients",
-            "action": "PatientController@store",
+            "action": "App\\Http\\Controllers\\PatientController@store",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/patients/create",
-            "action": "PatientController@create",
+            "action": "App\\Http\\Controllers\\PatientController@create",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/patients/{id}/tests",
-            "action": "PatientController@getPatientTests",
+            "action": "App\\Http\\Controllers\\PatientController@getPatientTests",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 169,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/patients/{patient}",
-            "action": "PatientController@destroy",
+            "action": "App\\Http\\Controllers\\PatientController@show",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/patients/{patient}",
-            "action": "PatientController@show",
-            "middleware": [
-                "api",
-                "FlexibleAuthMiddleware"
-            ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/patients/{patient}",
-            "action": "PatientController@update",
+            "action": "App\\Http\\Controllers\\PatientController@update",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
-            "uri": "api/patients/{patient}/edit",
-            "action": "PatientController@edit",
+            "method": "DELETE",
+            "uri": "api/patients/{patient}",
+            "action": "App\\Http\\Controllers\\PatientController@destroy",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
-            "name": "",
-            "line": 71,
-            "source": "ast:resource"
+            "name": "patients.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/patients/{patient}/edit",
+            "action": "App\\Http\\Controllers\\PatientController@edit",
+            "middleware": [
+                "api",
+                "FlexibleAuthMiddleware"
+            ],
+            "name": "patients.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/payment/confirm",
-            "action": "PaymentController@confirmPayment",
+            "action": "App\\Http\\Controllers\\PaymentController@confirmPayment",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 231,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/payment/initialize",
-            "action": "PaymentController@initializePayment",
+            "action": "App\\Http\\Controllers\\PaymentController@initializePayment",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 230,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/payment/providers",
-            "action": "PaymentController@getProviders",
+            "action": "App\\Http\\Controllers\\PaymentController@getProviders",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 229,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/payment/setup-intent",
-            "action": "PaymentController@createSetupIntent",
+            "action": "App\\Http\\Controllers\\PaymentController@createSetupIntent",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 228,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/payment/webhook/{provider}",
-            "action": "PaymentController@handleWebhook",
+            "action": "App\\Http\\Controllers\\PaymentController@handleWebhook",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 232,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/price-details",
-            "action": "PriceDetailController@index",
+            "action": "App\\Http\\Controllers\\PriceDetailController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 216,
-            "source": "ast:apiResource"
+            "name": "price-details.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/price-details",
-            "action": "PriceDetailController@store",
+            "action": "App\\Http\\Controllers\\PriceDetailController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 216,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "DELETE",
-            "uri": "api/price-details/{price_detail}",
-            "action": "PriceDetailController@destroy",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 216,
-            "source": "ast:apiResource"
+            "name": "price-details.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/price-details/{price_detail}",
-            "action": "PriceDetailController@update",
+            "action": "App\\Http\\Controllers\\PriceDetailController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 216,
-            "source": "ast:apiResource"
+            "name": "price-details.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/price-details/{price_detail}",
+            "action": "App\\Http\\Controllers\\PriceDetailController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "price-details.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/profile",
-            "action": "ProfileController@show",
+            "action": "App\\Http\\Controllers\\ProfileController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 130,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT",
             "uri": "api/profile",
-            "action": "ProfileController@update",
+            "action": "App\\Http\\Controllers\\ProfileController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 131,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/register",
-            "action": "AuthController@register",
+            "action": "App\\Http\\Controllers\\AuthController@register",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 34,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/reports/discount-codes",
-            "action": "ReportController@discountCode",
+            "action": "App\\Http\\Controllers\\ReportController@discountCode",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 238,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/reports/list-patients-having-tests",
-            "action": "ReportController@getPatientsHavingTests",
+            "action": "App\\Http\\Controllers\\ReportController@getPatientsHavingTests",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 236,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/reports/user-tests",
-            "action": "ReportController@userTestsReport",
+            "action": "App\\Http\\Controllers\\ReportController@userTestsReport",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 237,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/resend-test-link",
-            "action": "PatientController@resendTestLink",
+            "action": "App\\Http\\Controllers\\PatientController@resendTestLink",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 147,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/resend-verification-by-token",
-            "action": "AuthController@resendVerificationByToken",
+            "action": "App\\Http\\Controllers\\AuthController@resendVerificationByToken",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 40,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/resend_email_verification_link",
-            "action": "AuthController@resendEmailVerificationLink",
+            "action": "App\\Http\\Controllers\\AuthController@resendEmailVerificationLink",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 39,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/reset-password/{token}",
             "action": "Closure",
             "middleware": [
                 "api"
             ],
             "name": "password.reset",
-            "line": 44,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/restricted-ips",
-            "action": "RestrictedIpController@index",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 180,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/restricted-ips",
-            "action": "RestrictedIpController@index",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 206,
-            "source": "ast:apiResource"
+            "name": "restricted-ips.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/restricted-ips",
-            "action": "RestrictedIpController@store",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 180,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "POST",
-            "uri": "api/restricted-ips",
-            "action": "RestrictedIpController@store",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 206,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "DELETE",
-            "uri": "api/restricted-ips/{id}",
-            "action": "RestrictedIpController@destroy",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 180,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "PUT|PATCH",
-            "uri": "api/restricted-ips/{id}",
-            "action": "RestrictedIpController@update",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 180,
-            "source": "ast:apiResource"
-        },
-        {
-            "method": "DELETE",
-            "uri": "api/restricted-ips/{restricted_ip}",
-            "action": "RestrictedIpController@destroy",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 206,
-            "source": "ast:apiResource"
+            "name": "restricted-ips.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/restricted-ips/{restricted_ip}",
-            "action": "RestrictedIpController@update",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 206,
-            "source": "ast:apiResource"
+            "name": "restricted-ips.update",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "DELETE",
+            "uri": "api/restricted-ips/{restricted_ip}",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "restricted-ips.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "PUT|PATCH",
+            "uri": "api/restricted-ips/{}",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@update",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "update",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "DELETE",
+            "uri": "api/restricted-ips/{}",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "destroy",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/stop-impersonate/{id}",
-            "action": "AuthController@stopImpersonation",
+            "action": "App\\Http\\Controllers\\AuthController@stopImpersonation",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 219,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/stripe/confirm-payment",
-            "action": "StripePaymentController@confirmPayment",
+            "action": "App\\Http\\Controllers\\StripePaymentController@confirmPayment",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 49,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/stripe/create-payment-intent",
-            "action": "StripePaymentController@createPaymentIntent",
+            "action": "App\\Http\\Controllers\\StripePaymentController@createPaymentIntent",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 48,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/stripe/payment-methods",
-            "action": "StripePaymentController@getPaymentMethods",
+            "action": "App\\Http\\Controllers\\StripePaymentController@getPaymentMethods",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 50,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/stripe/payment-methods/set-default",
-            "action": "StripePaymentController@setDefaultPaymentMethod",
+            "action": "App\\Http\\Controllers\\StripePaymentController@setDefaultPaymentMethod",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 51,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "DELETE",
             "uri": "api/stripe/payment-methods/{payment_method_id}",
-            "action": "StripePaymentController@removePaymentMethod",
+            "action": "App\\Http\\Controllers\\StripePaymentController@removePaymentMethod",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 52,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/stripe/transactions",
-            "action": "PaymentController@getTransactions",
+            "action": "App\\Http\\Controllers\\PaymentController@getTransactions",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 225,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/super-admin/dashboard",
-            "action": "SuperAdminDashboardController@index",
+            "action": "App\\Http\\Controllers\\SuperAdminDashboardController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 119,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-email-templates",
-            "action": "TestEmailTemplateController@index",
+            "action": "App\\Http\\Controllers\\TestEmailTemplateController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 185,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-email-templates/placeholders/{type}",
-            "action": "TestEmailTemplateController@getPlaceholders",
+            "action": "App\\Http\\Controllers\\TestEmailTemplateController@getPlaceholders",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 187,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT",
             "uri": "api/test-email-templates/{id}",
-            "action": "TestEmailTemplateController@update",
+            "action": "App\\Http\\Controllers\\TestEmailTemplateController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 186,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test-invitation/check-validity",
-            "action": "TestInvitationController@checkTokenStatus",
+            "action": "App\\Http\\Controllers\\TestInvitationController@checkTokenStatus",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 62,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test-invitation/verify-code",
-            "action": "TestInvitationController@verifyCode",
+            "action": "App\\Http\\Controllers\\TestInvitationController@verifyCode",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 61,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test-invitations/send",
-            "action": "TestInvitationController@sendInvitations",
-            "middleware": [
-                "api"
-            ],
-            "name": "",
-            "line": 60,
-            "source": "ast"
-        },
-        {
-            "method": "GET",
-            "uri": "api/test-invitations/unregistered",
-            "action": "TestInvitationController@getUnregisteredInvitations",
+            "action": "App\\Http\\Controllers\\TestInvitationController@sendInvitations",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 172,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/test-invitations/unregistered",
+            "action": "App\\Http\\Controllers\\TestInvitationController@getUnregisteredInvitations",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test-invitations/{id}/cancel",
-            "action": "TestInvitationController@cancelUnregisteredInvitation",
+            "action": "App\\Http\\Controllers\\TestInvitationController@cancelUnregisteredInvitation",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 174,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test-invitations/{id}/resend",
-            "action": "TestInvitationController@resendUnregisteredInvitation",
+            "action": "App\\Http\\Controllers\\TestInvitationController@resendUnregisteredInvitation",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 173,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-result/{unique_test_id}",
-            "action": "TestController@getTestResult",
+            "action": "App\\Http\\Controllers\\TestController@getTestResult",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "",
-            "line": 103,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-result/{unique_test_id}/download-pdf",
-            "action": "TestController@downloadTestResultPDF",
+            "action": "App\\Http\\Controllers\\TestController@downloadTestResultPDF",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "test.download_pdf",
-            "line": 104,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-session/{unique_test_id}",
-            "action": "TestController@getTestSession",
+            "action": "App\\Http\\Controllers\\TestController@getTestSession",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "",
-            "line": 92,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-session/{unique_test_id}/plate/{test_answer_id}/url",
-            "action": "TestController@getPlateUrl",
+            "action": "App\\Http\\Controllers\\TestController@getPlateUrl",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:test_assigned"
+                "LmsSessionStatusMiddleware:test_assigned"
             ],
             "name": "",
-            "line": 98,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/test-session/{unique_test_id}/section/{section_id}/plates",
-            "action": "TestController@getSectionPlates",
+            "action": "App\\Http\\Controllers\\TestController@getSectionPlates",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:test_assigned"
+                "LmsSessionStatusMiddleware:test_assigned"
             ],
             "name": "",
-            "line": 96,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test/resume",
-            "action": "TestResumeController@resume",
+            "action": "App\\Http\\Controllers\\TestResumeController@resume",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 65,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/test/send-resume-email",
-            "action": "TestResumeController@sendResumeEmail",
+            "action": "App\\Http\\Controllers\\TestResumeController@sendResumeEmail",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "",
-            "line": 69,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests",
-            "action": "TestController@index",
+            "action": "App\\Http\\Controllers\\TestController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
+            "name": "tests.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests",
-            "action": "TestController@store",
+            "action": "App\\Http\\Controllers\\TestController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
+            "name": "tests.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/assign",
-            "action": "TestController@assignTest",
+            "action": "App\\Http\\Controllers\\TestController@assignTest",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:form_submitted"
+                "LmsSessionStatusMiddleware:form_submitted"
             ],
             "name": "",
-            "line": 74,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/check-active",
-            "action": "TestController@getActiveTest",
+            "action": "App\\Http\\Controllers\\TestController@getActiveTest",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:form_submitted,test_assigned"
+                "LmsSessionStatusMiddleware:form_submitted,test_assigned"
             ],
             "name": "",
-            "line": 72,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/create",
-            "action": "TestController@create",
+            "action": "App\\Http\\Controllers\\TestController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
+            "name": "tests.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/perform",
-            "action": "TestController@performTest",
+            "action": "App\\Http\\Controllers\\TestController@performTest",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "lms.status:test_assigned"
+                "LmsSessionStatusMiddleware:test_assigned"
             ],
             "name": "tests.perform",
-            "line": 108,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/result-pdf",
-            "action": "TestController@generateTestResultPDF",
+            "action": "App\\Http\\Controllers\\TestController@generateTestResultPDF",
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
             "name": "tests.resultPdf",
-            "line": 111,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/answers",
-            "action": "TestAnswerController@index",
+            "action": "App\\Http\\Controllers\\TestAnswerController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/{testID}/answers",
-            "action": "TestAnswerController@store",
+            "action": "App\\Http\\Controllers\\TestAnswerController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/answers/create",
-            "action": "TestAnswerController@create",
+            "action": "App\\Http\\Controllers\\TestAnswerController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/answers/{answer}",
-            "action": "TestAnswerController@destroy",
+            "action": "App\\Http\\Controllers\\TestAnswerController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{testID}/answers/{answer}",
-            "action": "TestAnswerController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/tests/{testID}/answers/{answer}",
-            "action": "TestAnswerController@update",
+            "action": "App\\Http\\Controllers\\TestAnswerController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
-            "uri": "api/tests/{testID}/answers/{answer}/edit",
-            "action": "TestAnswerController@edit",
+            "method": "DELETE",
+            "uri": "api/tests/{testID}/answers/{answer}",
+            "action": "App\\Http\\Controllers\\TestAnswerController@destroy",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 142,
-            "source": "ast:resource"
+            "name": "answers.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/answers/{answer}/edit",
+            "action": "App\\Http\\Controllers\\TestAnswerController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "answers.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/{testID}/clone",
-            "action": "TestController@cloneTest",
+            "action": "App\\Http\\Controllers\\TestController@cloneTest",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 145,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/conditions",
-            "action": "TestConditionController@index",
+            "action": "App\\Http\\Controllers\\TestConditionController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/{testID}/conditions",
-            "action": "TestConditionController@store",
+            "action": "App\\Http\\Controllers\\TestConditionController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/conditions/create",
-            "action": "TestConditionController@create",
+            "action": "App\\Http\\Controllers\\TestConditionController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/conditions/{condition}",
-            "action": "TestConditionController@destroy",
+            "action": "App\\Http\\Controllers\\TestConditionController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{testID}/conditions/{condition}",
-            "action": "TestConditionController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/tests/{testID}/conditions/{condition}",
-            "action": "TestConditionController@update",
+            "action": "App\\Http\\Controllers\\TestConditionController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/tests/{testID}/conditions/{condition}",
+            "action": "App\\Http\\Controllers\\TestConditionController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "conditions.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/conditions/{condition}/edit",
-            "action": "TestConditionController@edit",
+            "action": "App\\Http\\Controllers\\TestConditionController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 141,
-            "source": "ast:resource"
+            "name": "conditions.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/section/plates",
-            "action": "TestSectionPlateController@index",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/{testID}/section/plates",
-            "action": "TestSectionPlateController@store",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/section/plates/create",
-            "action": "TestSectionPlateController@create",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/section/plates/{plate}",
-            "action": "TestSectionPlateController@destroy",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{testID}/section/plates/{plate}",
-            "action": "TestSectionPlateController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/tests/{testID}/section/plates/{plate}",
-            "action": "TestSectionPlateController@update",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/tests/{testID}/section/plates/{plate}",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "plates.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/section/plates/{plate}/edit",
-            "action": "TestSectionPlateController@edit",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 144,
-            "source": "ast:resource"
+            "name": "plates.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/sections",
-            "action": "TestSectionController@index",
+            "action": "App\\Http\\Controllers\\TestSectionController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/tests/{testID}/sections",
-            "action": "TestSectionController@store",
+            "action": "App\\Http\\Controllers\\TestSectionController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/sections/create",
-            "action": "TestSectionController@create",
+            "action": "App\\Http\\Controllers\\TestSectionController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/sections/{section}",
-            "action": "TestSectionController@destroy",
+            "action": "App\\Http\\Controllers\\TestSectionController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{testID}/sections/{section}",
-            "action": "TestSectionController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/tests/{testID}/sections/{section}",
-            "action": "TestSectionController@update",
+            "action": "App\\Http\\Controllers\\TestSectionController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/tests/{testID}/sections/{section}",
+            "action": "App\\Http\\Controllers\\TestSectionController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "sections.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/sections/{section}/edit",
-            "action": "TestSectionController@edit",
+            "action": "App\\Http\\Controllers\\TestSectionController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 143,
-            "source": "ast:resource"
+            "name": "sections.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "DELETE",
+            "method": "GET|HEAD",
             "uri": "api/tests/{test}",
-            "action": "TestController@destroy",
+            "action": "App\\Http\\Controllers\\TestController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{test}",
-            "action": "TestController@show",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
+            "name": "tests.show",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/tests/{test}",
-            "action": "TestController@update",
+            "action": "App\\Http\\Controllers\\TestController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
-        },
-        {
-            "method": "GET",
-            "uri": "api/tests/{test}/edit",
-            "action": "TestController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 138,
-            "source": "ast:resource"
+            "name": "tests.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "DELETE",
-            "uri": "api/user-email-template",
-            "action": "UserEmailTemplateController@destroy",
+            "uri": "api/tests/{test}",
+            "action": "App\\Http\\Controllers\\TestController@destroy",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 245,
-            "source": "ast"
+            "name": "tests.destroy",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
+            "uri": "api/tests/{test}/edit",
+            "action": "App\\Http\\Controllers\\TestController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "tests.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/user-email-template",
-            "action": "UserEmailTemplateController@show",
+            "action": "App\\Http\\Controllers\\UserEmailTemplateController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 243,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT",
             "uri": "api/user-email-template",
-            "action": "UserEmailTemplateController@update",
+            "action": "App\\Http\\Controllers\\UserEmailTemplateController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 244,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/user-email-template",
+            "action": "App\\Http\\Controllers\\UserEmailTemplateController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/user/credit-history",
-            "action": "PaymentController@getCreditHistory",
+            "action": "App\\Http\\Controllers\\PaymentController@getCreditHistory",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 227,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/user/credits",
-            "action": "UserController@getUserCredits",
+            "action": "App\\Http\\Controllers\\UserController@getUserCredits",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 163,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/user/tests",
-            "action": "TestController@userIndex",
+            "action": "App\\Http\\Controllers\\TestController@userIndex",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 151,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/user/tests/all",
-            "action": "TestController@getActiveTestsWithAssignmentFlag",
+            "action": "App\\Http\\Controllers\\TestController@getActiveTestsWithAssignmentFlag",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 152,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/user/tests/bulk-update-assignment",
-            "action": "TestController@bulkUpdateAssignment",
+            "action": "App\\Http\\Controllers\\TestController@bulkUpdateAssignment",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 158,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/user/tests/{id}",
-            "action": "TestController@show",
+            "action": "App\\Http\\Controllers\\TestController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 153,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "POST",
+            "uri": "api/user/tests/{id}/assign",
+            "action": "App\\Http\\Controllers\\TestController@assignUserTest",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "DELETE",
             "uri": "api/user/tests/{id}/assign",
-            "action": "TestController@unassignUserTest",
+            "action": "App\\Http\\Controllers\\TestController@unassignUserTest",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 156,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "POST",
-            "uri": "api/user/tests/{id}/assign",
-            "action": "TestController@assignUserTest",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 155,
-            "source": "ast"
-        },
-        {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/users",
-            "action": "UserController@index",
+            "action": "App\\Http\\Controllers\\UserController@index",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "name": "users.index",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/users",
-            "action": "UserController@store",
+            "action": "App\\Http\\Controllers\\UserController@store",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "name": "users.store",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT",
             "uri": "api/users/change-password",
-            "action": "AuthController@changePassword",
+            "action": "App\\Http\\Controllers\\AuthController@changePassword",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "users.changePassword",
-            "line": 122,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/users/create",
-            "action": "UserController@create",
+            "action": "App\\Http\\Controllers\\UserController@create",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "name": "users.create",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/users/type/{usertype}",
-            "action": "UserController@userWithType",
+            "action": "App\\Http\\Controllers\\UserController@userWithType",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "users.withType",
-            "line": 126,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/users/{id}",
-            "action": "UserController@edit",
+            "action": "App\\Http\\Controllers\\UserController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "users.show",
-            "line": 124,
-            "source": "ast"
-        },
-        {
-            "method": "DELETE",
-            "uri": "api/users/{user}",
-            "action": "UserController@destroy",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "PUT|PATCH",
             "uri": "api/users/{user}",
-            "action": "UserController@update",
+            "action": "App\\Http\\Controllers\\UserController@update",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "name": "users.update",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "DELETE",
+            "uri": "api/users/{user}",
+            "action": "App\\Http\\Controllers\\UserController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "users.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/users/{user}/edit",
-            "action": "UserController@edit",
+            "action": "App\\Http\\Controllers\\UserController@edit",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
-            "name": "",
-            "line": 123,
-            "source": "ast:resource"
+            "name": "users.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/validate-token",
-            "action": "AuthController@isTokenValid",
+            "action": "App\\Http\\Controllers\\AuthController@isTokenValid",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 54,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/verify-email-token",
-            "action": "AuthController@verifyEmailByToken",
+            "action": "App\\Http\\Controllers\\AuthController@verifyEmailByToken",
             "middleware": [
                 "api"
             ],
             "name": "",
-            "line": 38,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "api/verify-email/{id}/{hash}",
-            "action": "AuthController@verifyEmail",
+            "action": "App\\Http\\Controllers\\AuthController@verifyEmail",
             "middleware": [
                 "api",
                 "signed"
             ],
             "name": "verification.verify",
-            "line": 35,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
             "uri": "api/verify-password",
-            "action": "AuthController@verifyPassword",
+            "action": "App\\Http\\Controllers\\AuthController@verifyPassword",
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
             "name": "",
-            "line": 204,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
         },
         {
-            "method": "GET",
+            "method": "GET|HEAD",
             "uri": "payment/callback",
-            "action": "StripePaymentController@paymentCallback",
+            "action": "App\\Http\\Controllers\\StripePaymentController@paymentCallback",
             "middleware": [
                 "web"
             ],
             "name": "payment.callback",
-            "line": 10,
-            "source": "ast"
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "sanctum/csrf-cookie",
+            "action": "Laravel\\Sanctum\\Http\\Controllers\\CsrfCookieController@show",
+            "middleware": [
+                "web"
+            ],
+            "name": "sanctum.csrf-cookie",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "storage/{path}",
+            "action": "Closure",
+            "middleware": [],
+            "name": "storage.local",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "PUT",
+            "uri": "storage/{path}",
+            "action": "Closure",
+            "middleware": [],
+            "name": "storage.local.upload",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "up",
+            "action": "Closure",
+            "middleware": [],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/cities",
+            "action": "Nnjeim\\World\\Http\\Controllers\\City\\CityController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "cities.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/countries",
+            "action": "Nnjeim\\World\\Http\\Controllers\\Country\\CountryController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "countries.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/currencies",
+            "action": "Nnjeim\\World\\Http\\Controllers\\Currency\\CurrencyController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "currencies.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/geolocate",
+            "action": "Nnjeim\\World\\Http\\Controllers\\Geolocate\\GeolocateController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization",
+                "Geolocate"
+            ],
+            "name": "geolocate.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/languages",
+            "action": "Nnjeim\\World\\Http\\Controllers\\Language\\LanguageController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "languages.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/states",
+            "action": "Nnjeim\\World\\Http\\Controllers\\State\\StateController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "states.index",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "{prefix?}/timezones",
+            "action": "Nnjeim\\World\\Http\\Controllers\\Timezone\\TimezoneController@index",
+            "middleware": [
+                "throttle:60,1",
+                "Localization"
+            ],
+            "name": "timezones.index",
+            "line": 0,
+            "source": "artisan"
         }
     ],
     "events": [
@@ -22680,5 +22792,5 @@
         }
     ],
     "migration_count": 109,
-    "routes_source": "AST static parse of routes/api.php + routes/web.php (TCV-Backend/vendor absent, so artisan cannot boot)"
+    "routes_source": "artisan route:list --json"
 }

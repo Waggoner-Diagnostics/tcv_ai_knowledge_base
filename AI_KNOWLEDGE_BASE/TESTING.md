@@ -44,9 +44,10 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Lms/` | 5 + 1 fixture trait | **53** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
+| `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 
-**~70 real tests, and they cover exactly three subsystems.** Everything else is untested: auth, the test
+**~73 real tests, and they cover exactly four subsystems.** Everything else is untested: auth, the test
 execution loop, invitations, resume, patients, payments, discounts, reports, organisations.
 
 `tests/Feature/Lms/CreatesLmsFixtures.php` is a **trait**, not a test — it is the shared factory setup.

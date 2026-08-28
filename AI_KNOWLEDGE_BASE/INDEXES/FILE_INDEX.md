@@ -24,7 +24,7 @@
 | [`app/Http/Controllers/ContactController.php`](../../../TCV-Backend/app/Http/Controllers/ContactController.php) | ContactController | 2 |
 | [`app/Http/Controllers/Controller.php`](../../../TCV-Backend/app/Http/Controllers/Controller.php) | Controller | 0 |
 | [`app/Http/Controllers/CreditsController.php`](../../../TCV-Backend/app/Http/Controllers/CreditsController.php) | CreditsController | 6 |
-| [`app/Http/Controllers/DiscountCodeController.php`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php) | DiscountCodeController | 11 |
+| [`app/Http/Controllers/DiscountCodeController.php`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php) | DiscountCodeController | 12 |
 | [`app/Http/Controllers/DropdownValuesController.php`](../../../TCV-Backend/app/Http/Controllers/DropdownValuesController.php) | DropdownValuesController | 7 |
 | [`app/Http/Controllers/LmsAdminController.php`](../../../TCV-Backend/app/Http/Controllers/LmsAdminController.php) | LmsAdminController | 9 |
 | [`app/Http/Controllers/OrganizationController.php`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php) | OrganizationController | 15 |
@@ -135,7 +135,7 @@
 | [`app/Rules/TurnstileToken.php`](../../../TCV-Backend/app/Rules/TurnstileToken.php) | TurnstileToken | 2 |
 | [`app/Services/Audit/AuditLogger.php`](../../../TCV-Backend/app/Services/Audit/AuditLogger.php) | AuditLogger | 1 |
 | [`app/Services/Audit/PricingAuditService.php`](../../../TCV-Backend/app/Services/Audit/PricingAuditService.php) | PricingAuditService | 1 |
-| [`app/Services/ColorVisionDiagnosisService.php`](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php) | ColorVisionDiagnosisService | 14 |
+| [`app/Services/ColorVisionDiagnosisService.php`](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php) | ColorVisionDiagnosisService | 13 |
 | [`app/Services/DiscountCodeService.php`](../../../TCV-Backend/app/Services/DiscountCodeService.php) | DiscountCodeService | 7 |
 | [`app/Services/EmailTemplateService.php`](../../../TCV-Backend/app/Services/EmailTemplateService.php) | EmailTemplateService | 5 |
 | [`app/Services/HubSpotService.php`](../../../TCV-Backend/app/Services/HubSpotService.php) | HubSpotService | 5 |
@@ -193,4 +193,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-19. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._
