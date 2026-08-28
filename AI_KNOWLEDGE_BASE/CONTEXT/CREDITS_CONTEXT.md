@@ -1,6 +1,6 @@
 # Context: Credits
 
-> Load this **instead of** reading the credits subsystem. ~1.4k tokens. Credits are the product's
+> Load this **instead of** reading the credits subsystem. ~1.7k tokens. Credits are the product's
 > currency: one credit ≈ one test.
 
 ## Files
@@ -91,6 +91,23 @@ always **1 credit**, even for a both-eyes (two-row) test, because a monocular pa
 
 `revokeCredit()` also sets every test in the group to `abandoned` and expires the invitation so the
 patient's link stops working.
+
+---
+
+## The client's copy of the balance goes stale
+
+`GET api/user/credits` (`UserController::getUserCredits()`) returns the balance for the **authenticated
+caller only** — a Super Admin cannot push a new figure to the affected user, and there is no
+broadcasting in this stack. The SPA re-fetches instead: `TCV-Frontend/src/hooks/useCreditsSync.js`
+(ws-397, 2026-08-28 — committed, *not yet merged or deployed*) refreshes on mount, on route change, on
+tab focus and on a 60 s visible-only interval, so a grant or revoke shows up without a manual page
+refresh. Details and its gotchas are in [FRONTEND.md](../FRONTEND.md#the-credit-balance-is-polled-not-pushed).
+
+☠️ **That polling multiplies the derived-balance cost.** Every call is two aggregate `SUM`s — there is no
+balance column and the result must not be cached — so each open portal tab now costs one such pair per
+minute on top of its normal traffic. Any work that makes `getAvailableCredits()` heavier (extra joins,
+per-grant expiry logic) is now paid on a timer, not just on page load. Cheapening it is the fix;
+lengthening `POLL_INTERVAL_MS` only trades freshness away.
 
 ---
 

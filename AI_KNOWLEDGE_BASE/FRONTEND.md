@@ -6,7 +6,7 @@ The clinician/admin portal **and** the patient test player. Served under `/app`
 | | |
 |---|---|
 | Stack | React 18 · Redux Toolkit · React Router **v7** · Axios · Bootstrap 5 / React-Bootstrap · Formik + Yup · Stripe.js · Sass |
-| Scale | 248 source files · ~33k lines · 64 top-level routes · 40 Redux slices · 15 hooks |
+| Scale | 252 source files · ~34k lines · 64 top-level routes · 40 Redux slices · 16 hooks |
 | Env | `REACT_APP_BASE_URL`, `REACT_APP_STRIPE_PUBLIC_KEY`, `REACT_APP_TURNSTILE_SITE_KEY`, `PUBLIC_URL` |
 | Build | `react-scripts` (CRA 5) |
 
@@ -158,6 +158,62 @@ double-fires. Not yet fixed.
 
 ---
 
+## The credit balance is polled, not pushed
+
+The header's credit counter is the only piece of Redux state that can be invalidated by **someone
+else's session** — a Super Admin grants or revokes credits from their own login, and the affected
+user's tab has no idea. `Header` mounts once inside `UserPanelLayout`, so before **ws-397** the balance
+was fetched a single time per page load and stayed stale until a manual refresh.
+
+☠️ **There is no push transport in this stack, and adding one is not a small change.** The backend has
+no `config/broadcasting.php` and no Pusher/Reverb dependency; the SPA has no socket, Echo or
+`EventSource`. Do not go looking for a channel to subscribe to — refreshing means re-fetching.
+
+`src/hooks/useCreditsSync.js` (ws-397, 2026-08-28 — committed, *not yet merged or deployed*) owns the
+re-fetching. `Header.js` is its only caller: `useCreditsSync(Boolean(user))`. Four triggers:
+
+| Trigger | Call | Throttled? |
+|---|---|---|
+| mount | `fetchUserCredits({ background: false })` | no — guarded by a `didInitialFetch` ref |
+| `location.pathname` change | `{ background: true }` | 5 s (`MIN_REFRESH_GAP_MS`) |
+| `window` focus · `visibilitychange` → visible | `{ background: true }` | 5 s |
+| `setInterval` 60 s, only while `visibilityState === "visible"` | `{ background: true }` | 5 s |
+
+So "immediately" in the ticket means **instantly on navigation or tab focus, and within 60 s otherwise**.
+It is not real time; do not describe it as such in release notes.
+
+`background: true` lands in `action.meta.arg` and is read by `fetchUserCredits.pending` in
+`slices/userCredits/userCreditSlice.js`, which skips flipping `loading` so the header keeps showing the
+last known number instead of its `—` placeholder while the poll is in flight.
+
+☠️ **`initialized` latches true and nothing ever resets it.** `loading` therefore goes true **exactly
+once per page load** — the first non-background fetch. Every consumer of `state.userCredits.loading`
+(the header's `—`, `HomePage/Home.js`, `CreditPage/CreditPage.js`, `Setting/Profile.js`) shows its
+placeholder only on that first fetch and never again. A spinner that "stopped working" here is this,
+not a broken request.
+
+☠️ **Nothing clears the credits slice on logout.** `useLogOut` dispatches `logoutSuccess` and clears
+storage, but the store is never reset and there is no page reload. Log out and back in as a **different
+user in the same tab** and the header shows the *previous* user's balance until the new fetch resolves —
+with no placeholder, because `initialized` is still true. A hard refresh is what clears it.
+
+☠️ **The effect order inside the hook is load-bearing.** The mount effect is declared *before* the
+`location.pathname` effect, and both run on mount; the mount effect stamps `lastFetchedAt`, so the 5 s
+throttle swallows the route effect's duplicate. Reorder them and every mount fires two requests.
+
+Each poll is `GET api/user/credits` → `UserController::getUserCredits()` → `Credits::getAvailableCredits()`,
+which is **two aggregate `SUM` queries with no balance column and no cache**
+([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). Budget one such pair per open tab per minute before
+shortening `POLL_INTERVAL_MS`.
+
+The hook does not replace the other refresh points, which are still separate and still needed —
+`PatientTestList.js`, `InvitedPatientsTab.js`, `PaymentStatus/PaymentStatus.js` and `Setting/Profile.js`
+each dispatch `fetchUserCredits()` with **no argument** (i.e. foreground), and
+`sendTestInvitation.fulfilled` / `assignTest.fulfilled` write the backend's `credits_remaining` straight
+into the slice without any request at all.
+
+---
+
 ## The test player
 
 Sequential URL flow under `/user-panel/start-test/:testId/`:
@@ -212,6 +268,10 @@ Regenerated every run; the current state:
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
 - **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
   on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).
+- **State another session can change must be re-fetched, not assumed fresh.** Nothing is pushed to the
+  client. Follow `useCreditsSync.js`'s shape — mount + route change + focus/visibility + a visible-only
+  interval, all behind one throttle ref — and pass a `background` flag so a refresh does not flip
+  `loading` and blank the value already on screen.
 - **Adding a page = 3 files**: `protectedRoutes.js`, `routeConfig.js`, and (for user-panel pages)
   `USER_PANEL_WITH_HEADER` in `Router.js`.
 - **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on

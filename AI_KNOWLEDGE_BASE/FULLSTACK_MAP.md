@@ -36,7 +36,7 @@ browser with a Bearer token.
 | **Result / PDF** | `TestResultService` · `ColorVisionDiagnosisService` · dompdf | `pages/UserPannel/ResultPage/` · ⚠️ dead `utils/calculateColorVisionResult.js` | — | [TEST_EXECUTION_CONTEXT](CONTEXT/TEST_EXECUTION_CONTEXT.md) |
 | **Email invitations** | `TestInvitationController` | `redux/slices/tests/sendTestSlice.js` · `pages/UserPannel/SendTestModal/`, `PatientPage/InvitedPatientsTab.js` | — | [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) |
 | **Resume link** | `TestResumeController` | `pages/ResumeTest/ResumeTest.js` | — | [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) |
-| **Credits** | `Credits` · `CreditConsume` · `CreditsController` | `pages/AddCredits.js`, `CreditHistory.js` · `redux/slices/credits/`, `userCredits/` | — | [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
+| **Credits** | `Credits` · `CreditConsume` · `CreditsController` · `UserController::getUserCredits` | `pages/AddCredits.js`, `CreditHistory.js` · `redux/slices/credits/`, `userCredits/` · `hooks/useCreditsSync.js` | — | [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 | **Payments** | `PaymentController` · `StripeProvider` · `StripeService` | `pages/UserPannel/CheckOutPage/`, `PaymentStatus/`, `PaymentResponse/` · `services/paymentProviders/` | — | [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) |
 | **Discount codes** | `DiscountCodeService` · `DiscountCodeController` | `pages/DiscountCodes/` · `redux/slices/discount/` | — | [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) |
 | **Organisations / LMS launch** | `OrganizationController::verifySignature` · `Lms/*` | `pages/Organisation/` · `redux/slices/auth/signatureVerificationSlice.js` · `pages/UserPannel/AddPatient/OrganizationPatient.js` | — | [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md) |
@@ -68,6 +68,12 @@ browser with a Bearer token.
   branch on status. Any change to `Handler.php` is a coordinated two-repo change.
 - **`API_URL` (website, server-only) vs `REACT_APP_BASE_URL` (SPA, browser).** Two different variables
   pointing at the same backend, with opposite exposure rules.
+- **Nothing is pushed from the backend to a client.** No `config/broadcasting.php`, no queue-backed
+  broadcast, no socket or `EventSource` in either front end. State one session changes for **another**
+  user — a Super Admin granting or revoking credits is the live example — becomes visible only when that
+  user's client re-fetches. `TCV-Frontend/src/hooks/useCreditsSync.js` is the reference pattern
+  ([FRONTEND.md](FRONTEND.md#the-credit-balance-is-polled-not-pushed)); a ticket asking for "real time"
+  means choosing a polling cadence, and the endpoint behind it pays that cadence per open tab.
 
 ---
 

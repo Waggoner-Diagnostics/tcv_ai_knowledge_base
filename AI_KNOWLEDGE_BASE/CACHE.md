@@ -31,7 +31,7 @@ for its full 900 s ([S-11](SECURITY.md#s-11--revokeaccess-does-not-revoke-s3-acc
 | Query | Frequency |
 |---|---|
 | `RestrictedIp::where('ip_address', $ip)->exists()` | **every request** ([MIDDLEWARE.md](MIDDLEWARE.md)) |
-| `Credits::getAvailableCredits()` — two aggregate `SUM`s | every balance read, several per flow |
+| `Credits::getAvailableCredits()` — two aggregate `SUM`s | every balance read, several per flow, **plus one per open SPA tab per minute** since ws-397 ([FRONTEND.md](FRONTEND.md#the-credit-balance-is-polled-not-pushed)) |
 | Lookup tables (`countries`, `states`, `compliances`, `privileges`, `organization_types`) | every dropdown call |
 
 These are the obvious caching candidates. Note the store is **the database**, so caching a DB lookup in

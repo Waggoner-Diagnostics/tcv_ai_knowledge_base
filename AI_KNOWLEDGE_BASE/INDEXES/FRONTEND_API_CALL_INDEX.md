@@ -1,6 +1,6 @@
 # Frontend → Backend API Call Index
 
-**87 distinct calls** found across 251 TCV-Frontend source files, matched against the 176 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
+**87 distinct calls** found across 252 TCV-Frontend source files, matched against the 176 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
 
 > **Lower bound, not a census.** These come from a lexical scan for literal `axios*.<verb>('…')`
 > URLs. A URL built at runtime from variables is invisible to it, so *absent from this table*
@@ -80,7 +80,7 @@
 | GET | `/api/user-email-template` | `API-154` UserEmailTemplateController@show | [src/redux/slices/userProfile/userEmailTemplateSlice.js:10](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L10) |
 | PUT | `/api/user-email-template` | `API-155` UserEmailTemplateController@update | [src/redux/slices/userProfile/userEmailTemplateSlice.js:27](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L27) |
 | GET | `/api/user/credit-history` | `API-156` PaymentController@getCreditHistory | [src/redux/slices/creditHistory/creditHistorySlice.js:8](../../../TCV-Frontend/src/redux/slices/creditHistory/creditHistorySlice.js#L8) |
-| GET | `/api/user/credits` | `API-157` UserController@getUserCredits | [src/redux/slices/userCredits/userCreditSlice.js:12](../../../TCV-Frontend/src/redux/slices/userCredits/userCreditSlice.js#L12) |
+| GET | `/api/user/credits` | `API-157` UserController@getUserCredits | [src/redux/slices/userCredits/userCreditSlice.js:14](../../../TCV-Frontend/src/redux/slices/userCredits/userCreditSlice.js#L14) |
 | GET | `/api/user/tests/all` | `API-159` TestController@getActiveTestsWithAssignmentFlag | [src/hooks/useTestAssignment.js:34](../../../TCV-Frontend/src/hooks/useTestAssignment.js#L34) _(+1)_ |
 | POST | `/api/user/tests/bulk-update-assignment` | `API-160` TestController@bulkUpdateAssignment | [src/redux/slices/tests/testAssignmentSlice.js:24](../../../TCV-Frontend/src/redux/slices/tests/testAssignmentSlice.js#L24) |
 | GET | `/api/user/tests/{param}` | `API-161` TestController@show | [src/redux/slices/tests/userTestSlice.js:15](../../../TCV-Frontend/src/redux/slices/tests/userTestSlice.js#L15) |

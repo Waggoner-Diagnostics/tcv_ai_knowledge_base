@@ -29,6 +29,8 @@ Read the row for the thing you are about to change **before** you change it.
 | `Credits::addCreditsToUser()` | Called by admin grant, purchase (`BasePaymentProvider`), and **two** refund paths. It sets `credited_by = auth()->id()` — which is wrong for the invitation-cancel path already |
 | `BasePaymentProvider::createTransactionRecord()` | Creates the `Credits` grant **and** the `Transaction` + `TransactionDetail`. Discount usage is counted from `transaction_details`, so a change here changes discount limits |
 | `price_details` | `DiscountCode::priceTiers()` matches credit packages against it; `PricingAuditService` logs changes |
+| `GET api/user/credits` (`UserController::getUserCredits`) | It is now on a **60 s timer per open SPA tab** (`useCreditsSync.js`, ws-397), not just a page-load call. Slowing it or changing its `data.credits` shape hits the header on every poll ([FRONTEND.md](FRONTEND.md#the-credit-balance-is-polled-not-pushed)) |
+| `slices/userCredits/userCreditSlice.js` `loading` / `initialized` | Four components read that flag (header, `Home.js`, `CreditPage.js`, `Profile.js`). `initialized` latches, so `loading` fires **once per page load** — restoring a per-fetch spinner re-breaks the poll's silent refresh |
 
 ---
 

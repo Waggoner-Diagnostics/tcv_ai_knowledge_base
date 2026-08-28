@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-08-28T16:22:58+02:00",
+    "generated_at": "2026-08-28T19:16:10+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -1288,7 +1288,7 @@
                 "path": "/api/user/credits",
                 "raw": "/api/user/credits",
                 "file": "src/redux/slices/userCredits/userCreditSlice.js",
-                "line": 12,
+                "line": 14,
                 "orphan": false
             },
             {
@@ -1474,6 +1474,7 @@
             "src/hooks/UseAdminLogin.js",
             "src/hooks/useCarousel.js",
             "src/hooks/useClickOutside.js",
+            "src/hooks/useCreditsSync.js",
             "src/hooks/useCurrentTest.js",
             "src/hooks/useEnterToSubmit.js",
             "src/hooks/useErrorHandler.js",
@@ -1494,14 +1495,14 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 251,
+            "source_files": 252,
             "spa_routes": 74,
             "api_calls": 92,
             "slices": 40,
-            "hooks": 15,
+            "hooks": 16,
             "pages": 84,
             "components": 47,
-            "loc": 33939
+            "loc": 34018
         }
     },
     "website": {
