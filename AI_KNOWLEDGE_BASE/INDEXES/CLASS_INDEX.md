@@ -57,7 +57,7 @@
 | `MODEL-017` | `OrganizationPatientSession` | class | Model | [app/Models/OrganizationPatientSession.php:8](../../../TCV-Backend/app/Models/OrganizationPatientSession.php#L8) | 10 |
 | `MODEL-018` | `OrganizationSettingsOption` | class | Model | [app/Models/OrganizationSettingsOption.php:7](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php#L7) | 0 |
 | `MODEL-019` | `OrganizationType` | class | Model | [app/Models/OrganizationType.php:7](../../../TCV-Backend/app/Models/OrganizationType.php#L7) | 0 |
-| `MODEL-020` | `Patient` | class | Model | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | 2 |
+| `MODEL-020` | `Patient` | class | Model | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | 3 |
 | `MODEL-021` | `PatientTest` | class | Model | [app/Models/PatientTest.php:8](../../../TCV-Backend/app/Models/PatientTest.php#L8) | 9 |
 | `MODEL-022` | `PriceDetail` | class | Model | [app/Models/PriceDetail.php:8](../../../TCV-Backend/app/Models/PriceDetail.php#L8) | 0 |
 | `MODEL-023` | `Privilege` | class | Model | [app/Models/Privilege.php:7](../../../TCV-Backend/app/Models/Privilege.php#L7) | 0 |
@@ -103,7 +103,7 @@
 | `SVC-023` | `StripeService` | class | — | [app/Services/StripeService.php:14](../../../TCV-Backend/app/Services/StripeService.php#L14) | 12 |
 | `SVC-024` | `TestAssignmentService` | class | — | [app/Services/TestAssignmentService.php:14](../../../TCV-Backend/app/Services/TestAssignmentService.php#L14) | 9 |
 | `SVC-025` | `TestExecutionService` | class | — | [app/Services/TestExecutionService.php:16](../../../TCV-Backend/app/Services/TestExecutionService.php#L16) | 8 |
-| `SVC-026` | `TestResultService` | class | — | [app/Services/TestResultService.php:12](../../../TCV-Backend/app/Services/TestResultService.php#L12) | 2 |
+| `SVC-026` | `TestResultService` | class | — | [app/Services/TestResultService.php:13](../../../TCV-Backend/app/Services/TestResultService.php#L13) | 2 |
 | `SVC-027` | `TestSectionProgressionService` | class | — | [app/Services/TestSectionProgressionService.php:11](../../../TCV-Backend/app/Services/TestSectionProgressionService.php#L11) | 3 |
 | `SVC-028` | `TestSectionTerminationService` | class | — | [app/Services/TestSectionTerminationService.php:9](../../../TCV-Backend/app/Services/TestSectionTerminationService.php#L9) | 4 |
 | `SVC-029` | `TestService` | class | — | [app/Services/TestService.php:16](../../../TCV-Backend/app/Services/TestService.php#L16) | 10 |
@@ -123,8 +123,8 @@
 | `REQ-006` | `GenerateTestReportRequest` | class | FormRequest | [app/Http/Requests/GenerateTestReportRequest.php:7](../../../TCV-Backend/app/Http/Requests/GenerateTestReportRequest.php#L7) | 1 |
 | `REQ-007` | `OrganizationRequest` | class | FormRequest | [app/Http/Requests/OrganizationRequest.php:7](../../../TCV-Backend/app/Http/Requests/OrganizationRequest.php#L7) | 2 |
 | `REQ-008` | `PartialPaymentRequest` | class | FormRequest | [app/Http/Requests/PartialPaymentRequest.php:7](../../../TCV-Backend/app/Http/Requests/PartialPaymentRequest.php#L7) | 2 |
-| `REQ-009` | `PatientAddRequest` | class | FormRequest | [app/Http/Requests/PatientAddRequest.php:7](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L7) | 3 |
-| `REQ-010` | `PatientUpdateRequest` | class | FormRequest | [app/Http/Requests/PatientUpdateRequest.php:7](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L7) | 2 |
+| `REQ-009` | `PatientAddRequest` | class | FormRequest | [app/Http/Requests/PatientAddRequest.php:8](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L8) | 3 |
+| `REQ-010` | `PatientUpdateRequest` | class | FormRequest | [app/Http/Requests/PatientUpdateRequest.php:8](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L8) | 2 |
 | `REQ-011` | `PerformTestRequest` | class | FormRequest | [app/Http/Requests/PerformTestRequest.php:7](../../../TCV-Backend/app/Http/Requests/PerformTestRequest.php#L7) | 4 |
 | `REQ-012` | `RefundPaymentRequest` | class | FormRequest | [app/Http/Requests/RefundPaymentRequest.php:7](../../../TCV-Backend/app/Http/Requests/RefundPaymentRequest.php#L7) | 2 |
 | `REQ-013` | `StoreDiscountCodeRequest` | class | FormRequest | [app/Http/Requests/StoreDiscountCodeRequest.php:8](../../../TCV-Backend/app/Http/Requests/StoreDiscountCodeRequest.php#L8) | 4 |

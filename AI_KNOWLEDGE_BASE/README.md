@@ -7,35 +7,40 @@ work on the project **without rescanning ~61,700 lines across 506 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `ws-392` · `ws-392` · `website-integration` — ⚠️ backend and frontend are indexed from an **unmerged feature branch**, both strictly ahead of `develop`. See *ws-392 delta* below |
+| **Branches indexed** | `ws-398` · `ws-398` · `ws-website-343` — ⚠️ backend and frontend are indexed from an **unmerged feature branch**, each exactly `develop` + one commit. See *ws-398 delta* below. `TCV-Website` is **unchanged since the last sync** — `ws-website-343` is the pre-merge parent of `website-integration`'s `ce410d5`, identical tree |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `41429345` (2026-08-27) · `TCV-Frontend` `ae74aa7` (2026-08-28) · `TCV-Website` `ce410d5` (2026-08-26) |
-| **Backend scale** | 186 classes/interfaces/traits · 710 methods · 176 API endpoints · 52 tables · 110 migrations |
+| **Code state at sync** | `TCV-Backend` `dbbdfadc` (2026-08-28) · `TCV-Frontend` `73667c1` (2026-08-28) · `TCV-Website` `2166ec0` (2026-08-26, same tree as `ce410d5`) |
+| **Backend scale** | 186 classes/interfaces/traits · 711 methods · 176 API endpoints · 52 tables · 110 migrations |
 | **Client scale** | 64 top-level routes · 40 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
 
-### ⚠️ ws-392 delta — read before trusting the discount-code docs
+### ⚠️ ws-398 delta — what is indexed, and what is no longer
 
-Backend and frontend are indexed from **`ws-392`**, an unmerged feature branch. Both contain all of
-`develop` and add only the discount-code work below, so everything else in this KB describes `develop`
-unchanged. Exactly one documented behaviour is **reversed** relative to `develop`:
+Backend and frontend are indexed from **`ws-398`**, an unmerged feature branch that is exactly
+`develop` **+ one commit** in each repo (`ws=398 add intersex gender on add patient`). Nothing from
+`develop` is missing, so everything else in this KB describes `develop` unchanged. What ws-398 adds:
 
-| Area | `develop` | `ws-392` (indexed here) |
+| Area | `develop` | `ws-398` (indexed here) |
 |---|---|---|
-| `discount_codes.code` | unique index, spanning soft-deleted rows | plain index; **unique dropped** (migration `2026_08_27_000001`, the 110th) |
-| Deleting a code | its name is reserved forever | its name is **released for reuse** |
-| Uniqueness enforced by | the database | **validation only** — `Rule::unique(…)->whereNull('deleted_at')` on the Store *and* Update requests |
-| `GET discount-codes/code-available` | `withTrashed()` | live rows only |
+| `patients.gender` accepted values | `1` Male · `2` Female | `1` Male · `2` Female · **`3` Intersex** (migration `2026_08_28_000001` updates the column comment) |
+| Where the values are defined | duplicated `const GENDER` in both patient FormRequests | **`Patient::GENDERS`**; both requests alias it, so `in:` becomes `1,2,3` |
+| Label mapping | inline ternaries in `TestService` / `TestResultService` (a null gender rendered as `'Female'` in `TestService`) | **`Patient::genderLabel()`**; unknown/null → `null` |
+| SPA gender selector | `["Male", "Female"]` hardcoded in three components | **`GENDER_OPTIONS`** in `src/utils/testUtils.js`, rendered by all three |
 
-Everything else ws-392 adds is client-side validation in `DiscountCodeModal.jsx`
-([FRONTEND.md](FRONTEND.md)). No route, endpoint count, public-route or contract-drift row changes —
-the three derived views are byte-identical to the `develop` run.
+See [CONTEXT/PATIENT_CONTEXT.md](CONTEXT/PATIENT_CONTEXT.md). No route, endpoint count, public-route or
+contract-drift row changes — those three derived views are byte-identical to the `develop` run.
 
-**If ws-392 is abandoned, the reversal above is the only prose to revert**
-([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md), [DATABASE.md](DATABASE.md), [API_INDEX.md](API_INDEX.md))
-plus the migration count.
+**☠️ `ws-392` is no longer indexed.** Earlier syncs of this KB indexed `ws-392` (discount codes). That
+branch is still open and still unmerged, but it is **not** in the tree behind these indexes, so the
+discount-code docs now describe `develop`: `discount_codes.code` **keeps its unique index spanning
+soft-deleted rows**, a deleted code's name stays reserved forever, and
+`GET discount-codes/code-available` uses `withTrashed()`. The passages still flagged `ws-392` in
+[DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md), [DATABASE.md](DATABASE.md), [API_INDEX.md](API_INDEX.md)
+and [TESTING.md](TESTING.md) describe **that unmerged branch, not the indexed tree** — read them as
+"if ws-392 merges". The migration count is 110 either way: ws-392 adds `2026_08_27_000001`, ws-398 adds
+`2026_08_28_000001`.
 
 ---
 

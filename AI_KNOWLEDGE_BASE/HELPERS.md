@@ -79,5 +79,10 @@ Reuse it instead of hand-writing `where LIKE` — it already handles the relatio
 `TCV-Frontend/src/utils/` is the equivalent surface there: `misc.js` (`lazyWithRetry`, `getAllowedRoutes`),
 `dateUtils.js`, `formUtils.js`, `testUtils.js`, `validation.js`, `columns/` and `validationSchema/`.
 
+`testUtils.js` is the SPA's label-mapping single source of truth — `GENDER_OPTIONS` (with
+`getGenderLabel()` / `getGenderValue()` derived from it), `getEyeTestedLabel()`, `formatTestCopy()`,
+`shouldHideTestEyeSelector()`. Its gender list must agree with `Patient::GENDERS` on the backend
+([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md)).
+
 ☠️ `src/utils/calculateColorVisionResult.js` is **dead** — the diagnosis moved to the backend
 ([FULLSTACK_MAP.md](FULLSTACK_MAP.md)).

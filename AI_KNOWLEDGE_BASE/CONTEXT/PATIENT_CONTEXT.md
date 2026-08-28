@@ -6,7 +6,7 @@
 ## Files
 | File | Role |
 |---|---|
-| `app/Models/Patient.php` | 9 fillable columns, two relations |
+| `app/Models/Patient.php` | 9 fillable columns, two relations, `GENDERS` + `genderLabel()` |
 | `app/Http/Controllers/PatientController.php` (432 lines) | CRUD, `getPatientTests()`, `resendTestLink()` |
 | `app/Http/Controllers/OrganizationPatientController.php` (305 lines) | Org/LMS intake (`default`, `prolific`) |
 | `app/Http/Requests/PatientAddRequest.php` · `PatientUpdateRequest.php` | Validation |
@@ -29,6 +29,13 @@
   tenancy boundary in the table.
 - **`patient_id`** — the owner's own external reference (a chart number), free text. Not the primary key.
   `patients.id` is the primary key and is a sequential integer.
+- **`gender`** — nullable tinyInteger: `1` Male · `2` Female · `3` Intersex. The accepted values live
+  once in `Patient::GENDERS` ([CONSTANTS](../INDEXES/CONSTANTS.md)); both patient FormRequests alias it
+  (`const GENDER = Patient::GENDERS`) and build their `in:` rule from its keys, and
+  `Patient::genderLabel()` is the only label mapping (`TestService`, `TestResultService`, and through
+  them the result PDF). Add a gender in the constant and validation, reports and the PDF all follow.
+  `null` means *not specified* and `genderLabel()` returns `null` for it — the org intake paths
+  (`storeDefaultPatient`, `storeProlificPatient`) do not validate gender at all and default it to null.
 - `Patient::tests()` → `hasMany(PatientTest, 'patient_id')` — keyed on `patients.id`, not on the
   `patient_id` column. Two similarly-named things; read carefully.
 
@@ -76,3 +83,9 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
    same person invited twice becomes two `patients` rows with separate test histories.
 6. **`resendTestLink()` lives here, not in `TestInvitationController`** — `POST api/resend-test-link`
    (`auth:sanctum`). If you are changing invitation resend behaviour, there are two places.
+7. **The SPA holds `gender` in two different shapes.** The fallback selector (`AddPatient.js`) stores the
+   *label* — `form.gender === "Male"` — and `usePatientForm.buildPayload()` converts it with
+   `getGenderValue()`. The org/field-rules selector (`PatientFormFields.jsx`) stores the *stringified id*
+   — `form.gender === "1"` — and `formUtils.buildPayload()` ships it as-is. Both land in the same column.
+   `GENDER_OPTIONS` in `src/utils/testUtils.js` is the single list both render from, but check which
+   shape a form is in before comparing `form.gender` to anything.

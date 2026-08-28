@@ -78,6 +78,9 @@ recreates them. **Only `discount_code_users` is live.**
     deleted user's address is **not** reusable. `UserRequest` validates without a
     `whereNull('deleted_at')` clause so validation agrees with the DB ([REQUESTS.md](REQUESTS.md)).
   - **`discount_codes.code` — unique index dropped on `ws-392`** (2026-08-27), leaving a plain index.
+    ☠️ **Not in the indexed tree** — the indexes come from `ws-398` (= `develop`), where the unique
+    index still stands and a deleted code's name stays reserved. The rest of this bullet applies only
+    if ws-392 merges.
     Deleting a code now **releases** its name. Uniqueness moved into `StoreDiscountCodeRequest` /
     `UpdateDiscountCodeRequest` as `Rule::unique(…)->whereNull('deleted_at')`, and
     `DiscountCodeController::codeAvailable()` dropped its `withTrashed()`. ☠️ Nothing below the

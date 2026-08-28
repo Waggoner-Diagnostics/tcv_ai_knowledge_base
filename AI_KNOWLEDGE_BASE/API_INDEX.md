@@ -22,7 +22,7 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 | `api/credits`, `api/user/credits`, `api/patient-tests/*/revoke-credit` | ~9 | `auth:sanctum` | |
 | `api/payment/*` | 5 | `auth:sanctum` | the current payment surface |
 | `api/stripe/*` | 5 | **public** | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) |
-| `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; **live rows only** since `ws-392` — a deleted code's name is reusable) |
+| `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; `withTrashed()` on the indexed tree — a deleted code's name stays reserved. Becomes **live rows only** if `ws-392` merges) |
 | `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design |
 | `api/admin/lms/*` | 8 | `auth:sanctum` | no role check |
 | `api/reports/*`, `api/super-admin/dashboard` | 4 | `auth:sanctum` | no role check |

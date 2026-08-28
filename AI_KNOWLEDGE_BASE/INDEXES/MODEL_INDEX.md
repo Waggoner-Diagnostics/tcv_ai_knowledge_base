@@ -26,7 +26,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-017` | `OrganizationPatientSession` | [app/Models/OrganizationPatientSession.php:8](../../../TCV-Backend/app/Models/OrganizationPatientSession.php#L8) | `HasFactory` | `organization`→Organization, `patient`→Patient, `test`→Test | 10 |
 | `MODEL-018` | `OrganizationSettingsOption` | [app/Models/OrganizationSettingsOption.php:7](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php#L7) | — | — | 0 |
 | `MODEL-019` | `OrganizationType` | [app/Models/OrganizationType.php:7](../../../TCV-Backend/app/Models/OrganizationType.php#L7) | — | — | 0 |
-| `MODEL-020` | `Patient` | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | `HasFactory`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 2 |
+| `MODEL-020` | `Patient` | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | `HasFactory`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 3 |
 | `MODEL-021` | `PatientTest` | [app/Models/PatientTest.php:8](../../../TCV-Backend/app/Models/PatientTest.php#L8) | `HasFactory` | `patient`→Patient, `test`→Test, `testInvitation`→TestInvitation | 9 |
 | `MODEL-022` | `PriceDetail` | [app/Models/PriceDetail.php:8](../../../TCV-Backend/app/Models/PriceDetail.php#L8) | `HasFactory` | — | 0 |
 | `MODEL-023` | `Privilege` | [app/Models/Privilege.php:7](../../../TCV-Backend/app/Models/Privilege.php#L7) | — | — | 0 |

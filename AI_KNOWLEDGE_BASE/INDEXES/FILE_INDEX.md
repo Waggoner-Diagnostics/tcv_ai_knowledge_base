@@ -100,7 +100,7 @@
 | [`app/Models/OrganizationPatientSession.php`](../../../TCV-Backend/app/Models/OrganizationPatientSession.php) | OrganizationPatientSession | 10 |
 | [`app/Models/OrganizationSettingsOption.php`](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php) | OrganizationSettingsOption | 0 |
 | [`app/Models/OrganizationType.php`](../../../TCV-Backend/app/Models/OrganizationType.php) | OrganizationType | 0 |
-| [`app/Models/Patient.php`](../../../TCV-Backend/app/Models/Patient.php) | Patient | 2 |
+| [`app/Models/Patient.php`](../../../TCV-Backend/app/Models/Patient.php) | Patient | 3 |
 | [`app/Models/PatientTest.php`](../../../TCV-Backend/app/Models/PatientTest.php) | PatientTest | 9 |
 | [`app/Models/PriceDetail.php`](../../../TCV-Backend/app/Models/PriceDetail.php) | PriceDetail | 0 |
 | [`app/Models/Privilege.php`](../../../TCV-Backend/app/Models/Privilege.php) | Privilege | 0 |

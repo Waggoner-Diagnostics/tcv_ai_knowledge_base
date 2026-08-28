@@ -18,7 +18,7 @@ the only authority before you write a migration against a column.
 | `TABLE-008` | `discount_code_price_tiers` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
 | `TABLE-009` | `discount_code_user` | 2 | `2025_06_26_092920_create_discount_code_user_table.php` | 3 |
 | `TABLE-010` | `discount_code_users` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
-| `TABLE-011` | `discount_codes` | 25 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 13 |
+| `TABLE-011` | `discount_codes` | 25 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 11 |
 | `TABLE-012` | `email_template` | 6 | `2026_03_09_090021_create_email_template_table.php` | 2 |
 | `TABLE-013` | `failed_jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
 | `TABLE-014` | `job_batches` | 10 | `0001_01_01_000002_create_jobs_table.php` | 2 |
@@ -34,7 +34,7 @@ the only authority before you write a migration against a column.
 | `TABLE-024` | `organizations` | 33 | `2025_06_19_104358_create_organizations.php` | 5 |
 | `TABLE-025` | `password_reset_tokens` | 3 | `0001_01_01_000001_create_users_table.php` | 2 |
 | `TABLE-026` | `patient_tests` | 21 | `2025_06_23_131210_create_patient_tests_table.php` | 20 |
-| `TABLE-027` | `patients` | 17 | `2025_06_23_085520_create_patients_table.php` | 6 |
+| `TABLE-027` | `patients` | 19 | `2025_06_23_085520_create_patients_table.php` | 8 |
 | `TABLE-028` | `personal_access_tokens` | 5 | `2025_06_09_101232_create_personal_access_tokens_table.php` | 2 |
 | `TABLE-029` | `price_details` | 3 | `2025_06_24_100030_create_price_details_table.php` | 2 |
 | `TABLE-030` | `pricing_audit_logs` | 6 | `2026_01_27_112600_create_pricing_audit_logs_table.php` | 2 |

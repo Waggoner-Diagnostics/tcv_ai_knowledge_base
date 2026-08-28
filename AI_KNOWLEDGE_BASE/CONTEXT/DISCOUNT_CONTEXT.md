@@ -113,7 +113,12 @@ owns** — add a field without adding it there and that field silently survives 
    assume you are holding a float.
 
 **Deleting a discount code releases its name for reuse** — reversed on `ws-392` (2026-08-27), and this
-is the opposite of how it behaved on `develop`:
+is the opposite of how it behaved on `develop`.
+
+> ☠️ **`ws-392` is not the indexed tree.** This KB is generated from `ws-398` (= `develop` + the
+> intersex-gender commit), so the **`develop`** column below is what the indexes describe. The branch is
+> still open and unmerged — read the `ws-392` column as "if ws-392 merges".
+> See [README](../README.md#-ws-398-delta--what-is-indexed-and-what-is-no-longer).
 
 | | `develop` (≤ 2026-08-26) | **`ws-392`** |
 |---|---|---|

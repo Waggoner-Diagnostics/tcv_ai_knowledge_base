@@ -1,20 +1,20 @@
 {
-    "generated_at": "2026-08-28T11:53:15+02:00",
+    "generated_at": "2026-08-28T16:21:46+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "41429345",
-            "branch": "ws-392",
-            "date": "2026-08-27"
+            "sha": "dbbdfadc",
+            "branch": "ws-398",
+            "date": "2026-08-28"
         },
         "frontend": {
-            "sha": "ae74aa7",
-            "branch": "ws-392",
+            "sha": "73667c1",
+            "branch": "ws-398",
             "date": "2026-08-28"
         },
         "website": {
-            "sha": "ce410d5",
-            "branch": "website-integration",
+            "sha": "2166ec0",
+            "branch": "ws-website-343",
             "date": "2026-08-26"
         }
     },
@@ -1567,7 +1567,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
             "line": 18,
-            "end_line": 253,
+            "end_line": 255,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1775,7 +1775,7 @@
                 {
                     "name": "codeAvailable",
                     "line": 204,
-                    "end_line": 219,
+                    "end_line": 221,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1788,14 +1788,15 @@
                         "json",
                         "exists",
                         "when",
-                        "DiscountCode::where",
+                        "where",
+                        "DiscountCode::withTrashed",
                         "whereKeyNot"
                     ]
                 },
                 {
                     "name": "formatDiscount",
-                    "line": 223,
-                    "end_line": 252,
+                    "line": 225,
+                    "end_line": 254,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6168,8 +6169,8 @@
             "fqcn": "App\\Http\\Requests\\PatientAddRequest",
             "kind": "class",
             "file": "app/Http/Requests/PatientAddRequest.php",
-            "line": 7,
-            "end_line": 38,
+            "line": 8,
+            "end_line": 37,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6177,8 +6178,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 13,
-                    "end_line": 16,
+                    "line": 12,
+                    "end_line": 15,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6188,8 +6189,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 18,
-                    "end_line": 32,
+                    "line": 17,
+                    "end_line": 31,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6199,8 +6200,8 @@
                 },
                 {
                     "name": "failedValidation",
-                    "line": 34,
-                    "end_line": 37,
+                    "line": 33,
+                    "end_line": 36,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6214,8 +6215,8 @@
             "constants": [
                 {
                     "name": "GENDER",
-                    "value": "[…]",
-                    "line": 9
+                    "value": "",
+                    "line": 11
                 }
             ],
             "relations": []
@@ -6225,8 +6226,8 @@
             "fqcn": "App\\Http\\Requests\\PatientUpdateRequest",
             "kind": "class",
             "file": "app/Http/Requests/PatientUpdateRequest.php",
-            "line": 7,
-            "end_line": 33,
+            "line": 8,
+            "end_line": 32,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6234,8 +6235,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 13,
-                    "end_line": 16,
+                    "line": 12,
+                    "end_line": 15,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6245,8 +6246,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 18,
-                    "end_line": 32,
+                    "line": 17,
+                    "end_line": 31,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6260,8 +6261,8 @@
             "constants": [
                 {
                     "name": "GENDER",
-                    "value": "[…]",
-                    "line": 9
+                    "value": "",
+                    "line": 11
                 }
             ],
             "relations": []
@@ -6399,7 +6400,6 @@
                     "returns": "array",
                     "doc": "",
                     "calls": [
-                        "whereNull",
                         "Rule::unique",
                         "Rule::in"
                     ]
@@ -8882,7 +8882,7 @@
             "kind": "class",
             "file": "app/Models/Patient.php",
             "line": 9,
-            "end_line": 40,
+            "end_line": 71,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -8892,9 +8892,22 @@
             "doc": "",
             "methods": [
                 {
+                    "name": "genderLabel",
+                    "line": 47,
+                    "end_line": 54,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "$gender"
+                    ],
+                    "returns": "?string",
+                    "doc": "Human readable label for a stored gender value.",
+                    "calls": []
+                },
+                {
                     "name": "user",
-                    "line": 28,
-                    "end_line": 31,
+                    "line": 59,
+                    "end_line": 62,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8906,8 +8919,8 @@
                 },
                 {
                     "name": "tests",
-                    "line": 36,
-                    "end_line": 39,
+                    "line": 67,
+                    "end_line": 70,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8918,19 +8931,40 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "GENDER_MALE",
+                    "value": "1",
+                    "line": 13
+                },
+                {
+                    "name": "GENDER_FEMALE",
+                    "value": "2",
+                    "line": 14
+                },
+                {
+                    "name": "GENDER_INTERSEX",
+                    "value": "3",
+                    "line": 15
+                },
+                {
+                    "name": "GENDERS",
+                    "value": "[…]",
+                    "line": 23
+                }
+            ],
             "relations": [
                 {
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 28
+                    "line": 59
                 },
                 {
                     "method": "tests",
                     "type": "hasMany",
                     "target": "PatientTest",
-                    "line": 36
+                    "line": 67
                 }
             ]
         },
@@ -14468,8 +14502,8 @@
             "fqcn": "App\\Services\\TestResultService",
             "kind": "class",
             "file": "app/Services/TestResultService.php",
-            "line": 12,
-            "end_line": 137,
+            "line": 13,
+            "end_line": 138,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -14477,8 +14511,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 16,
-                    "end_line": 19,
+                    "line": 17,
+                    "end_line": 20,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14490,8 +14524,8 @@
                 },
                 {
                     "name": "generateTestResult",
-                    "line": 26,
-                    "end_line": 136,
+                    "line": 27,
+                    "end_line": 137,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14517,7 +14551,8 @@
                         "value",
                         "OrganizationSettingsOption::where",
                         "with",
-                        "Organization::where"
+                        "Organization::where",
+                        "Patient::genderLabel"
                     ]
                 }
             ],
@@ -14731,6 +14766,7 @@
                         "Test::findOrFail",
                         "get",
                         "TestSection::where",
+                        "Patient::genderLabel",
                         "toDateString",
                         "count",
                         "TestAnswer::where"
@@ -17885,6 +17921,16 @@
                     "name": "test_condition",
                     "type": "tinyInteger",
                     "migration": "database/migrations/2026_02_18_082947_alter_test_condition_nullable_in_patients_table.php"
+                },
+                {
+                    "name": "gender",
+                    "type": "tinyInteger",
+                    "migration": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php"
+                },
+                {
+                    "name": "gender",
+                    "type": "tinyInteger",
+                    "migration": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php"
                 }
             ],
             "foreign_keys": [
@@ -17924,6 +17970,16 @@
                     "file": "database/migrations/2026_02_18_082947_alter_test_condition_nullable_in_patients_table.php",
                     "op": "table",
                     "line": 23
+                },
+                {
+                    "file": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php",
+                    "op": "table",
+                    "line": 17
+                },
+                {
+                    "file": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php",
+                    "op": "table",
+                    "line": 24
                 }
             ]
         },
@@ -18483,16 +18539,6 @@
                     "kind": "unique",
                     "column": "",
                     "migration": "database/migrations/2026_04_17_000001_rebuild_discount_codes_system.php"
-                },
-                {
-                    "kind": "index",
-                    "column": "code",
-                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
-                },
-                {
-                    "kind": "unique",
-                    "column": "code",
-                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
                 }
             ],
             "migrations": [
@@ -18550,16 +18596,6 @@
                     "file": "database/migrations/2026_04_23_135313_modify_max_uses_per_user_nullable_on_discount_codes_table.php",
                     "op": "table",
                     "line": 17
-                },
-                {
-                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
-                    "op": "table",
-                    "line": 18
-                },
-                {
-                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
-                    "op": "table",
-                    "line": 31
                 }
             ]
         },

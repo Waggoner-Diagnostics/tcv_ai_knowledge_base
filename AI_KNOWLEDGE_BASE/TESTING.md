@@ -86,7 +86,7 @@ npm test -- --testPathPattern=src/App.test.js
 
 | File | Tests | Covers |
 |---|---|---|
-| `src/components/DiscountCodeModal.test.js` | **35** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (`ws-392`) |
+| `src/components/DiscountCodeModal.test.js` | **35** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (`ws-392` — not in the indexed tree) |
 | `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |
 | `src/utils/sliderUtils.test.js` | 4 | slider helpers |
 | `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |

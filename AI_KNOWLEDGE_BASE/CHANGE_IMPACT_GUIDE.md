@@ -79,6 +79,7 @@ Read the row for the thing you are about to change **before** you change it.
 | `usertype` values | backend + `dataObjects.js` + `routeConfig.js` |
 | `error_code` strings | backend middleware + `services/errorHandler.js`'s `errorCodeMap` |
 | Org patient-form fields | `organizations` column + `getPatientForm()` + the SPA renderer |
+| Patient `gender` values | `Patient::GENDERS` (drives both FormRequests' `in:` rule and `genderLabel()`) + `GENDER_OPTIONS` in the SPA's `testUtils.js` — two lists, one per repo, that must agree |
 | Adding an SPA page | `protectedRoutes.js` + `routeConfig.js` + `USER_PANEL_WITH_HEADER` |
 | Login/registration payload | backend + SPA + **the website's proxy routes** |
 
@@ -91,6 +92,7 @@ ApiResponse::            HttpStatus::            Credits::getAvailableCredits
 CreditConsume::consume   unique_test_id          parent_test_id
 FlexibleAuthMiddleware   lms.status              tokenCan(
 frontend_app_url         SKIP_                   result_json
+Patient::GENDERS         GENDER_OPTIONS          genderLabel(
 ```
 
 ---

@@ -45,13 +45,13 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `GENDER` | `[…]` | [9](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L9) |
+| `GENDER` | — | [11](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L11) |
 
 ### `PatientUpdateRequest` — `app/Http/Requests/PatientUpdateRequest.php`
 
 | Constant | Value | Line |
 |---|---|---|
-| `GENDER` | `[…]` | [9](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L9) |
+| `GENDER` | — | [11](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L11) |
 
 ### `CreditConsume` — `app/Models/CreditConsume.php`
 
@@ -99,6 +99,15 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `STATUS_REPORTED` | `'reported'` | [23](../../../TCV-Backend/app/Models/LmsSession.php#L23) |
 | `STATUS_FAILED` | `'failed'` | [24](../../../TCV-Backend/app/Models/LmsSession.php#L24) |
 | `TERMINAL_STATUSES` | `[…]` | [27](../../../TCV-Backend/app/Models/LmsSession.php#L27) |
+
+### `Patient` — `app/Models/Patient.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `GENDER_MALE` | `1` | [13](../../../TCV-Backend/app/Models/Patient.php#L13) |
+| `GENDER_FEMALE` | `2` | [14](../../../TCV-Backend/app/Models/Patient.php#L14) |
+| `GENDER_INTERSEX` | `3` | [15](../../../TCV-Backend/app/Models/Patient.php#L15) |
+| `GENDERS` | `[…]` | [23](../../../TCV-Backend/app/Models/Patient.php#L23) |
 
 ### `PatientTest` — `app/Models/PatientTest.php`
 

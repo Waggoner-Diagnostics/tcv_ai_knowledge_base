@@ -1,6 +1,6 @@
 # Method Index
 
-**710 methods across 186 classes.**
+**711 methods across 186 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -182,7 +182,7 @@ method — several controllers here run 400–900 lines.
 | DiscountCodeController | [`formOptions()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L171) | 171 | public | — | JsonResponse |
 | DiscountCodeController | [`stats()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L192) | 192 | public | — | JsonResponse |
 | DiscountCodeController | [`codeAvailable()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L204) | 204 | public | `Request $request` | JsonResponse |
-| DiscountCodeController | [`formatDiscount()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L223) | 223 | private | `DiscountCode $discount` | array |
+| DiscountCodeController | [`formatDiscount()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L225) | 225 | private | `DiscountCode $discount` | array |
 
 ### `app/Http/Controllers/DropdownValuesController.php`
 
@@ -545,16 +545,16 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PatientAddRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L13) | 13 | public | — | bool |
-| PatientAddRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L18) | 18 | public | — | array |
-| PatientAddRequest | [`failedValidation()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L34) | 34 | public | `Illuminate\Contracts\Validation\Validator $validator` | — |
+| PatientAddRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L12) | 12 | public | — | bool |
+| PatientAddRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L17) | 17 | public | — | array |
+| PatientAddRequest | [`failedValidation()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L33) | 33 | public | `Illuminate\Contracts\Validation\Validator $validator` | — |
 
 ### `app/Http/Requests/PatientUpdateRequest.php`
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PatientUpdateRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L13) | 13 | public | — | bool |
-| PatientUpdateRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L18) | 18 | public | — | array |
+| PatientUpdateRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L12) | 12 | public | — | bool |
+| PatientUpdateRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L17) | 17 | public | — | array |
 
 ### `app/Http/Requests/PerformTestRequest.php`
 
@@ -869,8 +869,9 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| Patient | [`user()`](../../../TCV-Backend/app/Models/Patient.php#L28) | 28 | public | — | — |
-| Patient | [`tests()`](../../../TCV-Backend/app/Models/Patient.php#L36) | 36 | public | — | — |
+| Patient | [`genderLabel()`](../../../TCV-Backend/app/Models/Patient.php#L47) | 47 | public static | `$gender` | ?string |
+| Patient | [`user()`](../../../TCV-Backend/app/Models/Patient.php#L59) | 59 | public | — | — |
+| Patient | [`tests()`](../../../TCV-Backend/app/Models/Patient.php#L67) | 67 | public | — | — |
 
 ### `app/Models/PatientTest.php`
 
@@ -1430,8 +1431,8 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| TestResultService | [`__construct()`](../../../TCV-Backend/app/Services/TestResultService.php#L16) | 16 | public | `ColorVisionDiagnosisService $diagnosisService` | — |
-| TestResultService | [`generateTestResult()`](../../../TCV-Backend/app/Services/TestResultService.php#L26) | 26 | public | `PatientTest $patientTest` | array |
+| TestResultService | [`__construct()`](../../../TCV-Backend/app/Services/TestResultService.php#L17) | 17 | public | `ColorVisionDiagnosisService $diagnosisService` | — |
+| TestResultService | [`generateTestResult()`](../../../TCV-Backend/app/Services/TestResultService.php#L27) | 27 | public | `PatientTest $patientTest` | array |
 
 ### `app/Services/TestSectionProgressionService.php`
 
