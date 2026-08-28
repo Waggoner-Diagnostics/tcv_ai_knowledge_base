@@ -72,11 +72,16 @@ recreates them. **Only `discount_code_users` is live.**
 - Only **four** models soft-delete: `User`, `Patient`, `DiscountCode`, `LmsProviderConfig`. A
   soft-deleted parent silently drops children from any query that joins through it —
   [PATIENT_CONTEXT trap 3](CONTEXT/PATIENT_CONTEXT.md).
-  **Soft-deleted rows still hold their unique keys.** `users.email` and `discount_codes.code` carry plain
-  unique indexes that the DB enforces regardless of `deleted_at`, so a deleted user's address and a
-  deleted code's name are **not** reusable. Both call sites now say so rather than 500-ing:
-  `UserRequest` validates without a `whereNull('deleted_at')` clause ([REQUESTS.md](REQUESTS.md)) and
-  `DiscountCodeController::codeAvailable()` queries `withTrashed()`.
+  **A soft-deleted row keeps its unique keys — where a unique index still exists.** The two cases now
+  diverge, so check which one you are in:
+  - **`users.email` — still uniquely indexed.** The DB enforces it regardless of `deleted_at`, so a
+    deleted user's address is **not** reusable. `UserRequest` validates without a
+    `whereNull('deleted_at')` clause so validation agrees with the DB ([REQUESTS.md](REQUESTS.md)).
+  - **`discount_codes.code` — unique index dropped on `ws-392`** (2026-08-27), leaving a plain index.
+    Deleting a code now **releases** its name. Uniqueness moved into `StoreDiscountCodeRequest` /
+    `UpdateDiscountCodeRequest` as `Rule::unique(…)->whereNull('deleted_at')`, and
+    `DiscountCodeController::codeAvailable()` dropped its `withTrashed()`. ☠️ Nothing below the
+    FormRequests enforces it any more — see [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md).
 - **`countries` and `states` have no `created_at`/`updated_at`.** They come from the `nnjeim/world`
   package, so `Country` and `State` set `public $timestamps = false` (2026-08-27). Writing to either
   model without that flag throws `Unknown column 'updated_at'`. Treat the whole `nnjeim/world` set as

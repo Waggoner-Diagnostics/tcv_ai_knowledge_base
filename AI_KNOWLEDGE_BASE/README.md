@@ -7,14 +7,35 @@ work on the project **without rescanning ~61,700 lines across 506 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` (identical to the website's `develop` at `ce410d5`) |
+| **Branches indexed** | `ws-392` · `ws-392` · `website-integration` — ⚠️ backend and frontend are indexed from an **unmerged feature branch**, both strictly ahead of `develop`. See *ws-392 delta* below |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `26ba2022` (2026-08-27) · `TCV-Frontend` `875cfb6` (2026-08-27) · `TCV-Website` `ce410d5` (2026-08-26) |
-| **Backend scale** | 186 classes/interfaces/traits · 710 methods · 176 API endpoints · 52 tables · 109 migrations |
+| **Code state at sync** | `TCV-Backend` `41429345` (2026-08-27) · `TCV-Frontend` `ae74aa7` (2026-08-28) · `TCV-Website` `ce410d5` (2026-08-26) |
+| **Backend scale** | 186 classes/interfaces/traits · 710 methods · 176 API endpoints · 52 tables · 110 migrations |
 | **Client scale** | 64 top-level routes · 40 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
+
+### ⚠️ ws-392 delta — read before trusting the discount-code docs
+
+Backend and frontend are indexed from **`ws-392`**, an unmerged feature branch. Both contain all of
+`develop` and add only the discount-code work below, so everything else in this KB describes `develop`
+unchanged. Exactly one documented behaviour is **reversed** relative to `develop`:
+
+| Area | `develop` | `ws-392` (indexed here) |
+|---|---|---|
+| `discount_codes.code` | unique index, spanning soft-deleted rows | plain index; **unique dropped** (migration `2026_08_27_000001`, the 110th) |
+| Deleting a code | its name is reserved forever | its name is **released for reuse** |
+| Uniqueness enforced by | the database | **validation only** — `Rule::unique(…)->whereNull('deleted_at')` on the Store *and* Update requests |
+| `GET discount-codes/code-available` | `withTrashed()` | live rows only |
+
+Everything else ws-392 adds is client-side validation in `DiscountCodeModal.jsx`
+([FRONTEND.md](FRONTEND.md)). No route, endpoint count, public-route or contract-drift row changes —
+the three derived views are byte-identical to the `develop` run.
+
+**If ws-392 is abandoned, the reversal above is the only prose to revert**
+([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md), [DATABASE.md](DATABASE.md), [API_INDEX.md](API_INDEX.md))
+plus the migration count.
 
 ---
 

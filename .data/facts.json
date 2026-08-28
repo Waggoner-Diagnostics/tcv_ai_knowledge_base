@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-08-28T11:47:33+02:00",
+    "generated_at": "2026-08-28T11:53:15+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "26ba2022",
-            "branch": "develop",
+            "sha": "41429345",
+            "branch": "ws-392",
             "date": "2026-08-27"
         },
         "frontend": {
-            "sha": "875cfb6",
-            "branch": "develop",
-            "date": "2026-08-27"
+            "sha": "ae74aa7",
+            "branch": "ws-392",
+            "date": "2026-08-28"
         },
         "website": {
             "sha": "ce410d5",
@@ -1567,7 +1567,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
             "line": 18,
-            "end_line": 255,
+            "end_line": 253,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1775,7 +1775,7 @@
                 {
                     "name": "codeAvailable",
                     "line": 204,
-                    "end_line": 221,
+                    "end_line": 219,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1788,15 +1788,14 @@
                         "json",
                         "exists",
                         "when",
-                        "where",
-                        "DiscountCode::withTrashed",
+                        "DiscountCode::where",
                         "whereKeyNot"
                     ]
                 },
                 {
                     "name": "formatDiscount",
-                    "line": 225,
-                    "end_line": 254,
+                    "line": 223,
+                    "end_line": 252,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6400,6 +6399,7 @@
                     "returns": "array",
                     "doc": "",
                     "calls": [
+                        "whereNull",
                         "Rule::unique",
                         "Rule::in"
                     ]
@@ -18483,6 +18483,16 @@
                     "kind": "unique",
                     "column": "",
                     "migration": "database/migrations/2026_04_17_000001_rebuild_discount_codes_system.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "code",
+                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
+                },
+                {
+                    "kind": "unique",
+                    "column": "code",
+                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
                 }
             ],
             "migrations": [
@@ -18540,6 +18550,16 @@
                     "file": "database/migrations/2026_04_23_135313_modify_max_uses_per_user_nullable_on_discount_codes_table.php",
                     "op": "table",
                     "line": 17
+                },
+                {
+                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
+                    "op": "table",
+                    "line": 18
+                },
+                {
+                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
+                    "op": "table",
+                    "line": 31
                 }
             ]
         },
@@ -22791,6 +22811,6 @@
             "line": 172
         }
     ],
-    "migration_count": 109,
+    "migration_count": 110,
     "routes_source": "artisan route:list --json"
 }

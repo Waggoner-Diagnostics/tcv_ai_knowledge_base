@@ -53,6 +53,41 @@ Codes are matched **upper-cased and trimmed**. Store them upper-cased or lookups
 
 ---
 
+## Client-side form rules (`DiscountCodeModal.jsx`, `ws-392`)
+
+The admin create/edit drawer enforces its own bounds *before* the API sees them. None of this is
+mirrored server-side — `StoreDiscountCodeRequest` only checks `numeric, min:0.01` — so these are UI
+guard-rails, not a contract. A non-SPA client can still post values the drawer would refuse.
+
+**Bounds come from the pricing table, not from constants.** `getOrderBounds(priceTiers)` derives:
+- `min` = cheapest tier's `from × price_per_credit`
+- `max` = dearest tier's `to × price_per_credit`
+
+Because the rate falls as volume rises, **neither bound can be read off credits or price alone** — each
+has to come from the tier it belongs to. Those two figures bound both the **fixed** discount value and
+`minimum_order_amount`, and are quoted in each field's placeholder so the hint cannot drift from the
+rule. With no tiers loaded both fall back (`min:0`, no max). Percentages are bounded by constants
+instead: **0.1 – 100**.
+
+☠️ **Keystroke filtering enforces the ceiling only — never the floor.** `exceedsLimits()` refuses a
+keystroke that would exceed the max, add a third decimal, or run past the length of the ceiling written
+out (`$4,500.00` → 8 characters is a typo). A floor is deliberately *not* applied while typing: `0.1`
+has to be reachable by typing `0` then `0.`, and `29.60` by passing through `2` and `29`. The floor is
+reported by the Yup schema on submit. Adding a floor to `exceedsLimits()` makes the smallest valid
+discount impossible to enter.
+
+The decimal count is taken from the **raw text**, not the parsed number — `29.605` parses to an ordinary
+float and by then the extra digit is invisible. The length cap lives here because
+`<input type="number">` ignores `maxLength`.
+
+☠️ **Switching discount type resets the whole form**, keeping only `code` (and its duplicate warning):
+20% off and $20 off are different offers, and every limit, date and restriction was chosen against the
+type being abandoned. `resetForm()` also clears `touched`/`errors`, which is what stops a stale
+"Cannot exceed 100%." surviving the switch. **`BLANK_VALUES` must therefore list every field the form
+owns** — add a field without adding it there and that field silently survives a type switch.
+
+---
+
 ## ☠️ Traps
 
 1. **The two restriction lists have opposite polarity.**
@@ -77,10 +112,25 @@ Codes are matched **upper-cased and trimmed**. Store them upper-cased or lookups
    `$amount < $discount->minimum_order_amount` works via PHP's numeric-string comparison, but do not
    assume you are holding a float.
 
-**`code-available` counts soft-deleted codes as taken.** `codeAvailable()` queries `withTrashed()`
-deliberately: `discount_codes.code` carries a plain unique index, so a trashed row still owns its code
-and an insert would collide. An admin who deletes a code cannot immediately reuse its name. It answers
-`available: true` for an empty `code`, and `ignore_id` excludes the row being edited.
+**Deleting a discount code releases its name for reuse** — reversed on `ws-392` (2026-08-27), and this
+is the opposite of how it behaved on `develop`:
+
+| | `develop` (≤ 2026-08-26) | **`ws-392`** |
+|---|---|---|
+| `discount_codes.code` index | **unique**, spanning trashed rows | plain index — unique dropped by `2026_08_27_000001_drop_unique_index_on_discount_codes_code` |
+| Where uniqueness is enforced | the database | **validation only**: `Rule::unique(…)->whereNull('deleted_at')` in `StoreDiscountCodeRequest` *and* `UpdateDiscountCodeRequest` |
+| `codeAvailable()` scope | `withTrashed()` — a deleted code stayed reserved forever | default scope — **live rows only** |
+
+☠️ **Uniqueness is no longer enforced by the database on this branch.** Nothing but the FormRequests
+stops two live rows sharing a code — any writer that skips them (a seeder, a console command, a direct
+`DiscountCode::create()`) can now create a duplicate that redemption will resolve arbitrarily. Keep the
+`whereNull('deleted_at')` rule on **both** requests; dropping it from either reopens the hole.
+
+The `down()` migration only applies while no code is shared by a live and a trashed row — once a name
+has been reused after a delete, the rollback fails until one side is renamed or purged.
+
+`codeAvailable()` still answers `available: true` for an empty `code`, and `ignore_id` still excludes the
+row being edited.
 
 5. **Validation happens twice on different inputs.** `POST api/discount-codes/validate` validates against
    a client-supplied `amount`/`credits`; `POST api/payment/initialize` validates again with the real

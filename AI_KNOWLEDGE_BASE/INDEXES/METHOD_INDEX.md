@@ -182,7 +182,7 @@ method — several controllers here run 400–900 lines.
 | DiscountCodeController | [`formOptions()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L171) | 171 | public | — | JsonResponse |
 | DiscountCodeController | [`stats()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L192) | 192 | public | — | JsonResponse |
 | DiscountCodeController | [`codeAvailable()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L204) | 204 | public | `Request $request` | JsonResponse |
-| DiscountCodeController | [`formatDiscount()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L225) | 225 | private | `DiscountCode $discount` | array |
+| DiscountCodeController | [`formatDiscount()`](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L223) | 223 | private | `DiscountCode $discount` | array |
 
 ### `app/Http/Controllers/DropdownValuesController.php`
 

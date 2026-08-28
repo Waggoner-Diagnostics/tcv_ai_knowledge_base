@@ -82,8 +82,22 @@ npm test -- --watchAll=false               # once (CI)
 npm test -- --testPathPattern=src/App.test.js
 ```
 
-**Two test files exist**: `src/App.test.js` (the CRA "renders without crashing" stub) and
-`src/utils/validationSchema/validatePricingTiers.test.js`. Treat the SPA as **untested**.
+**Four test files exist**, and the SPA is no longer entirely untested — **46 tests pass**:
+
+| File | Tests | Covers |
+|---|---|---|
+| `src/components/DiscountCodeModal.test.js` | **35** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (`ws-392`) |
+| `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |
+| `src/utils/sliderUtils.test.js` | 4 | slider helpers |
+| `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |
+
+Everything outside those three helpers is still untested: auth, the test player, patients, reports.
+
+☠️ **`src/App.test.js` fails to run, and it is not your change.** `react-router-dom@7` ships a
+conditional `exports` map that CRA 5's bundled `jest-resolve` does not honour, so `import { BrowserRouter }`
+in `App.js` dies with *"Cannot find module 'react-router-dom'"*. The suite therefore reports
+**1 failed / 3 passed with 46/46 tests passing** — a failed *suite* with zero failed *tests*. Read the
+test counts, not the suite counts, and do not "fix" it by touching `App.js`.
 
 `src/setupTests.js` wires `@testing-library/jest-dom`.
 

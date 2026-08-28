@@ -1,6 +1,6 @@
 # Database Table Index
 
-**52 tables**, reconstructed from 109 migrations.
+**52 tables**, reconstructed from 110 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -18,7 +18,7 @@ the only authority before you write a migration against a column.
 | `TABLE-008` | `discount_code_price_tiers` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
 | `TABLE-009` | `discount_code_user` | 2 | `2025_06_26_092920_create_discount_code_user_table.php` | 3 |
 | `TABLE-010` | `discount_code_users` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
-| `TABLE-011` | `discount_codes` | 25 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 11 |
+| `TABLE-011` | `discount_codes` | 25 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 13 |
 | `TABLE-012` | `email_template` | 6 | `2026_03_09_090021_create_email_template_table.php` | 2 |
 | `TABLE-013` | `failed_jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
 | `TABLE-014` | `job_batches` | 10 | `0001_01_01_000002_create_jobs_table.php` | 2 |
