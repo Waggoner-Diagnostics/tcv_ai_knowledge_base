@@ -15,7 +15,10 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 Worth knowing, so you don't "fix" something that is already correct:
 
 - **Passwords** — `bcrypt` via the `'hashed'` cast, and `PasswordRule::min(8)->mixedCase()->numbers()->symbols()`
-  on both reset and change paths.
+  on both reset and change paths. ⚠️ **`->uncompromised()` is on the change path only**
+  (`ChangePasswordRequest`); it is commented out in `AuthController::setOrResetPassword()`, so a breached
+  password rejected on the profile page is still accepted through the emailed reset link
+  ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md)).
 - **LMS session tokens are stored hashed.** `LmsLaunchService::createSession()` generates
   `bin2hex(random_bytes(32))` and stores only `hash('sha256', $raw)`; `FlexibleAuthMiddleware` hashes the
   presented token before lookup. A DB leak does not yield usable session tokens.

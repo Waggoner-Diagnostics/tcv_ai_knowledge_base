@@ -115,6 +115,22 @@ owns an Organization**. That is how an org gets its test URL. Wired by auto-disc
 
 ---
 
+## Self-service change is a third path
+
+`PUT api/password/change` → `PasswordController::update()`, validated by `ChangePasswordRequest`. No
+token and **no broker**: it re-checks `current_password` with `Hash::check`, then revokes every *other*
+Sanctum token and keeps the caller's. A wrong current password returns 422 via `ApiResponse::error`
+(`api.current_password_incorrect`) — so that response carries **no `errors` key**, unlike a real
+validation failure.
+
+☠️ **The strength rules differ between the two paths.** `ChangePasswordRequest` adds
+`->uncompromised()` — a live k-anonymity lookup against Have I Been Pwned — while the same call sits
+**commented out** in `AuthController::setOrResetPassword()`. A breached password rejected on the profile
+page is therefore still accepted through the emailed reset link. See
+[SECURITY.md](../SECURITY.md#what-is-done-well).
+
+---
+
 ## ☠️ Traps
 
 1. **`usertype` has no `3`.** `1`/`2`/`4`. Never `range(1, 4)`.

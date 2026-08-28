@@ -125,6 +125,37 @@ the request passes `skipErrorPopup: true` (or a thunk passes `showPopup: false`)
 `AUTHORIZATION` branch is largely unreachable in practice. Do not add client logic that depends on
 receiving a 403.
 
+### ☠️ Two popups for one error — the `skipErrorPopup` trap
+
+`showPopup` is **not** a singleton. Every call appends a new `div.popup-container` to `document.body`
+and mounts its own React root (`src/components/showPopup.js`); nothing dedupes them. A slice that both
+lets the interceptor fire **and** popups its own rejected state therefore stacks **two modals** for one
+response. The later call renders on top, so the user dismisses them in reverse order — which is why the
+generic one is seen first and the useful one second.
+
+Tell the two apart by **title**, which is unique to each source:
+
+| Title | Written by |
+|---|---|
+| `Validation Error` · `Server Error` · `Network Error` · `Access Denied` … | `errorHandler.getErrorTitle()` — the **interceptor** |
+| anything else (`Error`, `Password Changed`, …) | the component's own `showPopup` call |
+
+Fixed for password change in **ws-395** (2026-08-28 — committed, *not yet merged or deployed*). A 422
+from `PUT api/password/change` raised both `Validation Error — "…has appeared in a data leak…"`
+(interceptor, flattening `errors`) and `Error — "The given data was invalid."` (the slice echoing the
+backend's useless top-level `message`, see [ERROR_HANDLING.md](ERROR_HANDLING.md)). **Copy this fix:**
+
+1. pass `skipErrorPopup: true` on the request, **and**
+2. route `response.data.errors` into a separate `fieldErrors` slice key, leaving `error` **null**
+   whenever field errors exist — so the popup fires only when there is nothing to attach to a field.
+
+`passwordChangeSlice.js` + `ChangePasswordPage.js` then render `fieldErrors` inline under the offending
+input. Doing only step 1 leaves the generic popup; only step 2 leaves the interceptor's.
+
+☠️ **The same shape is still live on the Profile tab.** `slices/userProfile/profileSlice.js` passes no
+`skipErrorPopup` while `ProfilePage.js` popups from its own `catch`, so a 422 on profile save still
+double-fires. Not yet fixed.
+
 ---
 
 ## The test player
@@ -179,6 +210,8 @@ Regenerated every run; the current state:
 - Sass (`.scss`) alongside Bootstrap utilities.
 - Formik + Yup for forms; schemas in `src/utils/validationSchema/`.
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
+- **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
+  on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).
 - **Adding a page = 3 files**: `protectedRoutes.js`, `routeConfig.js`, and (for user-panel pages)
   `USER_PANEL_WITH_HEADER` in `Router.js`.
 - **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on

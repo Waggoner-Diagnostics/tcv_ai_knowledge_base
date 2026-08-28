@@ -103,6 +103,12 @@ Eight shapes. A client cannot key on one field. The SPA copes by checking severa
 Message keys resolve through `__()` against `resources/lang/en/api.php` (78 keys). A missing key renders
 as the raw key string, which is how `api.resticted` (sic) is visible in responses today.
 
+☠️ **On a 422 the top-level `message` is always the literal `"The given data was invalid."`** —
+`Handler::render()` hard-codes it and never surfaces the validator's own text. The actionable message
+exists **only** in `errors[field][]`. A client that shows `data.message` on a validation failure is
+showing the user nothing; read `errors` instead. That mismatch is what produced the duplicate
+password-change popups fixed in ws-395 ([FRONTEND.md](FRONTEND.md) — the `skipErrorPopup` trap).
+
 ---
 
 ## If you change the handler
