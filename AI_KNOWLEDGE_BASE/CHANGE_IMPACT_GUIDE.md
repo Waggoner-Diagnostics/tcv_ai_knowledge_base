@@ -71,9 +71,12 @@ Read the row for the thing you are about to change **before** you change it.
 | `App\Support\EmailContent::linkify()` | It runs on **every** DB-template send — verification (`AuthController`), password reset/setup (`ResetPasswordNotification`) and invitations (`TestInvitationController`). A regex mistake here corrupts three live mail paths at once; `tests/Unit/EmailContentTest.php` is the guard rail, run it ([TESTING.md](TESTING.md)) |
 | `App\Support\EmailSignature::HTML` | Two readers: `EmailTemplateSeeder` (fresh DBs) and `2026_08_31_000003_restyle_email_template_footers` (existing rows). Editing the constant alone changes the seeder but silently stops the migration matching, so deployed rows keep the old footer. `LEGACY_HTML` exists only for that migration's `down()` — do not "tidy" it away |
 | Copy in `email_template` (subject / body / footer) | The seeder runs on a **fresh database only**. Every real environment needs a match-on-old-value data migration alongside the seeder edit, or dev and prod drift ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md)) |
-| `EmailTemplateService::getTemplateForUser()`'s hard-coded fallback | It is a live send path used when the admin default row is missing — keep its link anchored and styled like the seeded templates ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
-| The `{{…}}` placeholder names | Three writers substitute them by `str_replace`, and `2026_08_31_000001` anchors them by exact string. Renaming one means the controller, the seeder **and** that migration's `TARGETS` map |
-| The SPA's `RichTextEditor` `formats` whitelist | Widening it changes what survives a template save, which is the whole reason the send path restyles and linkifies. Narrowing it strips more markup out of existing templates |
+| `EmailTemplateService::getTemplateForUser()`'s hard-coded fallback | It is a live send path used when the admin default row is missing — keep its link anchored and styled like the seeded templates. ⚠️ `ws-373` (body) and `ws-400` (subject) both rewrite this one `return` block on unmerged branches and **conflict**; the resolution keeps both sides ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
+| The `{{…}}` placeholder names | Three writers substitute them by `str_replace`, and `2026_08_31_000001` anchors them by exact string. Renaming one means the controller, the seeder **and** that migration's `TARGETS` map — plus, since `ws-400`, `LINK_PLACEHOLDER` in the SPA's `emailPlaceholders.js` and the required-token lists in the three template forms |
+| The SPA's `RichTextEditor` `formats` whitelist | Widening it changes what survives a template save, which is the whole reason the send path restyles and linkifies. Narrowing it strips more markup out of existing templates. Since `ws-400` it must also carry `PLACEHOLDER_FORMATS` wherever `lockPlaceholders` is set, or every system-value chip vanishes on save. A caller passing its own `formats` still gets the blots appended — passing a *narrower* list is how you'd lose them |
+| The default test-invitation **subject or body** | Three edits in lockstep, or dev and prod drift: `AdminSettingsSeeder` (fresh DBs only), the `EmailTemplateService` fallback, and a match-on-old-value data migration for deployed rows (`ws-400`'s `2026_08_29_000001` is the template to copy) |
+| `hasTestLinkButton()` / `emailPlaceholders.js` | The single definition of "this template has a working Start Test button", used by all three template forms. It parses HTML, so it needs `DOMParser` — it degrades to a substring check rather than throwing under SSR or a node-environment test. `src/components/richTextEditor/emailPlaceholders.test.js` is the guard rail ([TESTING.md](TESTING.md)) |
+| Anything that reads a template body into an editor | `toEditorHtml`/`toTemplateHtml` must stay a **fixed point**, and their first-render rewrite must reach the caller through `onNormalize`, not `onChange` — otherwise an untouched form reads as dirty ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
 
 ---
 
@@ -111,6 +114,7 @@ FlexibleAuthMiddleware   lms.status              tokenCan(
 frontend_app_url         SKIP_                   result_json
 Patient::GENDERS         GENDER_OPTIONS          genderLabel(
 EmailContent::linkify    EmailSignature::HTML    email_template
+hasTestLinkButton        lockPlaceholders        PLACEHOLDER_FORMATS
 ```
 
 ---

@@ -324,6 +324,13 @@ Regenerated every run; the current state:
 - **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on
   2026-08-27 (ws-359) had to touch all four; miss `routeConfig.js` and the page 403s for every role,
   miss `Sidebar.js` and the nav entry silently stops matching.
+- **A value the server fills in should not be free text in the editor.** `RichTextEditor`'s
+  `lockPlaceholders` (ws-400) renders `{{token}}`s and the Start Test button as atomic Quill embeds, so
+  they can be moved or deleted but never half-typed. Two things come with it: any custom `formats` list
+  must carry `PLACEHOLDER_FORMATS` or the chips vanish on save, and the editor's first-render
+  re-serialisation has to reach the page through `onNormalize` (which moves the dirty-check baseline)
+  rather than `onChange` (which would mark an untouched form dirty). See
+  [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md).
 
 **Two tests are hidden by title, in the client only** (`src/constants/testConstants.js`, ws-359):
 `HIDDEN_TEST_TITLES` drops *FAA Color Vision Test* from the admin Tests listing and

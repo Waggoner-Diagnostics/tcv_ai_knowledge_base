@@ -88,21 +88,31 @@ npm test -- --watchAll=false               # once (CI)
 npm test -- --testPathPattern=src/App.test.js
 ```
 
-**Four test files exist**, and the SPA is no longer entirely untested — **46 tests pass**:
+**Seven test files exist**, and the SPA is no longer entirely untested — **84 tests pass** (measured on
+branch `ws-400`, 2026-09-01; `develop` alone is 73, the same set minus `emailPlaceholders.test.js`):
 
 | File | Tests | Covers |
 |---|---|---|
-| `src/components/DiscountCodeModal.test.js` | **35** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (`ws-392` — not in the indexed tree) |
+| `src/components/DiscountCodeModal.test.js` | **49** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`) |
+| `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400` — **unmerged branch**, [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
+| `src/redux/slices/userCredits/userCreditSlice.test.js` | 9 | credit-read ordering and identity guards (`ws-397`) |
+| `src/redux/slices/userProfile/passwordChangeSlice.test.js` | 6 | password-change slice (`ws-395`) |
 | `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |
 | `src/utils/sliderUtils.test.js` | 4 | slider helpers |
 | `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |
 
-Everything outside those three helpers is still untested: auth, the test player, patients, reports.
+Everything outside those files is still untested: auth, the test player, patients, reports.
+
+`emailPlaceholders.test.js` is the guard rail named in
+[CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) for the template editor — `toEditorHtml`/`toTemplateHtml`
+must stay a fixed point, and `hasTestLinkButton()` must keep rejecting a bare `{{verification_link}}`.
+Run it before touching either. It is also the only frontend test that needs a real DOM parser rather than
+just a reducer or a schema, so it is the one that breaks first if the jsdom environment changes.
 
 ☠️ **`src/App.test.js` fails to run, and it is not your change.** `react-router-dom@7` ships a
 conditional `exports` map that CRA 5's bundled `jest-resolve` does not honour, so `import { BrowserRouter }`
 in `App.js` dies with *"Cannot find module 'react-router-dom'"*. The suite therefore reports
-**1 failed / 3 passed with 46/46 tests passing** — a failed *suite* with zero failed *tests*. Read the
+**1 failed / 6 passed with 84/84 tests passing** — a failed *suite* with zero failed *tests*. Read the
 test counts, not the suite counts, and do not "fix" it by touching `App.js`.
 
 `src/setupTests.js` wires `@testing-library/jest-dom`.
