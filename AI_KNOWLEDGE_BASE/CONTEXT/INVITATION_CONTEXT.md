@@ -11,7 +11,7 @@
 | `app/Models/TestInvitation.php` · `TestSession.php` · `TestResumeToken.php` | The three token records |
 | `app/Models/TestEmailTemplates.php` · `UserEmailTemplate.php` | Per-user email copy |
 | `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
-| `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email (`ws-404`, extracted from the controller) |
+| `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email — owns all three assembly passes (`ws-404`, extracted from the controller) |
 | `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response (`ws-404`) |
 | `app/Support/EmailTemplatePlaceholders.php` | ⭐ The one placeholder vocabulary; both save paths validate against it (`ws-404`) |
 | `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'` (`ws-404`) |
@@ -92,7 +92,10 @@ with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = aut
 
 ### How the invitation body is assembled
 
-`sendInvitationEmail()` is three passes over one string, and the order matters:
+`TestInvitationMailer::send()` is three passes over one string, and the order matters. (It was
+`TestInvitationController::sendInvitationEmail()` until `ws-404` extracted it; the controller method
+survives as a one-line delegate for the resend path. Both the batch job and the resend now go through
+the same three passes — see the merge note below.)
 
 ```
 EmailTemplateService::getTemplateForUser(userId, TYPE_TEST_LINK)
@@ -116,8 +119,8 @@ copy this restyle shape anywhere else, keep the null check.
 admin default row is missing. `ws-373` changed it from a bare `<p>{{verification_link}}</p>` to a proper
 button plus a copy-and-paste line, so a missing admin row no longer produces an unclickable email.
 
-**The default subject changed on `ws-400`** (2026-08-31 — committed on branch `ws-400`, *not yet merged
-or deployed*): `Welcome to Testing Color Vision` → **`You have been invited to take a color vision test`**,
+**The default subject changed on `ws-400`** (2026-08-31 — merged into `ws-404` on 2026-09-01, not yet
+deployed): `Welcome to Testing Color Vision` → **`You have been invited to take a color vision test`**,
 in all three places that can emit it — `AdminSettingsSeeder` (fresh DBs only), the `EmailTemplateService`
 fallback, and `2026_08_29_000001_update_default_test_email_subject` for rows already deployed. The
 migration is match-on-old-value and scoped to `type = 'test_link'`, so an admin who retitled the subject
@@ -133,7 +136,8 @@ drops the other ticket's fix, and nothing downstream will fail loudly if you do.
 
 ### The template editor locks system values (`ws-400`)
 
-Committed on branches `ws-400` (both repos, 2026-08-31 → 2026-09-01), *not yet merged or deployed*.
+Committed on branches `ws-400` (both repos, 2026-08-31 → 2026-09-01); the backend half is merged into
+`ws-404`, not yet deployed.
 
 `{{…}}` tokens and the Start Test button stopped being free text in the SPA's three template forms —
 `Setting/TestEmailTemplates.js` (admin default **and** org) and
@@ -256,6 +260,13 @@ sync with the `$variables` map in `TestInvitationMailer::send()`.
 `{{test_namze}}` to the recipient while the column holds `test_nam</strong>z<strong>e`. Use
 `php artisan templates:check-placeholders` (strips tags first) or, in raw SQL,
 `REGEXP_REPLACE(body, '<[^>]*>', '')` on MySQL 8.
+
+⭐ **`ws-373` and `ws-404` collided in this method, and the resolution matters.** `ws-373` added the
+null guard and `EmailContent::linkify()` to `sendInvitationEmail()`; `ws-404` moved that method into
+`TestInvitationMailer`. Git conflicted on exactly that hunk, and either side taken whole loses
+something — "ours" drops linkify and the null guard from every invitation email, "theirs" re-inlines
+the send and brings back the 504. The merge keeps the extraction **and** ports both passes into the
+mailer. `test_a_bare_link_placeholder_is_still_linkified()` pins it; nothing else would notice the loss.
 
 **This and `ws-400`'s locked chips solve the same problem from opposite ends.** The chips stop a
 placeholder being edited into a broken half-token in the editor; this validation rejects one that

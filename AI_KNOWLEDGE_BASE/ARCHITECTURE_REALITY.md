@@ -86,9 +86,10 @@ introducing a fifth — and note that the DB-template path fails **silently** if
 `status != 'enable'`.
 
 **Every DB-template path now ends in one shared cleanup step** — `App\Support\EmailContent::linkify()`
-(`ws-373`, 2026-08-31 — committed on the branch, *not yet merged or deployed*). It runs **after**
+(`ws-373`, 2026-08-31 — merged into `ws-404` on 2026-09-01, not yet deployed). It runs **after**
 placeholder substitution in `AuthController::sendVerificationEmailForUser()`,
-`ResetPasswordNotification::toMail()` and `TestInvitationController::sendInvitationEmail()`, and wraps
+`ResetPasswordNotification::toMail()` and `TestInvitationMailer::send()` (the invitation call site moved
+there in `ws-404`; the merge deliberately kept both the extraction and this pass), and wraps
 any bare `http(s)` URL left in the body in an `<a>`. It exists because the template bodies are edited
 outside the app — by SQL and data migrations for `email_template`, and through the SPA's Quill editor
 for `user_email_templates` / `test_email_templates`, which drops any markup outside its `formats`

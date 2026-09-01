@@ -154,7 +154,7 @@ Neither body is a Blade file. `ResetPasswordNotification::toMail()` and
 placeholder is **not** guaranteed — the same placeholder can be an `<a href>` in one environment and
 plain text in another.
 
-`ws-373` (2026-08-31 — committed on branch `ws-373`, *not yet merged or deployed*) closed that gap from
+`ws-373` (2026-08-31 — merged into `ws-404` on 2026-09-01, not yet deployed) closed that gap from
 both ends:
 
 | Where | What changed |
