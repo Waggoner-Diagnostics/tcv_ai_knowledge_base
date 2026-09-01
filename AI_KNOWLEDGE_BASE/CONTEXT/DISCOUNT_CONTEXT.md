@@ -59,15 +59,37 @@ The admin create/edit drawer enforces its own bounds *before* the API sees them.
 mirrored server-side — `StoreDiscountCodeRequest` only checks `numeric, min:0.01` — so these are UI
 guard-rails, not a contract. A non-SPA client can still post values the drawer would refuse.
 
-**Bounds come from the pricing table, not from constants.** `getOrderBounds(priceTiers)` derives:
-- `min` = cheapest tier's `from × price_per_credit`
-- `max` = dearest tier's `to × price_per_credit`
+**Bounds come from the pricing table, not from constants.** An order of N credits falls in exactly one
+tier and costs `N × that tier's rate`, so `getOrderBounds(priceTiers)` searches **every** tier for each
+bound:
+- `min` = `Math.min(...tiers.map(t => t.from × t.price_per_credit))`
+- `max` = `Math.max(...tiers.map(t => t.to × t.price_per_credit))`
 
-Because the rate falls as volume rises, **neither bound can be read off credits or price alone** — each
-has to come from the tier it belongs to. Those two figures bound both the **fixed** discount value and
-`minimum_order_amount`, and are quoted in each field's placeholder so the hint cannot drift from the
-rule. With no tiers loaded both fall back (`min:0`, no max). Percentages are bounded by constants
-instead: **0.1 – 100**.
+☠️ **Neither bound can be read off the first or last tier.** Nothing in `validatePricingTiers` requires
+the rate to fall as volume rises, so a mid-table tier can bill more than the top one — on the seeded
+table the middle tier's `999 × $8.85 = $8,841.15` beats the top tier outright. Taking the tier with the
+largest `to` gets today's seed wrong by $2.95 and a re-rated table by hundreds.
+
+☠️ **An open-ended top tier has no ceiling at all.** `to >= 99999` is the sentinel `CreditPage` renders
+as “∞”; there is no dearest order behind it, so `max` comes back **`null`** and every field it would
+have bounded is left unbounded above. Callers must test `max !== null` rather than compare against it.
+
+The two bounds are **not** interchangeable, and this is the distinction the field split turns on:
+
+| Field | Floor | Ceiling |
+|---|---|---|
+| `minimum_order_amount` | `bounds.min` — a threshold under the cheapest order is a no-op, always met | `bounds.max` — above the dearest order it is never met |
+| **fixed** `value` | **none beyond `0.01`** | `bounds.max` — more could never be redeemed in full |
+
+☠️ **Do not floor the fixed discount to `bounds.min`.** That figure bounds what a customer *spends*,
+not what can be taken *off* it — flooring it makes “$10 off” impossible to create and locks every legacy
+code under the floor out of being re-saved at all, even when the admin only touched the description. The
+API agrees: `value` is `min:0.01` there, with no tie to the price table. Percentages are bounded by
+constants instead: **0.1 – 100**. With no tiers loaded everything falls back (`min:0`, no max).
+
+Each bound is quoted in its field's placeholder so the hint cannot drift from the rule — **without the
+`$`**, because the `dc-adorn` chip is already showing one a few pixels to the left. `money()` carries the
+symbol and belongs in error messages; `amount()` drops it and belongs inside the money fields.
 
 ☠️ **Keystroke filtering enforces the ceiling only — never the floor.** `exceedsLimits()` refuses a
 keystroke that would exceed the max, add a third decimal, or run past the length of the ceiling written
@@ -80,11 +102,22 @@ The decimal count is taken from the **raw text**, not the parsed number — `29.
 float and by then the extra digit is invisible. The length cap lives here because
 `<input type="number">` ignores `maxLength`.
 
+☠️ **`minimum_order_amount` has two spellings of “none”: blank and a stored `0`.** The column defaults
+to `0` and the modal writes `0` back whenever the field is left empty, so `0` is what every code carries
+that no threshold was ever chosen for. Both are transformed to `null` *before* the bounds apply
+(`blankOrZeroToNull`) and a stored `0` is loaded back as a blank field showing “No minimum” — otherwise
+reopening such a code fails validation on a field nobody touched. For the same reason the native `min`
+attribute stays at `0` whatever the tiers say: Formik does not set `noValidate`, and a `min` of `$29.60`
+would have the browser block the submit before the schema ever saw the `0`.
+
 ☠️ **Switching discount type resets the whole form**, keeping only `code` (and its duplicate warning):
 20% off and $20 off are different offers, and every limit, date and restriction was chosen against the
 type being abandoned. `resetForm()` also clears `touched`/`errors`, which is what stops a stale
 "Cannot exceed 100%." surviving the switch. **`BLANK_VALUES` must therefore list every field the form
-owns** — add a field without adding it there and that field silently survives a type switch.
+owns** — add a field without adding it there and that field silently survives a type switch. Because the
+reset reaches well past the two type-specific fields — it reactivates the code, clears its dates and
+empties the **user deny-list**, widening who may redeem — it is confirmed through `window.confirm()`
+whenever the form has anything to lose, and done silently when it does not.
 
 ---
 
@@ -122,17 +155,28 @@ is the opposite of how it behaved on `develop`.
 
 | | `develop` (≤ 2026-08-26) | **`ws-392`** |
 |---|---|---|
-| `discount_codes.code` index | **unique**, spanning trashed rows | plain index — unique dropped by `2026_08_27_000001_drop_unique_index_on_discount_codes_code` |
-| Where uniqueness is enforced | the database | **validation only**: `Rule::unique(…)->whereNull('deleted_at')` in `StoreDiscountCodeRequest` *and* `UpdateDiscountCodeRequest` |
+| `discount_codes.code` index | **unique**, spanning trashed rows | plain index (`2026_08_27_000001`) **+ `discount_codes_code_active_unique`** (`2026_08_31_000001`) — unique over live rows only |
+| Where uniqueness is enforced | the database | the database, **narrowed to live rows**; `Rule::unique(…)->whereNull('deleted_at')` in `StoreDiscountCodeRequest` *and* `UpdateDiscountCodeRequest` supplies the 422 |
 | `codeAvailable()` scope | `withTrashed()` — a deleted code stayed reserved forever | default scope — **live rows only** |
 
-☠️ **Uniqueness is no longer enforced by the database on this branch.** Nothing but the FormRequests
-stops two live rows sharing a code — any writer that skips them (a seeder, a console command, a direct
-`DiscountCode::create()`) can now create a duplicate that redemption will resolve arbitrarily. Keep the
-`whereNull('deleted_at')` rule on **both** requests; dropping it from either reopens the hole.
+☠️ **The FormRequests are the message, not the guarantee.** `Rule::unique` is a SELECT with no lock and
+no transaction around `DiscountCode::create()`, so two concurrent `POST api/discount-codes` can both
+pass it. What stops the second row is `discount_codes_code_active_unique`: a writer that skips the
+FormRequests (a seeder, a console command, a direct `DiscountCode::create()`) gets a `QueryException`
+instead of a duplicate. Keep the `whereNull('deleted_at')` rule on **both** requests — dropping it from
+either turns a friendly 422 into an unhandled 500, and widening it past `deleted_at` re-reserves
+deleted names. Covered by `tests/Feature/DiscountCodes/DiscountCodeUniquenessTest.php`.
 
-The `down()` migration only applies while no code is shared by a live and a trashed row — once a name
-has been reused after a delete, the rollback fails until one side is renamed or purged.
+Redemption looks the code up with `->orderBy('id')` (`DiscountCodeService::validate`). At most one live
+row can hold a name, so the order is belt-and-braces — but `countUses()` budgets `max_uses` per **row
+id**, so an unordered `first()` would mean an arbitrary usage counter if a duplicate ever did appear.
+
+The two migrations are ordered so the table is never left unconstrained: `2026_08_27_000001` only adds
+the plain index, then `2026_08_31_000001` creates the live-only unique index **and drops the blanket one
+last**. `down()` reverses in the same order, restoring the blanket index before removing its replacement.
+That restore is the step that can fail: it only applies while no code is shared by a live and a trashed
+row, so once a name has been reused after a delete, rolling back `2026_08_31_000001` needs one side
+renamed or purged first. `2026_08_27_000001` rolls back cleanly either way.
 
 `codeAvailable()` still answers `available: true` for an empty `code`, and `ignore_id` still excludes the
 row being edited.

@@ -89,3 +89,8 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
    — `form.gender === "1"` — and `formUtils.buildPayload()` ships it as-is. Both land in the same column.
    `GENDER_OPTIONS` in `src/utils/testUtils.js` is the single list both render from, but check which
    shape a form is in before comparing `form.gender` to anything.
+8. **The Patients menu's password prompt is a client-side speed bump.** The SPA asks for the password
+   before navigating into `/user-panel/patients`, but `api/verify-password` is stateless and no patient
+   endpoint knows the prompt exists — a typed URL or any in-app `navigate()` walks straight past it.
+   ws-399 (2026-08-28, unmerged) narrows it further: no re-prompt once you are already inside the
+   section. [FRONTEND.md](../FRONTEND.md#the-patients-menu-password-prompt-is-client-side-only).

@@ -85,6 +85,19 @@ Four mechanisms for one concern. When you add an email, match the *nearest* exis
 introducing a fifth — and note that the DB-template path fails **silently** if the row is missing or
 `status != 'enable'`.
 
+**Every DB-template path now ends in one shared cleanup step** — `App\Support\EmailContent::linkify()`
+(`ws-373`, 2026-08-31 — committed on the branch, *not yet merged or deployed*). It runs **after**
+placeholder substitution in `AuthController::sendVerificationEmailForUser()`,
+`ResetPasswordNotification::toMail()` and `TestInvitationController::sendInvitationEmail()`, and wraps
+any bare `http(s)` URL left in the body in an `<a>`. It exists because the template bodies are edited
+outside the app — by SQL and data migrations for `email_template`, and through the SPA's Quill editor
+for `user_email_templates` / `test_email_templates`, which drops any markup outside its `formats`
+whitelist. A stripped anchor leaves a plain-text URL that Outlook desktop does **not** auto-link.
+`linkify()` is HTML-aware, not a regex over the whole body: it skips text already inside an `<a>`, text
+inside `<style>`/`<script>`, and URLs sitting in an attribute. Adding a fifth sending path means
+calling it too — see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) and
+[CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
+
 ### 5. Nothing is scheduled
 
 `routes/console.php` registers only the stock `inspire` command, and there is no

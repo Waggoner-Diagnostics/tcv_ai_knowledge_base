@@ -1,6 +1,7 @@
 # Database
 
-MySQL, **52 tables**, reconstructed from **109 migrations**. Full column detail:
+MySQL, **52 tables**, reconstructed from 110 migrations — the indexed snapshot; `develop` is at 111
+today, and `ws-373` adds three more. Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
@@ -77,14 +78,18 @@ recreates them. **Only `discount_code_users` is live.**
   - **`users.email` — still uniquely indexed.** The DB enforces it regardless of `deleted_at`, so a
     deleted user's address is **not** reusable. `UserRequest` validates without a
     `whereNull('deleted_at')` clause so validation agrees with the DB ([REQUESTS.md](REQUESTS.md)).
-  - **`discount_codes.code` — unique index dropped on `ws-392`** (2026-08-27), leaving a plain index.
-    ☠️ **Not in the indexed tree** — the indexes come from `ws-398` (= `develop`), where the unique
-    index still stands and a deleted code's name stays reserved. The rest of this bullet applies only
-    if ws-392 merges.
-    Deleting a code now **releases** its name. Uniqueness moved into `StoreDiscountCodeRequest` /
-    `UpdateDiscountCodeRequest` as `Rule::unique(…)->whereNull('deleted_at')`, and
-    `DiscountCodeController::codeAvailable()` dropped its `withTrashed()`. ☠️ Nothing below the
-    FormRequests enforces it any more — see [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md).
+  - **`discount_codes.code` — unique index narrowed to live rows on `ws-392`** (2026-08-27).
+    ☠️ **Not in the indexed tree** — the indexes come from `ws-398` (= `develop`), where one unique
+    index spans trashed rows too and a deleted code's name stays reserved. The rest of this bullet
+    applies only if ws-392 merges.
+    Deleting a code now **releases** its name. The blanket unique index became a plain index plus
+    `discount_codes_code_active_unique`, unique over **live rows only**: on MySQL a virtual generated
+    column `code_active` that is `NULL` whenever `deleted_at` is set, on SQLite a partial index with
+    the same filter. NULLs are distinct in a unique index, so trashed rows no longer collide while two
+    live rows still cannot share a code. `StoreDiscountCodeRequest` / `UpdateDiscountCodeRequest`
+    carry a matching `Rule::unique(…)->whereNull('deleted_at')` — that is what turns a collision into
+    a 422 rather than a 500 — and `DiscountCodeController::codeAvailable()` dropped its
+    `withTrashed()`. See [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md).
 - **`countries` and `states` have no `created_at`/`updated_at`.** They come from the `nnjeim/world`
   package, so `Country` and `State` set `public $timestamps = false` (2026-08-27). Writing to either
   model without that flag throws `Unknown column 'updated_at'`. Treat the whole `nnjeim/world` set as
@@ -136,3 +141,18 @@ recreates them. **Only `discount_code_users` is live.**
   safe — it will not re-execute, and the MySQL path is unchanged.
 - `Schema::defaultStringLength(191)` is set in `AppServiceProvider::boot()` — a legacy MySQL index-length
   workaround. A `string` column is 191 chars unless you say otherwise.
+- **Data migrations that edit seeded content must match on the old value, not overwrite.** `email_template`
+  rows are hand-edited in every environment, so a blind `update()` would silently destroy a tailored
+  subject or footer, and `down()` would stamp back a value the row never held. The three `ws-373`
+  migrations are the reference shape:
+
+  ```php
+  $current = DB::table('email_template')->where('name', 'password_reset')->value('subject');
+  if ($current !== $from) { Log::info('… left as it is', ['reason' => $current === $to ? 'already applied' : 'customised']); return; }
+  ```
+
+  They also guard with `Schema::hasTable()` / `hasColumn()` (so an empty SQLite test DB is a no-op rather
+  than an error), `chunkById(100)` over `user_email_templates` because it holds one `longText` body per
+  user, and bump `updated_at` so nothing keyed on it serves pre-migration markup. One of the three,
+  `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates`, is deliberately **irreversible** —
+  an empty `down()` with a comment saying why, which is better than a `down()` that guesses.

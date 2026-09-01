@@ -59,6 +59,21 @@ Read the row for the thing you are about to change **before** you change it.
 | `users.email_verified` vs `email_verified_at` | two flags, two writers, one gate ([S-08](SECURITY.md#s-08--two-email-verification-systems-that-disagree)) |
 | Password brokers | `users` and `setup` share `password_reset_tokens`; one live token per email |
 | Adding a public patient-facing path | **three** places: `routes/api.php` placement, `publicRoutes.js`, and `isPublicRoute()` in `AxiosInstance.js` |
+| `POST api/verify-password` | Its only caller is the SPA's Patients-menu prompt, which reads a 200 as permission to navigate. It persists nothing, so no backend gate can be built on it ([FRONTEND.md](FRONTEND.md#the-patients-menu-password-prompt-is-client-side-only)) |
+| Adding a route under `/user-panel/patients*` or `/user-panel/patient-tests*` | a **fourth** list — `PATIENT_SECTION_PATHS` in `Header.js` (ws-399). Miss it and the Patients menu re-prompts for the password from inside the section |
+
+---
+
+## Email templates and mail bodies
+
+| Change | Also check |
+|---|---|
+| `App\Support\EmailContent::linkify()` | It runs on **every** DB-template send — verification (`AuthController`), password reset/setup (`ResetPasswordNotification`) and invitations (`TestInvitationController`). A regex mistake here corrupts three live mail paths at once; `tests/Unit/EmailContentTest.php` is the guard rail, run it ([TESTING.md](TESTING.md)) |
+| `App\Support\EmailSignature::HTML` | Two readers: `EmailTemplateSeeder` (fresh DBs) and `2026_08_31_000003_restyle_email_template_footers` (existing rows). Editing the constant alone changes the seeder but silently stops the migration matching, so deployed rows keep the old footer. `LEGACY_HTML` exists only for that migration's `down()` — do not "tidy" it away |
+| Copy in `email_template` (subject / body / footer) | The seeder runs on a **fresh database only**. Every real environment needs a match-on-old-value data migration alongside the seeder edit, or dev and prod drift ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md)) |
+| `EmailTemplateService::getTemplateForUser()`'s hard-coded fallback | It is a live send path used when the admin default row is missing — keep its link anchored and styled like the seeded templates ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
+| The `{{…}}` placeholder names | Three writers substitute them by `str_replace`, and `2026_08_31_000001` anchors them by exact string. Renaming one means the controller, the seeder **and** that migration's `TARGETS` map |
+| The SPA's `RichTextEditor` `formats` whitelist | Widening it changes what survives a template save, which is the whole reason the send path restyles and linkifies. Narrowing it strips more markup out of existing templates |
 
 ---
 
@@ -95,6 +110,7 @@ CreditConsume::consume   unique_test_id          parent_test_id
 FlexibleAuthMiddleware   lms.status              tokenCan(
 frontend_app_url         SKIP_                   result_json
 Patient::GENDERS         GENDER_OPTIONS          genderLabel(
+EmailContent::linkify    EmailSignature::HTML    email_template
 ```
 
 ---

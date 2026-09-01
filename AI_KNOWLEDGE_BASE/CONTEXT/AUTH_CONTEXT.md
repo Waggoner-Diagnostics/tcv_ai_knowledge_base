@@ -1,6 +1,6 @@
 # Context: Authentication, Tokens & Sessions
 
-> Load this **instead of** reading the auth subsystem. ~1.8k tokens.
+> Load this **instead of** reading the auth subsystem. ~2.1k tokens.
 
 ## Files
 | File | Role |
@@ -11,6 +11,7 @@
 | `app/Http/Requests/UserRequest.php` | Registration/user validation — see [SECURITY S-01](../SECURITY.md#s-01--public-registration-accepts-usertype--1) |
 | `app/Models/User.php` | `usertype` constants, `canImpersonate*()`, verification helpers |
 | `app/Notifications/ResetPasswordNotification.php` · `VerifyEmailNotification.php` | Mail |
+| `app/Support/EmailContent.php` · `EmailSignature.php` | ⭐ Shared mail-body cleanup + the one sign-off (`ws-373`) |
 | `app/Http/Controllers/Auth/*` | **Laravel/ui scaffolding — unused by the API.** Ignore. |
 
 ## Tables
@@ -131,6 +132,47 @@ page is therefore still accepted through the emailed reset link. See
 
 ---
 
+## `verify-password` is a fourth path, and it decides nothing
+
+`POST api/verify-password` (`API-176`, `auth:sanctum`, no throttle — the only rate limit in
+`routes/api.php` is on `/contact`) → `AuthController::verifyPassword()`: validate, `Hash::check`,
+return 200, or 422 `api.incorrect_password`. It writes **nothing** — no session flag, no token
+ability, no log line. Its only caller is the SPA's Patients-menu prompt, which treats the 200 as
+permission to `navigate()`
+([FRONTEND.md](../FRONTEND.md#the-patients-menu-password-prompt-is-client-side-only), narrowed by
+ws-399). Anything that must *enforce* a re-auth has to add its own state — there is none to read here.
+
+---
+
+## The reset and verification mail bodies live in the database
+
+Neither body is a Blade file. `ResetPasswordNotification::toMail()` and
+`AuthController::sendVerificationEmailForUser()` both read a row out of **`email_template`** (by `name`:
+`password_reset`, `set_password`, `email_verification`), substitute `{{first_name}}`, `{{reset_url}}`,
+`{{set_password_url}}`, `{{verification_link}}` by `str_replace`, and render it through
+`emails.dynamic-template`. The row is editable by SQL and by data migrations, so the markup around a
+placeholder is **not** guaranteed — the same placeholder can be an `<a href>` in one environment and
+plain text in another.
+
+`ws-373` (2026-08-31 — committed on branch `ws-373`, *not yet merged or deployed*) closed that gap from
+both ends:
+
+| Where | What changed |
+|---|---|
+| **At send time** | `EmailContent::linkify()` runs on the substituted body in both paths, so a bare URL still goes out clickable ([ARCHITECTURE_REALITY.md §4](../ARCHITECTURE_REALITY.md)) |
+| **In the stored row** | `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates` wraps a bare `{{reset_url}}` / `{{set_password_url}}` / `{{verification_link}}` in a styled button, so the template editor stops showing it as plain text |
+| **Subject** | `2026_08_31_000002` renames the `password_reset` subject from `Reset Your Password` to **`Forgot your password? Reset it now`** — and `EmailTemplateSeeder` now seeds the new wording |
+| **Footer** | `2026_08_31_000003` replaces the old raw-newline sign-off with `EmailSignature::HTML` (styled, `mailto:`/`tel:` links). `EmailSignature::LEGACY_HTML` is kept **only** so `down()` can recognise a row it may revert |
+| **Blade fallback** | `resources/views/emails/verify-email.blade.php`'s "copy and paste this link" paragraph is now an anchor, not grey text |
+
+☠️ **The three data migrations are match-on-old-value, not overwrite.** Each one only touches a row that
+still holds exactly the value it expects, so a subject or footer somebody tailored in the database
+survives, and `down()` cannot stamp a value the row never held. Copy that shape for any future template
+migration — and note `000001` is deliberately **irreversible** (`down()` is empty), because unwrapping
+anchors could not tell the ones it added from the ones an author wrote.
+
+---
+
 ## ☠️ Traps
 
 1. **`usertype` has no `3`.** `1`/`2`/`4`. Never `range(1, 4)`.
@@ -146,3 +188,9 @@ page is therefore still accepted through the emailed reset link. See
    `routes/api.php`. Editing it changes nothing.
 7. **Every successful login hits Stripe.** `createStripeCustomer()` swallows its exception into a log
    line, so a Stripe outage shows up only as slow logins.
+8. **The mail bodies are DB rows, so "change the copy" is usually a migration, not an edit.** Wording,
+   footer and subject for `password_reset` / `set_password` / `email_verification` live in
+   `email_template`; the seeder only runs on a fresh database. Changing the seeder alone leaves every
+   existing environment on the old text — pair it with a match-on-old-value data migration (`ws-373`).
+9. **Never hand-write the sign-off.** It is `App\Support\EmailSignature::HTML`, referenced by both the
+   seeder and the restyle migration precisely so the contact details cannot drift between them.

@@ -99,6 +99,50 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 ---
 
+## The Patients menu password prompt is client-side only
+
+Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
+(`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
+`api/verify-password` (`API-176`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
+`pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
+the modal unmounts mid-transition.
+
+**Nothing else in either repo knows about this gate:**
+
+| | |
+|---|---|
+| `ProtectedRoute` | never reads `state.passwordVerification` |
+| `AuthController::verifyPassword()` | `Hash::check` → 200, else 422 `api.incorrect_password`. No session flag, no token ability, nothing persisted |
+| every other route into the section | `RegisteredPatientsTab.js` → `/user-panel/patient-tests/:id`, `PatientTestList.js` → `/patients/edit/:id`, `AddPatient.js` and `StartTestConfirmPage.jsx` all `navigate()` straight in |
+| typing the URL, back, forward | loads the page directly |
+
+So it is a shoulder-surfing speed bump on **one click path**, not access control — and the endpoints
+behind it have their own ownership gap
+([S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)). `isVerified` is
+reset every time the modal closes, so it is a one-shot handshake between modal and header, never
+session state. Do not build authorisation on it.
+
+**ws-399** (2026-08-28 — committed, *not yet merged or deployed*) stops the prompt re-firing from
+inside the section:
+
+| Click **Patients** while… | before | ws-399 |
+|---|---|---|
+| outside the section (Take a Test, Credits, Contact Us, Profile) | prompt | prompt — unchanged |
+| already on `/user-panel/patients` | prompt again, then a `replace: true` navigate re-renders the list | nothing happens |
+| on a sub-route (`/patients/add`, `/patients/edit/:id`, `/patient-tests/:id`) | prompt again | back to the list, no prompt |
+
+Leaving the section and returning **still** prompts. The rule is once per *entry*, not once per session;
+that is deliberate, not a regression.
+
+☠️ **`PATIENT_SECTION_PATHS` in `Header.js` is a fourth hard-coded path list**, after
+`protectedRoutes.js`, `routeConfig.js` and `USER_PANEL_WITH_HEADER`. It holds two prefixes —
+`/user-panel/patients` and `/user-panel/patient-tests` — matched as `=== base` or `startsWith(base + "/")`.
+A new patient sub-route registered in the other three but missing here leaves the user inside the
+section while the header still thinks they are outside it, and the prompt comes back.
+
+---
+
 ## Redux
 
 `src/redux/store.js` wires **68 reducers** across 17 slice folders. Two generic factories exist:
@@ -274,6 +318,9 @@ Regenerated every run; the current state:
   `loading` and blank the value already on screen.
 - **Adding a page = 3 files**: `protectedRoutes.js`, `routeConfig.js`, and (for user-panel pages)
   `USER_PANEL_WITH_HEADER` in `Router.js`.
+- **A page under `/user-panel/patients*` or `/user-panel/patient-tests*` = 4** — the same three plus
+  `PATIENT_SECTION_PATHS` in `Header.js`, or the Patients menu re-prompts for the password from inside
+  the section (ws-399, see above).
 - **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on
   2026-08-27 (ws-359) had to touch all four; miss `routeConfig.js` and the page 403s for every role,
   miss `Sidebar.js` and the nav entry silently stops matching.

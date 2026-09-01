@@ -46,9 +46,15 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
+| `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, **not yet merged**) |
 
-**~73 real tests, and they cover exactly four subsystems.** Everything else is untested: auth, the test
-execution loop, invitations, resume, patients, payments, discounts, reports, organisations.
+**~73 real tests on `develop`, covering exactly four subsystems** — **93 once `ws-373` merges**, adding a
+fifth. Everything else is untested: auth, the test execution loop, invitations, resume, patients,
+payments, discounts, reports, organisations.
+
+`EmailContentTest` extends PHPUnit's `TestCase`, not Laravel's — `EmailContent` is pure string handling
+with no container, no DB and no mail faking. That is the cheap pattern to copy for anything extractable
+into `app/Support/`: it runs in milliseconds and sidesteps the SQLite-vs-MySQL trap above entirely.
 
 `tests/Feature/Lms/CreatesLmsFixtures.php` is a **trait**, not a test — it is the shared factory setup.
 Reuse it for anything LMS-related.

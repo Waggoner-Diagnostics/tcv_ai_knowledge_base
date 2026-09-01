@@ -39,13 +39,13 @@ app/
 │   ├── Lms/                 11         Contracts/ · Providers/ · the delivery + launch services
 │   ├── PaymentProviders/     3         Interface · Base · Stripe
 │   └── Reports/              2
-├── Support/                   2        HttpStatus · TestConstants
+├── Support/                   4        HttpStatus · TestConstants · EmailContent · EmailSignature  (ws-373)
 └── Traits/                    1        Searchable
 
 bootstrap/app.php              ← routing, middleware aliases, exception binding  (no Kernel.php in L12)
 bootstrap/providers.php        ← the provider list. EventServiceProvider is absent.
 config/                        ← auth, sanctum, services, filesystems, …
-database/migrations/         109
+database/migrations/         110        (indexed snapshot; +3 in ws-373)
 resources/lang/en/api.php      ← 78 message keys used by ApiResponse
 resources/views/emails/        ← dynamic-template blade
 routes/api.php                 ← 264 lines, three guard zones

@@ -1,6 +1,6 @@
 # Context: Email Invitations & Resume Links
 
-> Load this **instead of** reading the invitation subsystem. ~1.3k tokens. This is how a patient with no
+> Load this **instead of** reading the invitation subsystem. ~1.7k tokens. This is how a patient with no
 > account takes a test.
 
 ## Files
@@ -10,6 +10,8 @@
 | `app/Http/Controllers/TestResumeController.php` (190 lines) | ⭐ Resume-link issue + redemption |
 | `app/Models/TestInvitation.php` · `TestSession.php` · `TestResumeToken.php` | The three token records |
 | `app/Models/TestEmailTemplates.php` · `UserEmailTemplate.php` | Per-user email copy |
+| `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
+| `app/Support/EmailContent.php` | ⭐ Makes bare URLs and `{{placeholder}}`s clickable (`ws-373`) |
 
 ## Tables
 `test_invitations` · `test_sessions` · `test_resume_tokens` · `test_email_templates` · `user_email_templates`
@@ -54,6 +56,32 @@ first `credit` addresses and returns 200 — it does not 402. Only a balance bel
 (removed with the S-13 fix, so a resend can no longer be used to skip the credit check on `send`).
 `POST api/test-invitations/{id}/resend` → `resendUnregisteredInvitation()` issues a *fresh* token + code
 with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = auth()->id()`.
+
+### How the invitation body is assembled
+
+`sendInvitationEmail()` is three passes over one string, and the order matters:
+
+```
+EmailTemplateService::getTemplateForUser(userId, TYPE_TEST_LINK)
+   user_email_templates row  →  test_email_templates (admin default)  →  hard-coded fallback
+ ├─ 1. str_replace the {{test_name}} {{verification_link}} {{verification_code}} {{expires_at}} … vars
+ ├─ 2. restyle: preg_replace_callback rewrites <a href="{the link}"> into the blue button
+ └─ 3. EmailContent::linkify(): wrap any URL still sitting in plain text   ← ws-373
+```
+
+Pass 2 only reaches a link the template **already anchored**; a template whose `{{verification_link}}`
+was saved as plain text needs pass 3. Pass 3 skips anything pass 2 already wrapped, so the two do not
+fight.
+
+☠️ **Pass 2 used to be able to mail an empty email.** `preg_replace_callback` returns `null` when PCRE
+hits its backtrack limit — plausible on a long body, because the pattern is `(.*?)` with `/s` — and that
+`null` was assigned straight back to `$content`. `ws-373` keeps the unstyled content and logs
+`Invitation link restyle failed, sending unstyled content` with `preg_last_error_msg()` instead. If you
+copy this restyle shape anywhere else, keep the null check.
+
+**`EmailTemplateService`'s hard-coded fallback is a real send path**, not dead code — it is used when the
+admin default row is missing. `ws-373` changed it from a bare `<p>{{verification_link}}</p>` to a proper
+button plus a copy-and-paste line, so a missing admin row no longer produces an unclickable email.
 
 ---
 
@@ -121,5 +149,15 @@ a customer's behalf, the credit lands in the wrong account. Compare with
    both flows.
 6. **`resend_count` exists on both `test_invitations` and `patient_tests`** and they are incremented in
    different places. Do not treat either as the total.
-7. **Email copy comes from three places** — `test_email_templates`, `user_email_templates`, and inline
-   heredocs (resume). Changing "the invitation email" may mean changing any of the three.
+7. **Email copy comes from four places** — `test_email_templates` (admin default), `user_email_templates`
+   (per sender), `EmailTemplateService`'s hard-coded fallback, and inline heredocs (resume). Changing
+   "the invitation email" may mean changing any of the four.
+8. **The Quill editor drops what it does not whitelist.** `components/richTextEditor/RichTextEditor.js`
+   passes an explicit `formats` list to `ReactQuill`, so inline `style` attributes — and an `<a>` a user
+   pastes in — can vanish on save. That is why the send path restyles and linkifies rather than trusting
+   the stored markup, and why `ws-373` also repairs the stored rows
+   (`2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates`, chunked at 100 rows because
+   `user_email_templates` holds one `longText` body per user).
+9. **That repair migration skips rows it did not expect.** It rewrites a row only when
+   `EmailContent::anchorPlaceholders()` actually changes it, so an already-anchored or customised
+   template is left alone — and it bumps `updated_at`, which the editor surfaces as "last modified".
