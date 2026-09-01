@@ -1,19 +1,38 @@
 # Jobs & Console Commands
 
-## Jobs — one
+## Jobs — two
 
 | Job | ID | Dispatched from |
 |---|---|---|
 | `ProcessLmsDeliveryJob` | `JOB-001` | `LmsDeliveryService` (3 sites) and itself (`self::dispatch()` on retry) |
+| `SendTestInvitationEmailsJob` | `JOB-002` | `TestInvitationController::sendInvitations()` and `invitations:send-pending` (`ws-404`) |
 
-Its retry model, dead-letter handling and the fact that **no worker is configured** are covered in
-[QUEUES.md](QUEUES.md). Read that before touching it.
+Their retry models, dead-letter handling and the fact that **no worker is configured** are covered in
+[QUEUES.md](QUEUES.md). Read that before touching either.
 
-## Console commands — one
+⭐ `SendTestInvitationEmailsJob` implements `ShouldQueue` but is **never queued**: it is dispatched with
+`->afterResponse()` and runs in the web process. `$tries`, `$backoff` and `failed()` on it are inert
+until a worker exists. See [QUEUES.md](QUEUES.md#after-response-dispatch-ws-404).
+
+## Console commands — three
 
 | Command | Class |
 |---|---|
 | `UploadTestPlates` | `app/Console/Commands/UploadTestPlates.php` |
+| `invitations:send-pending` | `app/Console/Commands/SendPendingInvitations.php` (`ws-404`) |
+| `templates:check-placeholders` | `app/Console/Commands/CheckEmailTemplatePlaceholders.php` (`ws-404`) |
+
+`invitations:send-pending` mails invitations left at `email_status = 'pending'` — the rows a container
+restart stranded mid-send. It skips anything newer than `--minutes=15` so it cannot race a send still
+running in a web process, skips revoked/expired rows, skips rows whose `user_id` is NULL (deleted
+account), and returns a **non-zero exit code** if anything failed or remains pending.
+
+`templates:check-placeholders` scans `user_email_templates` and `test_email_templates` for placeholders
+that will not render. It strips HTML before scanning, so it finds breakage a plain SQL `LIKE` cannot —
+see [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
+
+☠️ **Neither command is scheduled.** `invitations:send-pending` is the only thing that recovers a
+stranded send, and nothing runs it — recovery depends on someone noticing. See the section below.
 
 Uploads test plate images to the S3 bucket. This is an **operator tool**, not part of any flow —
 `SecureImageService::uploadPlateToS3()` exists for the same purpose and carries a comment saying it is

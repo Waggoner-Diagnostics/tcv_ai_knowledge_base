@@ -258,6 +258,36 @@ into the slice without any request at all.
 
 ---
 
+## Send Test & invited patients (`ws-404`)
+
+Delivery moved out of the request on the backend, and both components had to follow.
+
+**`SendTestModal/SendTestModal.js`** — the CSV upload is parsed client-side into the same `emails[]`
+array as typed addresses, so `Upload CSV` and typing 500 addresses hit the identical endpoint. The
+modal now reads `data.queued_invitations`; `successful_emails` / `failed_emails` are gone from the
+response, and reading them produced `NaN` and an empty failure list. Success copy says *queued*, not
+*sent*, because at that point nothing has been delivered yet.
+
+`skipped_emails` still means "dropped for insufficient credit" and is still shown as a partial success.
+It no longer carries send failures — those surface later, per row.
+
+**`PatientPage/InvitedPatientsTab.js`** — `status` gained two values and `statusBadge`'s map had no
+entry for either, so they rendered as an unstyled badge showing the raw word:
+
+| `status` | Badge | Actions |
+|---|---|---|
+| `sending` | "Sending…" | Revoke only — there is nothing to resend yet |
+| `failed` | "Send Failed" | none; shows "Send Failed — Credit Refunded" |
+
+A `failed` row is `is_revoked` server-side, so **both** `resend` and `cancel` 404 on it — offering the
+buttons would only produce errors. Retry by sending the address again from Send Test, which charges a
+credit properly ([CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md)).
+
+☠️ If you add a `status` value on the backend, it must be added to `statusBadge` here too — the map
+falls through to the raw string rather than failing loudly.
+
+---
+
 ## The test player
 
 Sequential URL flow under `/user-panel/start-test/:testId/`:

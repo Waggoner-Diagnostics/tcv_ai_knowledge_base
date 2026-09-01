@@ -111,6 +111,7 @@
 | `SVC-031` | `UserTestsReportService` | class | — | [app/Services/Reports/UserTestsReportService.php:12](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L12) | 6 |
 | `SVC-032` | `XapiStatementBuilder` | class | — | [app/Services/Lms/XapiStatementBuilder.php:11](../../../TCV-Backend/app/Services/Lms/XapiStatementBuilder.php#L11) | 12 |
 | `JOB-001` | `ProcessLmsDeliveryJob` | class | — | [app/Jobs/ProcessLmsDeliveryJob.php:17](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php#L17) | 3 |
+| `JOB-002` | `SendTestInvitationEmailsJob` | class | — | [app/Jobs/SendTestInvitationEmailsJob.php](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php) | 2 | `ws-404` — dispatched `afterResponse()`, never queued |
 | `MW-001` | `EnsureTokenIsValid` | class | — | [app/Http/Middleware/EnsureTokenIsValid.php:9](../../../TCV-Backend/app/Http/Middleware/EnsureTokenIsValid.php#L9) | 1 |
 | `MW-002` | `FlexibleAuthMiddleware` | class | — | [app/Http/Middleware/FlexibleAuthMiddleware.php:14](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L14) | 3 |
 | `MW-003` | `LmsSessionStatusMiddleware` | class | — | [app/Http/Middleware/LmsSessionStatusMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L9) | 1 |
@@ -149,6 +150,8 @@
 | `LSN-002` | `HandleLmsSectionProgressOnCompletion` | class | — | [app/Listeners/HandleLmsSectionProgressOnCompletion.php:10](../../../TCV-Backend/app/Listeners/HandleLmsSectionProgressOnCompletion.php#L10) | 2 |
 | `LSN-003` | `SendAfterPasswordReset` | class | — | [app/Listeners/SendAfterPasswordReset.php:11](../../../TCV-Backend/app/Listeners/SendAfterPasswordReset.php#L11) | 1 |
 | `CMD-001` | `UploadTestPlates` | class | Command | [app/Console/Commands/UploadTestPlates.php:9](../../../TCV-Backend/app/Console/Commands/UploadTestPlates.php#L9) | 1 |
+| `CMD-002` | `SendPendingInvitations` | class | Command | [app/Console/Commands/SendPendingInvitations.php](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php) | 1 | `ws-404` — `invitations:send-pending` |
+| `CMD-003` | `CheckEmailTemplatePlaceholders` | class | Command | [app/Console/Commands/CheckEmailTemplatePlaceholders.php](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php) | 1 | `ws-404` — `templates:check-placeholders` |
 
 ## Other classes (providers, exports, notifications, mail, rules, traits, support, seeders)
 

@@ -44,7 +44,7 @@ the only authority before you write a migration against a column.
 | `TABLE-034` | `sessions` | 6 | `0001_01_01_000001_create_users_table.php` | 2 |
 | `TABLE-035` | `test_conditions` | 4 | `2025_06_20_071025_create_test_conditions_table.php` | 2 |
 | `TABLE-036` | `test_email_templates` | 0 | _altered only_ | 3 |
-| `TABLE-037` | `test_invitations` | 9 | `2026_02_26_084221_create_test_invitations_table.php` | 6 |
+| `TABLE-037` | `test_invitations` | 12 | `2026_02_26_084221_create_test_invitations_table.php` | 7 |
 | `TABLE-038` | `test_resume_tokens` | 5 | `2026_05_25_000002_create_test_resume_tokens_table.php` | 2 |
 | `TABLE-039` | `test_section_plates` | 6 | `2025_06_20_071402_create_test_section_plates_table.php` | 2 |
 | `TABLE-040` | `test_sections` | 22 | `2025_06_20_071148_create_test_sections_table.php` | 8 |
@@ -511,6 +511,17 @@ _No columns detected (index/constraint-only migrations)._
 | `expires_at` | timestamp | `2026_02_26_084221_create_test_invitations_table.php` |
 | `is_revoked` | boolean | `2026_05_06_114739_add_is_revoked_to_test_invitations_table.php` |
 | `resend_count` | unsignedInteger | `2026_05_06_122126_add_resend_count_to_test_invitations_table.php` |
+| `email_status` | string(20), default `'pending'` | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `email_sent_at` | timestamp, nullable | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `email_error` | text, nullable | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+
+Index `(email_status, created_at)` added by the same migration (`ws-404`) — it serves the
+`invitations:send-pending` scan, which is the only query filtering on those columns.
+
+`email_status` ∈ `pending` · `sent` · `failed`. The migration backfills every existing row to `sent`,
+on the reasoning that pre-`ws-404` code deleted the invitation whenever `Mail::send` threw, so a
+surviving row was delivered. See
+[CONTEXT/INVITATION_CONTEXT.md](../CONTEXT/INVITATION_CONTEXT.md).
 
 _Dropped later by a migration (may still be listed above): `is_revoked`, `resend_count`._
 

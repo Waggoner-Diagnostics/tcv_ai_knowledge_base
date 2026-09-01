@@ -13,7 +13,7 @@ controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_
 | **Commerce** | `DiscountCodeService` |
 | **Reports** (`Reports/`) | `UserTestsReportService` · `DiscountCodeReportService` |
 | **Audit** (`Audit/`) | `AuditLogger` · `PricingAuditService` |
-| **Email** | `EmailTemplateService` — plus `App\Support\EmailContent` / `EmailSignature`, which are **not** services: static, dependency-free string helpers shared by the controllers, the notification, the seeder and three data migrations (`ws-373`) |
+| **Email** | `EmailTemplateService`, `TestInvitationMailer` (`ws-404` — renders and sends one invitation; the queue job and the resend path share it) — plus `App\Support\EmailContent` / `EmailSignature`, which are **not** services: static, dependency-free string helpers shared by the controllers, the notification, the seeder and three data migrations (`ws-373`) |
 | **Integrations** | `HubSpotService` · `TurnstileService` |
 
 ## Instantiation patterns — three of them

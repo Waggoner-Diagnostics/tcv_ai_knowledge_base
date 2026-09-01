@@ -41,16 +41,33 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 
 | Suite | Files | Tests | Covers |
 |---|---|---|---|
-| `tests/Feature/Lms/` | 5 + 1 fixture trait | **53** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
+| `tests/Feature/Lms/` | 5 + 1 fixture trait | **54** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
+| `tests/Feature/DiscountCodes/` | 2 | **19** | code validation + redemption, and the live-code unique index migration (`ws-392`, merged) |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 | `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, **not yet merged**) |
+| `tests/Feature/TestInvitations/` | 3 | **35** | `ws-404`, **not yet merged** — batched send + 202, after-response delivery, SMTP 421 retry vs 5xx, credit charge/refund, the recovery command, placeholder validation (typo / markup-split / space-padded), and the review-fix regressions |
 
-**~73 real tests on `develop`, covering exactly four subsystems** — **93 once `ws-373` merges**, adding a
-fifth. Everything else is untested: auth, the test execution loop, invitations, resume, patients,
-payments, discounts, reports, organisations.
+**93 real tests on `develop`** (measured, `php artisan test`) — **113 once `ws-373` merges** and
+**128 once `ws-404` does**, which adds invitations as a new covered subsystem. Everything else is
+untested: auth, the test execution loop, resume, patients, payments, reports, organisations.
+
+The counts above were re-measured on 2026-09-01; the previous "~73" predated the `ws-392` discount-code
+suite and is why `tests/Feature/DiscountCodes/` was missing from this table.
+
+`ws-404`'s suite is the first coverage the invitation subsystem has ever had. Two patterns in it are
+worth reusing:
+
+- **`Mail::fake()` does not work for these emails.** It only records `Mailable` objects, and the
+  invitation is sent as a raw `Mail::send($view, $data, $callback)`. Count
+  `Mail::mailer()->getSymfonyTransport()->messages()` instead — phpunit.xml already sets
+  `MAIL_MAILER=array`.
+- **After-response work runs in feature tests.** The test kernel terminates the request, so
+  `->afterResponse()` batches really execute and really send. Use `Bus::fake()` +
+  `assertDispatchedAfterResponseTimes()` to assert dispatch without sending; omit it to assert the
+  emails genuinely go out.
 
 `EmailContentTest` extends PHPUnit's `TestCase`, not Laravel's — `EmailContent` is pure string handling
 with no container, no DB and no mail faking. That is the cheap pattern to copy for anything extractable

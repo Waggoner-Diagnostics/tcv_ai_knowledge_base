@@ -71,9 +71,21 @@ copy their shape.
 
 | Path | When | Amount | `event_type` recorded |
 |---|---|---|---|
-| `TestInvitationController::sendInvitations()` | at **send** time, per email | 1 per invited address (always the authenticated caller since 2026-08-26) | `test_invitation` |
+| `TestInvitationController::sendInvitations()` | at **queue** time, per email (`ws-404`) | 1 per invited address (always the authenticated caller since 2026-08-26) | `test_invitation` |
+| `SendTestInvitationEmailsJob::markFailed()` | **refund**, per undeliverable address (`ws-404`) | +1, as a `SOURCE_REVOKED` grant | — |
 | `TestAssignmentService` (via `TestController::assignTest()`) | at **assign** time — *unless* `test_invitation_id` is present | 1 | ⚠️ `test_completion` |
 | — | never actually at completion | — | — |
+
+⭐ **Invitation credits are now charged before the email is sent** (`ws-404`). Delivery moved out of the
+request, so the whole batch is billed inside the insert transaction and each address that cannot be
+delivered is refunded individually by the job. Consequences worth knowing:
+
+- A send that is interrupted (container restart) leaves rows at `email_status = 'pending'` **already
+  charged**. `php artisan invitations:send-pending` finishes them; nothing runs it automatically.
+- A refunded row is also `is_revoked = true`, which deliberately blocks both resend and cancel — a
+  resend would be free and a cancel would refund the same charge twice.
+- The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller. This
+  is the opposite of `cancelUnregisteredInvitation()`, which credits `auth()->user()` (the trap below).
 
 ☠️ **The `event_type` values are misleading.** Both spends happen before the test is taken, but the
 direct-assign path records `EVENT_TEST_COMPLETION`. Any report filtering `credit_consume.event_type`

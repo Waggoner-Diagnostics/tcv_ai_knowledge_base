@@ -4,6 +4,15 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 `User::SUPER_ADMIN|CUSTOMER|ORGANIZATION` and the `TestConstants` / `HttpStatus` sets — misreading
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
+## `ws-404` additions
+
+| Constant | Where | Value |
+|---|---|---|
+| `TestInvitation::EMAIL_STATUS_PENDING` / `_SENT` / `_FAILED` | `app/Models/TestInvitation.php` | `'pending'` · `'sent'` · `'failed'` |
+| `SendTestInvitationEmailsJob::BATCH_SIZE` | `app/Jobs/SendTestInvitationEmailsJob.php` | `25` |
+| `SendTestInvitationEmailsJob::MAX_ATTEMPTS_PER_EMAIL` | same | `3` (private) |
+| `config('mail.messages_per_connection')` | `config/mail.php` | `20` — see [CONFIGURATION.md](../CONFIGURATION.md) |
+
 
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 

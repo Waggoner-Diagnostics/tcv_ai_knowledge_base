@@ -57,6 +57,17 @@ here simply never runs — with no error.
 | `config/filesystems.php` | `local` / `public` / `s3`; default is `local` |
 | `config/logging.php` | default `stack` → `single` ([LOGGING.md](LOGGING.md)) |
 | `config/app.php` | `frontend_url` and the derived **`frontend_app_url`** |
+| `config/mail.php` | `messages_per_connection` — **20** (`ws-404`); how many messages one SMTP connection may carry before it is recycled |
+
+☠️ **`MAIL_MESSAGES_PER_CONNECTION` cannot be set from the environment in a deployed container.**
+`.dockerignore` excludes `.env`, so the container has no env file, and the compose `environment:`
+whitelist does not list the variable — `env()` therefore always falls back to the config default.
+Retuning it means editing `config/mail.php` and deploying. The same is true of any new `MAIL_*` key:
+adding it to the env file alone does nothing.
+
+Why it exists: Symfony's `SmtpTransport` recycles its connection only after 100 messages, and SES cuts
+it off before that with `421 too many messages in this connection`. See
+[CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
 
 ## `frontend_app_url`
 

@@ -112,7 +112,7 @@ route is physically nested inside, resolved the way Laravel resolves it.
 | `API-099` | PUT | `api/test-email-templates/{id}` | TestEmailTemplateController@update | `auth:sanctum` | — |
 | `API-100` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus | — | — |
 | `API-101` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode | — | — |
-| `API-102` | POST | `api/test-invitations/send` | TestInvitationController@sendInvitations | `auth:sanctum` | — |
+| `API-102` | POST | `api/test-invitations/send` | TestInvitationController@sendInvitations | `auth:sanctum` | **202** since `ws-404` — queues, does not send. Payload changed: `queued_invitations` replaces `successful_*`/`failed_*` |
 | `API-103` | GET|HEAD | `api/test-invitations/unregistered` | TestInvitationController@getUnregisteredInvitations | `auth:sanctum` | — |
 | `API-104` | POST | `api/test-invitations/{id}/cancel` | TestInvitationController@cancelUnregisteredInvitation | `auth:sanctum` | — |
 | `API-105` | POST | `api/test-invitations/{id}/resend` | TestInvitationController@resendUnregisteredInvitation | `auth:sanctum` | — |

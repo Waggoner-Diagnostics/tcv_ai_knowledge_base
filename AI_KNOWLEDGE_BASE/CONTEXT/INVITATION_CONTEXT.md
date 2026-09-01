@@ -11,6 +11,11 @@
 | `app/Models/TestInvitation.php` · `TestSession.php` · `TestResumeToken.php` | The three token records |
 | `app/Models/TestEmailTemplates.php` · `UserEmailTemplate.php` | Per-user email copy |
 | `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
+| `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email (`ws-404`, extracted from the controller) |
+| `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response (`ws-404`) |
+| `app/Support/EmailTemplatePlaceholders.php` | ⭐ The one placeholder vocabulary; both save paths validate against it (`ws-404`) |
+| `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'` (`ws-404`) |
+| `app/Console/Commands/CheckEmailTemplatePlaceholders.php` | Scans stored templates for placeholders that will not render (`ws-404`) |
 | `app/Support/EmailContent.php` | ⭐ Makes bare URLs and `{{placeholder}}`s clickable (`ws-373`) |
 | `components/richTextEditor/emailPlaceholders.js` *(TCV-Frontend)* | ⭐ Stored HTML ⇄ editor HTML; renders system values as read-only chips (`ws-400`) |
 | `components/richTextEditor/RichTextEditor.js` *(TCV-Frontend)* | The shared Quill wrapper; `lockPlaceholders` turns the chip behaviour on (`ws-400`) |
@@ -39,20 +44,46 @@ All three are stored **in plaintext**. Only the LMS session token is hashed
 POST api/test-invitations/send   ← auth:sanctum. { test_id, emails[≤500], unique_test_id? }
   ├─ owner = $request->user()                   ← NOT from the body
   ├─ Credits::getAvailableCredits(owner->id)    → 402 when short  (guarded for 'Unlimited')
-  ├─ per email: token = Str::random(32), code = upper(random(6)), expires_at = now + 7d
-  ├─ mail the link
-  └─ CreditConsume::consume(user, n, 'test_invitation', [ids])
+  ├─ DB::transaction:                                              ← ws-404
+  │    ├─ bulk insert rows: token, code, expires_at = now+7d, email_status='pending'
+  │    ├─ CreditConsume::consume(user, n, 'test_invitation', [ids])
+  │    └─ PatientTest::increment('resend_count')  when unique_test_id given
+  ├─ 202 Accepted  ← returns here, in well under a second
+  └─ AFTER the response: SendTestInvitationEmailsJob × ceil(n/25) mails the batches
 ```
+
+**The response is now `202`, not `200`, and the payload changed** (`ws-404`). Delivery no longer happens
+inside the request, so it cannot be reported per address:
+
+| Removed | Added |
+|---|---|
+| `successful_invitations`, `successful_emails` | `queued_invitations`, `invitation_ids` |
+| `failed_invitations`, `failed_emails` | `batch_size`, `batches` |
+
+`skipped_emails` / `skipped_count` survive — those are addresses the *request* dropped for insufficient
+credit, which it still knows. Per-address delivery outcome now lives on the row
+(`email_status`, `email_sent_at`, `email_error`) and surfaces via
+`GET api/test-invitations/unregistered`.
 
 **`user_id` is no longer accepted in the body.** It was dropped from the validation rules when the route
 moved into the `auth:sanctum` group on 2026-08-26 — the owner is always `$request->user()`, super-admin
 included. That closed
 [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time).
-`set_time_limit(0)` is still called, so a 500-address call still has no execution-time ceiling, and the
-route is still unthrottled.
+The route is still unthrottled. `set_time_limit(0)` has moved out of the controller and into
+`SendTestInvitationEmailsJob::handle()` (`ws-404`), where it covers the after-response send rather than
+the request — the request itself is now a few hundred inserts and finishes well inside the normal
+limit.
 
-**Short balance truncates rather than rejects.** When `credit < count(emails)` the call sends only the
-first `credit` addresses and returns 200 — it does not 402. Only a balance below 1 is a 402.
+**Short balance truncates rather than rejects.** When `credit < count(emails)` the call queues only the
+first `credit` addresses and returns 202 — it does not 402. Only a balance below 1 is a 402. The
+remainder come back in `skipped_emails`.
+
+**Credits are charged up front and refunded on failure** (`ws-404`). Delivery is asynchronous, so the
+whole batch is billed at insert time; `SendTestInvitationEmailsJob::markFailed()` returns one credit per
+address it cannot deliver, via `Credits::addCreditsToUser(..., SOURCE_REVOKED)`. It also sets
+`is_revoked` — deliberately, because that closes both remediation endpoints for a row whose credit has
+already been returned (a resend would be free, a cancel would refund a second time). Retry by sending
+the address again from Send Test, which charges properly.
 
 **Resend is a separate endpoint and does not re-charge.** The `is_resend` body flag on `send` is **gone**
 (removed with the S-13 fix, so a resend can no longer be used to skip the credit check on `send`).
@@ -158,6 +189,80 @@ Covered by `src/components/richTextEditor/emailPlaceholders.test.js` (11 tests, 
 
 ---
 
+### Delivery state lives on the row (`ws-404`)
+
+`test_invitations` gained `email_status` · `email_sent_at` · `email_error`. The status is the only
+record of what happened to an address, since the 202 cannot report it:
+
+```
+pending ──────► sent      mail accepted by the SMTP server
+   │
+   └──────────► failed    3 attempts exhausted → credit refunded, is_revoked = true
+```
+
+`getUnregisteredInvitations` maps these onto its `status` field, which now has **five** values —
+`sending` (still pending), `failed`, plus the existing `revoked`, `expired`, `pending`. Both new values
+are handled in `InvitedPatientsTab.js`; a `failed` row shows "Send Failed — Credit Refunded" and offers
+no buttons, because both remediation endpoints 404 on a revoked row.
+
+A row stuck at `pending` means a send was interrupted. `php artisan invitations:send-pending` finishes
+it; nothing does so automatically.
+
+### SMTP connection recycling (`ws-404`)
+
+Symfony's `SmtpTransport` reuses **one** connection and only recycles it after 100 messages
+(`$restartThreshold`). SES cuts the connection well before that and answers
+`421 too many messages in this connection`, then closes the socket — and the transport keeps writing to
+it, so every following send in that batch fails too. That produced scattered clusters of failures
+across a bulk send.
+
+Two guards, both in `SendTestInvitationEmailsJob`:
+
+- `capMessagesPerConnection()` sets the threshold from `config('mail.messages_per_connection')`
+  (default **20**) so the client recycles before the server does.
+- `isTransient()` splits SMTP **4xx** (and socket errors, code 0) from **5xx**. A 4xx drops the
+  connection and retries up to 3 times; a 5xx is a real rejection and fails immediately. The 100 ms
+  throttle runs after failures too — a burst of retries at a server already refusing you is what turns
+  one rejection into many.
+
+☠️ `MAIL_MESSAGES_PER_CONNECTION` **does not reach the deployed containers**: `.dockerignore` excludes
+`.env` and the compose `environment:` whitelist does not list it, so `env()` always falls back to 20.
+To retune in production, change the default in `config/mail.php` and deploy.
+
+### Placeholder validation (`ws-404`)
+
+Rendering is a literal `str_replace('{{name}}', …)` over the **stored HTML**. Anything that stops an
+exact match is a silent failure: the raw `{{…}}` text is mailed to the recipient. Validation used to
+require only `{{verification_link}}`, so a typo in any other placeholder shipped.
+
+`app/Support/EmailTemplatePlaceholders.php` is now the single vocabulary, used by
+`UpdateUserEmailTemplateRequest` (per-user save), `TestEmailTemplateController` (admin default) and
+`templates:check-placeholders`. It catches four distinct failures:
+
+| Failure | Example | Reported as |
+|---|---|---|
+| Misspelled | `{{test_namze}}` | unrecognised, with a Levenshtein "did you mean `{{test_name}}`?" |
+| Split by markup | `<strong>{{test_</strong>name}}` | "split by formatting" |
+| Space-padded | `{{ test_name }}` | "spacing is not allowed" |
+| Required missing | no `{{verification_link}}` | missing required placeholder |
+
+Body **and subject** are checked on both paths — the mailer substitutes into both.
+
+⭐ `known()` is deliberately wider than the editor's catalogue: `{{email}}` and `{{token}}` render but
+are not advertised, so a template already using one keeps saving. A test asserts `known()` stays in
+sync with the `$variables` map in `TestInvitationMailer::send()`.
+
+⭐ **A SQL `LIKE` cannot find these.** Quill splits runs, so a corrupted placeholder can read as
+`{{test_namze}}` to the recipient while the column holds `test_nam</strong>z<strong>e`. Use
+`php artisan templates:check-placeholders` (strips tags first) or, in raw SQL,
+`REGEXP_REPLACE(body, '<[^>]*>', '')` on MySQL 8.
+
+**This and `ws-400`'s locked chips solve the same problem from opposite ends.** The chips stop a
+placeholder being edited into a broken half-token in the editor; this validation rejects one that
+arrives broken anyway — from the API directly, from a template saved before `ws-400`, or from a paste.
+Keep both: the chips are the ergonomics, the validation is the guarantee. Neither repairs rows already
+in the database — that is what the scanner command is for.
+
 ## Redeem flow
 
 ```
@@ -212,7 +317,7 @@ a customer's behalf, the credit lands in the wrong account. Compare with
 
 ## ☠️ Traps
 
-1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Still unthrottled, and still `set_time_limit(0)` for ≤500 addresses.
+1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Still unthrottled. `set_time_limit(0)` moved to `SendTestInvitationEmailsJob::handle()` (`ws-404`).
 2. **Cancel refunds the caller, not the owner** (above).
 3. **Expiry is compared as a date in some paths and a datetime in others** — `verifyCode()`/`checkTokenStatus()`
    comment their check as date-based ("expires_at < today") while `TestResumeToken::isExpired()` is a
