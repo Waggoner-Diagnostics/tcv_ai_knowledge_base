@@ -40,7 +40,15 @@ same warning at boot.
 | Deploy | `IMAGE_TAG_BACKEND` |
 
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
-**`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`.
+**`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,
+**`HUBSPOT_TICKET_SOURCE_PROPERTY`** and `HUBSPOT_TICKET_SOURCE_VALUE` (default `TCV`) — ws-396.
+
+⚠️ The HubSpot pair is read by `config/services.php` but **absent from compose**, so the config defaults
+(`tcv_source` / `TCV`) are what every environment actually uses. The property's internal name is
+portal-specific — HubSpot generates it when someone creates the property under Settings → Properties →
+Tickets — so a portal that names it differently needs the var injected, and a portal that has no such
+property degrades to untagged on its own via the rejection fallback in `HubSpotService`. Both defaults
+use `?:` rather than `env()`'s second argument, so setting either var empty is the same as omitting it.
 
 ## Values that are hard-coded, not env-driven
 

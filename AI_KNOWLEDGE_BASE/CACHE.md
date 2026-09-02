@@ -5,7 +5,26 @@ Redis and Memcached hosts are configured but no driver uses them.
 
 ## What is actually cached
 
-**One thing.** `SecureImageService`:
+**Two things.** `SecureImageService` (below) and `HubSpotService`, added by ws-396.
+
+### `HubSpotService` — a negative cache, not a data cache
+
+```php
+Cache::get('hubspot.ticket_source_unsupported.{property}:{value}', false)   // skip tagging?
+Cache::put('hubspot.ticket_source_unsupported.{property}:{value}', true, 86400)
+```
+
+It caches a **failure**, not a value: when HubSpot rejects the custom ticket-source property, the
+service stops sending it for 24 h instead of paying a failed create plus a retry on every enquiry.
+The key carries both property name and value, so repointing either is not held back by the previous
+pair's rejection. The TTL is the self-heal — define the property in HubSpot and the next expiry picks
+it up with no deploy.
+
+⚠️ The flip side: after fixing the property in HubSpot, tagging stays off for up to 24 h unless
+someone runs `php artisan cache:clear`. That is the first thing to check when a correctly configured
+portal still shows no source.
+
+### `SecureImageService`
 
 ```php
 $cacheKey = "plate_url:{$uniqueTestId}:{$testAnswerId}";

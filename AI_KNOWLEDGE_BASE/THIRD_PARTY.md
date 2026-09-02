@@ -56,6 +56,34 @@ Omitting a property leaves it untouched on update and unset on create. Do not "s
 away. `company_name` became optional in `ContactFormRequest` on 2026-08-26 (ws-361), which is what made
 this reachable; the ticket subject also drops the `(company)` suffix when it is absent.
 
+⚠️ **The two contact paths fail differently, on purpose** (ws-396). A failed **update** (PATCH on an
+existing contact) is logged and swallowed — the contact already exists, so the ticket is still filed
+against it and the enquirer gets through with a stale CRM record. A failed **create** still throws:
+with no contact id there is nothing to associate a ticket with, so there is no degraded outcome to
+fall back to. Before ws-396 the PATCH result was discarded entirely, with no log; do not restore that,
+and do not "make the two consistent" by throwing on update — the contact form has **no local
+persistence and no queue**, so a throw there loses the enquiry outright and every resubmission by that
+enquirer fails identically.
+
+### Enquiry source tagging (ws-396)
+
+Tickets carry a custom property naming the product the enquiry came from — `HUBSPOT_TICKET_SOURCE_PROPERTY`
+(internal name, portal-specific, default `tcv_source`) set to `HUBSPOT_TICKET_SOURCE_VALUE` (default
+`TCV`). Neither var is in compose, so both defaults are what actually run; an absent var and an empty
+one mean the same thing, which is why `config/services.php` uses `?:` rather than an `env()` default.
+**This is not HubSpot's built-in ticket `source_type`**, which is a HubSpot-defined dropdown for
+the channel a ticket arrived through; API-created tickets never populate it, so it reads `--` on ticket
+lists no matter what this feature does. A list view has to add the custom property as its own column.
+
+The property is custom, so a portal that never defined it rejects the create outright. The service
+therefore treats a 400 naming that property as a configuration problem rather than bad data: it drops
+the property, remembers the rejection for 24 h ([CACHE.md](CACHE.md)) and retries once, so the enquiry
+still lands untagged. Detection parses the rejected property **name** out of the three shapes HubSpot
+uses to report one — a structured `errors` array, a JSON array embedded in the `message` string, and a
+bare quoted name — and compares it exactly. Do not reduce that to a substring search of the body: the
+body echoes submitted values, so an enquiry mentioning the word would match, as would a neighbouring
+property whose name merely contains it (HubSpot ships a "Source url" beside "Source").
+
 ## Cloudflare Turnstile
 
 `TurnstileService::verify($token, $ip)` posts to `challenges.cloudflare.com/turnstile/v0/siteverify`.
