@@ -95,6 +95,21 @@ from `$request->user()`. The shipped fix went further than this sketch — it re
 
 ### S-02 — Test-session endpoints never check that the caller owns the test
 
+**Severity: high** — **PARTIALLY FIXED 2026-09-02** (`tcv-backend-codefix`). Still open for the five
+endpoints in the table below.
+
+**What the partial fix covered:** only `GET api/test-result/{unique_test_id}/download-pdf`, which is
+not in the table below but had the same defect. It gained
+`TestController::callerOwnsPatientTest()`, binding the certificate to the caller's session. The
+privilege gate that shipped alongside it (`organizationAllowsDownload()`) was **not** an ownership
+check — it only asked whether *some* organization permits downloads, which every test-taker's own org
+answers yes to, and it read `org_id` from request input, so appending `?org_id=<any org with
+privilege 3>` defeated it outright. Both are fixed; `org_id` now comes from the credential.
+
+**The five endpoints below are unchanged and still unscoped.**
+
+---
+
 **Severity: high.**
 
 `FlexibleAuthMiddleware` proves the caller holds *some* valid session. It merges `test_session_id` /
@@ -121,6 +136,18 @@ answers into another patient's test, given the id. UUIDs make `unique_test_id` u
 
 ### S-14 — `patients/{id}` show/update/destroy have no ownership scoping
 
+**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`).
+
+**What the fix did:** `show()` and `update()` now go through a new
+`PatientController::callerOwnsPatient()`, which mirrors `TestController`'s check and reads the
+middleware-resolved credential rather than request input. `destroy()` is staff-only — a test-taker's
+own session can no longer delete the patient record it is bound to. All three return
+`api.patient_not_found` (404, not 403: the caller is not entitled to learn whether the id exists).
+`update()` switched to `$request->validated()` and explicitly `unset($validated['user_id'])`, so a
+patient can no longer be reassigned to another account. The description below is kept for history.
+
+---
+
 **Severity: high** — this one exposes patient data (name, DOB, email, zipcode, gender).
 
 `Route::resource('patients', PatientController::class)` sits inside the **`FlexibleAuthMiddleware`**
@@ -146,6 +173,17 @@ different account.
 `update()` to `$request->validated()`.
 
 ### S-03 — `sendResumeEmail` mails a resume link for any test to any address
+
+**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`).
+
+**What the fix did:** `TestResumeController::callerOwnsPatientTest()` now reads the resolved
+credential instead of request input. The earlier attempt at this check still fell through to a
+body-supplied `patient_id` whenever `test_invitation_id` was null — which is *every org-added
+patient session* — so the hole stayed open on the exact tier it mattered on. Sessions are now bound
+to a patient via the new `test_sessions.patient_id` column and compared against
+`$patientTest->patient_id`. The description below is kept for history.
+
+---
 
 **Severity: high.**
 
@@ -329,14 +367,48 @@ the token lifetime on completion, not reinstating an auth-layer block.
 
 ---
 
+### S-16 — Every client shares one IP: rate limits and IP restriction are both inert
+
+**Severity: high.** **Open** — diagnosed 2026-09-02, fix written but **deliberately not shipped**
+(see *Fix shape* below).
+
+php-fpm sits behind the `backend-nginx` container, and nginx passed only the stock `fastcgi_params`,
+so `REMOTE_ADDR` was **always the nginx container's address**. Laravel had no trusted-proxy
+configuration at all, so `$request->ip()` returned that same proxy address for every request on the
+platform. Two consequences:
+
+- The five rate limiters added for `login`, `register`, `password-reset`, `signature-verify` and
+  `bulk-invitations` all key on `$request->ip()`, so they shared **one global bucket**. Six login
+  attempts in a minute from anywhere locked out every user everywhere. (The `plate-url` limiter keys
+  on the session token instead and was never affected — that asymmetry is what gave the bug away.)
+- `RestrictIpMiddleware` compared that proxy address against `restricted_ips`, so the IP-restriction
+  feature could never match a real client. It was a security control that silently did nothing.
+
+**Fix shape — and why the two halves must ship together.** nginx must forward
+`HTTP_X_FORWARDED_FOR` using `$proxy_add_x_forwarded_for`, which *appends* the real peer so an
+upstream chain survives and a client-supplied header cannot pose as the trusted hop. Laravel must
+then call `trustProxies()` in `bootstrap/app.php`.
+
+☠️ **Shipping the Laravel half alone is worse than shipping neither.** nginx auto-forwards client
+request headers to php-fpm as `HTTP_*` params. If Laravel trusts the nginx container (a private
+address) but nginx does not rewrite the header, a client-sent `X-Forwarded-For` is believed verbatim
+— so an attacker can rotate it per request to bypass every rate limiter completely and evade the
+`restricted_ips` blocklist. That is a *worse* position than today's single shared bucket. The written
+fix was held back on 2026-09-02 for exactly this reason: the nginx side was not being deployed.
+
+If a `TRUSTED_PROXIES` env override is added, parse it as `trim(...) ?: <default>` rather than
+`env('TRUSTED_PROXIES', <default>)` — docker-compose substitutes an *empty string* for an unset
+variable, and `env()` returns that empty string instead of the default, leaving an empty proxy list
+that means "trust no proxy" and silently reinstates the bug.
+
 ## Summary table
 | ID | Finding | Severity | Where |
 |---|---|---|---|
 | `S-01` | Public registration accepts `usertype: 1` | **critical** | `UserRequest` · `AuthController::register()` |
 | `S-13` | ✅ **fixed 2026-08-26** — public invitation send spent any user's credits (≤500 emails) | ~~critical~~ | `TestInvitationController::sendInvitations()` |
-| `S-02` | No test-ownership check on session endpoints | **high** | `TestController` · `TestExecutionService` |
-| `S-03` | `sendResumeEmail` accepts arbitrary test + address | **high** | `TestResumeController` |
-| `S-14` | `patients/{id}` unscoped + `update()` uses `$request->all()` | **high** | `PatientController` |
+| `S-02` | No test-ownership check on session endpoints (⚠️ **partially fixed 2026-09-02** — `download-pdf` scoped; the 5 listed endpoints still open) | **high** | `TestController` · `TestExecutionService` |
+| `S-03` | ✅ **fixed 2026-09-02** — `sendResumeEmail` accepted arbitrary test + address | ~~high~~ | `TestResumeController` |
+| `S-14` | ✅ **fixed 2026-09-02** — `patients/{id}` unscoped + `update()` used `$request->all()` | ~~high~~ | `PatientController` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
@@ -347,6 +419,7 @@ the token lifetime on completion, not reinstating an auth-layer block.
 | `S-10` | Global IP middleware, uncached DB hit per request | low | `RestrictIpMiddleware` |
 | `S-11` | `revokeAccess()` leaves the S3 URL live | low | `SecureImageService` |
 | `S-12` | Trace/message leak outside production | low | `Exceptions\Handler` |
+| `S-16` | Proxy IP makes all rate limits one global bucket and `RestrictIpMiddleware` inert (fix written, **held back** — both halves must ship together) | **high** | `nginx.conf` · `bootstrap/app.php` |
 
 ---
 

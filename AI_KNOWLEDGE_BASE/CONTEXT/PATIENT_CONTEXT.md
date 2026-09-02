@@ -49,6 +49,12 @@
 | Org form (standard) | `POST api/organization/patient/default` | `FlexibleAuthMiddleware` + `lms.status:launched,identity_resolved` |
 | Prolific panel | `POST api/organization/patient/prolific` | same |
 
+☠️ **The org paths also issue a `TestSession`, and it must carry `patient_id`** (column added
+2026-09-02). These sessions have `test_invitation_id = null`, so without that binding they have no
+verifiable identity and every ownership check downstream either denies them outright or falls back to
+forgeable client input — which is exactly what happened. The resume path must carry the binding across
+too. See [AUTH_CONTEXT](AUTH_CONTEXT.md#-auth_context--the-only-trustworthy-answer-to-who-is-calling-2026-09-02).
+
 The org paths honour the organisation's display flags (`anonymize_patient`, `show_gender`, `show_zip`,
 `show_patient_id`, …) — see [ORGANIZATION_CONTEXT](ORGANIZATION_CONTEXT.md). An anonymised org creates
 patients with **no real name**, which is exactly what `index()` keys off to compute `is_prolific`:
@@ -64,11 +70,17 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
 
 ## ☠️ Traps
 
-1. **`show()`, `update()` and `destroy()` have no ownership check** — only `index()` filters by
-   `user_id`. Ids are sequential. This is reachable by *any* of the four token tiers, including an
-   invitation session. [S-14](../SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping).
-2. **`update()` uses `$request->all()`, not `$request->validated()`** — so `PatientUpdateRequest`'s
-   filtering is bypassed and every fillable column is writable, `user_id` included. Same finding.
+1. ✅ **Fixed 2026-09-02 — `show()`, `update()` and `destroy()` are scoped.** They previously had no
+   ownership check at all (only `index()` filtered by `user_id`) while being reachable by *any* of the
+   four token tiers, ids being sequential. They now go through `PatientController::callerOwnsPatient()`,
+   which reads the `auth_context` attribute — **not** request input — and return
+   `api.patient_not_found` (404). `destroy()` is staff-only: a test-taker's session cannot delete the
+   record it is bound to. [S-14](../SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping).
+2. ✅ **Fixed 2026-09-02 — `update()` uses `$request->validated()`** and explicitly drops `user_id`.
+   It previously used `$request->all()`, bypassing `PatientUpdateRequest`'s filtering so every fillable
+   column was writable — and `user_id` is fillable *and* required by the rules, so a single PUT
+   reassigned the patient to another account. Ownership is not editable through this endpoint.
+   Same finding.
 3. **`Patient` soft-deletes; `PatientTest` does not.** `destroy()` sets `deleted_at` and leaves every
    `patient_tests` row live and queryable. Any query that joins **through** `patients` silently drops
    those tests (the global scope hides the parent), while a query straight off `patient_tests` still

@@ -35,18 +35,50 @@ important mechanism in the codebase.
 
 | # | Tier | Presented as | Looked up | Merged into the request |
 |---|---|---|---|---|
-| 1 | **Sanctum** | `Authorization: Bearer …` | `Auth::guard('sanctum')->check()` | (normal `$request->user()`) |
-| 2 | **TestSession** | Bearer **or** `X-Session-Token` | `test_sessions.session_token` — **plaintext** | `test_session_id`, `test_invitation_id`, `session_token` |
-| 3 | **LmsSession** | same | `lms_sessions.session_token` = **SHA-256 of the presented token** | `lms_session_id`, `org_session_id`, `org_id`, `patient_id`, `unique_test_id`, plus `lmsSession` on `$request->attributes` |
-| 4 | **OrganizationPatientSession** | same | `organization_patient_sessions.token` — plaintext | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
+| 1 | **Sanctum** | `Authorization: Bearer …` | `Auth::guard('sanctum')->check()` | **nothing** (normal `$request->user()`) |
+| 2 | **TestSession** | Bearer **or** `X-Session-Token` | `test_sessions.session_token` = **SHA-256** | `test_session_id`, `test_invitation_id`, `session_token` |
+| 3 | **LmsSession** | same | `lms_sessions.session_token` = **SHA-256** | `lms_session_id`, `org_session_id`, `org_id`, `patient_id`, `unique_test_id`, plus `lmsSession` on `$request->attributes` |
+| 4 | **OrganizationPatientSession** | same | `organization_patient_sessions.token` = **SHA-256** | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
+
+### 🔑 `auth_context` — the only trustworthy answer to "who is calling" (2026-09-02)
+
+Read the **`auth_context` request attribute**, never request input, in any authorization check:
+
+```php
+$context = FlexibleAuthMiddleware::context($request);   // null ⇒ treat as unauthorized
+// ['tier', 'user_id', 'org_id', 'patient_id', 'test_invitation_id', 'test_session_id']
+```
+
+All four tiers publish it. It lives on `$request->attributes`, which — unlike `$request->merge()` —
+nothing a client sends can reach or overwrite.
+
+**Why this exists.** Look at the *Merged* column: `org_session_id`, `org_id` and `patient_id` are
+merged by tiers **3 and 4 only**. On tiers 1 and 2 they stayed raw client input, but the ownership
+checks read them anyway, so:
+
+- `org_session_id` (any value) short-circuited `callerOwnsPatient()` to `true` against any patient;
+- `?org_id=<org with privilege 3>` defeated the certificate-download gate;
+- a body `patient_id` let any session mail itself a resume link for someone else's test.
+
+Merged keys are safe to *read* on the tier that merged them. They are not safe to *authorize* on,
+because you cannot tell from the value which tier you are on. That is what `auth_context` is for.
+
+**Tier 2 now carries a patient.** `test_sessions.patient_id` was added 2026-09-02. Org-added-patient
+sessions have `test_invitation_id = null` and previously carried no identity at all — so every
+ownership check fell through to "deny" and the whole organization patient flow 404'd, which is why
+the forgeable `org_session_id` short-circuit was sitting in front of them. Set it wherever a session
+is created for a patient (`PatientController::storeOrganizationPatient`, and the resume path, which
+must carry the binding across).
 
 Tier 4 is explicitly marked *"fallback for pre-migration sessions — remove after Phase 3 cutover."*
 Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no match returns
 `401 'Authentication required.'`
 
 ### Facts
-- **Only tier 3 stores its token hashed.** Tiers 2 and 4 store the raw token. A DB read yields working
-  session tokens for the invitation and legacy-org flows.
+- **All four tiers now store their token SHA-256 hashed** (tiers 2 and 4 were migrated; the KB
+  previously recorded them as plaintext). A DB read no longer yields usable session tokens.
+  Related: the **verification code** is no longer written to the logs either — it is the credential
+  that mints a tier-2 session, and the logs are now JSON-formatted and shippable.
 - **Tier 3 sets `unique_test_id` on the request — and it is the only tier that does.** Controllers
   nonetheless read `unique_test_id` from the URL, which is [S-02](../SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test).
 - Session TTLs: TestSession **2 h**, LmsSession **per provider config** (120 or 180 min),

@@ -99,8 +99,8 @@ Illuminate classes map to their alias, anything else keeps its short class name
 
 ☠️ **Do not remove that normalisation.** `guarded()` in `render.php` recognises an authenticated route by
 matching `auth:sanctum` / `FlexibleAuth` / `signed`. Feed it raw FQCNs and it silently stops matching
-`auth:sanctum` — on the first artisan-sourced run this reported **153 of 176 endpoints as public instead
-of 20**, because 130 Sanctum-guarded routes looked unguarded. The count check is what caught it. If you
+`auth:sanctum` — on the first artisan-sourced run this reported **153 of the 176 routes then indexed as public,
+against a true figure of 20**, because 130 Sanctum-guarded routes looked unguarded. The count check is what caught it. If you
 add a middleware alias to the backend, add it to the map.
 
 Known limits of the static parser: it does not resolve `Route::controller()`, `Route::match()`, or

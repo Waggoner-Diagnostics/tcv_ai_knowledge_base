@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-08-28T19:16:10+02:00",
+    "generated_at": "2026-09-02T12:26:20+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -912,7 +912,7 @@
                 "path": "/api/password/change",
                 "raw": "/api/password/change",
                 "file": "src/redux/slices/userProfile/passwordChangeSlice.js",
-                "line": 10,
+                "line": 12,
                 "orphan": false
             },
             {
@@ -1288,7 +1288,7 @@
                 "path": "/api/user/credits",
                 "raw": "/api/user/credits",
                 "file": "src/redux/slices/userCredits/userCreditSlice.js",
-                "line": 14,
+                "line": 21,
                 "orphan": false
             },
             {
@@ -1376,7 +1376,7 @@
                 "path": "/api/verify-password",
                 "raw": "api/verify-password",
                 "file": "src/redux/slices/auth/passwordVerificationSlice.js",
-                "line": 8,
+                "line": 9,
                 "orphan": false
             },
             {
@@ -1466,7 +1466,9 @@
             "src/redux/slices/tests/userTestSlice.js",
             "src/redux/slices/transaction/transactionSlice.js",
             "src/redux/slices/userCredits/userCreditSlice.js",
+            "src/redux/slices/userCredits/userCreditSlice.test.js",
             "src/redux/slices/userProfile/passwordChangeSlice.js",
+            "src/redux/slices/userProfile/passwordChangeSlice.test.js",
             "src/redux/slices/userProfile/profileSlice.js",
             "src/redux/slices/userProfile/userEmailTemplateSlice.js"
         ],
@@ -1495,14 +1497,14 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 252,
+            "source_files": 256,
             "spa_routes": 74,
             "api_calls": 92,
-            "slices": 40,
+            "slices": 42,
             "hooks": 16,
             "pages": 84,
-            "components": 47,
-            "loc": 34018
+            "components": 49,
+            "loc": 35902
         }
     },
     "website": {

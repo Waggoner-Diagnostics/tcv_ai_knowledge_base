@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-08-28T16:21:46+02:00",
+    "generated_at": "2026-09-02T12:26:12+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "dbbdfadc",
-            "branch": "ws-398",
-            "date": "2026-08-28"
+            "sha": "9d8db8c2",
+            "branch": "tcv-backend-codefix",
+            "date": "2026-09-02"
         },
         "frontend": {
-            "sha": "73667c1",
-            "branch": "ws-398",
-            "date": "2026-08-28"
+            "sha": "47f9403",
+            "branch": "QA",
+            "date": "2026-09-01"
         },
         "website": {
             "sha": "2166ec0",
@@ -19,6 +19,53 @@
         }
     },
     "classes": [
+        {
+            "name": "BackfillStripeSourceApp",
+            "fqcn": "App\\Console\\Commands\\BackfillStripeSourceApp",
+            "kind": "class",
+            "file": "app/Console/Commands/BackfillStripeSourceApp.php",
+            "line": 31,
+            "end_line": 145,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "One-time backfill: tag this app's existing Stripe customers with source_app.",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 37,
+                    "end_line": 144,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "StripeService $stripeService"
+                    ],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "StripeService::appSource",
+                        "option",
+                        "getStripeClient",
+                        "line",
+                        "unique",
+                        "get",
+                        "whereNotNull",
+                        "UserStripeDetail::query",
+                        "isEmpty",
+                        "info",
+                        "count",
+                        "retrieve",
+                        "getMessage",
+                        "update",
+                        "error",
+                        "table",
+                        "comment"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
         {
             "name": "UploadTestPlates",
             "fqcn": "App\\Console\\Commands\\UploadTestPlates",
@@ -166,8 +213,8 @@
             "fqcn": "App\\Exceptions\\Handler",
             "kind": "class",
             "file": "app/Exceptions/Handler.php",
-            "line": 12,
-            "end_line": 53,
+            "line": 13,
+            "end_line": 61,
             "extends": "ExceptionHandler",
             "implements": [],
             "traits": [],
@@ -175,8 +222,8 @@
             "methods": [
                 {
                     "name": "render",
-                    "line": 14,
-                    "end_line": 52,
+                    "line": 15,
+                    "end_line": 60,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -188,6 +235,7 @@
                     "calls": [
                         "json",
                         "errors",
+                        "getResponse",
                         "expectsJson",
                         "error",
                         "environment",
@@ -912,8 +960,8 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 31,
-            "end_line": 776,
+            "line": 32,
+            "end_line": 782,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -921,8 +969,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 35,
-                    "end_line": 38,
+                    "line": 36,
+                    "end_line": 39,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -934,8 +982,8 @@
                 },
                 {
                     "name": "login",
-                    "line": 40,
-                    "end_line": 171,
+                    "line": 41,
+                    "end_line": 172,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -964,8 +1012,8 @@
                 },
                 {
                     "name": "createStripeCustomer",
-                    "line": 173,
-                    "end_line": 180,
+                    "line": 174,
+                    "end_line": 181,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -981,8 +1029,8 @@
                 },
                 {
                     "name": "register",
-                    "line": 182,
-                    "end_line": 228,
+                    "line": 183,
+                    "end_line": 229,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1011,8 +1059,8 @@
                 },
                 {
                     "name": "sendResetLinkEmail",
-                    "line": 230,
-                    "end_line": 260,
+                    "line": 231,
+                    "end_line": 261,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1037,8 +1085,8 @@
                 },
                 {
                     "name": "setOrResetPassword",
-                    "line": 262,
-                    "end_line": 341,
+                    "line": 263,
+                    "end_line": 342,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1073,8 +1121,8 @@
                 },
                 {
                     "name": "verifySetupToken",
-                    "line": 343,
-                    "end_line": 363,
+                    "line": 344,
+                    "end_line": 364,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1094,8 +1142,8 @@
                 },
                 {
                     "name": "verifyEmail",
-                    "line": 366,
-                    "end_line": 386,
+                    "line": 367,
+                    "end_line": 387,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1115,8 +1163,8 @@
                 },
                 {
                     "name": "logout",
-                    "line": 388,
-                    "end_line": 393,
+                    "line": 389,
+                    "end_line": 394,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1133,8 +1181,8 @@
                 },
                 {
                     "name": "impersonateUser",
-                    "line": 395,
-                    "end_line": 414,
+                    "line": 396,
+                    "end_line": 415,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1154,8 +1202,8 @@
                 },
                 {
                     "name": "stopImpersonation",
-                    "line": 416,
-                    "end_line": 426,
+                    "line": 417,
+                    "end_line": 427,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1176,8 +1224,8 @@
                 },
                 {
                     "name": "isTokenValid",
-                    "line": 434,
-                    "end_line": 486,
+                    "line": 435,
+                    "end_line": 487,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1196,8 +1244,8 @@
                 },
                 {
                     "name": "verifyPassword",
-                    "line": 494,
-                    "end_line": 506,
+                    "line": 495,
+                    "end_line": 507,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1215,8 +1263,8 @@
                 },
                 {
                     "name": "changePassword",
-                    "line": 514,
-                    "end_line": 541,
+                    "line": 515,
+                    "end_line": 542,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1246,8 +1294,8 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
-                    "line": 548,
-                    "end_line": 648,
+                    "line": 549,
+                    "end_line": 654,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1263,6 +1311,7 @@
                         "first",
                         "where",
                         "DB::table",
+                        "EmailContent::linkify",
                         "Mail::html",
                         "from",
                         "subject",
@@ -1274,8 +1323,8 @@
                 },
                 {
                     "name": "verifyEmailByToken",
-                    "line": 655,
-                    "end_line": 710,
+                    "line": 661,
+                    "end_line": 716,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1297,8 +1346,8 @@
                 },
                 {
                     "name": "resendVerificationByToken",
-                    "line": 717,
-                    "end_line": 746,
+                    "line": 723,
+                    "end_line": 752,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1319,8 +1368,8 @@
                 },
                 {
                     "name": "resendEmailVerificationLink",
-                    "line": 748,
-                    "end_line": 774,
+                    "line": 754,
+                    "end_line": 780,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1416,7 +1465,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/CreditsController.php",
             "line": 19,
-            "end_line": 180,
+            "end_line": 189,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1510,11 +1559,12 @@
                 {
                     "name": "checkDiscountCodeValidity",
                     "line": 112,
-                    "end_line": 131,
+                    "end_line": 140,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "Request $request"
+                        "Request $request",
+                        "string $coupon_code"
                     ],
                     "returns": "",
                     "doc": "",
@@ -1524,13 +1574,14 @@
                         "first",
                         "where",
                         "Credits::where",
+                        "toDateString",
                         "json"
                     ]
                 },
                 {
                     "name": "revokeCredit",
-                    "line": 142,
-                    "end_line": 179,
+                    "line": 151,
+                    "end_line": 188,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1567,7 +1618,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
             "line": 18,
-            "end_line": 255,
+            "end_line": 253,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1775,7 +1826,7 @@
                 {
                     "name": "codeAvailable",
                     "line": 204,
-                    "end_line": 221,
+                    "end_line": 219,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1788,15 +1839,14 @@
                         "json",
                         "exists",
                         "when",
-                        "where",
-                        "DiscountCode::withTrashed",
+                        "DiscountCode::where",
                         "whereKeyNot"
                     ]
                 },
                 {
                     "name": "formatDiscount",
-                    "line": 225,
-                    "end_line": 254,
+                    "line": 223,
+                    "end_line": 252,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2134,7 +2184,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
             "line": 30,
-            "end_line": 883,
+            "end_line": 888,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2157,7 +2207,7 @@
                 {
                     "name": "index",
                     "line": 38,
-                    "end_line": 159,
+                    "end_line": 164,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2182,8 +2232,9 @@
                         "DB::table",
                         "leftJoinSub",
                         "orWhere",
-                        "startOfDay",
+                        "toDateString",
                         "on",
+                        "DB::getDriverName",
                         "DB::raw",
                         "orderByDesc",
                         "paginate",
@@ -2198,8 +2249,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 161,
-                    "end_line": 223,
+                    "line": 166,
+                    "end_line": 228,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2236,8 +2287,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 225,
-                    "end_line": 236,
+                    "line": 230,
+                    "end_line": 241,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2256,8 +2307,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 238,
-                    "end_line": 333,
+                    "line": 243,
+                    "end_line": 338,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2298,8 +2349,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 335,
-                    "end_line": 359,
+                    "line": 340,
+                    "end_line": 364,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2323,8 +2374,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 361,
-                    "end_line": 388,
+                    "line": 366,
+                    "end_line": 393,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2349,8 +2400,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 394,
-                    "end_line": 459,
+                    "line": 399,
+                    "end_line": 464,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2380,8 +2431,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 465,
-                    "end_line": 589,
+                    "line": 470,
+                    "end_line": 594,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2413,8 +2464,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 594,
-                    "end_line": 663,
+                    "line": 599,
+                    "end_line": 668,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2432,8 +2483,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 669,
-                    "end_line": 709,
+                    "line": 674,
+                    "end_line": 714,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2456,8 +2507,8 @@
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 716,
-                    "end_line": 758,
+                    "line": 721,
+                    "end_line": 763,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2480,8 +2531,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 765,
-                    "end_line": 802,
+                    "line": 770,
+                    "end_line": 807,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2507,8 +2558,8 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 815,
-                    "end_line": 856,
+                    "line": 820,
+                    "end_line": 861,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2530,15 +2581,15 @@
                         "leftJoinSub",
                         "where",
                         "orWhere",
-                        "startOfDay",
+                        "toDateString",
                         "on",
                         "map"
                     ]
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 861,
-                    "end_line": 882,
+                    "line": 866,
+                    "end_line": 887,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2564,8 +2615,8 @@
             "fqcn": "App\\Http\\Controllers\\OrganizationPatientController",
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationPatientController.php",
-            "line": 15,
-            "end_line": 305,
+            "line": 16,
+            "end_line": 315,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2573,8 +2624,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 17,
-                    "end_line": 20,
+                    "line": 18,
+                    "end_line": 21,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2586,8 +2637,8 @@
                 },
                 {
                     "name": "verifyTurnstileToken",
-                    "line": 25,
-                    "end_line": 48,
+                    "line": 26,
+                    "end_line": 49,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2603,8 +2654,8 @@
                 },
                 {
                     "name": "storeProlificPatient",
-                    "line": 54,
-                    "end_line": 174,
+                    "line": 55,
+                    "end_line": 175,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2636,8 +2687,8 @@
                 },
                 {
                     "name": "storeDefaultPatient",
-                    "line": 180,
-                    "end_line": 304,
+                    "line": 181,
+                    "end_line": 314,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2651,6 +2702,8 @@
                         "verifyTurnstileToken",
                         "Organization::find",
                         "all",
+                        "validate",
+                        "Validator::make",
                         "DB::transaction",
                         "Patient::create",
                         "advanceStatus",
@@ -2721,7 +2774,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/PatientController.php",
             "line": 23,
-            "end_line": 432,
+            "end_line": 526,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2769,7 +2822,7 @@
                 {
                     "name": "store",
                     "line": 67,
-                    "end_line": 102,
+                    "end_line": 104,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2792,25 +2845,28 @@
                 },
                 {
                     "name": "show",
-                    "line": 107,
-                    "end_line": 113,
+                    "line": 109,
+                    "end_line": 124,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
                     "doc": "Display the specified resource.",
                     "calls": [
                         "Log::info",
-                        "Patient::findOrFail",
+                        "Patient::find",
+                        "callerOwnsPatient",
+                        "ApiResponse::error",
                         "json"
                     ]
                 },
                 {
                     "name": "update",
-                    "line": 118,
-                    "end_line": 129,
+                    "line": 129,
+                    "end_line": 148,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2821,34 +2877,59 @@
                     "doc": "Update the specified resource in storage.",
                     "calls": [
                         "Log::info",
-                        "all",
-                        "Patient::findOrFail",
+                        "Patient::find",
+                        "callerOwnsPatient",
+                        "ApiResponse::error",
+                        "validated",
                         "update",
                         "json"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 134,
-                    "end_line": 143,
+                    "line": 153,
+                    "end_line": 170,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
                     "doc": "Remove the specified resource from storage.",
                     "calls": [
                         "Log::info",
-                        "Patient::findOrFail",
+                        "Patient::find",
+                        "user",
+                        "isSuperAdmin",
+                        "ApiResponse::error",
                         "delete",
                         "json"
                     ]
                 },
                 {
+                    "name": "callerOwnsPatient",
+                    "line": 178,
+                    "end_line": 212,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "Patient $patient"
+                    ],
+                    "returns": "bool",
+                    "doc": "Whether the caller (any of FlexibleAuthMiddleware's four credential tiers) may",
+                    "calls": [
+                        "App\\Http\\Middleware\\FlexibleAuthMiddleware::context",
+                        "user",
+                        "isSuperAdmin",
+                        "App\\Models\\TestInvitation::find"
+                    ]
+                },
+                {
                     "name": "resendTestLink",
-                    "line": 145,
-                    "end_line": 176,
+                    "line": 214,
+                    "end_line": 265,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2858,21 +2939,25 @@
                     "doc": "",
                     "calls": [
                         "validate",
-                        "Patient::findOrFail",
+                        "user",
                         "ApiResponse::error",
+                        "Patient::find",
+                        "isSuperAdmin",
                         "firstOrFail",
                         "where",
                         "PatientTest::where",
                         "generateAndSendTestLink",
                         "increment",
                         "ApiResponse::success",
-                        "fresh"
+                        "fresh",
+                        "Log::error",
+                        "getMessage"
                     ]
                 },
                 {
                     "name": "getPatientTests",
-                    "line": 187,
-                    "end_line": 236,
+                    "line": 276,
+                    "end_line": 325,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2900,8 +2985,8 @@
                 },
                 {
                     "name": "storeOrganizationPatient",
-                    "line": 242,
-                    "end_line": 431,
+                    "line": 331,
+                    "end_line": 525,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2942,7 +3027,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/PaymentController.php",
             "line": 12,
-            "end_line": 279,
+            "end_line": 283,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2998,7 +3083,7 @@
                 {
                     "name": "initializePayment",
                     "line": 56,
-                    "end_line": 88,
+                    "end_line": 92,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3019,8 +3104,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 90,
-                    "end_line": 147,
+                    "line": 94,
+                    "end_line": 151,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3040,8 +3125,8 @@
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 149,
-                    "end_line": 165,
+                    "line": 153,
+                    "end_line": 169,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3060,8 +3145,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 170,
-                    "end_line": 198,
+                    "line": 174,
+                    "end_line": 202,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3084,8 +3169,8 @@
                 },
                 {
                     "name": "getCreditHistory",
-                    "line": 207,
-                    "end_line": 278,
+                    "line": 211,
+                    "end_line": 282,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3590,7 +3675,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/StripePaymentController.php",
             "line": 19,
-            "end_line": 410,
+            "end_line": 416,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3738,7 +3823,7 @@
                 {
                     "name": "partialRefund",
                     "line": 314,
-                    "end_line": 343,
+                    "end_line": 346,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3751,14 +3836,15 @@
                         "Transaction::findOrFail",
                         "json",
                         "Refund::create",
+                        "StripeService::appSource",
                         "save",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "refund",
-                    "line": 348,
-                    "end_line": 372,
+                    "line": 351,
+                    "end_line": 378,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3770,6 +3856,7 @@
                         "validated",
                         "Transaction::findOrFail",
                         "Refund::create",
+                        "StripeService::appSource",
                         "save",
                         "json",
                         "getMessage"
@@ -3777,8 +3864,8 @@
                 },
                 {
                     "name": "paymentCallback",
-                    "line": 374,
-                    "end_line": 385,
+                    "line": 380,
+                    "end_line": 391,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3793,8 +3880,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 390,
-                    "end_line": 409,
+                    "line": 396,
+                    "end_line": 415,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3824,7 +3911,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/SuperAdminDashboardController.php",
             "line": 14,
-            "end_line": 163,
+            "end_line": 168,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3833,7 +3920,7 @@
                 {
                     "name": "index",
                     "line": 16,
-                    "end_line": 145,
+                    "end_line": 150,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3849,6 +3936,7 @@
                         "startOfMonth",
                         "copy",
                         "subMonths",
+                        "DB::getDriverName",
                         "pluck",
                         "groupBy",
                         "selectRaw",
@@ -3877,8 +3965,8 @@
                 },
                 {
                     "name": "buildMonthlyGrid",
-                    "line": 147,
-                    "end_line": 162,
+                    "line": 152,
+                    "end_line": 167,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4133,8 +4221,8 @@
             "fqcn": "App\\Http\\Controllers\\TestController",
             "kind": "class",
             "file": "app/Http/Controllers/TestController.php",
-            "line": 28,
-            "end_line": 679,
+            "line": 31,
+            "end_line": 851,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4142,8 +4230,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 36,
-                    "end_line": 48,
+                    "line": 39,
+                    "end_line": 51,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4159,8 +4247,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 49,
-                    "end_line": 56,
+                    "line": 52,
+                    "end_line": 59,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4180,8 +4268,8 @@
                 },
                 {
                     "name": "userIndex",
-                    "line": 58,
-                    "end_line": 85,
+                    "line": 61,
+                    "end_line": 88,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4202,8 +4290,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 87,
-                    "end_line": 94,
+                    "line": 90,
+                    "end_line": 97,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4221,8 +4309,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 96,
-                    "end_line": 101,
+                    "line": 99,
+                    "end_line": 104,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4239,8 +4327,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 103,
-                    "end_line": 113,
+                    "line": 106,
+                    "end_line": 116,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4260,8 +4348,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 122,
-                    "end_line": 131,
+                    "line": 125,
+                    "end_line": 134,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4280,8 +4368,8 @@
                 },
                 {
                     "name": "assignTest",
-                    "line": 139,
-                    "end_line": 215,
+                    "line": 142,
+                    "end_line": 223,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4294,11 +4382,12 @@
                         "Patient::findOrFail",
                         "firstOrFail",
                         "Patient::where",
+                        "callerOwnsPatient",
+                        "ApiResponse::error",
                         "input",
                         "DB::beginTransaction",
                         "Credits::getAvailableCredits",
                         "DB::rollBack",
-                        "ApiResponse::error",
                         "checkForActiveTest",
                         "createBothEyesTests",
                         "createSingleEyeTest",
@@ -4314,8 +4403,8 @@
                 },
                 {
                     "name": "performTest",
-                    "line": 223,
-                    "end_line": 252,
+                    "line": 231,
+                    "end_line": 260,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4340,8 +4429,8 @@
                 },
                 {
                     "name": "getTestSession",
-                    "line": 260,
-                    "end_line": 279,
+                    "line": 268,
+                    "end_line": 287,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4359,8 +4448,8 @@
                 },
                 {
                     "name": "getSectionPlates",
-                    "line": 288,
-                    "end_line": 307,
+                    "line": 296,
+                    "end_line": 315,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4379,8 +4468,8 @@
                 },
                 {
                     "name": "getPlateUrl",
-                    "line": 313,
-                    "end_line": 331,
+                    "line": 321,
+                    "end_line": 339,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4399,8 +4488,8 @@
                 },
                 {
                     "name": "getTestResult",
-                    "line": 339,
-                    "end_line": 374,
+                    "line": 347,
+                    "end_line": 382,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4422,11 +4511,12 @@
                 },
                 {
                     "name": "downloadTestResultPDF",
-                    "line": 382,
-                    "end_line": 482,
+                    "line": 390,
+                    "end_line": 510,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$unique_test_id"
                     ],
                     "returns": "",
@@ -4436,6 +4526,9 @@
                         "with",
                         "PatientTest::where",
                         "ApiResponse::error",
+                        "callerOwnsPatientTest",
+                        "check",
+                        "organizationAllowsDownload",
                         "generateTestResult",
                         "first",
                         "where",
@@ -4456,9 +4549,66 @@
                     ]
                 },
                 {
-                    "name": "getActiveTest",
-                    "line": 493,
+                    "name": "organizationAllowsDownload",
+                    "line": 518,
                     "end_line": 558,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "PatientTest $patientTest"
+                    ],
+                    "returns": "bool",
+                    "doc": "Whether the organization behind the current test-invitation session allows",
+                    "calls": [
+                        "FlexibleAuthMiddleware::context",
+                        "TestInvitation::find",
+                        "value",
+                        "Organization::where",
+                        "Organization::find"
+                    ]
+                },
+                {
+                    "name": "callerOwnsPatientTest",
+                    "line": 566,
+                    "end_line": 597,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "PatientTest $patientTest"
+                    ],
+                    "returns": "bool",
+                    "doc": "Whether this caller may read this specific completed test's certificate.",
+                    "calls": [
+                        "FlexibleAuthMiddleware::context",
+                        "user",
+                        "isSuperAdmin"
+                    ]
+                },
+                {
+                    "name": "callerOwnsPatient",
+                    "line": 606,
+                    "end_line": 649,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "Patient $patient"
+                    ],
+                    "returns": "bool",
+                    "doc": "Whether the caller (any of FlexibleAuthMiddleware's four credential tiers)",
+                    "calls": [
+                        "FlexibleAuthMiddleware::context",
+                        "user",
+                        "isSuperAdmin",
+                        "TestInvitation::find"
+                    ]
+                },
+                {
+                    "name": "getActiveTest",
+                    "line": 660,
+                    "end_line": 730,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4468,6 +4618,9 @@
                     "doc": "Get the active test for a patient and test, eye-configuration-aware.",
                     "calls": [
                         "validate",
+                        "Patient::find",
+                        "callerOwnsPatient",
+                        "ApiResponse::error",
                         "get",
                         "has",
                         "first",
@@ -4482,8 +4635,8 @@
                 },
                 {
                     "name": "getActiveTestsWithAssignmentFlag",
-                    "line": 560,
-                    "end_line": 583,
+                    "line": 732,
+                    "end_line": 755,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4505,8 +4658,8 @@
                 },
                 {
                     "name": "assignUserTest",
-                    "line": 585,
-                    "end_line": 591,
+                    "line": 757,
+                    "end_line": 763,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4523,8 +4676,8 @@
                 },
                 {
                     "name": "unassignUserTest",
-                    "line": 593,
-                    "end_line": 604,
+                    "line": 765,
+                    "end_line": 776,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4543,8 +4696,8 @@
                 },
                 {
                     "name": "bulkUpdateAssignment",
-                    "line": 606,
-                    "end_line": 678,
+                    "line": 778,
+                    "end_line": 850,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4582,7 +4735,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/TestEmailTemplateController.php",
             "line": 13,
-            "end_line": 310,
+            "end_line": 311,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4591,7 +4744,7 @@
                 {
                     "name": "index",
                     "line": 22,
-                    "end_line": 67,
+                    "end_line": 68,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4610,8 +4763,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 76,
-                    "end_line": 163,
+                    "line": 77,
+                    "end_line": 164,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4643,8 +4796,8 @@
                 },
                 {
                     "name": "validateTemplateData",
-                    "line": 172,
-                    "end_line": 186,
+                    "line": 173,
+                    "end_line": 187,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4659,8 +4812,8 @@
                 },
                 {
                     "name": "validateRequiredPlaceholders",
-                    "line": 195,
-                    "end_line": 227,
+                    "line": 196,
+                    "end_line": 228,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4673,8 +4826,8 @@
                 },
                 {
                     "name": "getPlaceholders",
-                    "line": 235,
-                    "end_line": 309,
+                    "line": 236,
+                    "end_line": 310,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4695,8 +4848,8 @@
             "fqcn": "App\\Http\\Controllers\\TestInvitationController",
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
-            "line": 20,
-            "end_line": 547,
+            "line": 21,
+            "end_line": 579,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4704,8 +4857,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 22,
-                    "end_line": 25,
+                    "line": 23,
+                    "end_line": 26,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4717,8 +4870,8 @@
                 },
                 {
                     "name": "sendInvitations",
-                    "line": 27,
-                    "end_line": 199,
+                    "line": 28,
+                    "end_line": 200,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4751,8 +4904,8 @@
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 205,
-                    "end_line": 255,
+                    "line": 206,
+                    "end_line": 256,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4784,8 +4937,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 261,
-                    "end_line": 290,
+                    "line": 262,
+                    "end_line": 291,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4813,8 +4966,8 @@
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 295,
-                    "end_line": 331,
+                    "line": 296,
+                    "end_line": 332,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4842,8 +4995,8 @@
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 333,
-                    "end_line": 376,
+                    "line": 334,
+                    "end_line": 393,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4860,6 +5013,8 @@
                         "format",
                         "addDays",
                         "Carbon::now",
+                        "Log::warning",
+                        "EmailContent::linkify",
                         "Mail::send",
                         "subject",
                         "to",
@@ -4868,8 +5023,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 381,
-                    "end_line": 479,
+                    "line": 398,
+                    "end_line": 509,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4885,12 +5040,15 @@
                         "input",
                         "json",
                         "isExpired",
+                        "DB::transaction",
+                        "lockForUpdate",
+                        "TestInvitation::where",
                         "update",
                         "App\\Models\\TestSession::where",
-                        "Log::info",
                         "Str::random",
                         "App\\Models\\TestSession::create",
                         "addHours",
+                        "Log::info",
                         "orderBy",
                         "PatientTest::where",
                         "Log::error",
@@ -4899,8 +5057,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 484,
-                    "end_line": 545,
+                    "line": 514,
+                    "end_line": 577,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4927,8 +5085,8 @@
             "fqcn": "App\\Http\\Controllers\\TestResumeController",
             "kind": "class",
             "file": "app/Http/Controllers/TestResumeController.php",
-            "line": 14,
-            "end_line": 190,
+            "line": 15,
+            "end_line": 302,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4936,8 +5094,8 @@
             "methods": [
                 {
                     "name": "sendResumeEmail",
-                    "line": 22,
-                    "end_line": 75,
+                    "line": 23,
+                    "end_line": 107,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4952,6 +5110,11 @@
                         "where",
                         "PatientTest::with",
                         "json",
+                        "callerOwnsPatientTest",
+                        "Log::warning",
+                        "DB::transaction",
+                        "lockForUpdate",
+                        "PatientTest::where",
                         "update",
                         "TestResumeToken::where",
                         "Str::random",
@@ -4965,9 +5128,27 @@
                     ]
                 },
                 {
+                    "name": "callerOwnsPatientTest",
+                    "line": 113,
+                    "end_line": 150,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "PatientTest $patientTest"
+                    ],
+                    "returns": "bool",
+                    "doc": "Whether the credential the caller presented (any of FlexibleAuthMiddleware's",
+                    "calls": [
+                        "App\\Http\\Middleware\\FlexibleAuthMiddleware::context",
+                        "user",
+                        "isSuperAdmin"
+                    ]
+                },
+                {
                     "name": "resume",
-                    "line": 81,
-                    "end_line": 154,
+                    "line": 156,
+                    "end_line": 266,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4982,6 +5163,8 @@
                         "json",
                         "isExpired",
                         "PatientTest::where",
+                        "DB::transaction",
+                        "lockForUpdate",
                         "update",
                         "where",
                         "TestSession::where",
@@ -4995,8 +5178,8 @@
                 },
                 {
                     "name": "dispatchResumeEmail",
-                    "line": 156,
-                    "end_line": 189,
+                    "line": 268,
+                    "end_line": 301,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5020,7 +5203,7 @@
                 {
                     "name": "TOKEN_EXPIRY_DAYS",
                     "value": "7",
-                    "line": 16
+                    "line": 17
                 }
             ],
             "relations": []
@@ -5273,7 +5456,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
             "line": 25,
-            "end_line": 381,
+            "end_line": 386,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5422,7 +5605,7 @@
                 {
                     "name": "userWithType",
                     "line": 212,
-                    "end_line": 323,
+                    "end_line": 328,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5441,13 +5624,14 @@
                         "search",
                         "first",
                         "selectRaw",
+                        "DB::getDriverName",
                         "paginate",
                         "orderBy",
                         "groupBy",
                         "CreditConsume::selectRaw",
                         "Credits::selectRaw",
                         "orWhere",
-                        "startOfDay",
+                        "toDateString",
                         "leftJoinSub",
                         "on",
                         "orderByDesc",
@@ -5463,8 +5647,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 325,
-                    "end_line": 337,
+                    "line": 330,
+                    "end_line": 342,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -5480,8 +5664,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 342,
-                    "end_line": 380,
+                    "line": 347,
+                    "end_line": 385,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5499,7 +5683,7 @@
                         "where",
                         "Credits::whereIn",
                         "orWhere",
-                        "startOfDay",
+                        "toDateString",
                         "CreditConsume::whereIn",
                         "map"
                     ]
@@ -5592,21 +5776,21 @@
             "relations": []
         },
         {
-            "name": "EnsureTokenIsValid",
-            "fqcn": "App\\Http\\Middleware\\EnsureTokenIsValid",
+            "name": "AddRequestId",
+            "fqcn": "App\\Http\\Middleware\\AddRequestId",
             "kind": "class",
-            "file": "app/Http/Middleware/EnsureTokenIsValid.php",
-            "line": 9,
-            "end_line": 24,
+            "file": "app/Http/Middleware/AddRequestId.php",
+            "line": 20,
+            "end_line": 35,
             "extends": "",
             "implements": [],
             "traits": [],
-            "doc": "",
+            "doc": "Assigns a correlation ID to every request and adds it to Laravel's Context,",
             "methods": [
                 {
                     "name": "handle",
-                    "line": 16,
-                    "end_line": 23,
+                    "line": 22,
+                    "end_line": 34,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5614,10 +5798,12 @@
                         "Closure $next"
                     ],
                     "returns": "Response",
-                    "doc": "Handle an incoming request.",
+                    "doc": "",
                     "calls": [
-                        "user",
-                        "json"
+                        "header",
+                        "Str::uuid",
+                        "Context::add",
+                        "set"
                     ]
                 }
             ],
@@ -5630,16 +5816,47 @@
             "kind": "class",
             "file": "app/Http/Middleware/FlexibleAuthMiddleware.php",
             "line": 14,
-            "end_line": 110,
+            "end_line": 182,
             "extends": "",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
+                    "name": "context",
+                    "line": 34,
+                    "end_line": 37,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "?array",
+                    "doc": "Read the resolved credential for this request. Returns null when the request",
+                    "calls": [
+                        "get"
+                    ]
+                },
+                {
+                    "name": "setAuthContext",
+                    "line": 39,
+                    "end_line": 49,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "array $context"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "set"
+                    ]
+                },
+                {
                     "name": "handle",
-                    "line": 16,
-                    "end_line": 92,
+                    "line": 51,
+                    "end_line": 154,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5651,12 +5868,15 @@
                     "calls": [
                         "check",
                         "Auth::guard",
+                        "setAuthContext",
+                        "id",
                         "bearerToken",
                         "header",
                         "unauthenticated",
                         "first",
                         "TestSession::where",
                         "isPast",
+                        "sessionSuperseded",
                         "sessionExpired",
                         "merge",
                         "with",
@@ -5667,8 +5887,21 @@
                 },
                 {
                     "name": "sessionExpired",
-                    "line": 94,
-                    "end_line": 101,
+                    "line": 156,
+                    "end_line": 163,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "Response",
+                    "doc": "",
+                    "calls": [
+                        "json"
+                    ]
+                },
+                {
+                    "name": "sessionSuperseded",
+                    "line": 165,
+                    "end_line": 173,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -5680,8 +5913,8 @@
                 },
                 {
                     "name": "unauthenticated",
-                    "line": 103,
-                    "end_line": 109,
+                    "line": 175,
+                    "end_line": 181,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -5692,7 +5925,33 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "CONTEXT_KEY",
+                    "value": "'auth_context'",
+                    "line": 22
+                },
+                {
+                    "name": "TIER_SANCTUM",
+                    "value": "'sanctum'",
+                    "line": 24
+                },
+                {
+                    "name": "TIER_TEST_SESSION",
+                    "value": "'test_session'",
+                    "line": 25
+                },
+                {
+                    "name": "TIER_LMS_SESSION",
+                    "value": "'lms_session'",
+                    "line": 26
+                },
+                {
+                    "name": "TIER_ORG_PATIENT_SESSION",
+                    "value": "'org_patient_session'",
+                    "line": 27
+                }
+            ],
             "relations": []
         },
         {
@@ -6400,6 +6659,7 @@
                     "returns": "array",
                     "doc": "",
                     "calls": [
+                        "whereNull",
                         "Rule::unique",
                         "Rule::in"
                     ]
@@ -7450,7 +7710,7 @@
             "kind": "class",
             "file": "app/Models/Credits.php",
             "line": 9,
-            "end_line": 96,
+            "end_line": 101,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -7475,7 +7735,7 @@
                 {
                     "name": "getTotalUserCredit",
                     "line": 31,
-                    "end_line": 54,
+                    "end_line": 59,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -7488,14 +7748,14 @@
                         "where",
                         "Credits::where",
                         "orWhere",
-                        "startOfDay",
+                        "toDateString",
                         "sum"
                     ]
                 },
                 {
                     "name": "addCreditsToUser",
-                    "line": 59,
-                    "end_line": 70,
+                    "line": 64,
+                    "end_line": 75,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -7511,8 +7771,8 @@
                 },
                 {
                     "name": "transactions",
-                    "line": 75,
-                    "end_line": 78,
+                    "line": 80,
+                    "end_line": 83,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7524,8 +7784,8 @@
                 },
                 {
                     "name": "getAvailableCredits",
-                    "line": 84,
-                    "end_line": 95,
+                    "line": 89,
+                    "end_line": 100,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -7567,7 +7827,7 @@
                     "method": "transactions",
                     "type": "hasOne",
                     "target": "Transaction",
-                    "line": 75
+                    "line": 80
                 }
             ]
         },
@@ -8974,7 +9234,7 @@
             "kind": "class",
             "file": "app/Models/PatientTest.php",
             "line": 8,
-            "end_line": 118,
+            "end_line": 119,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -9096,7 +9356,7 @@
                 {
                     "name": "getGroupedTests",
                     "line": 108,
-                    "end_line": 117,
+                    "end_line": 118,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9956,7 +10216,7 @@
             "kind": "class",
             "file": "app/Models/TestSession.php",
             "line": 7,
-            "end_line": 28,
+            "end_line": 39,
             "extends": "Model",
             "implements": [],
             "traits": [],
@@ -9964,13 +10224,26 @@
             "methods": [
                 {
                     "name": "testInvitation",
-                    "line": 24,
-                    "end_line": 27,
+                    "line": 26,
+                    "end_line": 29,
                     "visibility": "public",
                     "static": false,
                     "params": [],
                     "returns": "",
                     "doc": "Get the test invitation that owns this session.",
+                    "calls": [
+                        "belongsTo"
+                    ]
+                },
+                {
+                    "name": "patient",
+                    "line": 35,
+                    "end_line": 38,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "",
+                    "doc": "The patient this session was issued for. Only set for org-added patients,",
                     "calls": [
                         "belongsTo"
                     ]
@@ -9982,7 +10255,13 @@
                     "method": "testInvitation",
                     "type": "belongsTo",
                     "target": "TestInvitation",
-                    "line": 24
+                    "line": 26
+                },
+                {
+                    "method": "patient",
+                    "type": "belongsTo",
+                    "target": "Patient",
+                    "line": 35
                 }
             ]
         },
@@ -10535,8 +10814,8 @@
             "fqcn": "App\\Notifications\\ResetPasswordNotification",
             "kind": "class",
             "file": "app/Notifications/ResetPasswordNotification.php",
-            "line": 10,
-            "end_line": 85,
+            "line": 11,
+            "end_line": 91,
             "extends": "Notification",
             "implements": [],
             "traits": [
@@ -10546,8 +10825,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 20,
-                    "end_line": 24,
+                    "line": 21,
+                    "end_line": 25,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10560,8 +10839,8 @@
                 },
                 {
                     "name": "via",
-                    "line": 29,
-                    "end_line": 32,
+                    "line": 30,
+                    "end_line": 33,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10573,8 +10852,8 @@
                 },
                 {
                     "name": "toMail",
-                    "line": 37,
-                    "end_line": 76,
+                    "line": 38,
+                    "end_line": 82,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10586,14 +10865,15 @@
                         "first",
                         "where",
                         "DB::table",
+                        "EmailContent::linkify",
                         "view",
                         "subject"
                     ]
                 },
                 {
                     "name": "toArray",
-                    "line": 81,
-                    "end_line": 84,
+                    "line": 87,
+                    "end_line": 90,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10965,8 +11245,8 @@
             "fqcn": "App\\Providers\\AppServiceProvider",
             "kind": "class",
             "file": "app/Providers/AppServiceProvider.php",
-            "line": 9,
-            "end_line": 50,
+            "line": 15,
+            "end_line": 122,
             "extends": "ServiceProvider",
             "implements": [],
             "traits": [],
@@ -10974,8 +11254,8 @@
             "methods": [
                 {
                     "name": "register",
-                    "line": 14,
-                    "end_line": 17,
+                    "line": 20,
+                    "end_line": 23,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10985,8 +11265,8 @@
                 },
                 {
                     "name": "boot",
-                    "line": 22,
-                    "end_line": 27,
+                    "line": 28,
+                    "end_line": 35,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10994,13 +11274,50 @@
                     "doc": "Bootstrap any application services.",
                     "calls": [
                         "Schema::defaultStringLength",
+                        "configureRateLimiting",
+                        "configureMigrationHealthCheck",
                         "warnIfFrontendAppUrlLooksInvalid"
                     ]
                 },
                 {
+                    "name": "configureMigrationHealthCheck",
+                    "line": 46,
+                    "end_line": 57,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "entrypoint.sh deliberately doesn't fail the container boot when migrations",
+                    "calls": [
+                        "Event::listen",
+                        "File::exists",
+                        "File::get"
+                    ]
+                },
+                {
+                    "name": "configureRateLimiting",
+                    "line": 65,
+                    "end_line": 99,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Rate limiters for the sensitive public endpoints that previously had",
+                    "calls": [
+                        "json",
+                        "RateLimiter::for",
+                        "response",
+                        "by",
+                        "Limit::perMinute",
+                        "ip",
+                        "bearerToken",
+                        "header"
+                    ]
+                },
+                {
                     "name": "warnIfFrontendAppUrlLooksInvalid",
-                    "line": 37,
-                    "end_line": 49,
+                    "line": 109,
+                    "end_line": 121,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -11577,7 +11894,7 @@
             "kind": "class",
             "file": "app/Services/DiscountCodeService.php",
             "line": 10,
-            "end_line": 156,
+            "end_line": 161,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -11586,7 +11903,7 @@
                 {
                     "name": "validate",
                     "line": 16,
-                    "end_line": 69,
+                    "end_line": 74,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11599,6 +11916,7 @@
                     "doc": "Validate a discount code against the user, amount and credits.",
                     "calls": [
                         "first",
+                        "orderBy",
                         "whereNull",
                         "where",
                         "DiscountCode::with",
@@ -11614,8 +11932,8 @@
                 },
                 {
                     "name": "calculate",
-                    "line": 74,
-                    "end_line": 89,
+                    "line": 79,
+                    "end_line": 94,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11628,8 +11946,8 @@
                 },
                 {
                     "name": "syncRestrictions",
-                    "line": 94,
-                    "end_line": 102,
+                    "line": 99,
+                    "end_line": 107,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11647,8 +11965,8 @@
                 },
                 {
                     "name": "countUses",
-                    "line": 107,
-                    "end_line": 115,
+                    "line": 112,
+                    "end_line": 120,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11667,8 +11985,8 @@
                 },
                 {
                     "name": "creditMatchesTier",
-                    "line": 119,
-                    "end_line": 127,
+                    "line": 124,
+                    "end_line": 132,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11681,8 +11999,8 @@
                 },
                 {
                     "name": "success",
-                    "line": 129,
-                    "end_line": 150,
+                    "line": 134,
+                    "end_line": 155,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -11697,8 +12015,8 @@
                 },
                 {
                     "name": "fail",
-                    "line": 152,
-                    "end_line": 155,
+                    "line": 157,
+                    "end_line": 160,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13350,7 +13668,7 @@
             "kind": "class",
             "file": "app/Services/PaymentProviders/StripeProvider.php",
             "line": 14,
-            "end_line": 261,
+            "end_line": 309,
             "extends": "BasePaymentProvider",
             "implements": [],
             "traits": [],
@@ -13359,7 +13677,7 @@
                 {
                     "name": "__construct",
                     "line": 20,
-                    "end_line": 26,
+                    "end_line": 33,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13374,8 +13692,8 @@
                 },
                 {
                     "name": "getSupportedMethods",
-                    "line": 28,
-                    "end_line": 41,
+                    "line": 35,
+                    "end_line": 48,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -13385,8 +13703,8 @@
                 },
                 {
                     "name": "createSetupIntent",
-                    "line": 43,
-                    "end_line": 62,
+                    "line": 50,
+                    "end_line": 76,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13398,13 +13716,14 @@
                         "User::find",
                         "getOrCreateCustomer",
                         "create",
+                        "StripeService::appSource",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "initializePayment",
-                    "line": 64,
-                    "end_line": 104,
+                    "line": 78,
+                    "end_line": 152,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13415,6 +13734,7 @@
                     "calls": [
                         "User::find",
                         "getOrCreateCustomer",
+                        "StripeService::appSource",
                         "create",
                         "logPaymentActivity",
                         "getName",
@@ -13423,8 +13743,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 106,
-                    "end_line": 177,
+                    "line": 154,
+                    "end_line": 225,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13448,8 +13768,8 @@
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 179,
-                    "end_line": 206,
+                    "line": 227,
+                    "end_line": 254,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13466,8 +13786,8 @@
                 },
                 {
                     "name": "getOrCreateCustomer",
-                    "line": 208,
-                    "end_line": 211,
+                    "line": 256,
+                    "end_line": 259,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13481,8 +13801,8 @@
                 },
                 {
                     "name": "attachAndPersistPaymentMethod",
-                    "line": 213,
-                    "end_line": 260,
+                    "line": 261,
+                    "end_line": 308,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13511,7 +13831,7 @@
             "kind": "class",
             "file": "app/Services/Reports/DiscountCodeReportService.php",
             "line": 7,
-            "end_line": 145,
+            "end_line": 185,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13520,7 +13840,7 @@
                 {
                     "name": "getReports",
                     "line": 9,
-                    "end_line": 29,
+                    "end_line": 22,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13535,8 +13855,8 @@
                 },
                 {
                     "name": "getSummary",
-                    "line": 31,
-                    "end_line": 81,
+                    "line": 24,
+                    "end_line": 86,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13558,21 +13878,22 @@
                 },
                 {
                     "name": "buildQuery",
-                    "line": 83,
-                    "end_line": 144,
+                    "line": 94,
+                    "end_line": 169,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "?string $search",
-                        "string $sortBy",
-                        "string $sortOrder",
+                        "$sortBy",
+                        "$sortOrder",
                         "?string $fromDate",
                         "?string $toDate",
                         "?string $code"
                     ],
                     "returns": "",
-                    "doc": "",
+                    "doc": "`$sortBy` and `$sortOrder` are deliberately untyped: `ReportController` hands them",
                     "calls": [
+                        "normaliseSort",
                         "whereIn",
                         "whereNotNull",
                         "select",
@@ -13580,10 +13901,25 @@
                         "join",
                         "DB::table",
                         "DB::raw",
+                        "DB::getDriverName",
                         "where",
                         "orWhere",
                         "orderBy"
                     ]
+                },
+                {
+                    "name": "normaliseSort",
+                    "line": 174,
+                    "end_line": 184,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "$sortBy",
+                        "$sortOrder"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
                 }
             ],
             "constants": [],
@@ -13595,7 +13931,7 @@
             "kind": "class",
             "file": "app/Services/Reports/UserTestsReportService.php",
             "line": 12,
-            "end_line": 203,
+            "end_line": 216,
             "extends": "",
             "implements": [],
             "traits": [
@@ -13634,7 +13970,7 @@
                         "where",
                         "querySearch",
                         "orWhere",
-                        "whereRaw",
+                        "fullNameSearchClause",
                         "when",
                         "orderBy"
                     ]
@@ -13714,9 +14050,26 @@
                         "where",
                         "querySearch",
                         "orWhere",
-                        "whereRaw",
+                        "fullNameSearchClause",
                         "orderByDesc",
                         "groupBy"
+                    ]
+                },
+                {
+                    "name": "fullNameSearchClause",
+                    "line": 208,
+                    "end_line": 215,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "$query",
+                        "string $search"
+                    ],
+                    "returns": "void",
+                    "doc": "CONCAT() is MySQL-only; SQLite has no equivalent function and uses the",
+                    "calls": [
+                        "DB::getDriverName",
+                        "whereRaw"
                     ]
                 }
             ],
@@ -13847,7 +14200,7 @@
             "kind": "class",
             "file": "app/Services/StripeService.php",
             "line": 14,
-            "end_line": 328,
+            "end_line": 430,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13855,11 +14208,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 18,
-                    "end_line": 26,
+                    "line": 22,
+                    "end_line": 36,
                     "visibility": "public",
                     "static": false,
-                    "params": [],
+                    "params": [
+                        "?Stripe\\StripeClient $stripe = null"
+                    ],
                     "returns": "",
                     "doc": "",
                     "calls": [
@@ -13867,9 +14222,20 @@
                     ]
                 },
                 {
+                    "name": "appSource",
+                    "line": 50,
+                    "end_line": 63,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [],
+                    "returns": "string",
+                    "doc": "The app-identity tag applied to every Stripe object this app creates, and",
+                    "calls": []
+                },
+                {
                     "name": "getStripeClient",
-                    "line": 32,
-                    "end_line": 35,
+                    "line": 69,
+                    "end_line": 72,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -13879,8 +14245,8 @@
                 },
                 {
                     "name": "createOrGetCustomer",
-                    "line": 40,
-                    "end_line": 75,
+                    "line": 77,
+                    "end_line": 175,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13891,15 +14257,19 @@
                     "calls": [
                         "retrieve",
                         "Log::warning",
-                        "search",
+                        "self::appSource",
+                        "all",
+                        "autoPagingIterator",
+                        "Log::error",
+                        "getMessage",
                         "create",
                         "UserStripeDetail::updateOrCreate"
                     ]
                 },
                 {
                     "name": "getCustomerPaymentMethods",
-                    "line": 81,
-                    "end_line": 112,
+                    "line": 181,
+                    "end_line": 212,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13916,8 +14286,8 @@
                 },
                 {
                     "name": "paymentMethodExists",
-                    "line": 118,
-                    "end_line": 141,
+                    "line": 218,
+                    "end_line": 241,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13935,8 +14305,8 @@
                 },
                 {
                     "name": "createStripePaymentIntent",
-                    "line": 146,
-                    "end_line": 183,
+                    "line": 246,
+                    "end_line": 284,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13951,13 +14321,14 @@
                     "calls": [
                         "createOrGetCustomer",
                         "toDateTimeString",
+                        "self::appSource",
                         "create"
                     ]
                 },
                 {
                     "name": "createACHPaymentIntent",
-                    "line": 188,
-                    "end_line": 210,
+                    "line": 289,
+                    "end_line": 312,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13971,13 +14342,14 @@
                     "calls": [
                         "createOrGetCustomer",
                         "create",
-                        "toDateTimeString"
+                        "toDateTimeString",
+                        "self::appSource"
                     ]
                 },
                 {
                     "name": "createBankTransferTransaction",
-                    "line": 215,
-                    "end_line": 256,
+                    "line": 317,
+                    "end_line": 358,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13997,8 +14369,8 @@
                 },
                 {
                     "name": "getPaymentMethods",
-                    "line": 261,
-                    "end_line": 264,
+                    "line": 363,
+                    "end_line": 366,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14012,8 +14384,8 @@
                 },
                 {
                     "name": "setDefaultPaymentMethod",
-                    "line": 269,
-                    "end_line": 294,
+                    "line": 371,
+                    "end_line": 396,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14032,8 +14404,8 @@
                 },
                 {
                     "name": "removePaymentMethod",
-                    "line": 299,
-                    "end_line": 319,
+                    "line": 401,
+                    "end_line": 421,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14055,8 +14427,8 @@
                 },
                 {
                     "name": "attachPaymentMethod",
-                    "line": 321,
-                    "end_line": 327,
+                    "line": 423,
+                    "end_line": 429,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15015,6 +15387,153 @@
             "relations": []
         },
         {
+            "name": "EmailContent",
+            "fqcn": "App\\Support\\EmailContent",
+            "kind": "class",
+            "file": "app/Support/EmailContent.php",
+            "line": 5,
+            "end_line": 177,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "linkify",
+                    "line": 43,
+                    "end_line": 46,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?string $html"
+                    ],
+                    "returns": "string",
+                    "doc": "Wrap bare http(s) URLs in the email body with clickable anchors.",
+                    "calls": [
+                        "self::mapTextNodes",
+                        "self::linkifyTextNode"
+                    ]
+                },
+                {
+                    "name": "anchorPlaceholders",
+                    "line": 59,
+                    "end_line": 84,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?string $html",
+                        "array $placeholders"
+                    ],
+                    "returns": "string",
+                    "doc": "Wrap bare {{placeholder}} tokens in the stored template markup with anchors.",
+                    "calls": [
+                        "self::mapTextNodes"
+                    ]
+                },
+                {
+                    "name": "mapTextNodes",
+                    "line": 90,
+                    "end_line": 134,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "?string $html",
+                        "callable $transform"
+                    ],
+                    "returns": "string",
+                    "doc": "Run $transform over every text node that is neither inside an anchor nor",
+                    "calls": []
+                },
+                {
+                    "name": "linkifyTextNode",
+                    "line": 136,
+                    "end_line": 167,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $text"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": [
+                        "self::escapeHref"
+                    ]
+                },
+                {
+                    "name": "escapeHref",
+                    "line": 173,
+                    "end_line": 176,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $url"
+                    ],
+                    "returns": "string",
+                    "doc": "Escape bare ampersands for use in an href without double-escaping",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "LINK_STYLE",
+                    "value": "'color:#007bff;text-decoration:underline;'",
+                    "line": 8
+                },
+                {
+                    "name": "BUTTON_STYLE",
+                    "value": "'display:inline-block;padding:12px 24px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:4px;'",
+                    "line": 12
+                },
+                {
+                    "name": "TRAILING_PUNCTUATION",
+                    "value": "'.,:!?'",
+                    "line": 18
+                },
+                {
+                    "name": "URL_PATTERN",
+                    "value": "'/https?:\\/\\/(?:&(?:amp|#0*38);|(?!&[a-zA-Z#][a-zA-Z0-9]{0,30};)[^\\s<>\"'])+/i'",
+                    "line": 23
+                },
+                {
+                    "name": "RAW_TEXT_TAGS",
+                    "value": "'style|script'",
+                    "line": 27
+                },
+                {
+                    "name": "BLOCK_TAGS",
+                    "value": "'p|div|table|thead|tbody|tfoot|tr|td|th|ul|ol|li|dl|dt|dd|h[1-6]|blockquote|section|article|header|footer|main|body|hr|form|pre|center'",
+                    "line": 31
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "EmailSignature",
+            "fqcn": "App\\Support\\EmailSignature",
+            "kind": "class",
+            "file": "app/Support/EmailSignature.php",
+            "line": 11,
+            "end_line": 24,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "The sign-off appended to every template in email_template.",
+            "methods": [],
+            "constants": [
+                {
+                    "name": "HTML",
+                    "value": "'<p style=\"margin:0;line-height:1.6;\">Best Regards,<br><strong>The Waggoner Diagnostics Team</strong><br>Email: <a href=\"mailto:sales@waggonerdiagnostics.com\" style=\"color:#007bff;text-decoration:none;\">sales@waggonerdiagnostics.com</a><br>Phone: <a href=\"tel:+19493961694\" style=\"color:#007bff;text-decoration:none;\">+1 (949) 396-1694</a></p>'",
+                    "line": 13
+                },
+                {
+                    "name": "LEGACY_HTML",
+                    "value": "'<p>Best Regards,\r\n                The Waggoner Diagnostics Team\r\n                Email: sales@waggonerdiagnostics.com\r\n                Phone: +1 (949) 396-1694</p>'",
+                    "line": 20
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "HttpStatus",
             "fqcn": "App\\Support\\HttpStatus",
             "kind": "class",
@@ -15365,8 +15884,8 @@
             "fqcn": "Database\\Seeders\\EmailTemplateSeeder",
             "kind": "class",
             "file": "database/seeders/EmailTemplateSeeder.php",
-            "line": 8,
-            "end_line": 58,
+            "line": 9,
+            "end_line": 50,
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -15374,8 +15893,8 @@
             "methods": [
                 {
                     "name": "run",
-                    "line": 10,
-                    "end_line": 57,
+                    "line": 11,
+                    "end_line": 49,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18539,6 +19058,16 @@
                     "kind": "unique",
                     "column": "",
                     "migration": "database/migrations/2026_04_17_000001_rebuild_discount_codes_system.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "code",
+                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
+                },
+                {
+                    "kind": "unique",
+                    "column": "code",
+                    "migration": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php"
                 }
             ],
             "migrations": [
@@ -18596,6 +19125,36 @@
                     "file": "database/migrations/2026_04_23_135313_modify_max_uses_per_user_nullable_on_discount_codes_table.php",
                     "op": "table",
                     "line": 17
+                },
+                {
+                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
+                    "op": "table",
+                    "line": 33
+                },
+                {
+                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
+                    "op": "table",
+                    "line": 45
+                },
+                {
+                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
+                    "op": "table",
+                    "line": 47
+                },
+                {
+                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
+                    "op": "table",
+                    "line": 63
+                },
+                {
+                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
+                    "op": "table",
+                    "line": 71
+                },
+                {
+                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
+                    "op": "table",
+                    "line": 77
                 }
             ]
         },
@@ -19383,6 +19942,16 @@
                     "name": "test_invitation_id",
                     "type": "unsignedBigInteger",
                     "migration": "database/migrations/2026_05_25_000001_make_test_invitation_id_nullable_in_test_sessions.php"
+                },
+                {
+                    "name": "invalidated_reason",
+                    "type": "string",
+                    "migration": "database/migrations/2026_08_17_092413_add_invalidated_reason_to_test_sessions_table.php"
+                },
+                {
+                    "name": "patient_id",
+                    "type": "unsignedBigInteger",
+                    "migration": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php"
                 }
             ],
             "foreign_keys": [
@@ -19397,6 +19966,10 @@
                 {
                     "column": "test_invitation_id",
                     "migration": "database/migrations/2026_05_25_000001_make_test_invitation_id_nullable_in_test_sessions.php"
+                },
+                {
+                    "column": "patient_id",
+                    "migration": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php"
                 }
             ],
             "indexes": [
@@ -19404,6 +19977,21 @@
                     "kind": "unique",
                     "column": "",
                     "migration": "database/migrations/2026_03_02_180000_create_test_sessions_table.php"
+                },
+                {
+                    "kind": "dropColumn",
+                    "column": "invalidated_reason",
+                    "migration": "database/migrations/2026_08_17_092413_add_invalidated_reason_to_test_sessions_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "patient_id",
+                    "migration": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php"
+                },
+                {
+                    "kind": "dropColumn",
+                    "column": "patient_id",
+                    "migration": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php"
                 }
             ],
             "migrations": [
@@ -19425,7 +20013,27 @@
                 {
                     "file": "database/migrations/2026_05_25_000001_make_test_invitation_id_nullable_in_test_sessions.php",
                     "op": "table",
-                    "line": 23
+                    "line": 39
+                },
+                {
+                    "file": "database/migrations/2026_08_17_092413_add_invalidated_reason_to_test_sessions_table.php",
+                    "op": "table",
+                    "line": 20
+                },
+                {
+                    "file": "database/migrations/2026_08_17_092413_add_invalidated_reason_to_test_sessions_table.php",
+                    "op": "table",
+                    "line": 27
+                },
+                {
+                    "file": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php",
+                    "op": "table",
+                    "line": 20
+                },
+                {
+                    "file": "database/migrations/2026_09_02_000001_add_patient_id_to_test_sessions_table.php",
+                    "op": "table",
+                    "line": 29
                 }
             ]
         },
@@ -20711,19 +21319,7 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/credits/create",
-            "action": "App\\Http\\Controllers\\CreditsController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "credits.create",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/credits/{coupon-code}",
+            "uri": "api/credits/coupon/{coupon_code}",
             "action": "App\\Http\\Controllers\\CreditsController@checkDiscountCodeValidity",
             "middleware": [
                 "api",
@@ -20766,18 +21362,6 @@
                 "auth:sanctum"
             ],
             "name": "credits.destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/credits/{credit}/edit",
-            "action": "App\\Http\\Controllers\\CreditsController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "credits.edit",
             "line": 0,
             "source": "artisan"
         },
@@ -20978,7 +21562,8 @@
             "uri": "api/login",
             "action": "App\\Http\\Controllers\\AuthController@login",
             "middleware": [
-                "api"
+                "api",
+                "throttle:login"
             ],
             "name": "",
             "line": 0,
@@ -21088,7 +21673,8 @@
             "uri": "api/organization/verify-signature",
             "action": "App\\Http\\Controllers\\OrganizationController@verifySignature",
             "middleware": [
-                "api"
+                "api",
+                "throttle:signature-verify"
             ],
             "name": "",
             "line": 0,
@@ -21183,7 +21769,8 @@
             "uri": "api/password/forgot",
             "action": "App\\Http\\Controllers\\AuthController@sendResetLinkEmail",
             "middleware": [
-                "api"
+                "api",
+                "throttle:password-reset"
             ],
             "name": "",
             "line": 0,
@@ -21194,7 +21781,8 @@
             "uri": "api/password/reset",
             "action": "App\\Http\\Controllers\\AuthController@setOrResetPassword",
             "middleware": [
-                "api"
+                "api",
+                "throttle:password-reset"
             ],
             "name": "",
             "line": 0,
@@ -21205,7 +21793,8 @@
             "uri": "api/password/verify-setup-token",
             "action": "App\\Http\\Controllers\\AuthController@verifySetupToken",
             "middleware": [
-                "api"
+                "api",
+                "throttle:password-reset"
             ],
             "name": "",
             "line": 0,
@@ -21244,18 +21833,6 @@
                 "FlexibleAuthMiddleware"
             ],
             "name": "patients.store",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/patients/create",
-            "action": "App\\Http\\Controllers\\PatientController@create",
-            "middleware": [
-                "api",
-                "FlexibleAuthMiddleware"
-            ],
-            "name": "patients.create",
             "line": 0,
             "source": "artisan"
         },
@@ -21304,18 +21881,6 @@
                 "FlexibleAuthMiddleware"
             ],
             "name": "patients.destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/patients/{patient}/edit",
-            "action": "App\\Http\\Controllers\\PatientController@edit",
-            "middleware": [
-                "api",
-                "FlexibleAuthMiddleware"
-            ],
-            "name": "patients.edit",
             "line": 0,
             "source": "artisan"
         },
@@ -21456,7 +22021,8 @@
             "uri": "api/register",
             "action": "App\\Http\\Controllers\\AuthController@register",
             "middleware": [
-                "api"
+                "api",
+                "throttle:register"
             ],
             "name": "",
             "line": 0,
@@ -21592,30 +22158,6 @@
             "source": "artisan"
         },
         {
-            "method": "PUT|PATCH",
-            "uri": "api/restricted-ips/{}",
-            "action": "App\\Http\\Controllers\\RestrictedIpController@update",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "update",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "DELETE",
-            "uri": "api/restricted-ips/{}",
-            "action": "App\\Http\\Controllers\\RestrictedIpController@destroy",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
             "method": "POST",
             "uri": "api/stop-impersonate/{id}",
             "action": "App\\Http\\Controllers\\AuthController@stopImpersonation",
@@ -21632,7 +22174,8 @@
             "uri": "api/stripe/confirm-payment",
             "action": "App\\Http\\Controllers\\StripePaymentController@confirmPayment",
             "middleware": [
-                "api"
+                "api",
+                "auth:sanctum"
             ],
             "name": "",
             "line": 0,
@@ -21643,7 +22186,8 @@
             "uri": "api/stripe/create-payment-intent",
             "action": "App\\Http\\Controllers\\StripePaymentController@createPaymentIntent",
             "middleware": [
-                "api"
+                "api",
+                "auth:sanctum"
             ],
             "name": "",
             "line": 0,
@@ -21654,7 +22198,8 @@
             "uri": "api/stripe/payment-methods",
             "action": "App\\Http\\Controllers\\StripePaymentController@getPaymentMethods",
             "middleware": [
-                "api"
+                "api",
+                "auth:sanctum"
             ],
             "name": "",
             "line": 0,
@@ -21665,7 +22210,8 @@
             "uri": "api/stripe/payment-methods/set-default",
             "action": "App\\Http\\Controllers\\StripePaymentController@setDefaultPaymentMethod",
             "middleware": [
-                "api"
+                "api",
+                "auth:sanctum"
             ],
             "name": "",
             "line": 0,
@@ -21676,7 +22222,8 @@
             "uri": "api/stripe/payment-methods/{payment_method_id}",
             "action": "App\\Http\\Controllers\\StripePaymentController@removePaymentMethod",
             "middleware": [
-                "api"
+                "api",
+                "auth:sanctum"
             ],
             "name": "",
             "line": 0,
@@ -21770,7 +22317,8 @@
             "action": "App\\Http\\Controllers\\TestInvitationController@sendInvitations",
             "middleware": [
                 "api",
-                "auth:sanctum"
+                "auth:sanctum",
+                "throttle:bulk-invitations"
             ],
             "name": "",
             "line": 0,
@@ -21855,7 +22403,8 @@
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
-                "LmsSessionStatusMiddleware:test_assigned"
+                "LmsSessionStatusMiddleware:test_assigned",
+                "throttle:plate-url"
             ],
             "name": "",
             "line": 0,
@@ -21948,18 +22497,6 @@
             "source": "artisan"
         },
         {
-            "method": "GET|HEAD",
-            "uri": "api/tests/create",
-            "action": "App\\Http\\Controllers\\TestController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "tests.create",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
             "method": "POST",
             "uri": "api/tests/perform",
             "action": "App\\Http\\Controllers\\TestController@performTest",
@@ -22010,18 +22547,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/answers/create",
-            "action": "App\\Http\\Controllers\\TestAnswerController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "answers.create",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/answers/{answer}",
             "action": "App\\Http\\Controllers\\TestAnswerController@show",
             "middleware": [
@@ -22053,18 +22578,6 @@
                 "auth:sanctum"
             ],
             "name": "answers.destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/answers/{answer}/edit",
-            "action": "App\\Http\\Controllers\\TestAnswerController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "answers.edit",
             "line": 0,
             "source": "artisan"
         },
@@ -22106,18 +22619,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/conditions/create",
-            "action": "App\\Http\\Controllers\\TestConditionController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "conditions.create",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/conditions/{condition}",
             "action": "App\\Http\\Controllers\\TestConditionController@show",
             "middleware": [
@@ -22154,18 +22655,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/conditions/{condition}/edit",
-            "action": "App\\Http\\Controllers\\TestConditionController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "conditions.edit",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/section/plates",
             "action": "App\\Http\\Controllers\\TestSectionPlateController@index",
             "middleware": [
@@ -22185,18 +22674,6 @@
                 "auth:sanctum"
             ],
             "name": "plates.store",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/section/plates/create",
-            "action": "App\\Http\\Controllers\\TestSectionPlateController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "plates.create",
             "line": 0,
             "source": "artisan"
         },
@@ -22238,18 +22715,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/section/plates/{plate}/edit",
-            "action": "App\\Http\\Controllers\\TestSectionPlateController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "plates.edit",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/tests/{testID}/sections",
             "action": "App\\Http\\Controllers\\TestSectionController@index",
             "middleware": [
@@ -22269,18 +22734,6 @@
                 "auth:sanctum"
             ],
             "name": "sections.store",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/sections/create",
-            "action": "App\\Http\\Controllers\\TestSectionController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "sections.create",
             "line": 0,
             "source": "artisan"
         },
@@ -22322,18 +22775,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/tests/{testID}/sections/{section}/edit",
-            "action": "App\\Http\\Controllers\\TestSectionController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "sections.edit",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/tests/{test}",
             "action": "App\\Http\\Controllers\\TestController@show",
             "middleware": [
@@ -22365,18 +22806,6 @@
                 "auth:sanctum"
             ],
             "name": "tests.destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/tests/{test}/edit",
-            "action": "App\\Http\\Controllers\\TestController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "tests.edit",
             "line": 0,
             "source": "artisan"
         },
@@ -22550,18 +22979,6 @@
         },
         {
             "method": "GET|HEAD",
-            "uri": "api/users/create",
-            "action": "App\\Http\\Controllers\\UserController@create",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "users.create",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
             "uri": "api/users/type/{usertype}",
             "action": "App\\Http\\Controllers\\UserController@userWithType",
             "middleware": [
@@ -22605,18 +23022,6 @@
                 "auth:sanctum"
             ],
             "name": "users.destroy",
-            "line": 0,
-            "source": "artisan"
-        },
-        {
-            "method": "GET|HEAD",
-            "uri": "api/users/{user}/edit",
-            "action": "App\\Http\\Controllers\\UserController@edit",
-            "middleware": [
-                "api",
-                "auth:sanctum"
-            ],
-            "name": "users.edit",
             "line": 0,
             "source": "artisan"
         },
@@ -22806,19 +23211,26 @@
             "kind": "dispatch",
             "event": "App\\Events\\UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 303
+            "line": 304
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 318
+            "line": 319
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 379
+            "line": 380
+        },
+        {
+            "kind": "listen",
+            "event": "DiagnosingHealth",
+            "listener": "",
+            "file": "app/Providers/AppServiceProvider.php",
+            "line": 48
         },
         {
             "kind": "listen",
@@ -22847,6 +23259,6 @@
             "line": 172
         }
     ],
-    "migration_count": 110,
+    "migration_count": 120,
     "routes_source": "artisan route:list --json"
 }

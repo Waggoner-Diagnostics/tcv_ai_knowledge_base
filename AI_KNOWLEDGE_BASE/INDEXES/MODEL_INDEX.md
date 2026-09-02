@@ -1,6 +1,6 @@
 # Model Index
 
-**40 Eloquent models · 69 declared relationships.**
+**40 Eloquent models · 70 declared relationships.**
 
 `SoftDeletes` matters here: a soft-deleted row still occupies unique indexes and still satisfies a
 foreign key. Check the trait column before writing a uniqueness or re-create path.
@@ -41,7 +41,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-032` | `TestResumeToken` | [app/Models/TestResumeToken.php:7](../../../TCV-Backend/app/Models/TestResumeToken.php#L7) | — | `patientTest`→PatientTest | 2 |
 | `MODEL-033` | `TestSection` | [app/Models/TestSection.php:8](../../../TCV-Backend/app/Models/TestSection.php#L8) | `HasFactory` | `test`→Test, `testSectionPlates`→TestSectionPlate | 3 |
 | `MODEL-034` | `TestSectionPlate` | [app/Models/TestSectionPlate.php:8](../../../TCV-Backend/app/Models/TestSectionPlate.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection | 2 |
-| `MODEL-035` | `TestSession` | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | — | `testInvitation`→TestInvitation | 1 |
+| `MODEL-035` | `TestSession` | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | — | `testInvitation`→TestInvitation, `patient`→Patient | 2 |
 | `MODEL-036` | `Transaction` | [app/Models/Transaction.php:8](../../../TCV-Backend/app/Models/Transaction.php#L8) | `HasFactory` | `user`→User, `details`→TransactionDetail, `credits`→Credits | 4 |
 | `MODEL-037` | `TransactionDetail` | [app/Models/TransactionDetail.php:8](../../../TCV-Backend/app/Models/TransactionDetail.php#L8) | `HasFactory` | `transaction`→Transaction, `discountCode`→DiscountCode | 2 |
 | `MODEL-038` | `User` | [app/Models/User.php:15](../../../TCV-Backend/app/Models/User.php#L15) | `HasApiTokens`, `Notifiable`, `HasFactory`, `SoftDeletes`, `Searchable` | `stripeDetail`→UserStripeDetail, `assignedTests`→Test, `organization`→Organization, `country`→Country | 12 |
@@ -50,4 +50,4 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._

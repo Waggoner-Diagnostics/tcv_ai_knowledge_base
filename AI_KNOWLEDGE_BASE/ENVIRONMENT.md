@@ -39,6 +39,14 @@ same warning at boot.
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
 | Deploy | `IMAGE_TAG_BACKEND` |
 
+⚠️ **There is no trusted-proxy configuration, and `$request->ip()` is therefore not the client.**
+php-fpm sits behind the `backend-nginx` container, so `REMOTE_ADDR` is always the proxy: the five
+IP-keyed rate limiters share one platform-wide bucket and `RestrictIpMiddleware` can never match a
+real client. A `TRUSTED_PROXIES` variable was written for this on 2026-09-02 but **held back** — it is
+unsafe without the matching `nginx.conf` change, which was not deployed. Do not add the variable on
+its own; read [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)
+first.
+
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
 **`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,
 **`HUBSPOT_TICKET_SOURCE_PROPERTY`** and `HUBSPOT_TICKET_SOURCE_VALUE` (default `TCV`) — ws-396.

@@ -10,8 +10,8 @@ work on the project **without rescanning ~61,700 lines across 506 source files**
 | **Branches indexed** | `ws-398` · `ws-398` · `ws-website-343` — ⚠️ backend and frontend are indexed from an **unmerged feature branch**, each exactly `develop` + one commit. See *ws-398 delta* below. `TCV-Website` is **unchanged since the last sync** — `ws-website-343` is the pre-merge parent of `website-integration`'s `ce410d5`, identical tree |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `dbbdfadc` (2026-08-28) · `TCV-Frontend` `73667c1` (2026-08-28) · `TCV-Website` `2166ec0` (2026-08-26, same tree as `ce410d5`) |
-| **Backend scale** | 186 classes/interfaces/traits · 711 methods · 176 API endpoints · 52 tables · 110 migrations |
-| **Client scale** | 64 top-level routes · 40 Redux slices (SPA) · 32 marketing pages (website) |
+| **Backend scale** | 189 classes/interfaces/traits · 731 methods · 158 API endpoints · 52 tables · 120 migrations |
+| **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -133,7 +133,7 @@ before writing code.
 |---|---|
 | [ROUTES.md](ROUTES.md) / [API_INDEX.md](API_INDEX.md) | Route groups, guarding, the ordering traps |
 | [DATABASE.md](DATABASE.md) | Schema conventions, the tables that matter |
-| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 69 declared relationships |
+| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 70 declared relationships |
 
 ### Layers
 | Doc | Exists? |
@@ -164,7 +164,7 @@ before writing code.
 | Index | Rows |
 |---|---|
 | [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 176 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 186 |
 | [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 710 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |

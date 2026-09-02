@@ -41,7 +41,8 @@ All three are stored **in plaintext**. Only the LMS session token is hashed
 ## Send flow
 
 ```
-POST api/test-invitations/send   ← auth:sanctum. { test_id, emails[≤500], unique_test_id? }
+POST api/test-invitations/send   ← auth:sanctum + throttle:bulk-invitations (5/min).
+                                   { test_id, emails[≤500], unique_test_id? }
   ├─ owner = $request->user()                   ← NOT from the body
   ├─ Credits::getAvailableCredits(owner->id)    → 402 when short  (guarded for 'Unlimited')
   ├─ DB::transaction:                                              ← ws-404
@@ -69,7 +70,8 @@ credit, which it still knows. Per-address delivery outcome now lives on the row
 moved into the `auth:sanctum` group on 2026-08-26 — the owner is always `$request->user()`, super-admin
 included. That closed
 [S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time).
-The route is still unthrottled. `set_time_limit(0)` has moved out of the controller and into
+It is throttled as of 2026-09-02 (`throttle:bulk-invitations`, 5/min — defined in
+`AppServiceProvider::configureRateLimiting()`). `set_time_limit(0)` has moved out of the controller and into
 `SendTestInvitationEmailsJob::handle()` (`ws-404`), where it covers the after-response send rather than
 the request — the request itself is now a few hundred inserts and finishes well inside the normal
 limit.
@@ -328,7 +330,7 @@ a customer's behalf, the credit lands in the wrong account. Compare with
 
 ## ☠️ Traps
 
-1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Still unthrottled. `set_time_limit(0)` moved to `SendTestInvitationEmailsJob::handle()` (`ws-404`).
+1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Throttled 2026-09-02 (`throttle:bulk-invitations`, 5/min). `set_time_limit(0)` moved to `SendTestInvitationEmailsJob::handle()` (`ws-404`).
 2. **Cancel refunds the caller, not the owner** (above).
 3. **Expiry is compared as a date in some paths and a datetime in others** — `verifyCode()`/`checkTokenStatus()`
    comment their check as date-based ("expires_at < today") while `TestResumeToken::isExpired()` is a

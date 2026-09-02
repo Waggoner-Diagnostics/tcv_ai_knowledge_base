@@ -4,15 +4,6 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 `User::SUPER_ADMIN|CUSTOMER|ORGANIZATION` and the `TestConstants` / `HttpStatus` sets — misreading
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
-## `ws-404` additions
-
-| Constant | Where | Value |
-|---|---|---|
-| `TestInvitation::EMAIL_STATUS_PENDING` / `_SENT` / `_FAILED` | `app/Models/TestInvitation.php` | `'pending'` · `'sent'` · `'failed'` |
-| `SendTestInvitationEmailsJob::BATCH_SIZE` | `app/Jobs/SendTestInvitationEmailsJob.php` | `25` |
-| `SendTestInvitationEmailsJob::MAX_ATTEMPTS_PER_EMAIL` | same | `3` (private) |
-| `config('mail.messages_per_connection')` | `config/mail.php` | `20` — see [CONFIGURATION.md](../CONFIGURATION.md) |
-
 
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 
@@ -33,7 +24,17 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
+
+### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CONTEXT_KEY` | `'auth_context'` | [22](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L22) |
+| `TIER_SANCTUM` | `'sanctum'` | [24](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L24) |
+| `TIER_TEST_SESSION` | `'test_session'` | [25](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L25) |
+| `TIER_LMS_SESSION` | `'lms_session'` | [26](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L26) |
+| `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [27](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L27) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -190,6 +191,27 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `DEFAULT_BATCH_SIZE` | `3` | [16](../../../TCV-Backend/app/Services/TestAssignmentService.php#L16) |
 
+### `EmailContent` — `app/Support/EmailContent.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `LINK_STYLE` | `'color:#007bff;text-decoration:underline;'` | [8](../../../TCV-Backend/app/Support/EmailContent.php#L8) |
+| `BUTTON_STYLE` | `'display:inline-block;padding:12px 24px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:4px;'` | [12](../../../TCV-Backend/app/Support/EmailContent.php#L12) |
+| `TRAILING_PUNCTUATION` | `'.,:!?'` | [18](../../../TCV-Backend/app/Support/EmailContent.php#L18) |
+| `URL_PATTERN` | `'/https?:\/\/(?:&(?:amp|#0*38);|(?!&[a-zA-Z#][a-zA-Z0-9]{0,30};)[^\s<>"'])+/i'` | [23](../../../TCV-Backend/app/Support/EmailContent.php#L23) |
+| `RAW_TEXT_TAGS` | `'style|script'` | [27](../../../TCV-Backend/app/Support/EmailContent.php#L27) |
+| `BLOCK_TAGS` | `'p|div|table|thead|tbody|tfoot|tr|td|th|ul|ol|li|dl|dt|dd|h[1-6]|blockquote|section|article|header|footer|main|body|hr|form|pre|center'` | [31](../../../TCV-Backend/app/Support/EmailContent.php#L31) |
+
+### `EmailSignature` — `app/Support/EmailSignature.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `HTML` | `'<p style="margin:0;line-height:1.6;">Best Regards,<br><strong>The Waggoner Diagnostics Team</strong><br>Email: <a href="mailto:sales@waggonerdiagnostics.com" style="color:#007bff;text-decoration:none;">sales@waggonerdiagnostics.com</a><br>Phone: <a href="tel:+19493961694" style="color:#007bff;text-decoration:none;">+1 (949) 396-1694</a></p>'` | [13](../../../TCV-Backend/app/Support/EmailSignature.php#L13) |
+| `LEGACY_HTML` | `'<p>Best Regards,
+                The Waggoner Diagnostics Team
+                Email: sales@waggonerdiagnostics.com
+                Phone: +1 (949) 396-1694</p>'` | [20](../../../TCV-Backend/app/Support/EmailSignature.php#L20) |
+
 ### `HttpStatus` — `app/Support/HttpStatus.php`
 
 | Constant | Value | Line |
@@ -214,4 +236,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-08-28. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._

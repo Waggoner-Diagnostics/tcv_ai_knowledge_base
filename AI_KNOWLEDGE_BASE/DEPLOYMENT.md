@@ -52,15 +52,30 @@ APP_KEY      unset → FATAL, exit 1
 FRONTEND_URL unset → FATAL, exit 1
 config:clear route:clear cache:clear
 config:cache route:cache
-php artisan migrate --force        ← logs "❌ Migrations FAILED — continuing anyway" and PROCEEDS
+php artisan migrate --force --isolated   ← failure writes an unhealthy marker, then PROCEEDS
 exec php-fpm
 ```
 
-Two operational consequences:
-1. **A failed migration still yields a "running" container** on a half-migrated schema. Read the boot
-   log; a green health check proves nothing about the schema.
+Operational consequences:
+1. **A failed migration still yields a "running" container** on a half-migrated schema — deliberately,
+   so it can be debugged. It writes `storage/framework/migration_failed`, which `/up` reports on, so
+   orchestration sees the replica as unhealthy. Read the boot log; a container being "up" says nothing
+   about the schema, and per trap 4 below the marker itself is not yet reliable across replicas.
 2. **Routes and config are cached at boot** — a route or config change needs a restart, not just a new
    file.
+3. ☠️ **Open — a fresh database cannot bootstrap.** `--isolated` takes its lock through the default
+   cache store, which is the *database* store (`CACHE_STORE` defaults to `database`), and `cache_locks`
+   is itself created by a migration. On a brand-new database the lock INSERT hits a table that does not
+   exist yet and kills the whole run before applying anything. **Fix shape:** run the framework's
+   `create_cache_table` migration unisolated first, then take the lock for the rest. Written
+   2026-09-02, held back with the rest of `entrypoint.sh`.
+4. ☠️ **Open — a skipping replica erases another replica's failure marker.** `--isolated` exits 0 when
+   it *skipped* because another replica held the lock, and the success branch clears the marker
+   unconditionally. On the shared `storage` volume that lets a skipping replica wipe the marker a
+   genuinely failing replica just wrote, marking every replica healthy on an unmigrated schema — the
+   exact silent failure the marker exists to prevent. **Fix shape:** clear it only after
+   `migrate:status --pending` confirms none are pending, matching the literal string
+   `"No pending migrations"` (grepping for `pending` alone also matches that message). Same hold.
 
 ## Deployment checklist
 

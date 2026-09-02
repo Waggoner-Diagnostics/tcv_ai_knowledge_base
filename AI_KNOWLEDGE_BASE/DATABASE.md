@@ -1,7 +1,7 @@
 # Database
 
-MySQL, **52 tables**, reconstructed from 110 migrations — the indexed snapshot; `develop` is at 111
-today, and `ws-373` adds three more. Full column detail:
+MySQL, **52 tables**, reconstructed from 120 migrations — the indexed snapshot, taken from
+`tcv-backend-codefix` after the `develop` merge of 2026-09-02. Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
