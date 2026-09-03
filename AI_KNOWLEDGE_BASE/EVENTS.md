@@ -1,12 +1,14 @@
 # Events & Listeners
 
-**3 events, 3 listeners.** Generated view: [INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md).
+**3 app events, 4 listeners** (the fourth hooks a framework event). Generated view:
+[INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md).
 
 | Event | Dispatched from | Listener | How it is wired |
 |---|---|---|---|
 | `TestSectionCompleted` | `TestExecutionService.php:97` | `HandleLmsSectionProgressOnCompletion` | **explicit** `Event::listen` in `LmsServiceProvider::boot()` |
 | `TestCompleted` | `TestExecutionService.php:172` | `HandleLmsNotificationOnCompletion` | **explicit** `Event::listen` in `LmsServiceProvider::boot()` |
 | `UserPasswordSet` | `AuthController.php:303` | `SendAfterPasswordReset` | **auto-discovery** (the `handle()` type-hint) |
+| `Illuminate\Mail\Events\MessageSending` | the framework, on every send | `PrefixEmailSubject` (`ws-417`) | **explicit** `Event::listen` in `AppServiceProvider::boot()` |
 
 Two Laravel framework events are also dispatched and rely on framework listeners:
 `PasswordReset` (`AuthController.php:318`) and `Verified` (`AuthController.php:379`).
@@ -39,7 +41,18 @@ TestCompleted        → HandleLmsNotificationOnCompletion   → LmsDeliveryServ
 TestSectionCompleted → HandleLmsSectionProgressOnCompletion → LmsDeliveryService::enqueueSectionProgress()
 UserPasswordSet      → SendAfterPasswordReset               → if the user owns an Organization,
                                                               notify OrganizationTestUrlNotification
+MessageSending       → PrefixEmailSubject                   → brands the subject of EVERY outgoing mail
 ```
+
+`PrefixEmailSubject` mutates `$event->message` (a `Symfony\…\Mime\Email`) in place — `MessageSending`
+fires before the transport runs and hands over the same object, so the edit lands on what is sent. It
+is the one hook that catches subjects from all three sources (hardcoded, `email_template`,
+`user_email_templates`); see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md).
+
+☠️ **It was registered explicitly on purpose.** Auto-discovery would probably have found it, but
+`bootstrap/app.php` never calls `withEvents()`, so relying on discovery here is a guess — and a
+cross-cutting hook that silently stops firing is a bad thing to guess about. This is also why a
+mail-wide behaviour change does **not** show up in `EventServiceProvider`.
 
 Both LMS listeners are a **no-op for non-LMS tests** — they look up an `LmsSession` and return if there
 isn't one. Enqueueing is idempotent at the queue-row level

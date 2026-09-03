@@ -283,12 +283,18 @@ Two independent representations of "verified" exist on `users`:
 | `email_verified` (`'yes'`/`'no'` string) | `verifyEmailByToken()` | **`login()`'s gate** |
 | `email_verified_at` (timestamp) | `markEmailAsVerified()`, `verifyEmailByToken()` | `hasVerifiedEmail()`, `MustVerifyEmail` |
 
-`User::markEmailAsVerified()` sets **only** `email_verified_at`. So a user who verifies through the
-signed-link route (`GET api/verify-email/{id}/{hash}` → `verifyEmail()`) gets `email_verified_at` set
-but `email_verified` still `'no'` — and is then **permanently unable to log in**, because `login()`
-gates on the string column.
+✅ **Fixed in `ws-417` (2026-09-03).** `User::markEmailAsVerified()` now sets `email_verified = 'yes'`
+alongside `email_verified_at`, so the signed-link route no longer strands a user.
 
-Any change here must update both columns or collapse them to one.
+The lockout it caused: `markEmailAsVerified()` set **only** `email_verified_at`, so a user verifying
+through `GET api/verify-email/{id}/{hash}` → `verifyEmail()` got the timestamp but kept
+`email_verified = 'no'`, and `login()` gates on the string column. It also nulls
+`email_verification_token`, so `resendVerificationByToken()` could not rescue them either. `ws-417`
+removed the last fallback — `login()` used to mail a fresh token on every unverified attempt — which is
+what turned a latent inconsistency into a dead end and forced the fix.
+
+☠️ **The two columns still exist and can still drift.** They were not collapsed. Anything writing one
+must write the other; a single `verified` column remains the real fix.
 
 ### S-09 — `stopImpersonation` never deletes the impersonation token
 
@@ -413,7 +419,7 @@ that means "trust no proxy" and silently reinstates the bug.
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
 | `S-07` | `login()` Bearer short-circuit skips account gates | medium | `AuthController::login()` |
-| `S-08` | `email_verified` vs `email_verified_at` disagree | medium | `User` · `AuthController` |
+| `S-08` | `email_verified` vs `email_verified_at` disagree — ✅ **fixed `ws-417`**, columns not collapsed | medium | `User` · `AuthController` |
 | `S-15` | Terminal LMS tokens keep **read** access by design; mutations 409 via `lms.status` | low | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware` |
 | `S-09` | `stopImpersonation` deletes nothing | low | `AuthController::stopImpersonation()` |
 | `S-10` | Global IP middleware, uncached DB hit per request | low | `RestrictIpMiddleware` |

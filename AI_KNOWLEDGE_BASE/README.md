@@ -42,6 +42,26 @@ and [TESTING.md](TESTING.md) describe **that unmerged branch, not the indexed tr
 "if ws-392 merges". The migration count is 110 either way: ws-392 adds `2026_08_27_000001`, ws-398 adds
 `2026_08_28_000001`.
 
+**☠️ `ws-417` is not indexed either** (email verification, 2026-09-03, branched off the `ws-404` line).
+Passages flagged `ws-417` describe that branch, not the indexed tree. Read them as "if ws-417 merges".
+What changes when it does:
+
+| Area | On the indexed tree | On `ws-417` |
+|---|---|---|
+| Verification mail | sent from **`login()`** on every unverified attempt | sent from **`register()`**; login sends nothing |
+| `markEmailAsVerified()` | sets `email_verified_at` only → [S-08](SECURITY.md#s-08--two-email-verification-systems-that-disagree) lockout | sets both flags; S-08 fixed, columns still not collapsed |
+| Verification token in logs | written in full at `INFO` | truncated to `token_prefix` |
+| Missing `email_template` row | absorbed as an SMTP error, registration reports success | rethrown; classified on `TransportExceptionInterface` |
+| Email subjects | whatever the row or the code says | prefixed `Testing Color Vision - ` at send time by a `MessageSending` listener |
+| `email_template.header` | portal title + from-address, printed above "Hello," | blanked by `2026_09_03_000001`; seeder writes `''` |
+| Auth test coverage | none | 31 tests across three suites |
+
+Affects [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md), [AUTHENTICATION.md](AUTHENTICATION.md),
+[SECURITY.md](SECURITY.md), [LOGGING.md](LOGGING.md), [EVENTS.md](EVENTS.md),
+[ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md), [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md)
+and [TESTING.md](TESTING.md). It adds one migration and `App\Support\EmailHeader`, so a regeneration on
+`ws-417` moves the migration count by one and the listener count from 3 to 4.
+
 ---
 
 ## Read this first: how to use this KB

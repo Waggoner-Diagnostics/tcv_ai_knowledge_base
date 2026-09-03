@@ -49,14 +49,22 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 | `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, merged into `ws-404`) |
 | `tests/Feature/TestInvitations/` | 3 | **36** | `ws-404`, **not yet merged to develop** — batched send + 202, after-response delivery, SMTP 421 retry vs 5xx, credit charge/refund, the recovery command, placeholder validation (typo / markup-split / space-padded), the review-fix regressions, and the `ws-373` linkify guard |
+| `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417`, **not yet merged** — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
+| `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
+| `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
 
-**93 real tests on `develop`** — **149 on `ws-404`**, which now carries the merged `ws-373`/`ws-400`
-email work as well as its own. Everything else is untested: auth, the test execution loop, resume,
-patients, payments, reports, organisations.
+**93 real tests on `develop`** — **149 on `ws-404`**, and **186 on `ws-417`** (which branches off the
+`ws-404` line). Still untested: the test execution loop, resume, patients, payments, reports,
+organisations.
 
-Counts measured with `php artisan test` on 2026-09-01, `ws-404` post-merge. The previous "~73" predated
-the `ws-392` discount-code suite, which is why `tests/Feature/DiscountCodes/` was missing from this
-table.
+☠️ **`ws-417` is the first auth coverage that has ever existed**, but it is narrow: registration,
+login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
+`verify-password` remain untested.
+
+Counts measured with `php artisan test` on 2026-09-03. `ws-417` reports **185 passed, 1 failed** — the
+failure is `DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which **fails on a
+clean tree too** (verified by stashing). It is pre-existing and unrelated to that branch; do not treat
+a green-except-that-one run as a regression.
 
 `ws-404`'s suite is the first coverage the invitation subsystem has ever had. Two patterns in it are
 worth reusing:
@@ -82,6 +90,20 @@ into `app/Support/`: it runs in milliseconds and sidesteps the SQLite-vs-MySQL t
 
 `tests/Feature/Lms/CreatesLmsFixtures.php` is a **trait**, not a test — it is the shared factory setup.
 Reuse it for anything LMS-related.
+
+`tests/Support/CapturesSentMail.php` (`ws-417`) is the same idea for mail: `transport()`,
+`lastSubject()`, `lastHtmlBody()` and a `seedEmailTemplate()` helper, wrapping the array-transport
+pattern above so the three email suites do not each re-derive it. **Use it for any new test that
+asserts on an email**, and note it makes `config(['mail.default' => 'array'])` in a `setUp()`
+redundant — phpunit.xml already pins `MAIL_MAILER=array`.
+
+☠️ **`POST /api/register` needs outbound DNS in tests.** `UserRequest` validates with
+`email:rfc,dns`, a live MX lookup, so a runner without egress gets a `422` that has nothing to do with
+the behaviour under test. Two consequences: `example.com` is **unusable** as a test address (it
+publishes a null MX record and egulias rejects it outright — use a domain that really accepts mail),
+and `RegistrationVerificationEmailTest` guards the call with a `checkdnsrr()` probe and
+`markTestSkipped()` rather than failing misleadingly. Copy that guard for anything else that posts to
+`/api/register`.
 
 ## What this means for you
 

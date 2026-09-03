@@ -76,14 +76,24 @@ one. See [REPOSITORIES.md](REPOSITORIES.md).
 
 | Path | Mechanism |
 |---|---|
-| Email verification (from `login()`) | `Mail::html()` with a body assembled from the **`email_template` DB table** |
+| Email verification (from `register()` since `ws-417`, previously `login()`) | `Mail::html()` with a body assembled from the **`email_template` DB table** |
 | Password reset / setup | `ResetPasswordNotification` (a Notification) |
 | Org test URL | `OrganizationTestUrlNotification` |
 | Test resume link | `Mail::send('emails.dynamic-template', …)` with an inline heredoc body |
 
 Four mechanisms for one concern. When you add an email, match the *nearest* existing path rather than
-introducing a fifth — and note that the DB-template path fails **silently** if the row is missing or
-`status != 'enable'`.
+introducing a fifth.
+
+A missing or `status != 'enable'` row used to fail **silently** in the verification path. `ws-417`
+fixed that one: `sendVerificationEmailForUser()` now swallows only genuine
+`TransportExceptionInterface` failures and rethrows everything else, instead of substring-matching the
+message for `'mail'` — which matched *"**Email** verification template not found"* at offset 1 and
+absorbed the misconfiguration. **The other DB-template paths have not been audited for the same
+shape**; check the `catch` before assuming a template problem would surface.
+
+**Every outgoing subject is branded at send time** by `App\Listeners\PrefixEmailSubject` on
+`MessageSending` (`ws-417`) — the only hook that covers all four mechanisms above plus the DB-stored
+subjects. See [EVENTS.md](EVENTS.md).
 
 **Every DB-template path now ends in one shared cleanup step** — `App\Support\EmailContent::linkify()`
 (`ws-373`, 2026-08-31 — merged into `ws-404` on 2026-09-01, not yet deployed). It runs **after**

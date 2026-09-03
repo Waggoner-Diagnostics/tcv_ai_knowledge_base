@@ -5,7 +5,7 @@
 ## Files
 | File | Role |
 |---|---|
-| `app/Http/Controllers/AuthController.php` (775 lines) | ⭐ Login, register, verify, password set/reset, impersonation |
+| `app/Http/Controllers/AuthController.php` (776 lines) | ⭐ Login, register, verify, password set/reset, impersonation |
 | `app/Http/Middleware/FlexibleAuthMiddleware.php` | ⭐ **The four-tier session gate** |
 | `app/Http/Controllers/PasswordController.php` | Self-service password change |
 | `app/Http/Requests/UserRequest.php` | Registration/user validation — see [SECURITY S-01](../SECURITY.md#s-01--public-registration-accepts-usertype--1) |
@@ -116,9 +116,16 @@ POST api/login
   ├─ account_status !== 'active' || trashed()   → 401 api.resticted     (sic — typo'd lang key)
   ├─ Hash::check(password)                      → 401 api.unauthorized  if wrong
   ├─ createStripeCustomer($user)                ← side effect on EVERY successful login, failures swallowed
-  ├─ email_verified !== 'yes'                   → 401 + (re)sends verification mail
+  ├─ email_verified !== 'yes'                   → 401, sends nothing   (ws-417)
   └─ createToken(...) → { access_token, token_type, user }
 ```
+
+☠️ **`login()` no longer mails anything** (`ws-417`, 2026-09-03). It used to mint-or-reuse a token and
+send the verification mail on every unverified login attempt; the mail now goes out at **registration**
+(below). The 401 body is byte-identical to before — same message string, same `has_existing_token` —
+so the SPA's `includes('verify your email')` branch in `loginSlice.js` is untouched. Recovery for an
+unverified user is the login screen's **Resend Verification Link** button
+(`POST api/resend_email_verification_link`), not a retry of the login itself.
 
 Note the response envelope: `login()` returns a **hand-built** shape, not `ApiResponse`. So do
 `isTokenValid()` (`{valid, …}`) and `verifyEmailByToken()` (`{status, message}`). Clients cannot assume
@@ -176,6 +183,55 @@ ws-399). Anything that must *enforce* a re-auth has to add its own state — the
 
 ---
 
+## Where the verification mail is triggered, and when its 24 h starts
+
+`ws-417` (2026-09-03) moved the send from `login()` to `register()`. Three callers reach
+`AuthController::sendVerificationEmailForUser()`:
+
+| Caller | Token behaviour |
+|---|---|
+| `register()` | No token yet → mints one, **24 h clock starts here**. Wrapped in its own `try`/`catch` so a mail failure logs but does not fail an account that was already created |
+| `resendEmailVerificationLink()` (email, from the login screen) | Reuses a token that is still in date; **mints a fresh one if it has expired** |
+| `resendVerificationByToken()` (token, from the *Link Expired* popup) | Nulls the stored token first, so it always mints a fresh one |
+
+☠️ **The reuse check is expiry-aware, and has to be.** `sendVerificationEmailForUser()` originally
+reused any stored token by mere existence. That was survivable while `login()` did the sending — an
+unverified user arriving days later had no token, so login minted a fresh one. Once the mail moved to
+registration the clock starts at signup, so the commonest path (register, don't click, come back
+tomorrow) hit a **stored-but-expired** token and the resend mailed a dead link.
+`verifyEmailByToken()` enforces the expiry that the sender did not, so producer and consumer
+disagreed. The guard is now:
+
+```php
+$tokenIsUsable = $user->email_verification_token
+    && (is_null($user->email_verification_expires_at)
+        || $user->email_verification_expires_at->isFuture());
+```
+
+The `is_null` arm is load-bearing: a token with no expiry never goes stale, which is what
+`verifyEmailByToken()` also accepts.
+
+☠️ **`login()` must never write to the token or its expiry.** The deadline a user is given is the one
+they were mailed; restarting it on a login attempt would silently extend a link they cannot see.
+`tests/Feature/RegistrationVerificationEmailTest.php` pins this.
+
+## A missing template is no longer mistaken for an SMTP blip
+
+`sendVerificationEmailForUser()` swallows transport failures (the account exists, the link can be
+resent) and rethrows everything else. It classifies on the **exception type**,
+`Symfony\…\TransportExceptionInterface` — never on the message text:
+
+```php
+// what it used to do
+if (strpos($errorMessage, 'SMTP') !== false || strpos($errorMessage, 'mail') !== false) { return; }
+```
+
+☠️ `strpos('Email verification template not found in database', 'mail')` returns **`1`** — the word
+"E**mail**". A missing or `status != 'enable'` row was therefore absorbed as a transport hiccup, so
+`register()` returned `201` with "check your email" having sent nothing and logged nothing at the
+registration level. With `login()` no longer sending, nothing retried. Fixed in `ws-417`; this is why
+[ARCHITECTURE_REALITY](../ARCHITECTURE_REALITY.md) no longer says the DB-template path fails silently.
+
 ## The reset and verification mail bodies live in the database
 
 Neither body is a Blade file. `ResetPasswordNotification::toMail()` and
@@ -203,15 +259,47 @@ survives, and `down()` cannot stamp a value the row never held. Copy that shape 
 migration — and note `000001` is deliberately **irreversible** (`down()` is empty), because unwrapping
 anchors could not tell the ones it added from the ones an author wrote.
 
+`ws-417` (2026-09-03) added two more changes in the same family:
+
+| Where | What changed |
+|---|---|
+| **Header** | `2026_09_03_000001_remove_branding_header_from_email_templates` blanks the `header` column, and `EmailTemplateSeeder` now seeds `''`. The column held a portal title plus a literal rendering of the from-address, which every sender printed **above "Hello,"** — both already carried by the real `From` header and the footer sign-off. The old value lives in `App\Support\EmailHeader::LEGACY_BRANDING_HTML`, the same shape as `EmailSignature::LEGACY_HTML` |
+| **Subject** | Not a migration at all — see the `MessageSending` listener below |
+
+☠️ **`000001`'s `down()` is a deliberate no-op, and the reason generalises.** The footer migration could
+be symmetric because its `from` value was a distinctive non-empty string. Blanking is not reversible
+that way: `''` is not distinctive, so restoring by matching it would brand every row the seeder writes
+plus any header an admin deliberately cleared — the exact defect being removed. **When a template
+migration's `up()` clears a column rather than swapping one known value for another, `down()` cannot be
+match-on-old-value.** Say so and no-op it.
+
+## Subjects are branded at send time, not in the stored row
+
+`App\Listeners\PrefixEmailSubject` hooks **`MessageSending`** and prefixes every outgoing subject with
+`Testing Color Vision - `. It is deliberately *not* a fourth data migration: subjects reach the mailer
+from three unrelated places — hardcoded in Mailables/Notifications, read from `email_template`, and read
+from the user-editable `user_email_templates` — and only a send-time hook covers all of them, including
+rows edited later and emails added afterwards. Stored rows stay unbranded.
+
+It is idempotent (a subject already starting with the brand is not doubled) and normalises casing, so a
+hand-typed `testing color vision - …` ships in the canonical form. An empty subject becomes the brand
+alone rather than a dangling `Testing Color Vision - `.
+
+☠️ **There is no opt-out.** A white-label customer editing their invitation subject in
+`user_email_templates` still gets the prefix. That is the requirement as specified, not an oversight —
+but it is the first thing to revisit if white-label branding becomes a real requirement.
+
 ---
 
 ## ☠️ Traps
 
 1. **`usertype` has no `3`.** `1`/`2`/`4`. Never `range(1, 4)`.
 2. **`account_status` and `email_verified` are strings**, not booleans or ints. `'active'`, `'yes'`.
-3. **Two verification flags disagree** — `email_verified` (string, gates login) vs `email_verified_at`
-   (timestamp, used by `hasVerifiedEmail()`). `markEmailAsVerified()` sets only the timestamp, so the
-   signed-link route leaves the user **unable to log in**. See [S-08](../SECURITY.md#s-08--two-email-verification-systems-that-disagree).
+3. **Two verification flags still exist** — `email_verified` (string, gates login) and
+   `email_verified_at` (timestamp, used by `hasVerifiedEmail()`). `markEmailAsVerified()` now sets
+   **both** (`ws-417`), so the signed-link route no longer locks the user out — but the columns were
+   not collapsed, so anything writing one must still write the other.
+   See [S-08](../SECURITY.md#s-08--two-email-verification-systems-that-disagree).
 4. **`stopImpersonation` deletes nothing** — the ability string is double-prefixed before the
    `whereJsonContains`. [S-09](../SECURITY.md#s-09--stopimpersonation-never-deletes-the-impersonation-token).
 5. **`AuthController::isTokenValid()` is declared `public static`** yet routed as a normal action. It

@@ -76,16 +76,20 @@ because of the shared table.
 
 ## Email verification
 
-Two flags that can disagree — `email_verified` (`'yes'`/`'no'` string, what `login()` checks) and
-`email_verified_at` (timestamp, what `hasVerifiedEmail()` checks). `markEmailAsVerified()` writes only
-the timestamp. See [S-08](SECURITY.md#s-08--two-email-verification-systems-that-disagree).
+Two flags that can still disagree — `email_verified` (`'yes'`/`'no'` string, what `login()` checks) and
+`email_verified_at` (timestamp, what `hasVerifiedEmail()` checks). Since `ws-417`
+`markEmailAsVerified()` writes **both**; the columns were not collapsed, so new code must keep writing
+both. See [S-08](SECURITY.md#s-08--two-email-verification-systems-that-disagree).
 
-Two verification endpoints exist:
+Two verification endpoints exist, and both now set both flags:
 - `GET api/verify-email/{id}/{hash}` — Laravel's `signed` route, `sha1(email)` hash → `markEmailAsVerified()`
 - `POST api/verify-email-token` — a 24-hour `Str::random(60)` token in `users.email_verification_token`
-  → sets **both** flags
 
-The second is the one the SPA and the email template use. The first is the one that leaves users locked out.
+The second is the one the SPA and the email template use. The first used to leave users locked out.
+
+The mail carrying that token is sent at **registration** (`ws-417`); a login attempt sends nothing.
+An unverified user's recovery path is `POST api/resend_email_verification_link`, which mints a fresh
+token if the stored one has expired. See [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md).
 
 ## Client-side token handling
 

@@ -40,21 +40,22 @@ See [GUIDES/HOW_TO_DEBUG.md](GUIDES/HOW_TO_DEBUG.md).
 
 ## ☠️ Secrets in the logs
 
-`AuthController::sendVerificationEmailForUser()` logs the **full email-verification token**:
+✅ **The email-verification token is no longer logged in full** (`ws-417`, 2026-09-03). All four sites —
+both branches of `AuthController::sendVerificationEmailForUser()` and both `verifyEmailByToken()` lines
+— now record a prefix under a `token_prefix` key:
 
 ```php
 \Log::info('Generated new verification token', [
-    'user_id' => …, 'email' => …, 'token' => $verificationToken, 'expires_at' => …
+    'user_id' => …, 'email' => …, 'token_prefix' => substr($verificationToken, 0, 8) . '...', …
 ]);
 ```
 
-and `verifyEmailByToken()` logs it again on both success and failure. That token is a **credential**
-that verifies an account for 24 hours. Anyone with log access can use it.
+That token is a **credential** that verifies an account for 24 hours, and it was previously written at
+`INFO` on every send, so anyone with log-file or aggregator access could complete a stranger's
+verification. `SecureImageService` had the shape right all along (`substr($token, 0, 10) . '...'`);
+this matches it. Enough to correlate a user report with a send, useless to a reader.
 
-`SecureImageService` is the counter-example done right — it truncates:
-`substr($token, 0, 10) . '...'`. Follow that.
-
-Also present in logs: patient records (`CreditsController` logs whole model instances), full request
+Still unredacted in logs: patient records (`CreditsController` logs whole model instances), full request
 bodies (`Log::info('Performing test.', ['request' => $request->all()])`,
 `Log::info('Attempting to create a new credits.', ['request' => $request->all()])`).
 
