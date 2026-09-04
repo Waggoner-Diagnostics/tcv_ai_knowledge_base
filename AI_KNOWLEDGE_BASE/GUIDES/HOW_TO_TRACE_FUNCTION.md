@@ -11,7 +11,7 @@ static classes that play the role instead ([HELPERS.md](../HELPERS.md)).
 
 ## 1. Find the method
 
-[INDEXES/METHOD_INDEX.md](../INDEXES/METHOD_INDEX.md) — **711 methods across 186 classes**, grouped by
+[INDEXES/METHOD_INDEX.md](../INDEXES/METHOD_INDEX.md) — **773 methods across 196 classes**, grouped by
 file, with line number, visibility, parameters and return type.
 
 ```bash

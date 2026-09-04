@@ -1,16 +1,24 @@
 # Middleware
 
-Four classes exist in `app/Http/Middleware/`. **One is global, two are aliased, one is dead.**
+Four classes exist in `app/Http/Middleware/`. **Two are global, two are aliased.**
 
 | Class | ID | How it runs | Notes |
 |---|---|---|---|
 | `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request |
+| `AddRequestId` | `MW-001` | **prepended globally** in `bootstrap/app.php` (`tcv-backend-codefix`) | Stamps every request with a correlation id (`X-Request-Id`, honoured if the caller already set one) into Laravel's `Context`, so every log line for that request — and any queued job it dispatches — carries it. Pairs with the JSON log formatter, see [LOGGING.md](LOGGING.md) |
 | `FlexibleAuthMiddleware` | `MW-002` | alias `FlexibleAuthMiddleware` | The four-tier session gate |
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
-| `EnsureTokenIsValid` | `MW-001` | ❌ **never aliased, never routed** | Dead code — safe to delete |
 
-Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. `throttle` appears exactly once, on
-`POST api/contact` (`throttle:10,1`).
+`EnsureTokenIsValid` (previously `MW-001`, never aliased or routed) was deleted in `tcv-backend-codefix`
+— it was confirmed dead first (see [ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)), so nothing
+references it. Do not resurrect it; use `auth:sanctum` or `FlexibleAuthMiddleware` instead.
+
+Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. `throttle` now backs six named
+limiters — `login`, `register`, `password-reset`, `signature-verify`, `bulk-invitations` (all keyed on
+`$request->ip()`) and `plate-url` (keyed on the caller's session/bearer token, falling back to ip) —
+plus the original bare `throttle:10,1` on `POST api/contact`. Defined in
+`AppServiceProvider::configureRateLimiting()`. ☠️ **The five ip-keyed limiters are currently one shared
+global bucket for every client** — see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert).
 
 ---
 
@@ -43,16 +51,26 @@ Tries in order and returns on the first hit. Full detail in
 | Tier | Source | Lookup | Merges |
 |---|---|---|---|
 | 1 | `Auth::guard('sanctum')` | — | normal `$request->user()` |
-| 2 | `test_sessions` | **plaintext** `session_token` | `test_session_id`, `test_invitation_id`, `session_token` |
+| 2 | `test_sessions` | **SHA-256** of `session_token` (was plaintext; migrated `tcv-backend-codefix`) | `test_session_id`, `test_invitation_id`, `session_token` |
 | 3 | `lms_sessions` | **SHA-256** of the token | `lms_session_id`, `org_session_id`, `org_id`, `patient_id`, `unique_test_id`, `$request->attributes['lmsSession']` |
-| 4 | `organization_patient_sessions` | plaintext `token` | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
+| 4 | `organization_patient_sessions` | **SHA-256** of `token` (was plaintext; migrated `tcv-backend-codefix`) | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
 
 The token is read from `Authorization: Bearer` **or** the `X-Session-Token` header.
 
-**Two things it does not do:**
-- It never restricts *which* record the caller may act on. Merging `patient_id` and `unique_test_id`
-  into the request is informational; controllers read the URL instead
-  ([S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)).
+**It also now publishes an unforgeable `auth_context` request attribute** (`tcv-backend-codefix`,
+2026-09-02) — `FlexibleAuthMiddleware::context($request)` returns
+`['tier', 'user_id', 'org_id', 'patient_id', 'test_invitation_id', 'test_session_id']`, set on
+`$request->attributes` (never reachable by client input, unlike the *Merges* column above). Full detail:
+[CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md#-auth_context--the-only-trustworthy-answer-to-who-is-calling-2026-09-02).
+
+**Two things to know:**
+- It restricts *which record* the caller may act on **only where a controller opts in** by calling
+  `FlexibleAuthMiddleware::context()` — `PatientController`, `TestController` (`assignTest`,
+  `getActiveTest`, certificate download) and `TestResumeController` now do this
+  ([S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test),
+  [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address),
+  [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)). Five
+  `unique_test_id`-keyed endpoints still don't and remain unscoped — see S-02's table.
 - It sets `$request->attributes['lmsSession']` **only** in tier 3 — which is what makes `lms.status:`
   inert everywhere else.
 

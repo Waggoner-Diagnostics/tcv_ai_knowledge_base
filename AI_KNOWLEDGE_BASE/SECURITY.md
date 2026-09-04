@@ -1,7 +1,8 @@
 # Security — Posture and Known Gaps
 
 > **What this is.** Findings from *reading* TCV-Backend's auth, routing, session and payment paths at
-> `85586469`, re-checked against `develop` at `26ba2022` (2026-08-27). No exploit was attempted and no
+> `85586469`, re-checked against `develop` at `26ba2022` (2026-08-27), and again against
+> `tcv-backend-codefix` at `f96382ea` (2026-09-04, `develop` merged in). No exploit was attempted and no
 > pen test was run. Each finding names the file and line it
 > came from so you can re-verify it in one read. Treat severities as this document's judgement, not a
 > customer-facing rating.
@@ -19,9 +20,12 @@ Worth knowing, so you don't "fix" something that is already correct:
   (`ChangePasswordRequest`); it is commented out in `AuthController::setOrResetPassword()`, so a breached
   password rejected on the profile page is still accepted through the emailed reset link
   ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md)).
-- **LMS session tokens are stored hashed.** `LmsLaunchService::createSession()` generates
-  `bin2hex(random_bytes(32))` and stores only `hash('sha256', $raw)`; `FlexibleAuthMiddleware` hashes the
-  presented token before lookup. A DB leak does not yield usable session tokens.
+- **All four session-credential tables now store their token SHA-256 hashed**, not just LMS.
+  `TestSession.session_token` and `organization_patient_sessions.token` were plaintext until
+  `tcv-backend-codefix` (2026-09-02) added a one-time hashing migration and switched every lookup site
+  (`FlexibleAuthMiddleware`, `TestInvitationController`, `TestResumeController`, `PatientController`,
+  `OrganizationController`) to hash the presented token before comparing. A DB leak no longer yields
+  usable session tokens on any tier.
 - **`unique_test_id` is a UUIDv4** (`Str::uuid()` in `TestAssignmentService`), not a sequential id.
 - **Email enumeration is handled on the resend paths.** `resendEmailVerificationLink()` and
   `resendVerificationByToken()` both return a fixed neutral response regardless of whether the address
@@ -171,6 +175,24 @@ different account.
 
 **Fix shape:** scope by `auth()->id()` (or the session's `patient_id`) in all three methods, and switch
 `update()` to `$request->validated()`.
+
+### S-17 — `assignTest` / `getActiveTest` let a session act on another organization's patient
+
+**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`). Distinct from `S-02` above: that
+finding is about the five `unique_test_id`-keyed endpoints; this one is about the `patient_id`-keyed
+surface (`POST api/tests/assign`, `POST api/tests/check-active`), which had no ownership check of any
+kind — not even the informational, request-input version.
+
+**What the fix did:** both methods now call the same `TestController::callerOwnsPatient()` used by
+`PatientController` ([S-14](#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)), reading
+`FlexibleAuthMiddleware::context()` rather than trusting `$request->input('patient_id')`. Before the
+fix, any tier-2/3/4 session — including one org's own test-taker session — could pass an arbitrary
+`patient_id` belonging to a *different* organization and either read that patient's active-test state or
+assign a new test against it, consuming the other organization's credits without consent. Both endpoints
+sit inside the `FlexibleAuthMiddleware` group, so all four credential tiers could reach them.
+`tests/Feature/Authorization/SessionOwnershipTest.php` pins the forged-`patient_id` case and the
+legitimate org-added-patient path (which the naive fix could otherwise regress, since that tier's
+sessions carry no invitation).
 
 ### S-03 — `sendResumeEmail` mails a resume link for any test to any address
 
@@ -415,6 +437,7 @@ that means "trust no proxy" and silently reinstates the bug.
 | `S-02` | No test-ownership check on session endpoints (⚠️ **partially fixed 2026-09-02** — `download-pdf` scoped; the 5 listed endpoints still open) | **high** | `TestController` · `TestExecutionService` |
 | `S-03` | ✅ **fixed 2026-09-02** — `sendResumeEmail` accepted arbitrary test + address | ~~high~~ | `TestResumeController` |
 | `S-14` | ✅ **fixed 2026-09-02** — `patients/{id}` unscoped + `update()` used `$request->all()` | ~~high~~ | `PatientController` |
+| `S-17` | ✅ **fixed 2026-09-02** — `assignTest`/`getActiveTest` had no ownership check on `patient_id` | ~~high~~ | `TestController` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
@@ -441,4 +464,5 @@ that means "trust no proxy" and silently reinstates the bug.
 
 ---
 
-_Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`)._
+_Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`); findings dated 2026-09-02 re-verified
+2026-09-04 against `tcv-backend-codefix` (`f96382ea`)._

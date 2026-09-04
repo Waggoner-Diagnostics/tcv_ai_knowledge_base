@@ -28,14 +28,16 @@ different times, both live:
 |---|---|---|
 | Controller | `StripePaymentController` | `PaymentController` |
 | Abstraction | none — calls `StripeService` directly | `PaymentManager` → `PaymentProviderInterface` |
-| Guard | ☠️ **public** (no middleware) | `auth:sanctum` |
+| Guard | `auth:sanctum` (✅ fixed `tcv-backend-codefix`, was public) | `auth:sanctum` |
 | Endpoints | `create-payment-intent`, `confirm-payment`, `payment-methods`, `payment-methods/set-default`, `payment-methods/{id}` (DELETE) | `setup-intent`, `providers`, `initialize`, `confirm`, `webhook/{provider}` |
 
-☠️ **Every `api/stripe/*` route is public** ([PUBLIC_ROUTE_AUDIT](../INDEXES/PUBLIC_ROUTE_AUDIT.md)) yet
-every handler starts with `Auth::user()`. Unauthenticated, that is `null`, and `StripeService`'s
-signatures are typed `User $user` — so the call throws a `TypeError`, the controller's `catch` swallows
-it, and the response is a **500 containing the exception message**. They are simultaneously exposed and
-non-functional. Treat `api/stripe/*` as the deprecated surface; build on `api/payment/*`.
+✅ **`api/stripe/*` is no longer public.** Every handler starts with `Auth::user()`, and unauthenticated
+that is `null` — `StripeService`'s signatures are typed `User $user`, so the call threw a `TypeError`
+that the controller's `catch` swallowed into a **500 containing the exception message**: exposed and
+non-functional at the same time. `tcv-backend-codefix` (2026-09-04) moved all five routes into the
+`auth:sanctum` group in `routes/api.php` (they were registered at the top of the file, alongside
+genuinely public routes like `/login`), fixing it at the routing level rather than adding a null check
+per method. Treat `api/stripe/*` as the deprecated surface regardless; build on `api/payment/*`.
 
 `app/Services/PaymentProviders/` also carries commented-out routes for `partialRefund` / `refund` in
 `routes/api.php` — refunds exist in the controller but are **not routed**.

@@ -41,9 +41,15 @@ Three additional credential types exist, all resolved by `FlexibleAuthMiddleware
 
 | Type | Table | Stored | TTL |
 |---|---|---|---|
-| Test session | `test_sessions.session_token` | plaintext, `Str::random(32)` | 2 h |
+| Test session | `test_sessions.session_token` | **SHA-256** of a `Str::random(32)` (was plaintext; migrated `tcv-backend-codefix`, 2026-09-02) | 2 h |
 | LMS session | `lms_sessions.session_token` | **SHA-256** of a 32-byte random | 120 or 180 min (provider config) |
-| Legacy org session | `organization_patient_sessions.token` | plaintext | per row |
+| Legacy org session | `organization_patient_sessions.token` | **SHA-256** (was plaintext; migrated `tcv-backend-codefix`, 2026-09-02) | per row |
+
+`test_sessions` also gained `patient_id` (nullable — set for org-added-patient sessions, which carry no
+invitation) and `invalidated_reason` (distinguishes a deliberately superseded session from one that
+simply expired). See [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md#the-four-token-tiers) for the
+`auth_context` request attribute this enables and why reading merged request keys for authorization was
+unsafe.
 
 And two single-use-ish credentials that are *exchanged* for a session:
 

@@ -13,17 +13,17 @@
 | Layer | Count | Notes |
 |---|---|---|
 | Controllers | **34** | Thin-ish. Real logic mostly delegated to Services. |
-| Services | **32** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree. |
-| Models | **40** | Eloquent, 69 declared relationships. |
+| Services | **33** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`). |
+| Models | **40** | Eloquent, 70 declared relationships. |
 | FormRequests | **24** | Validation is genuinely centralised here — follow this. |
-| Middleware | **4** | One of them (`EnsureTokenIsValid`) is **dead** — see below. |
+| Middleware | **4** | `EnsureTokenIsValid` (dead) was **deleted** in `tcv-backend-codefix`; `AddRequestId` (correlation ids) was added in its place — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |
-| Events / Listeners | **3 / 3** | Wired by **auto-discovery** + `LmsServiceProvider`, *not* by `EventServiceProvider`. |
-| Jobs | **1** | `ProcessLmsDeliveryJob`, `database` queue driver. |
+| Events / Listeners | **3 / 4** | Wired by **auto-discovery** + `LmsServiceProvider` + one explicit `AppServiceProvider` hook (`PrefixEmailSubject`, `ws-417`) — *not* by `EventServiceProvider`. |
+| Jobs | **2** | `ProcessLmsDeliveryJob` (`database` queue driver) · `SendTestInvitationEmailsJob` (`ws-404` — batches invitation sends). |
 | Notifications | 3 | `ResetPasswordNotification`, `VerifyEmailNotification`, `OrganizationTestUrlNotification`. |
 | Mail | 1 | `VerifyEmail` mailable. Most mail is sent as raw HTML instead — see below. |
 | Exports | 3 | `maatwebsite/excel`. |
-| Console commands | **1** | `UploadTestPlates`. **Nothing is scheduled.** |
+| Console commands | **4** | `UploadTestPlates` · `BackfillStripeSourceApp` · `CheckEmailTemplatePlaceholders` · `SendPendingInvitations` (`ws-404` — recovers stranded invitation sends). **Still nothing scheduled** — `routes/console.php` registers only the stock `inspire` command; run these manually or wire a scheduler. |
 | Rules | 1 | `TurnstileToken`. |
 | Traits | 1 | `Searchable` — the shared query-search scope. |
 
@@ -56,13 +56,24 @@ type-hint the event in the listener's `handle()` (auto-discovery), or add an exp
 the way `LmsServiceProvider` does. Do not "fix" it by registering the provider without checking for
 double-binding — auto-discovery would then fire the same listener twice.
 
+☠️ **This is not hypothetical — it happened.** `tcv-backend-codefix` briefly added
+`App\Providers\EventServiceProvider::class` to `bootstrap/providers.php` (unrelated to that branch's own
+work), which put `SendAfterPasswordReset` on both the explicit `$listen` map *and* auto-discovery —
+confirmed by test to fire the listener twice per `UserPasswordSet`, meaning an organization owner got
+their "test URL" email twice on every password set/reset. Caught and reverted (2026-09-04) before
+merge; the registration line was removed again, restoring auto-discovery-only wiring. If you find that
+line back in `bootstrap/providers.php`, check for double-binding before assuming it's a safe cleanup.
+
 Full picture: [INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) · [EVENTS.md](EVENTS.md).
 
-### 2. `EnsureTokenIsValid` middleware is dead
+### 2. `EnsureTokenIsValid` middleware — deleted
 
-[`app/Http/Middleware/EnsureTokenIsValid.php`](../../TCV-Backend/app/Http/Middleware/EnsureTokenIsValid.php)
-is never aliased in `bootstrap/app.php` and appears in no route. Deleting it is safe. Do not reach for
-it when you need a guard — use `auth:sanctum` or `FlexibleAuthMiddleware` ([MIDDLEWARE.md](MIDDLEWARE.md)).
+`app/Http/Middleware/EnsureTokenIsValid.php` was never aliased in `bootstrap/app.php` and appeared in no
+route. Confirmed dead, then **deleted** in `tcv-backend-codefix` (2026-09-02) — grep the repo before
+assuming it still exists. Do not reach for it when you need a guard — use `auth:sanctum` or
+`FlexibleAuthMiddleware` ([MIDDLEWARE.md](MIDDLEWARE.md)). The middleware slot it occupied (`MW-001`) is
+now `AddRequestId`, a real global middleware that stamps a correlation id onto every request/log line —
+see [MIDDLEWARE.md](MIDDLEWARE.md) and [LOGGING.md](LOGGING.md).
 
 ### 3. `app/Repositories` holds exactly one class
 
@@ -128,7 +139,7 @@ graph TD
     G --> A{"Which guard?"}
     A -->|"auth:sanctum"| S1["Admin / customer / org user<br/>15-min token"]
     A -->|"FlexibleAuthMiddleware"| S2["4 token tiers:<br/>Sanctum · TestSession · LmsSession · OrgPatientSession"]
-    A -->|"none — 21 routes"| S3["Public"]
+    A -->|"none — 15 routes"| S3["Public"]
     S1 --> C["Controller (34)"]
     S2 --> C
     S3 --> C
@@ -192,4 +203,5 @@ legitimately belongs behind the existing registry/interface seam. Follow `Corner
 ---
 
 _Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`) by filesystem check, provider-list
-read and repo-wide grep — not by convention._
+read and repo-wide grep — not by convention. Counts and the two "not wired" items re-verified 2026-09-04
+against `tcv-backend-codefix` (`f96382ea`, `develop` merged in) the same way._

@@ -7,66 +7,56 @@ work on the project **without rescanning ~61,700 lines across 506 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `ws-398` · `ws-398` · `ws-website-343` — ⚠️ backend and frontend are indexed from an **unmerged feature branch**, each exactly `develop` + one commit. See *ws-398 delta* below. `TCV-Website` is **unchanged since the last sync** — `ws-website-343` is the pre-merge parent of `website-integration`'s `ce410d5`, identical tree |
+| **Branches indexed** | `TCV-Backend`: `tcv-backend-codefix` (`develop` merged in 2026-09-04 — see *tcv-backend-codefix delta* below) · `TCV-Frontend`: `ws-398` · `TCV-Website`: `ws-website-343` — frontend/website are indexed from an **unmerged feature branch**, each exactly `develop` + one commit. `TCV-Website` is **unchanged since the last sync** — `ws-website-343` is the pre-merge parent of `website-integration`'s `ce410d5`, identical tree |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `dbbdfadc` (2026-08-28) · `TCV-Frontend` `73667c1` (2026-08-28) · `TCV-Website` `2166ec0` (2026-08-26, same tree as `ce410d5`) |
-| **Backend scale** | 186 classes/interfaces/traits · 711 methods · 176 API endpoints · 52 tables · 109 migrations |
+| **Code state at sync** | `TCV-Backend` `f96382ea` (2026-09-04) · `TCV-Frontend` `73667c1` (2026-08-28) · `TCV-Website` `2166ec0` (2026-08-26, same tree as `ce410d5`) |
+| **Backend scale** | 196 classes/interfaces/traits · 773 methods · 158 API endpoints · 52 tables · 122 migrations |
 | **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
 
-### ⚠️ ws-398 delta — what is indexed, and what is no longer
+### ✅ ws-398 / ws-392 / ws-417 — merged, now baseline
 
-Backend and frontend are indexed from **`ws-398`**, an unmerged feature branch that is exactly
-`develop` **+ one commit** in each repo (`ws=398 add intersex gender on add patient`). Nothing from
-`develop` is missing, so everything else in this KB describes `develop` unchanged. What ws-398 adds:
+Three backend branches previously tracked here as "unmerged deltas" (`ws-398` intersex gender,
+`ws-392` discount-code unique index, `ws-417` email verification rework) are now **all confirmed present**
+in the indexed tree — `tcv-backend-codefix` is `develop` with all three already folded in, plus its own
+work (below). Prose elsewhere in this KB that reads "since `ws-417`" or "`ws-398` adds …" is describing
+**current baseline behaviour**, not a hypothetical; nothing needs to be read as "if it merges" anymore.
+See [CONTEXT/PATIENT_CONTEXT.md](CONTEXT/PATIENT_CONTEXT.md) (gender), [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md)
+(unique index) and [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) / [AUTHENTICATION.md](AUTHENTICATION.md)
+(verification rework) for the detail. Route, endpoint, public-route and contract-drift counts already
+reflect this — see *Backend scale* above.
 
-| Area | `develop` | `ws-398` (indexed here) |
+### ⚠️ `tcv-backend-codefix` delta — what this branch adds on top of that baseline
+
+Beyond the three merges above, `tcv-backend-codefix` carries its own unmerged security-hardening pass
+(2026-09-02, re-verified 2026-09-04). Highlights, each cross-referenced to its finding:
+
+| Area | Before | On `tcv-backend-codefix` |
 |---|---|---|
-| `patients.gender` accepted values | `1` Male · `2` Female | `1` Male · `2` Female · **`3` Intersex** (migration `2026_08_28_000001` updates the column comment) |
-| Where the values are defined | duplicated `const GENDER` in both patient FormRequests | **`Patient::GENDERS`**; both requests alias it, so `in:` becomes `1,2,3` |
-| Label mapping | inline ternaries in `TestService` / `TestResultService` (a null gender rendered as `'Female'` in `TestService`) | **`Patient::genderLabel()`**; unknown/null → `null` |
-| SPA gender selector | `["Male", "Female"]` hardcoded in three components | **`GENDER_OPTIONS`** in `src/utils/testUtils.js`, rendered by all three |
+| Session tokens | `test_sessions.session_token` and `organization_patient_sessions.token` stored **plaintext** | **SHA-256 hashed**, matching the LMS tier — see [SECURITY.md "what is done well"](SECURITY.md#what-is-done-well) |
+| Patient / test-session ownership | `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail`, certificate download had **no** ownership check (or one built on forgeable request input) | All read the new unforgeable `auth_context` request attribute — [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) (partial), [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address), [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping), [S-17](SECURITY.md#s-17--assigntest--getactivetest-let-a-session-act-on-another-organizations-patient) — all fixed |
+| Rate limiting | none on login/register/password-reset/signature-verify/bulk-invitations/plate-url | 6 named `throttle:` limiters added — but see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert): they currently share one bucket, fix written but held back |
+| Migration failure | silent — container serves traffic on a stale schema | `entrypoint.sh` writes a marker; `/up` health check fails loudly (two open bugs in the fix itself — see [DEPLOYMENT.md](DEPLOYMENT.md)) |
+| Request correlation | none | `AddRequestId` middleware + JSON log formatter — see [MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md) |
+| `Route::resource` on JSON-only controllers | registered unreachable `create`/`edit` form routes | switched to `Route::apiResource` throughout |
+| Dead code | `EnsureTokenIsValid` middleware present, never wired | deleted |
 
-See [CONTEXT/PATIENT_CONTEXT.md](CONTEXT/PATIENT_CONTEXT.md). No route, endpoint count, public-route or
-contract-drift row changes — those three derived views are byte-identical to the `develop` run.
+☠️ **A near-miss during this same pass:** the branch briefly registered `App\Providers\EventServiceProvider`
+in `bootstrap/providers.php`, colliding with the auto-discovery that [EVENTS.md](EVENTS.md) and
+[ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md) already warned about by name — confirmed by test to
+double-send the `SendAfterPasswordReset` notification. Caught and reverted 2026-09-04 before merge; see
+[ARCHITECTURE_REALITY.md §1](ARCHITECTURE_REALITY.md#1-eventserviceprovider-is-never-loaded).
 
-**☠️ `ws-392` is no longer indexed.** Earlier syncs of this KB indexed `ws-392` (discount codes). That
-branch is still open and still unmerged, but it is **not** in the tree behind these indexes, so the
-discount-code docs now describe `develop`: `discount_codes.code` **keeps its unique index spanning
-soft-deleted rows**, a deleted code's name stays reserved forever, and
-`GET discount-codes/code-available` uses `withTrashed()`. The passages still flagged `ws-392` in
-[DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md), [DATABASE.md](DATABASE.md), [API_INDEX.md](API_INDEX.md)
-and [TESTING.md](TESTING.md) describe **that unmerged branch, not the indexed tree** — read them as
-"if ws-392 merges". The migration count is 110 either way: ws-392 adds `2026_08_27_000001`, ws-398 adds
-`2026_08_28_000001`.
+Full detail: [SECURITY.md](SECURITY.md), [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md),
+[MIDDLEWARE.md](MIDDLEWARE.md), [DEPLOYMENT.md](DEPLOYMENT.md).
 
-**☠️ `ws-417` is not indexed either** (email verification, 2026-09-03, branched off the `ws-404` line).
-Passages flagged `ws-417` describe that branch, not the indexed tree. Read them as "if ws-417 merges".
-What changes when it does:
-
-| Area | On the indexed tree | On `ws-417` |
-|---|---|---|
-| Verification mail | sent from **`login()`** on every unverified attempt | sent from **`register()`**; login sends nothing |
-| `markEmailAsVerified()` | sets `email_verified_at` only → [S-08](SECURITY.md#s-08--two-email-verification-systems-that-disagree) lockout | sets both flags; S-08 fixed, columns still not collapsed |
-| Verification token in logs | written in full at `INFO` | truncated to `token_prefix` |
-| Missing `email_template` row | absorbed as an SMTP error, registration reports success | rethrown; classified on `TransportExceptionInterface` |
-| Email subjects | whatever the row or the code says | prefixed `Testing Color Vision - ` at send time by a `MessageSending` listener |
-| `email_template.header` | portal title + from-address, printed above "Hello," | blanked by `2026_09_03_000001`; seeder writes `''` |
-| Auth test coverage | none | 31 tests across three suites |
-
-Affects [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md), [AUTHENTICATION.md](AUTHENTICATION.md),
-[SECURITY.md](SECURITY.md), [LOGGING.md](LOGGING.md), [EVENTS.md](EVENTS.md),
-[ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md), [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md)
-and [TESTING.md](TESTING.md). It adds one migration and `App\Support\EmailHeader`, so a regeneration on
-`ws-417` moves the migration count by one and the listener count from 3 to 4.
-
-**☠️ `ws-402` is not indexed either** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
+**☠️ `ws-402` is not indexed** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
 — backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
 them as "if ws-402 merges". What changes when it does:
 
-| Area | On the indexed tree (`develop`) | On `ws-402` |
+| Area | On the indexed tree (`tcv-backend-codefix`) | On `ws-402` |
 |---|---|---|
 | `CreditsController::destroy()` | hard-deletes the whole grant row, even the spent part — pushes `granted` below `consumed`, hidden by the `max(0, …)` clamp | `Credits::revokeGrant()` takes back only the **unspent** part; a partly-used grant is kept, with a negative `SOURCE_ADMIN_REVOKED` counter-entry, instead of being deleted |
 | `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
@@ -129,10 +119,14 @@ before writing code.
    branch — see the delta above). An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
 2. **`usertype` skips 3.** `1 = SUPER_ADMIN`, `2 = CUSTOMER`, `4 = ORGANIZATION`. There is no `3`.
    Never iterate `1..n`, never assume contiguity. Identical in all three repos.
-3. **Test-session endpoints authenticate the caller but never check the caller owns the test.**
-   `FlexibleAuthMiddleware` proves you hold *a* valid session; `unique_test_id` then comes from the URL
-   and is used unchecked. The UUID's unguessability is the only thing protecting another patient's
-   test. See [SECURITY.md](SECURITY.md) and [CONTEXT/TEST_EXECUTION_CONTEXT.md](CONTEXT/TEST_EXECUTION_CONTEXT.md).
+3. **Five session-token endpoints still authenticate the caller without checking they own the test.**
+   `FlexibleAuthMiddleware` proves you hold *a* valid session; on these five, `unique_test_id` comes
+   from the URL and is used unchecked, so the UUID's unguessability is the only thing protecting
+   another patient's test. `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail` and the
+   result-certificate download **were** the same shape but are now scoped by reading the unforgeable
+   `auth_context` request attribute — don't copy their old pattern.
+   See [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) and
+   [CONTEXT/TEST_EXECUTION_CONTEXT.md](CONTEXT/TEST_EXECUTION_CONTEXT.md).
 4. **`POST /api/register` is public and accepts `usertype: 1`.** `UserRequest` validates `usertype`
    against `in:1,2,4` and `account_status` against `in:active,inactive,suspended` — with no restriction
    on who may ask for which. See [SECURITY.md](SECURITY.md#s-01--public-registration-accepts-usertype--1).
@@ -176,18 +170,18 @@ before writing code.
 |---|---|
 | [ROUTES.md](ROUTES.md) / [API_INDEX.md](API_INDEX.md) | Route groups, guarding, the ordering traps |
 | [DATABASE.md](DATABASE.md) | Schema conventions, the tables that matter |
-| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 69 declared relationships |
+| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 70 declared relationships |
 
 ### Layers
 | Doc | Exists? |
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 34 |
-| [SERVICES.md](SERVICES.md) | ✅ 32 — the real home of business logic |
+| [SERVICES.md](SERVICES.md) | ✅ 33 — the real home of business logic |
 | [REQUESTS.md](REQUESTS.md) | ✅ 24 FormRequest classes |
-| [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (one is dead) |
+| [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
-| [EVENTS.md](EVENTS.md) | ✅ 3 events / 3 listeners — wired by discovery, not by the provider |
-| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 1 job · `database` driver · **no worker in compose** |
+| [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
+| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 2 jobs · `database` driver · **no worker in compose** |
 | [REPOSITORIES.md](REPOSITORIES.md) | ⚠️ 1 only — not a pattern |
 | [HELPERS.md](HELPERS.md) | ✅ static classes, **no** global functions |
 | [CACHE.md](CACHE.md) / [STORAGE.md](STORAGE.md) | ✅ minimal · S3 for plates |
@@ -206,13 +200,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 176 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 186 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 710 |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 158 |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 196 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 773 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |
 | [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 52 |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 186 |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 196 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |
@@ -307,7 +301,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 109 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 122 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

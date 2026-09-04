@@ -1,6 +1,6 @@
 # Model Relationships
 
-**69 declared relationships across 40 models.** The mechanical list, with line numbers, is
+**70 declared relationships across 40 models.** The mechanical list, with line numbers, is
 [INDEXES/MODEL_INDEX.md](INDEXES/MODEL_INDEX.md). This page is the shape and the traps.
 
 ## The core graph
@@ -26,6 +26,7 @@ erDiagram
     PatientTest     ||--o{ TestResumeToken  : ""
 
     TestInvitation  ||--o{ TestSession      : "redeemed into"
+    Patient         ||--o{ TestSession      : "org-added patient (test_invitation_id null)"
 
     Organization    ||--o{ LmsProviderConfig : ""
     LmsProviderConfig ||--o{ LmsSession      : ""

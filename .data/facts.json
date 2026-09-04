@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-09-02T12:26:12+02:00",
+    "generated_at": "2026-09-04T13:49:32+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "9d8db8c2",
+            "sha": "f96382ea",
             "branch": "tcv-backend-codefix",
-            "date": "2026-09-02"
+            "date": "2026-09-04"
         },
         "frontend": {
-            "sha": "47f9403",
-            "branch": "QA",
-            "date": "2026-09-01"
+            "sha": "20f570f",
+            "branch": "ws-402",
+            "date": "2026-09-04"
         },
         "website": {
             "sha": "2166ec0",
@@ -60,6 +60,137 @@
                         "error",
                         "table",
                         "comment"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
+            "name": "CheckEmailTemplatePlaceholders",
+            "fqcn": "App\\Console\\Commands\\CheckEmailTemplatePlaceholders",
+            "kind": "class",
+            "file": "app/Console/Commands/CheckEmailTemplatePlaceholders.php",
+            "line": 18,
+            "end_line": 123,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "Find stored templates whose placeholders will not render.",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 24,
+                    "end_line": 62,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "UserEmailTemplate::all",
+                        "report",
+                        "TestEmailTemplates::all",
+                        "info",
+                        "newLine",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "report",
+                    "line": 64,
+                    "end_line": 122,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $table",
+                        "int $id",
+                        "string $type",
+                        "string $subject",
+                        "string $body",
+                        "string $context"
+                    ],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "EmailTemplatePlaceholders::unknownIn",
+                        "EmailTemplatePlaceholders::suggestionFor",
+                        "EmailTemplatePlaceholders::markupBrokenIn",
+                        "EmailTemplatePlaceholders::paddedIn",
+                        "EmailTemplatePlaceholders::required",
+                        "newLine",
+                        "error",
+                        "line",
+                        "option"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
+            "name": "SendPendingInvitations",
+            "fqcn": "App\\Console\\Commands\\SendPendingInvitations",
+            "kind": "class",
+            "file": "app/Console/Commands/SendPendingInvitations.php",
+            "line": 17,
+            "end_line": 144,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "Recovery hatch for invitations that were saved but never mailed.",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 25,
+                    "end_line": 124,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer"
+                    ],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "option",
+                        "reclaimAbandonedClaims",
+                        "warn",
+                        "get",
+                        "limit",
+                        "orderBy",
+                        "where",
+                        "TestInvitation::where",
+                        "subMinutes",
+                        "isEmpty",
+                        "info",
+                        "partition",
+                        "isNotEmpty",
+                        "count",
+                        "implode",
+                        "pluck",
+                        "groupBy",
+                        "all",
+                        "handle",
+                        "TestInvitation::whereIn",
+                        "whereIn"
+                    ]
+                },
+                {
+                    "name": "reclaimAbandonedClaims",
+                    "line": 138,
+                    "end_line": 143,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "int $minutes"
+                    ],
+                    "returns": "int",
+                    "doc": "Hand abandoned claims back to 'pending'.",
+                    "calls": [
+                        "update",
+                        "where",
+                        "TestInvitation::where",
+                        "subMinutes"
                     ]
                 }
             ],
@@ -960,8 +1091,8 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 32,
-            "end_line": 782,
+            "line": 33,
+            "end_line": 776,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -969,8 +1100,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 36,
-                    "end_line": 39,
+                    "line": 37,
+                    "end_line": 40,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -982,8 +1113,8 @@
                 },
                 {
                     "name": "login",
-                    "line": 41,
-                    "end_line": 172,
+                    "line": 42,
+                    "end_line": 138,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1005,15 +1136,14 @@
                         "Hash::check",
                         "createStripeCustomer",
                         "Log::info",
-                        "sendVerificationEmailForUser",
                         "isSuperAdmin",
                         "createToken"
                     ]
                 },
                 {
                     "name": "createStripeCustomer",
-                    "line": 174,
-                    "end_line": 181,
+                    "line": 140,
+                    "end_line": 147,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1029,8 +1159,8 @@
                 },
                 {
                     "name": "register",
-                    "line": 183,
-                    "end_line": 229,
+                    "line": 149,
+                    "end_line": 207,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1051,16 +1181,17 @@
                         "Test::where",
                         "syncWithoutDetaching",
                         "assignedTests",
-                        "ApiResponse::success",
+                        "sendVerificationEmailForUser",
                         "Log::error",
                         "getMessage",
+                        "ApiResponse::success",
                         "ApiResponse::error"
                     ]
                 },
                 {
                     "name": "sendResetLinkEmail",
-                    "line": 231,
-                    "end_line": 261,
+                    "line": 209,
+                    "end_line": 239,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1085,8 +1216,8 @@
                 },
                 {
                     "name": "setOrResetPassword",
-                    "line": 263,
-                    "end_line": 342,
+                    "line": 241,
+                    "end_line": 320,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1121,8 +1252,8 @@
                 },
                 {
                     "name": "verifySetupToken",
-                    "line": 344,
-                    "end_line": 364,
+                    "line": 322,
+                    "end_line": 342,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1142,8 +1273,8 @@
                 },
                 {
                     "name": "verifyEmail",
-                    "line": 367,
-                    "end_line": 387,
+                    "line": 345,
+                    "end_line": 365,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1163,8 +1294,8 @@
                 },
                 {
                     "name": "logout",
-                    "line": 389,
-                    "end_line": 394,
+                    "line": 367,
+                    "end_line": 372,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1181,8 +1312,8 @@
                 },
                 {
                     "name": "impersonateUser",
-                    "line": 396,
-                    "end_line": 415,
+                    "line": 374,
+                    "end_line": 393,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1202,8 +1333,8 @@
                 },
                 {
                     "name": "stopImpersonation",
-                    "line": 417,
-                    "end_line": 427,
+                    "line": 395,
+                    "end_line": 405,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1224,8 +1355,8 @@
                 },
                 {
                     "name": "isTokenValid",
-                    "line": 435,
-                    "end_line": 487,
+                    "line": 413,
+                    "end_line": 465,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1244,8 +1375,8 @@
                 },
                 {
                     "name": "verifyPassword",
-                    "line": 495,
-                    "end_line": 507,
+                    "line": 473,
+                    "end_line": 485,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1263,8 +1394,8 @@
                 },
                 {
                     "name": "changePassword",
-                    "line": 515,
-                    "end_line": 542,
+                    "line": 493,
+                    "end_line": 520,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1294,8 +1425,8 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
-                    "line": 549,
-                    "end_line": 654,
+                    "line": 527,
+                    "end_line": 648,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1304,6 +1435,7 @@
                     "returns": "",
                     "doc": "Send verification email to user",
                     "calls": [
+                        "isFuture",
                         "Log::info",
                         "Str::random",
                         "addHours",
@@ -1312,6 +1444,7 @@
                         "where",
                         "DB::table",
                         "EmailContent::linkify",
+                        "EmailContent::styleAnchors",
                         "Mail::html",
                         "from",
                         "subject",
@@ -1323,8 +1456,8 @@
                 },
                 {
                     "name": "verifyEmailByToken",
-                    "line": 661,
-                    "end_line": 716,
+                    "line": 655,
+                    "end_line": 710,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1346,8 +1479,8 @@
                 },
                 {
                     "name": "resendVerificationByToken",
-                    "line": 723,
-                    "end_line": 752,
+                    "line": 717,
+                    "end_line": 746,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1368,8 +1501,8 @@
                 },
                 {
                     "name": "resendEmailVerificationLink",
-                    "line": 754,
-                    "end_line": 780,
+                    "line": 748,
+                    "end_line": 774,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4222,7 +4355,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/TestController.php",
             "line": 31,
-            "end_line": 851,
+            "end_line": 846,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4512,7 +4645,7 @@
                 {
                     "name": "downloadTestResultPDF",
                     "line": 390,
-                    "end_line": 510,
+                    "end_line": 505,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4550,8 +4683,8 @@
                 },
                 {
                     "name": "organizationAllowsDownload",
-                    "line": 518,
-                    "end_line": 558,
+                    "line": 513,
+                    "end_line": 553,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4570,8 +4703,8 @@
                 },
                 {
                     "name": "callerOwnsPatientTest",
-                    "line": 566,
-                    "end_line": 597,
+                    "line": 561,
+                    "end_line": 592,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4588,8 +4721,8 @@
                 },
                 {
                     "name": "callerOwnsPatient",
-                    "line": 606,
-                    "end_line": 649,
+                    "line": 601,
+                    "end_line": 644,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4607,8 +4740,8 @@
                 },
                 {
                     "name": "getActiveTest",
-                    "line": 660,
-                    "end_line": 730,
+                    "line": 655,
+                    "end_line": 725,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4635,8 +4768,8 @@
                 },
                 {
                     "name": "getActiveTestsWithAssignmentFlag",
-                    "line": 732,
-                    "end_line": 755,
+                    "line": 727,
+                    "end_line": 750,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4658,8 +4791,8 @@
                 },
                 {
                     "name": "assignUserTest",
-                    "line": 757,
-                    "end_line": 763,
+                    "line": 752,
+                    "end_line": 758,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4676,8 +4809,8 @@
                 },
                 {
                     "name": "unassignUserTest",
-                    "line": 765,
-                    "end_line": 776,
+                    "line": 760,
+                    "end_line": 771,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4696,8 +4829,8 @@
                 },
                 {
                     "name": "bulkUpdateAssignment",
-                    "line": 778,
-                    "end_line": 850,
+                    "line": 773,
+                    "end_line": 845,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4734,8 +4867,8 @@
             "fqcn": "App\\Http\\Controllers\\TestEmailTemplateController",
             "kind": "class",
             "file": "app/Http/Controllers/TestEmailTemplateController.php",
-            "line": 13,
-            "end_line": 311,
+            "line": 15,
+            "end_line": 270,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4743,8 +4876,8 @@
             "methods": [
                 {
                     "name": "index",
-                    "line": 22,
-                    "end_line": 68,
+                    "line": 24,
+                    "end_line": 70,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4763,8 +4896,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 77,
-                    "end_line": 164,
+                    "line": 79,
+                    "end_line": 175,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4784,6 +4917,7 @@
                         "input",
                         "DB::beginTransaction",
                         "update",
+                        "EmailContent::anchorPlaceholders",
                         "Cache::forget",
                         "DB::commit",
                         "Log::info",
@@ -4796,8 +4930,8 @@
                 },
                 {
                     "name": "validateTemplateData",
-                    "line": 173,
-                    "end_line": 187,
+                    "line": 184,
+                    "end_line": 198,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4812,30 +4946,37 @@
                 },
                 {
                     "name": "validateRequiredPlaceholders",
-                    "line": 196,
-                    "end_line": 228,
+                    "line": 208,
+                    "end_line": 259,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "string $body",
+                        "string $subject",
                         "string $type"
                     ],
                     "returns": "array",
-                    "doc": "Validate required placeholders in template body.",
-                    "calls": []
+                    "doc": "Check a template body against the placeholder vocabulary for its type.",
+                    "calls": [
+                        "EmailTemplatePlaceholders::required",
+                        "EmailTemplatePlaceholders::messageForUnknown",
+                        "EmailTemplatePlaceholders::messageForMarkupBroken",
+                        "EmailTemplatePlaceholders::messageForPadded"
+                    ]
                 },
                 {
                     "name": "getPlaceholders",
-                    "line": 236,
-                    "end_line": 310,
+                    "line": 261,
+                    "end_line": 269,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "string $type"
                     ],
                     "returns": "JsonResponse",
-                    "doc": "Get available placeholders for a template type.",
+                    "doc": "",
                     "calls": [
+                        "EmailTemplatePlaceholders::catalogue",
                         "json"
                     ]
                 }
@@ -4848,8 +4989,8 @@
             "fqcn": "App\\Http\\Controllers\\TestInvitationController",
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
-            "line": 21,
-            "end_line": 579,
+            "line": 20,
+            "end_line": 616,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4857,12 +4998,12 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 23,
-                    "end_line": 26,
+                    "line": 22,
+                    "end_line": 25,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "EmailTemplateService $emailTemplateService"
+                        "TestInvitationMailer $invitationMailer"
                     ],
                     "returns": "",
                     "doc": "",
@@ -4870,8 +5011,8 @@
                 },
                 {
                     "name": "sendInvitations",
-                    "line": 28,
-                    "end_line": 200,
+                    "line": 27,
+                    "end_line": 182,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4886,26 +5027,63 @@
                         "json",
                         "Log::info",
                         "Test::findOrFail",
-                        "Str::random",
-                        "Str::upper",
-                        "TestInvitation::create",
-                        "addDays",
-                        "Carbon::now",
-                        "sendInvitationEmail",
-                        "delete",
-                        "Log::error",
-                        "getMessage",
-                        "toArray",
-                        "pluck",
+                        "DB::transaction",
+                        "createPendingInvitations",
                         "CreditConsume::consume",
                         "increment",
-                        "PatientTest::where"
+                        "PatientTest::where",
+                        "dispatchEmailBatch",
+                        "Log::error",
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "createPendingInvitations",
+                    "line": 193,
+                    "end_line": 224,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $emails",
+                        "int $testId",
+                        "int $userId"
+                    ],
+                    "returns": "array",
+                    "doc": "Bulk-insert invitation rows in the pending state and return their ids.",
+                    "calls": [
+                        "Carbon::now",
+                        "addDays",
+                        "copy",
+                        "Str::random",
+                        "Str::upper",
+                        "TestInvitation::insert",
+                        "all",
+                        "pluck",
+                        "TestInvitation::whereIn"
+                    ]
+                },
+                {
+                    "name": "dispatchEmailBatch",
+                    "line": 240,
+                    "end_line": 243,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $invitationIds",
+                        "int $userId",
+                        "?float $deadline = null"
+                    ],
+                    "returns": "void",
+                    "doc": "Schedule one batch of invitation emails to send after the response.",
+                    "calls": [
+                        "afterResponse",
+                        "SendTestInvitationEmailsJob::dispatch"
                     ]
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 206,
-                    "end_line": 256,
+                    "line": 249,
+                    "end_line": 318,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4937,8 +5115,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 262,
-                    "end_line": 291,
+                    "line": 324,
+                    "end_line": 378,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4955,19 +5133,20 @@
                         "whereColumn",
                         "from",
                         "select",
+                        "json",
                         "Str::random",
                         "Str::upper",
                         "update",
                         "addDays",
                         "Carbon::now",
                         "sendInvitationEmail",
-                        "json"
+                        "fresh"
                     ]
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 296,
-                    "end_line": 332,
+                    "line": 383,
+                    "end_line": 419,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4995,8 +5174,8 @@
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 334,
-                    "end_line": 393,
+                    "line": 427,
+                    "end_line": 430,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5004,27 +5183,19 @@
                         "$test",
                         "$token",
                         "$verificationCode",
+                        "$expiresAt",
                         "int $userId"
                     ],
                     "returns": "void",
-                    "doc": "",
+                    "doc": "Send a single invitation email inline.",
                     "calls": [
-                        "getTemplateForUser",
-                        "format",
-                        "addDays",
-                        "Carbon::now",
-                        "Log::warning",
-                        "EmailContent::linkify",
-                        "Mail::send",
-                        "subject",
-                        "to",
-                        "Log::info"
+                        "send"
                     ]
                 },
                 {
                     "name": "verifyCode",
-                    "line": 398,
-                    "end_line": 509,
+                    "line": 435,
+                    "end_line": 546,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5057,8 +5228,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 514,
-                    "end_line": 577,
+                    "line": 551,
+                    "end_line": 614,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -7061,8 +7232,8 @@
             "fqcn": "App\\Http\\Requests\\UpdateUserEmailTemplateRequest",
             "kind": "class",
             "file": "app/Http/Requests/UpdateUserEmailTemplateRequest.php",
-            "line": 9,
-            "end_line": 85,
+            "line": 10,
+            "end_line": 120,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -7070,8 +7241,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 14,
-                    "end_line": 17,
+                    "line": 15,
+                    "end_line": 18,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7081,8 +7252,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 22,
-                    "end_line": 41,
+                    "line": 23,
+                    "end_line": 42,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7094,8 +7265,8 @@
                 },
                 {
                     "name": "messages",
-                    "line": 46,
-                    "end_line": 54,
+                    "line": 47,
+                    "end_line": 55,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7105,8 +7276,8 @@
                 },
                 {
                     "name": "withValidator",
-                    "line": 59,
-                    "end_line": 71,
+                    "line": 60,
+                    "end_line": 103,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -7117,21 +7288,25 @@
                     "calls": [
                         "after",
                         "input",
+                        "EmailTemplatePlaceholders::required",
                         "add",
-                        "errors"
+                        "errors",
+                        "EmailTemplatePlaceholders::messageForUnknown",
+                        "EmailTemplatePlaceholders::messageForMarkupBroken",
+                        "EmailTemplatePlaceholders::messageForPadded"
                     ]
                 },
                 {
                     "name": "prepareForValidation",
-                    "line": 76,
-                    "end_line": 84,
+                    "line": 108,
+                    "end_line": 119,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
                     "returns": "void",
                     "doc": "Prepare data for validation.",
                     "calls": [
-                        "has",
+                        "input",
                         "merge"
                     ]
                 }
@@ -7321,6 +7496,273 @@
             "relations": []
         },
         {
+            "name": "SendTestInvitationEmailsJob",
+            "fqcn": "App\\Jobs\\SendTestInvitationEmailsJob",
+            "kind": "class",
+            "file": "app/Jobs/SendTestInvitationEmailsJob.php",
+            "line": 35,
+            "end_line": 457,
+            "extends": "",
+            "implements": [
+                "ShouldQueue"
+            ],
+            "traits": [
+                "Dispatchable",
+                "InteractsWithQueue",
+                "Queueable",
+                "SerializesModels"
+            ],
+            "doc": "Sends one batch of test-invitation emails.",
+            "methods": [
+                {
+                    "name": "__construct",
+                    "line": 63,
+                    "end_line": 68,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "array $invitationIds",
+                        "int $userId",
+                        "?float $deadline = null"
+                    ],
+                    "returns": "",
+                    "doc": "stops and leaves the rest pending. Shared",
+                    "calls": []
+                },
+                {
+                    "name": "handle",
+                    "line": 70,
+                    "end_line": 97,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "sendBatch",
+                        "Log::error",
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "sendBatch",
+                    "line": 99,
+                    "end_line": 203,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "pastDeadline",
+                        "capMessagesPerConnection",
+                        "get",
+                        "where",
+                        "whereIn",
+                        "TestInvitation::with",
+                        "isEmpty",
+                        "claim",
+                        "refresh",
+                        "release",
+                        "markFailed",
+                        "sendOne",
+                        "Log::warning",
+                        "count",
+                        "Log::info"
+                    ]
+                },
+                {
+                    "name": "pastDeadline",
+                    "line": 208,
+                    "end_line": 211,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "Has this request used up the time it is allowed to hold its FPM child?",
+                    "calls": []
+                },
+                {
+                    "name": "claim",
+                    "line": 224,
+                    "end_line": 234,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitation $invitation"
+                    ],
+                    "returns": "bool",
+                    "doc": "Take exclusive ownership of one row, atomically.",
+                    "calls": [
+                        "update",
+                        "where",
+                        "TestInvitation::whereKey",
+                        "getKey"
+                    ]
+                },
+                {
+                    "name": "release",
+                    "line": 244,
+                    "end_line": 249,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitation $invitation"
+                    ],
+                    "returns": "void",
+                    "doc": "Give a claimed row back without sending it.",
+                    "calls": [
+                        "update",
+                        "where",
+                        "TestInvitation::whereKey",
+                        "getKey"
+                    ]
+                },
+                {
+                    "name": "sendOne",
+                    "line": 256,
+                    "end_line": 309,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer",
+                        "TestInvitation $invitation"
+                    ],
+                    "returns": "bool",
+                    "doc": "Send one invitation, retrying transient SMTP failures.",
+                    "calls": [
+                        "send",
+                        "isTransient",
+                        "Log::warning",
+                        "getMessage",
+                        "resetConnection",
+                        "Log::error",
+                        "markFailed",
+                        "recordSent"
+                    ]
+                },
+                {
+                    "name": "recordSent",
+                    "line": 319,
+                    "end_line": 344,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitation $invitation"
+                    ],
+                    "returns": "void",
+                    "doc": "Persist the delivery, retrying briefly on a database hiccup.",
+                    "calls": [
+                        "update",
+                        "Log::error",
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "isTransient",
+                    "line": 355,
+                    "end_line": 364,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Throwable $e"
+                    ],
+                    "returns": "bool",
+                    "doc": "Is this worth another attempt?",
+                    "calls": [
+                        "getCode"
+                    ]
+                },
+                {
+                    "name": "capMessagesPerConnection",
+                    "line": 372,
+                    "end_line": 382,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Recycle the SMTP connection sooner than the server would drop it.",
+                    "calls": [
+                        "getSymfonyTransport",
+                        "Mail::mailer",
+                        "setRestartThreshold"
+                    ]
+                },
+                {
+                    "name": "resetConnection",
+                    "line": 384,
+                    "end_line": 395,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "getSymfonyTransport",
+                        "Mail::mailer",
+                        "stop"
+                    ]
+                },
+                {
+                    "name": "markFailed",
+                    "line": 414,
+                    "end_line": 433,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitation $invitation",
+                        "string $error"
+                    ],
+                    "returns": "void",
+                    "doc": "Mark the invitation undeliverable and hand the credit back.",
+                    "calls": [
+                        "DB::transaction",
+                        "update",
+                        "User::find",
+                        "Credits::addCreditsToUser"
+                    ]
+                },
+                {
+                    "name": "failed",
+                    "line": 439,
+                    "end_line": 456,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Throwable $e"
+                    ],
+                    "returns": "void",
+                    "doc": "Every retry is exhausted — leave the batch's remaining rows failed and",
+                    "calls": [
+                        "Log::error",
+                        "getMessage",
+                        "each",
+                        "get",
+                        "whereIn",
+                        "TestInvitation::whereIn",
+                        "markFailed"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "BATCH_SIZE",
+                    "value": "25",
+                    "line": 40
+                },
+                {
+                    "name": "MAX_ATTEMPTS_PER_EMAIL",
+                    "value": "3",
+                    "line": 43
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "HandleLmsNotificationOnCompletion",
             "fqcn": "App\\Listeners\\HandleLmsNotificationOnCompletion",
             "kind": "class",
@@ -7421,6 +7863,63 @@
                 }
             ],
             "constants": [],
+            "relations": []
+        },
+        {
+            "name": "PrefixEmailSubject",
+            "fqcn": "App\\Listeners\\PrefixEmailSubject",
+            "kind": "class",
+            "file": "app/Listeners/PrefixEmailSubject.php",
+            "line": 17,
+            "end_line": 50,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Brands every outgoing email subject with \"Testing Color Vision - \".",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 24,
+                    "end_line": 29,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "MessageSending $event"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "subject",
+                        "self::apply",
+                        "getSubject"
+                    ]
+                },
+                {
+                    "name": "apply",
+                    "line": 31,
+                    "end_line": 49,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $subject"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "BRAND",
+                    "value": "'Testing Color Vision'",
+                    "line": 20
+                },
+                {
+                    "name": "PREFIX",
+                    "value": "",
+                    "line": 22
+                }
+            ],
             "relations": []
         },
         {
@@ -9945,7 +10444,7 @@
             "kind": "class",
             "file": "app/Models/TestInvitation.php",
             "line": 8,
-            "end_line": 63,
+            "end_line": 83,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -9955,8 +10454,8 @@
             "methods": [
                 {
                     "name": "test",
-                    "line": 35,
-                    "end_line": 38,
+                    "line": 55,
+                    "end_line": 58,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9968,8 +10467,8 @@
                 },
                 {
                     "name": "user",
-                    "line": 43,
-                    "end_line": 46,
+                    "line": 63,
+                    "end_line": 66,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9981,8 +10480,8 @@
                 },
                 {
                     "name": "isExpired",
-                    "line": 51,
-                    "end_line": 54,
+                    "line": 71,
+                    "end_line": 74,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9994,8 +10493,8 @@
                 },
                 {
                     "name": "isValid",
-                    "line": 59,
-                    "end_line": 62,
+                    "line": 79,
+                    "end_line": 82,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10011,6 +10510,26 @@
                     "name": "INVITATION_VALIDITY_DAYS",
                     "value": "7",
                     "line": 12
+                },
+                {
+                    "name": "EMAIL_STATUS_PENDING",
+                    "value": "'pending'",
+                    "line": 15
+                },
+                {
+                    "name": "EMAIL_STATUS_SENDING",
+                    "value": "'sending'",
+                    "line": 25
+                },
+                {
+                    "name": "EMAIL_STATUS_SENT",
+                    "value": "'sent'",
+                    "line": 26
+                },
+                {
+                    "name": "EMAIL_STATUS_FAILED",
+                    "value": "'failed'",
+                    "line": 28
                 }
             ],
             "relations": [
@@ -10018,13 +10537,13 @@
                     "method": "test",
                     "type": "belongsTo",
                     "target": "Test",
-                    "line": 35
+                    "line": 55
                 },
                 {
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 43
+                    "line": 63
                 }
             ]
         },
@@ -10423,7 +10942,7 @@
             "kind": "class",
             "file": "app/Models/User.php",
             "line": 15,
-            "end_line": 162,
+            "end_line": 166,
             "extends": "Authenticatable",
             "implements": [
                 "MustVerifyEmail"
@@ -10462,7 +10981,7 @@
                 {
                     "name": "markEmailAsVerified",
                     "line": 91,
-                    "end_line": 102,
+                    "end_line": 106,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10476,8 +10995,8 @@
                 },
                 {
                     "name": "hasVerifiedEmail",
-                    "line": 104,
-                    "end_line": 107,
+                    "line": 108,
+                    "end_line": 111,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10487,8 +11006,8 @@
                 },
                 {
                     "name": "isSuperAdmin",
-                    "line": 109,
-                    "end_line": 112,
+                    "line": 113,
+                    "end_line": 116,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10498,8 +11017,8 @@
                 },
                 {
                     "name": "canImpersonate",
-                    "line": 114,
-                    "end_line": 117,
+                    "line": 118,
+                    "end_line": 121,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10509,8 +11028,8 @@
                 },
                 {
                     "name": "canBeImpersonated",
-                    "line": 119,
-                    "end_line": 122,
+                    "line": 123,
+                    "end_line": 126,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10520,8 +11039,8 @@
                 },
                 {
                     "name": "canImpersonateUser",
-                    "line": 124,
-                    "end_line": 136,
+                    "line": 128,
+                    "end_line": 140,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10535,8 +11054,8 @@
                 },
                 {
                     "name": "stripeDetail",
-                    "line": 138,
-                    "end_line": 141,
+                    "line": 142,
+                    "end_line": 145,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10548,8 +11067,8 @@
                 },
                 {
                     "name": "assignedTests",
-                    "line": 143,
-                    "end_line": 146,
+                    "line": 147,
+                    "end_line": 150,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10561,8 +11080,8 @@
                 },
                 {
                     "name": "organization",
-                    "line": 152,
-                    "end_line": 155,
+                    "line": 156,
+                    "end_line": 159,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10574,8 +11093,8 @@
                 },
                 {
                     "name": "country",
-                    "line": 157,
-                    "end_line": 160,
+                    "line": 161,
+                    "end_line": 164,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -10608,25 +11127,25 @@
                     "method": "stripeDetail",
                     "type": "hasOne",
                     "target": "UserStripeDetail",
-                    "line": 138
+                    "line": 142
                 },
                 {
                     "method": "assignedTests",
                     "type": "belongsToMany",
                     "target": "Test",
-                    "line": 143
+                    "line": 147
                 },
                 {
                     "method": "organization",
                     "type": "hasOne",
                     "target": "Organization",
-                    "line": 152
+                    "line": 156
                 },
                 {
                     "method": "country",
                     "type": "belongsTo",
                     "target": "Country",
-                    "line": 157
+                    "line": 161
                 }
             ]
         },
@@ -10815,7 +11334,7 @@
             "kind": "class",
             "file": "app/Notifications/ResetPasswordNotification.php",
             "line": 11,
-            "end_line": 91,
+            "end_line": 96,
             "extends": "Notification",
             "implements": [],
             "traits": [
@@ -10853,7 +11372,7 @@
                 {
                     "name": "toMail",
                     "line": 38,
-                    "end_line": 82,
+                    "end_line": 87,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -10866,14 +11385,15 @@
                         "where",
                         "DB::table",
                         "EmailContent::linkify",
+                        "EmailContent::styleAnchors",
                         "view",
                         "subject"
                     ]
                 },
                 {
                     "name": "toArray",
-                    "line": 87,
-                    "end_line": 90,
+                    "line": 92,
+                    "end_line": 95,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11245,8 +11765,8 @@
             "fqcn": "App\\Providers\\AppServiceProvider",
             "kind": "class",
             "file": "app/Providers/AppServiceProvider.php",
-            "line": 15,
-            "end_line": 122,
+            "line": 17,
+            "end_line": 129,
             "extends": "ServiceProvider",
             "implements": [],
             "traits": [],
@@ -11254,8 +11774,8 @@
             "methods": [
                 {
                     "name": "register",
-                    "line": 20,
-                    "end_line": 23,
+                    "line": 22,
+                    "end_line": 25,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -11265,8 +11785,8 @@
                 },
                 {
                     "name": "boot",
-                    "line": 28,
-                    "end_line": 35,
+                    "line": 30,
+                    "end_line": 42,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -11276,13 +11796,14 @@
                         "Schema::defaultStringLength",
                         "configureRateLimiting",
                         "configureMigrationHealthCheck",
+                        "Event::listen",
                         "warnIfFrontendAppUrlLooksInvalid"
                     ]
                 },
                 {
                     "name": "configureMigrationHealthCheck",
-                    "line": 46,
-                    "end_line": 57,
+                    "line": 53,
+                    "end_line": 64,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -11296,8 +11817,8 @@
                 },
                 {
                     "name": "configureRateLimiting",
-                    "line": 65,
-                    "end_line": 99,
+                    "line": 72,
+                    "end_line": 106,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -11316,8 +11837,8 @@
                 },
                 {
                     "name": "warnIfFrontendAppUrlLooksInvalid",
-                    "line": 109,
-                    "end_line": 121,
+                    "line": 116,
+                    "end_line": 128,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -11424,8 +11945,8 @@
             "fqcn": "App\\Repositories\\EmailTemplateRepository",
             "kind": "class",
             "file": "app/Repositories/EmailTemplateRepository.php",
-            "line": 9,
-            "end_line": 64,
+            "line": 10,
+            "end_line": 73,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -11433,8 +11954,8 @@
             "methods": [
                 {
                     "name": "getUserTemplate",
-                    "line": 14,
-                    "end_line": 17,
+                    "line": 15,
+                    "end_line": 18,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11450,8 +11971,8 @@
                 },
                 {
                     "name": "getAdminDefaultTemplate",
-                    "line": 22,
-                    "end_line": 30,
+                    "line": 23,
+                    "end_line": 31,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11467,8 +11988,8 @@
                 },
                 {
                     "name": "saveUserTemplate",
-                    "line": 35,
-                    "end_line": 47,
+                    "line": 36,
+                    "end_line": 56,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11478,13 +11999,14 @@
                     "returns": "UserEmailTemplate",
                     "doc": "Create or update user's email template.",
                     "calls": [
-                        "UserEmailTemplate::updateOrCreate"
+                        "UserEmailTemplate::updateOrCreate",
+                        "EmailContent::anchorPlaceholders"
                     ]
                 },
                 {
                     "name": "deleteUserTemplate",
-                    "line": 52,
-                    "end_line": 55,
+                    "line": 61,
+                    "end_line": 64,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11500,8 +12022,8 @@
                 },
                 {
                     "name": "hasCustomTemplate",
-                    "line": 60,
-                    "end_line": 63,
+                    "line": 69,
+                    "end_line": 72,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12036,8 +12558,8 @@
             "fqcn": "App\\Services\\EmailTemplateService",
             "kind": "class",
             "file": "app/Services/EmailTemplateService.php",
-            "line": 9,
-            "end_line": 138,
+            "line": 10,
+            "end_line": 145,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -12045,8 +12567,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 11,
-                    "end_line": 14,
+                    "line": 12,
+                    "end_line": 15,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12058,8 +12580,8 @@
                 },
                 {
                     "name": "getTemplateForUser",
-                    "line": 21,
-                    "end_line": 62,
+                    "line": 22,
+                    "end_line": 69,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12071,13 +12593,14 @@
                     "calls": [
                         "getUserTemplate",
                         "getAdminDefaultTemplate",
-                        "Log::warning"
+                        "Log::warning",
+                        "EmailContent::anchorPlaceholders"
                     ]
                 },
                 {
                     "name": "saveUserTemplate",
-                    "line": 67,
-                    "end_line": 102,
+                    "line": 74,
+                    "end_line": 109,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12095,8 +12618,8 @@
                 },
                 {
                     "name": "resetToDefault",
-                    "line": 107,
-                    "end_line": 129,
+                    "line": 114,
+                    "end_line": 136,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12115,8 +12638,8 @@
                 },
                 {
                     "name": "validatePlaceholder",
-                    "line": 134,
-                    "end_line": 137,
+                    "line": 141,
+                    "end_line": 144,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12136,8 +12659,8 @@
             "fqcn": "App\\Services\\HubSpotService",
             "kind": "class",
             "file": "app/Services/HubSpotService.php",
-            "line": 10,
-            "end_line": 158,
+            "line": 12,
+            "end_line": 317,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -12145,8 +12668,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 16,
-                    "end_line": 25,
+                    "line": 36,
+                    "end_line": 47,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12156,8 +12679,8 @@
                 },
                 {
                     "name": "submitEnquiry",
-                    "line": 31,
-                    "end_line": 35,
+                    "line": 53,
+                    "end_line": 57,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12172,8 +12695,8 @@
                 },
                 {
                     "name": "http",
-                    "line": 44,
-                    "end_line": 50,
+                    "line": 66,
+                    "end_line": 72,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -12185,8 +12708,8 @@
                 },
                 {
                     "name": "upsertContact",
-                    "line": 56,
-                    "end_line": 112,
+                    "line": 78,
+                    "end_line": 148,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12207,8 +12730,8 @@
                 },
                 {
                     "name": "createTicket",
-                    "line": 119,
-                    "end_line": 157,
+                    "line": 154,
+                    "end_line": 208,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12218,20 +12741,121 @@
                     "returns": "void",
                     "doc": "Create a ticket with the enquiry and associate it to the contact inline.",
                     "calls": [
-                        "post",
-                        "http",
+                        "Cache::get",
+                        "sourceUnsupportedKey",
+                        "postTicket",
+                        "isSourcePropertyRejection",
+                        "Cache::put",
+                        "Log::warning",
+                        "body",
                         "successful",
                         "Log::error",
-                        "status",
-                        "body"
+                        "status"
                     ]
+                },
+                {
+                    "name": "postTicket",
+                    "line": 213,
+                    "end_line": 225,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $properties",
+                        "string $contactId"
+                    ],
+                    "returns": "Response",
+                    "doc": "associationTypeId 16 = ticket_to_contact (HUBSPOT_DEFINED, v3 inline).",
+                    "calls": [
+                        "post",
+                        "http"
+                    ]
+                },
+                {
+                    "name": "sourceUnsupportedKey",
+                    "line": 232,
+                    "end_line": 235,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "string",
+                    "doc": "Keyed by property *and* value: a rejection can be the value's fault as much as the name's",
+                    "calls": []
+                },
+                {
+                    "name": "isSourcePropertyRejection",
+                    "line": 243,
+                    "end_line": 250,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Response $response"
+                    ],
+                    "returns": "bool",
+                    "doc": "True when the 400 came from the source property itself — either it is not defined on the",
+                    "calls": [
+                        "status",
+                        "rejectedPropertyNames"
+                    ]
+                },
+                {
+                    "name": "rejectedPropertyNames",
+                    "line": 263,
+                    "end_line": 281,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Response $response"
+                    ],
+                    "returns": "array",
+                    "doc": "Property names HubSpot named in a validation error, gathered from the three shapes it uses:",
+                    "calls": [
+                        "json",
+                        "propertyNamesIn",
+                        "embeddedJsonArray"
+                    ]
+                },
+                {
+                    "name": "propertyNamesIn",
+                    "line": 289,
+                    "end_line": 302,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "mixed $errors"
+                    ],
+                    "returns": "array",
+                    "doc": "Property names out of one list of HubSpot error entries, whichever key it uses for them.",
+                    "calls": []
+                },
+                {
+                    "name": "embeddedJsonArray",
+                    "line": 308,
+                    "end_line": 316,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $message"
+                    ],
+                    "returns": "?string",
+                    "doc": "The bracketed JSON array HubSpot embeds inside its `message` string, or null when the",
+                    "calls": []
                 }
             ],
             "constants": [
                 {
                     "name": "BASE_URL",
                     "value": "'https://api.hubapi.com'",
-                    "line": 12
+                    "line": 14
+                },
+                {
+                    "name": "SOURCE_UNSUPPORTED_KEY",
+                    "value": "'hubspot.ticket_source_unsupported.'",
+                    "line": 23
+                },
+                {
+                    "name": "SOURCE_UNSUPPORTED_TTL",
+                    "value": "86400",
+                    "line": 24
                 }
             ],
             "relations": []
@@ -14870,6 +15494,63 @@
             "relations": []
         },
         {
+            "name": "TestInvitationMailer",
+            "fqcn": "App\\Services\\TestInvitationMailer",
+            "kind": "class",
+            "file": "app/Services/TestInvitationMailer.php",
+            "line": 19,
+            "end_line": 99,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Renders and sends the \"you have been invited to take a test\" email.",
+            "methods": [
+                {
+                    "name": "__construct",
+                    "line": 21,
+                    "end_line": 24,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "EmailTemplateService $emailTemplateService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "send",
+                    "line": 29,
+                    "end_line": 98,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "string $email",
+                        "Test $test",
+                        "string $token",
+                        "string $verificationCode",
+                        "$expiresAt",
+                        "int $userId"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "getTemplateForUser",
+                        "format",
+                        "Carbon::parse",
+                        "Log::warning",
+                        "EmailContent::linkify",
+                        "Mail::send",
+                        "subject",
+                        "to",
+                        "Log::info"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
             "name": "TestResultService",
             "fqcn": "App\\Services\\TestResultService",
             "kind": "class",
@@ -15392,7 +16073,7 @@
             "kind": "class",
             "file": "app/Support/EmailContent.php",
             "line": 5,
-            "end_line": 177,
+            "end_line": 231,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -15415,9 +16096,22 @@
                     ]
                 },
                 {
+                    "name": "styleAnchors",
+                    "line": 64,
+                    "end_line": 100,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?string $html"
+                    ],
+                    "returns": "string",
+                    "doc": "Give every href-bearing anchor that lacks inline styling a visible link style.",
+                    "calls": []
+                },
+                {
                     "name": "anchorPlaceholders",
-                    "line": 59,
-                    "end_line": 84,
+                    "line": 113,
+                    "end_line": 138,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -15432,8 +16126,8 @@
                 },
                 {
                     "name": "mapTextNodes",
-                    "line": 90,
-                    "end_line": 134,
+                    "line": 144,
+                    "end_line": 188,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -15446,8 +16140,8 @@
                 },
                 {
                     "name": "linkifyTextNode",
-                    "line": 136,
-                    "end_line": 167,
+                    "line": 190,
+                    "end_line": 221,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -15461,8 +16155,8 @@
                 },
                 {
                     "name": "escapeHref",
-                    "line": 173,
-                    "end_line": 176,
+                    "line": 227,
+                    "end_line": 230,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -15508,6 +16202,37 @@
             "relations": []
         },
         {
+            "name": "EmailHeader",
+            "fqcn": "App\\Support\\EmailHeader",
+            "kind": "class",
+            "file": "app/Support/EmailHeader.php",
+            "line": 11,
+            "end_line": 26,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "The banner that email_template rows used to print above the greeting.",
+            "methods": [],
+            "constants": [
+                {
+                    "name": "LEGACY_BRANDING_HTML",
+                    "value": "",
+                    "line": 19
+                },
+                {
+                    "name": "PORTAL_TITLE",
+                    "value": "'Waggoner CCVT Licensing Portal'",
+                    "line": 23
+                },
+                {
+                    "name": "SENDER_LINE",
+                    "value": "'WaggonerLicensingPortal'",
+                    "line": 25
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "EmailSignature",
             "fqcn": "App\\Support\\EmailSignature",
             "kind": "class",
@@ -15531,6 +16256,210 @@
                     "line": 20
                 }
             ],
+            "relations": []
+        },
+        {
+            "name": "EmailTemplatePlaceholders",
+            "fqcn": "App\\Support\\EmailTemplatePlaceholders",
+            "kind": "class",
+            "file": "app/Support/EmailTemplatePlaceholders.php",
+            "line": 16,
+            "end_line": 324,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "The one list of placeholders an email template may contain.",
+            "methods": [
+                {
+                    "name": "catalogue",
+                    "line": 23,
+                    "end_line": 92,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Placeholders offered in the template editor, with their UI copy.",
+                    "calls": []
+                },
+                {
+                    "name": "unlisted",
+                    "line": 101,
+                    "end_line": 107,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Placeholders TestInvitationMailer substitutes but the editor does not",
+                    "calls": []
+                },
+                {
+                    "name": "known",
+                    "line": 114,
+                    "end_line": 120,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Every placeholder that renders for this type.",
+                    "calls": [
+                        "self::catalogue",
+                        "self::unlisted"
+                    ]
+                },
+                {
+                    "name": "required",
+                    "line": 127,
+                    "end_line": 133,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Placeholders a body of this type must contain.",
+                    "calls": [
+                        "self::catalogue"
+                    ]
+                },
+                {
+                    "name": "tokensIn",
+                    "line": 146,
+                    "end_line": 151,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $content"
+                    ],
+                    "returns": "array",
+                    "doc": "The placeholder-shaped tokens in a string, exactly as written.",
+                    "calls": []
+                },
+                {
+                    "name": "unknownIn",
+                    "line": 166,
+                    "end_line": 183,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Placeholder-shaped tokens in $content that this type does not render.",
+                    "calls": [
+                        "self::known",
+                        "self::tokensIn",
+                        "self::paddedIn"
+                    ]
+                },
+                {
+                    "name": "markupBrokenIn",
+                    "line": 195,
+                    "end_line": 208,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Known placeholders that only read as placeholders once the markup is",
+                    "calls": [
+                        "self::known",
+                        "self::tokensIn"
+                    ]
+                },
+                {
+                    "name": "paddedIn",
+                    "line": 215,
+                    "end_line": 234,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "Tokens spelled correctly but padded with spaces inside the braces.",
+                    "calls": [
+                        "self::known",
+                        "self::tokensIn"
+                    ]
+                },
+                {
+                    "name": "messageForPadded",
+                    "line": 239,
+                    "end_line": 255,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "?string",
+                    "doc": "A ready-to-show message for space-padded placeholders, or null.",
+                    "calls": [
+                        "self::paddedIn"
+                    ]
+                },
+                {
+                    "name": "suggestionFor",
+                    "line": 262,
+                    "end_line": 278,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $unknown",
+                        "string $type"
+                    ],
+                    "returns": "?string",
+                    "doc": "The known placeholder closest to $unknown, when one is close enough to",
+                    "calls": [
+                        "self::known"
+                    ]
+                },
+                {
+                    "name": "messageForMarkupBroken",
+                    "line": 284,
+                    "end_line": 296,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "?string",
+                    "doc": "A ready-to-show message for a placeholder the editor's markup has split,",
+                    "calls": [
+                        "self::markupBrokenIn"
+                    ]
+                },
+                {
+                    "name": "messageForUnknown",
+                    "line": 302,
+                    "end_line": 323,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $content",
+                        "string $type"
+                    ],
+                    "returns": "?string",
+                    "doc": "A ready-to-show message for the unknown placeholders in $content, or",
+                    "calls": [
+                        "self::unknownIn",
+                        "self::suggestionFor",
+                        "self::known"
+                    ]
+                }
+            ],
+            "constants": [],
             "relations": []
         },
         {
@@ -15885,7 +16814,7 @@
             "kind": "class",
             "file": "database/seeders/EmailTemplateSeeder.php",
             "line": 9,
-            "end_line": 50,
+            "end_line": 55,
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -15894,7 +16823,7 @@
                 {
                     "name": "run",
                     "line": 11,
-                    "end_line": 49,
+                    "end_line": 54,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19846,6 +20775,21 @@
                     "name": "resend_count",
                     "type": "unsignedInteger",
                     "migration": "database/migrations/2026_05_06_122126_add_resend_count_to_test_invitations_table.php"
+                },
+                {
+                    "name": "email_status",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php"
+                },
+                {
+                    "name": "email_sent_at",
+                    "type": "timestamp",
+                    "migration": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php"
+                },
+                {
+                    "name": "email_error",
+                    "type": "text",
+                    "migration": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php"
                 }
             ],
             "foreign_keys": [
@@ -19873,6 +20817,11 @@
                     "kind": "dropColumn",
                     "column": "resend_count",
                     "migration": "database/migrations/2026_05_06_122126_add_resend_count_to_test_invitations_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php"
                 }
             ],
             "migrations": [
@@ -19905,6 +20854,16 @@
                     "file": "database/migrations/2026_05_06_122126_add_resend_count_to_test_invitations_table.php",
                     "op": "table",
                     "line": 24
+                },
+                {
+                    "file": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php",
+                    "op": "table",
+                    "line": 17
+                },
+                {
+                    "file": "database/migrations/2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php",
+                    "op": "table",
+                    "line": 39
                 }
             ]
         },
@@ -23211,26 +24170,33 @@
             "kind": "dispatch",
             "event": "App\\Events\\UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 304
+            "line": 282
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 319
+            "line": 297
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 380
+            "line": 358
+        },
+        {
+            "kind": "listen",
+            "event": "MessageSending",
+            "listener": "PrefixEmailSubject",
+            "file": "app/Providers/AppServiceProvider.php",
+            "line": 39
         },
         {
             "kind": "listen",
             "event": "DiagnosingHealth",
             "listener": "",
             "file": "app/Providers/AppServiceProvider.php",
-            "line": 48
+            "line": 55
         },
         {
             "kind": "listen",
@@ -23259,6 +24225,6 @@
             "line": 172
         }
     ],
-    "migration_count": 120,
+    "migration_count": 122,
     "routes_source": "artisan route:list --json"
 }

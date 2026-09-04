@@ -1,6 +1,6 @@
 # Services
 
-**32 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
+**33 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
 controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`SVC-nnn`).
 
 ## By subsystem
