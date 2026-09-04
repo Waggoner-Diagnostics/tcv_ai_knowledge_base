@@ -100,6 +100,12 @@ file the PR touches still surfaces.
 - **`R-F01` resolves against `.data/facts.json`.** Run `composer regenerate` first, or a route added in
   the same PR reads as missing.
 - **The route delta needs both revisions.** Skipped for `--diff` and for uncommitted work.
+- **A data migration is a complete blind spot.** No rule reads what a migration *writes* into existing
+  rows, and none can: whether a rewritten value is one the app will still accept is semantic, per-table
+  and per-row. A pure data-migration PR scores **0 findings by construction** — `ws-401` did, while
+  writing rows two validators and one console command would have rejected. Work §6a of the
+  [checklist](REVIEW_CHECKLIST.md) by hand instead; `R-B08` (`dropIfExists`) is the only migration rule
+  there is, and it is about schema.
 
 **A clean run means "none of the known traps fired". It is not an approval.**
 

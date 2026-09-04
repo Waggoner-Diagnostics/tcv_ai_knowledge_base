@@ -258,6 +258,19 @@ Body **and subject** are checked on both paths — the mailer substitutes into b
 are not advertised, so a template already using one keeps saving. A test asserts `known()` stays in
 sync with the `$variables` map in `TestInvitationMailer::send()`.
 
+☠️ **The vocabulary is scoped by `type`, and anything that writes stored rows has to respect that** —
+a data migration bypasses both save paths and answers to neither. `{{email}}` / `{{token}}` are
+`test_link`-only (`unlisted()` returns them for that type alone); `{{patient_firstname}}`,
+`{{patient_lastname}}`, `{{organization_name}}` and `{{organization_email}}` are `org_test_link`-only.
+A row holding a token its own type does not render is a **hard 422 on every save** — the org admin
+cannot edit that template at all until the token is deleted by hand — and a `FAILURE` from
+`templates:check-placeholders`. So a repair migration applying one map to both types would store rows
+the codebase's own scanner reports as broken, on exactly the templates it set out to fix.
+`2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` (`ws-401`, **not merged**)
+derives its map from `known($row->type)` for that reason, and leaves a bracket token with nowhere valid
+to go alone. Whether `{{email}}` / `{{token}}` *should* be valid for `org_test_link` is a product
+question — the answer belongs in `unlisted()`, never in stored data.
+
 ⭐ **A SQL `LIKE` cannot find these.** Quill splits runs, so a corrupted placeholder can read as
 `{{test_namze}}` to the recipient while the column holds `test_nam</strong>z<strong>e`. Use
 `php artisan templates:check-placeholders` (strips tags first) or, in raw SQL,
@@ -352,9 +365,22 @@ a customer's behalf, the credit lands in the wrong account. Compare with
    `user_email_templates` holds one `longText` body per user). `ws-400` makes the list load-bearing in a
    second way: the placeholder blots are formats too, so `PLACEHOLDER_FORMATS` must be appended whenever
    `lockPlaceholders` is on, or every chip silently disappears on save.
-9. **That repair migration skips rows it did not expect.** It rewrites a row only when
-   `EmailContent::anchorPlaceholders()` actually changes it, so an already-anchored or customised
-   template is left alone — and it bumps `updated_at`, which the editor surfaces as "last modified".
+9. **There are two repair migrations now, and both skip rows they did not expect.**
+   `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates` (`ws-373`) wraps a bare
+   `{{verification_link}}` in a button; `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`
+   (`ws-401`, **not merged** — see [README](../README.md)) rewrites the pre-`{{…}}` spelling — `[link]`, `[patient_firstname]`, `[organization_name]` —
+   into canonical tokens. Each writes a row only when its pass actually changes it, so an already-anchored
+   or customised template is left alone; each bumps `updated_at`, which the editor surfaces as "last
+   modified"; and both are deliberately irreversible, because the state they replace is the broken one.
+   `2026_09_03_000002` covers the two template tables but **not** `email_template`, where a bare `[link]`
+   could equally mean `{{verification_link}}`, `{{reset_url}}` or `{{set_password_url}}`.
+   ☠️ A migration writes straight past the save-path validators, so `2026_09_03_000002` carries their
+   rules itself: the rewrite is scoped by the row's `type` (§Placeholder validation), a subject rewrite
+   that would outgrow its column is skipped and logged (`test_email_subject` is `VARCHAR(225)`,
+   `subject` `VARCHAR(250)`, and every rewrite is two characters longer than what it replaced), and any
+   bracket token it could not place — mixed case, a near-miss spelling — is logged as residue. That last
+   one is the only way such a token is ever seen: the validators and `templates:check-placeholders`
+   recognise `{{…}}` only, so a `[Link]` is invisible to every other tool in the repo.
 10. **A `{{verification_link}}` in the body is not the same as a Start Test button.** Since `ws-400` the
     three template forms validate with `hasTestLinkButton()` — an anchor check, not a substring check —
     because pass 2 only restyles links the template already anchored. Anything that validates a template

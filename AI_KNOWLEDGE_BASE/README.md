@@ -52,6 +52,26 @@ double-send the `SendAfterPasswordReset` notification. Caught and reverted 2026-
 Full detail: [SECURITY.md](SECURITY.md), [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md),
 [MIDDLEWARE.md](MIDDLEWARE.md), [DEPLOYMENT.md](DEPLOYMENT.md).
 
+**☠️ `ws-401` is not indexed** (legacy email-placeholder repair, 2026-09-03/04 — the line `ws-402`
+branched off). Passages flagged `ws-401` describe that branch, not the indexed tree. What changes if it
+merges:
+
+| Area | On the indexed tree (`tcv-backend-codefix`) | On `ws-401` |
+|---|---|---|
+| Legacy `[bracket]` placeholders in stored templates | stored as written, mailed out unsubstituted, and **invisible to every tool** — the validators and `templates:check-placeholders` recognise `{{…}}` only | `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` rewrites them to canonical tokens across `test_email_templates` and `user_email_templates`. `email_template` is deliberately excluded: a bare `[link]` there could be `{{verification_link}}`, `{{reset_url}}` or `{{set_password_url}}` |
+| What a repair migration may write | — | the rewrite is scoped to the row's own `type` via `EmailTemplatePlaceholders::known()`. A token valid for one template type is a **hard 422 for the other**, and the migration is irreversible, so an unscoped map would lock the editor on the rows it was repairing ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)) |
+| A subject near its column width | — | a rewrite that would exceed `VARCHAR(225)` / `VARCHAR(250)` is skipped and logged, instead of leaving MySQL to truncate it or abort the migration half-applied ([DATABASE.md](DATABASE.md#migration-practice)) |
+| A bracket token nothing can map (`[Link]`, `[org_name]`) | — | logged as residue at migrate time — the only moment such a token is ever visible |
+
+Adds one migration and one test file (`NormalizeLegacyBracketPlaceholdersMigrationTest`, 13 tests), so a
+regeneration on `ws-401` moves the migration count by one.
+
+☠️ **Do not regenerate while `ws-401` is checked out.** It is not a superset of the indexed tree: it
+predates the `Route::apiResource` sweep and the two `test_sessions` migrations above, so `composer regenerate`
+there reports **119 migrations · 176 endpoints · 20 public** against the indexed **122 · 158 · 15** and
+rewrites every index to that older picture — including deleting `test_sessions.patient_id`. Measured
+2026-09-04; see [HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md#check-out-the-right-branch-first).
+
 **☠️ `ws-402` is not indexed** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
 — backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
 them as "if ws-402 merges". What changes when it does:

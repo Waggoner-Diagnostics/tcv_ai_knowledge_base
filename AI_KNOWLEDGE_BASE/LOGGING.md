@@ -64,8 +64,16 @@ bodies (`Log::info('Performing test.', ['request' => $request->all()])`,
 ## Levels in use
 
 `Log::info` dominates — including for routine successes, which makes the file noisy at
-`LOG_LEVEL=debug`. `Log::error` for failures, `Log::warning` only in `SecureImageService` and
-`ProcessLmsDeliveryJob`.
+`LOG_LEVEL=debug`. `Log::error` for failures, `Log::warning` only in `SecureImageService`,
+`ProcessLmsDeliveryJob` and — on `ws-401` — the bracket-placeholder repair migration.
+
+⭐ **A data migration's log line is sometimes the only report that will ever exist.** `ws-401`'s
+`2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` warns on each row it
+declined to repair — a subject that would outgrow its column, a bracket token no template type maps —
+because no validator, no scanner command and no query can see those afterwards: everything downstream
+recognises `{{…}}` only. Migrations run once, so these appear in one boot's log and never again. Grep
+`storage/logs` for *"left unconverted"* and *"would exceed the column width"* after the deploy that runs
+it, or the finding is gone. [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)
 
 Both `\Log::` (root-namespaced) and the imported `Log::` facade appear, sometimes in the same file.
 Import the facade in new code.

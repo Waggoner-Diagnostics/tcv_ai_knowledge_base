@@ -156,3 +156,17 @@ recreates them. **Only `discount_code_users` is live.**
   user, and bump `updated_at` so nothing keyed on it serves pre-migration markup. One of the three,
   `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates`, is deliberately **irreversible** —
   an empty `down()` with a comment saying why, which is better than a `down()` that guesses.
+- ☠️ **A data migration answers to no validator, so it has to enforce their rules itself.** Nothing
+  between `DB::table()->update()` and the column checks what a FormRequest would have rejected, and an
+  irreversible migration has no way back once it has written. `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`
+  (`ws-401`, **not merged**) is the reference for both halves of that: it scopes the tokens it writes to the row's own template
+  type (a placeholder valid for one type is a hard 422 for the other — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)),
+  and it refuses a rewrite that would outgrow the column instead of letting the driver decide.
+- ⚠️ **A rewrite that lengthens a string needs its own width check — the tests cannot fail on this.**
+  Tests run on in-memory SQLite, which ignores `VARCHAR(n)` entirely; MySQL in strict mode throws
+  `Data too long` and aborts the migration **mid-run with no transaction around it**, and `entrypoint.sh`
+  serves traffic through the failure and retries the same half-applied migration on the next boot.
+  Non-strict mode truncates silently, which is worse. Check `mb_strlen()` against the declared width and
+  `Log::warning` the rows you skip. The widths worth knowing: `test_email_templates.test_email_subject`
+  is `VARCHAR(225)`, `user_email_templates.subject` is `VARCHAR(250)` — and `UpdateUserEmailTemplateRequest`
+  accepts a subject of exactly 250, so that column has no headroom at all.

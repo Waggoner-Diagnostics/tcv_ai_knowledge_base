@@ -31,6 +31,12 @@ account), and returns a **non-zero exit code** if anything failed or remains pen
 that will not render. It strips HTML before scanning, so it finds breakage a plain SQL `LIKE` cannot —
 see [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
 
+⚠️ **It scans per `type`, and it only recognises `{{…}}`.** Two consequences worth knowing before you
+trust a clean run: a legacy `[bracket]` placeholder is invisible to it entirely (that is what `ws-401`'s
+repair migration exists for, and why that migration logs what it could not convert), and a row holding a
+token valid for the *other* template type is reported as unrecognised — so a `FAILURE` here can mean a
+row was written by something that ignored the type scoping, not that a human mistyped it.
+
 ☠️ **Neither command is scheduled.** `invitations:send-pending` is the only thing that recovers a
 stranded send, and nothing runs it — recovery depends on someone noticing. See the section below.
 
