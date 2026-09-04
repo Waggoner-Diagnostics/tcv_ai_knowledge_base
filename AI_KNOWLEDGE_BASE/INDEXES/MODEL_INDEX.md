@@ -1,6 +1,6 @@
 # Model Index
 
-**40 Eloquent models · 70 declared relationships.**
+**40 Eloquent models · 69 declared relationships.**
 
 `SoftDeletes` matters here: a soft-deleted row still occupies unique indexes and still satisfies a
 foreign key. Check the trait column before writing a uniqueness or re-create path.
@@ -26,7 +26,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-017` | `OrganizationPatientSession` | [app/Models/OrganizationPatientSession.php:8](../../../TCV-Backend/app/Models/OrganizationPatientSession.php#L8) | `HasFactory` | `organization`→Organization, `patient`→Patient, `test`→Test | 10 |
 | `MODEL-018` | `OrganizationSettingsOption` | [app/Models/OrganizationSettingsOption.php:7](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php#L7) | — | — | 0 |
 | `MODEL-019` | `OrganizationType` | [app/Models/OrganizationType.php:7](../../../TCV-Backend/app/Models/OrganizationType.php#L7) | — | — | 0 |
-| `MODEL-020` | `Patient` | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | `HasFactory`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 3 |
+| `MODEL-020` | `Patient` | [app/Models/Patient.php:9](../../../TCV-Backend/app/Models/Patient.php#L9) | `HasFactory`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 2 |
 | `MODEL-021` | `PatientTest` | [app/Models/PatientTest.php:8](../../../TCV-Backend/app/Models/PatientTest.php#L8) | `HasFactory` | `patient`→Patient, `test`→Test, `testInvitation`→TestInvitation | 9 |
 | `MODEL-022` | `PriceDetail` | [app/Models/PriceDetail.php:8](../../../TCV-Backend/app/Models/PriceDetail.php#L8) | `HasFactory` | — | 0 |
 | `MODEL-023` | `Privilege` | [app/Models/Privilege.php:7](../../../TCV-Backend/app/Models/Privilege.php#L7) | — | — | 0 |
@@ -41,7 +41,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-032` | `TestResumeToken` | [app/Models/TestResumeToken.php:7](../../../TCV-Backend/app/Models/TestResumeToken.php#L7) | — | `patientTest`→PatientTest | 2 |
 | `MODEL-033` | `TestSection` | [app/Models/TestSection.php:8](../../../TCV-Backend/app/Models/TestSection.php#L8) | `HasFactory` | `test`→Test, `testSectionPlates`→TestSectionPlate | 3 |
 | `MODEL-034` | `TestSectionPlate` | [app/Models/TestSectionPlate.php:8](../../../TCV-Backend/app/Models/TestSectionPlate.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection | 2 |
-| `MODEL-035` | `TestSession` | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | — | `testInvitation`→TestInvitation, `patient`→Patient | 2 |
+| `MODEL-035` | `TestSession` | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | — | `testInvitation`→TestInvitation | 1 |
 | `MODEL-036` | `Transaction` | [app/Models/Transaction.php:8](../../../TCV-Backend/app/Models/Transaction.php#L8) | `HasFactory` | `user`→User, `details`→TransactionDetail, `credits`→Credits | 4 |
 | `MODEL-037` | `TransactionDetail` | [app/Models/TransactionDetail.php:8](../../../TCV-Backend/app/Models/TransactionDetail.php#L8) | `HasFactory` | `transaction`→Transaction, `discountCode`→DiscountCode | 2 |
 | `MODEL-038` | `User` | [app/Models/User.php:15](../../../TCV-Backend/app/Models/User.php#L15) | `HasApiTokens`, `Notifiable`, `HasFactory`, `SoftDeletes`, `Searchable` | `stripeDetail`→UserStripeDetail, `assignedTests`→Test, `organization`→Organization, `country`→Country | 12 |
@@ -50,4 +50,4 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-03. Do not hand-edit — re-run the generator._

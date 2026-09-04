@@ -1,6 +1,6 @@
 # Model Relationships
 
-**70 declared relationships across 40 models.** The mechanical list, with line numbers, is
+**69 declared relationships across 40 models.** The mechanical list, with line numbers, is
 [INDEXES/MODEL_INDEX.md](INDEXES/MODEL_INDEX.md). This page is the shape and the traps.
 
 ## The core graph

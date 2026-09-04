@@ -35,11 +35,11 @@ the backend, so the browser only ever talks to the website's own origin.
 
 | Website route | Methods | Forwards to | Backend route exists? |
 |---|---|---|---|
-| `/api/auth` | POST | `/api/login` | ✅ `API-033` |
+| `/api/auth` | POST | `/api/login` | ✅ `API-035` |
 | `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-010` |
-| `/api/logout` | POST | `/api/logout` | ✅ `API-034` |
-| `/api/register` | POST | `/api/register` | ✅ `API-071` |
+| `/api/logout` | POST | `/api/logout` | ✅ `API-036` |
+| `/api/register` | POST | `/api/register` | ✅ `API-075` |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-03. Do not hand-edit — re-run the generator._

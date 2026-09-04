@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **52 tables**, reconstructed from 120 migrations — the indexed snapshot, taken from
+MySQL, **52 tables**, reconstructed from 109 migrations — the indexed snapshot, taken from
 `tcv-backend-codefix` after the `develop` merge of 2026-09-02. Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
