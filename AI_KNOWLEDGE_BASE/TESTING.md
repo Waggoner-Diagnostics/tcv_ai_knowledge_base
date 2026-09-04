@@ -43,6 +43,7 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 |---|---|---|---|
 | `tests/Feature/Lms/` | 5 + 1 fixture trait | **54** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
+| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **19** | `ws-402`, **not yet merged** — `CreditRevocationTest`: `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns. `CreditRevokeOriginTest`: `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
 | `tests/Feature/DiscountCodes/` | 2 | **19** | code validation + redemption, and the live-code unique index migration (`ws-392`, merged) |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
@@ -139,7 +140,7 @@ branch `ws-400`, 2026-09-01; `develop` alone is 73, the same set minus `emailPla
 
 | File | Tests | Covers |
 |---|---|---|
-| `src/components/DiscountCodeModal.test.js` | **49** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`) |
+| `src/components/DiscountCodeModal.test.js` | **53** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`); tier-reachability gating and auto-drop on a Minimum Order raise (+4, `ws-402`, **not yet merged**) |
 | `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400` — **unmerged branch**, [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
 | `src/redux/slices/userCredits/userCreditSlice.test.js` | 9 | credit-read ordering and identity guards (`ws-397`) |
 | `src/redux/slices/userProfile/passwordChangeSlice.test.js` | 6 | password-change slice (`ws-395`) |

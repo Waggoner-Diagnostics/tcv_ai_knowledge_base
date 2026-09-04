@@ -32,6 +32,12 @@ public function delete(User $user, Credits $credits): bool
 Note it ignores `$user` entirely — **any** authenticated user may delete **any** manually-granted credit
 row. Purchased (`1`) and revoked (`2`) grants are undeletable by anyone.
 
+> ☠️ **`ws-402` (unmerged, credit revocation) widens this.** `delete()` also returns `true` for a
+> `SOURCE_REVOKED` row whose new `original_source` column is `SOURCE_MANUAL` — a refund is deletable when
+> the money it's returning traces back to a manual grant, never when it traces back to a purchase. `$user`
+> is still ignored. A denial now returns **403**, not 500 — see the `ws-402` note in
+> [ERROR_HANDLING.md](ERROR_HANDLING.md). Full detail: [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md).
+
 ## ☠️ Three traps
 
 1. **The nine abilities are a closed list.** `AuthController::login()` grants a super admin exactly:

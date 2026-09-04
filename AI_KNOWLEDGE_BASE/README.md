@@ -62,6 +62,28 @@ Affects [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md), [AUTHENTICATION.md](
 and [TESTING.md](TESTING.md). It adds one migration and `App\Support\EmailHeader`, so a regeneration on
 `ws-417` moves the migration count by one and the listener count from 3 to 4.
 
+**☠️ `ws-402` is not indexed either** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
+— backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
+them as "if ws-402 merges". What changes when it does:
+
+| Area | On the indexed tree (`develop`) | On `ws-402` |
+|---|---|---|
+| `CreditsController::destroy()` | hard-deletes the whole grant row, even the spent part — pushes `granted` below `consumed`, hidden by the `max(0, …)` clamp | `Credits::revokeGrant()` takes back only the **unspent** part; a partly-used grant is kept, with a negative `SOURCE_ADMIN_REVOKED` counter-entry, instead of being deleted |
+| `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
+| `credits.original_source` | column does not exist | new nullable column; on a `SOURCE_REVOKED` row it records which underlying grant (Manual/Purchase) funded the test being refunded, traced FIFO via `Credits::traceConsumedOrigin()` |
+| `CreditsPolicy::delete()` | `true` only for `source === SOURCE_MANUAL` | also `true` for a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` — a refund of manually-granted credits is deletable; one tracing back to a purchase never is |
+| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / `remaining_credits`, from `Credits::getGrantAllocation()` — FIFO spread of consumption + prior claw-backs across active grants |
+| `AuthorizationException` (`$this->authorize()` denial) | **500**, per fact #1 above / [ERROR_HANDLING.md](ERROR_HANDLING.md) | **403** — `Handler.php` gains a dedicated branch. Scoped to this one exception type only; `ModelNotFoundException` and the rest are still 500 |
+| Artisan commands | — | + `credits:settle-negative-balances {--apply}` — one-time repair for accounts already carrying pre-fix hidden debt (dry run by default) |
+| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column (`used` / `remaining`); delete is disabled with a tooltip once a grant's `remaining` hits 0; the confirm dialog states the exact used/remaining split |
+| SPA `DiscountCodeModal.jsx` price-tier chips | every tier selectable regardless of Minimum Order | a tier whose priciest possible order still falls short of Minimum Order renders disabled and is auto-dropped from the selection if Minimum Order is raised past it |
+
+See [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md),
+[CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md), [ERROR_HANDLING.md](ERROR_HANDLING.md),
+[POLICIES.md](POLICIES.md) and [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md). Adds two migrations
+(`2026_09_03_101500_…`, `2026_09_03_140000_…`) and one console command, so a regeneration on `ws-402`
+moves the migration count by two and the command count by one.
+
 ---
 
 ## Read this first: how to use this KB
@@ -103,7 +125,8 @@ before writing code.
 1. **Every unhandled exception becomes a 500.** `app/Exceptions/Handler.php` catches
    `AuthenticationException` and `ValidationException`, then funnels **everything else** through one
    `$request->expectsJson()` branch that returns **500**. `findOrFail()` → 500, not 404. A failed
-   `$this->authorize()` → 500, not 403. An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
+   `$this->authorize()` → 500, not 403 (fixed for this one exception type on the unmerged `ws-402`
+   branch — see the delta above). An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
 2. **`usertype` skips 3.** `1 = SUPER_ADMIN`, `2 = CUSTOMER`, `4 = ORGANIZATION`. There is no `3`.
    Never iterate `1..n`, never assume contiguity. Identical in all three repos.
 3. **Test-session endpoints authenticate the caller but never check the caller owns the test.**

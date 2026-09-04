@@ -110,6 +110,20 @@ reopening such a code fails validation on a field nobody touched. For the same r
 attribute stays at `0` whatever the tiers say: Formik does not set `noValidate`, and a `min` of `$29.60`
 would have the browser block the submit before the schema ever saw the `0`.
 
+☠️ **`ws-402` (unmerged) adds tier-reachability gating to the price-tier chips.** A package chip is
+rendered disabled (`dc-chip--disabled`, with a title explaining why) when that package's priciest
+possible order still falls short of the current Minimum Order — `tierReachesMinimum(tier, minOrder)`
+checks `round2(tier.to × tier.price_per_credit) >= minOrder`, always `true` for an open-ended top tier
+(`to >= UNBOUNDED_TIER_TO`, no ceiling to fall short of) and always `true` when there is no minimum. This
+exists because restricting a minimum-order code to a package that can never reach that minimum would make
+the code unredeemable — offered as a chip to pick around, not something the admin has to reason about
+manually. `TierReachabilitySync` (renders nothing, mirrors `CodeAvailability`'s pattern) watches for a
+Minimum Order raise that strands an **already-selected** chip and auto-deselects it via
+`dropUnreachableTiers()` — so raising the minimum after picking packages can silently narrow the
+selection, not just gray out new choices. This is UI-only: `DiscountCodeService::validate()` and
+`StoreDiscountCodeRequest` are untouched, so a non-SPA client can still save a code with an unreachable
+tier restriction.
+
 ☠️ **Switching discount type resets the whole form**, keeping only `code` (and its duplicate warning):
 20% off and $20 off are different offers, and every limit, date and restriction was chosen against the
 type being abandoned. `resetForm()` also clears `touched`/`errors`, which is what stops a stale

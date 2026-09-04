@@ -13,6 +13,7 @@
 | `app/Http/Controllers/PaymentController.php` | `getCreditHistory()` — the unified view |
 | `app/Http/Requests/CreditsAddRequest.php` | Grant validation |
 | `app/Policies/CreditsPolicy.php` | Only `delete` returns anything but `false` |
+| `app/Console/Commands/SettleNegativeCreditBalances.php` | **`ws-402` only.** `credits:settle-negative-balances`, one-time repair for pre-fix hidden debt |
 
 ## Tables
 `credits` (grants) · `credit_consume` (spends) · `transactions` / `transaction_details` (Stripe link)
@@ -34,8 +35,9 @@ request, and never "correct" a balance by writing a number — write a grant or 
 ### Grant rows (`credits`)
 | Column | Meaning |
 |---|---|
-| `credits` | quantity granted |
-| `source` | `0 = SOURCE_MANUAL` · `1 = SOURCE_PURCHASE` · `2 = SOURCE_REVOKED` |
+| `credits` | quantity granted — **negative on `ws-402` (unmerged)** for a `SOURCE_ADMIN_REVOKED` counter-entry |
+| `source` | `0 = SOURCE_MANUAL` · `1 = SOURCE_PURCHASE` · `2 = SOURCE_REVOKED` · on `ws-402` (unmerged) also `3 = SOURCE_ADMIN_REVOKED` · `4 = SOURCE_ADJUSTMENT` |
+| `original_source` | **`ws-402` only, column doesn't exist on `develop`.** Meaningful only on a `SOURCE_REVOKED` row: which grant (Manual/Purchase) funded the test this refund covers. Null otherwise |
 | `has_expiry` / `expiry_date` | expiry is opt-in; `expiry_date >= today` to count |
 | `is_unlimited_credit` | see below |
 | `coupon_code`, `price_per_credit`, `total_price`, `credited_by` | provenance |
@@ -104,6 +106,63 @@ always **1 credit**, even for a both-eyes (two-row) test, because a monocular pa
 `revokeCredit()` also sets every test in the group to `abandoned` and expires the invitation so the
 patient's link stops working.
 
+**`ws-402` (unmerged) adds provenance to that refund row.** Both methods now call
+`Credits::traceConsumedOrigin($user, $eventType, $candidateRefIds)` before granting the refund, and store
+the result as the new row's `original_source`. `traceConsumedOrigin()` replays FIFO history — it never
+reads a stored link, because `credit_consume` only records an aggregate count per event, not which grant
+paid for it: find the consumption event the test belongs to, work out how many credits had already gone
+out (other consumption, plus prior admin claw-backs) strictly before it, then walk the user's grants
+oldest-first to see whose capacity that position falls inside. It falls back to `SOURCE_PURCHASE` — never
+admin-deletable — whenever the trace can't be pinned down (e.g. the test was sent while the user held an
+unlimited grant, which draws from no finite grant at all); understating what's revocable is the only safe
+direction to be wrong in here. The point of recording it: `CreditsPolicy::delete()` (below) uses it to
+decide whether *this refund itself* may later be deleted by an admin.
+
+### Admin revocation (`DELETE api/credits/{id}`, `CreditsController::destroy()`)
+
+This is the opposite direction from a refund — an admin taking back credits they (or a purchase) granted
+— and on `develop` it is a straight `$credits->delete()`: the whole grant row is removed, including
+whatever part of it the user had already spent. Every balance in the app is `granted − consumed` clamped
+at zero, so deleting a partly-spent grant pushes `granted` below `consumed` and the clamp hides the
+resulting deficit — invisible right up until the user's *next* grant or purchase silently pays it off.
+
+**`ws-402` (unmerged) replaces this with `Credits::revokeGrant($grant)`,** which takes back only the
+**unspent** part:
+
+- `Credits::getUnusedCreditsForGrant($grant)` reads `Credits::getGrantAllocation($userId)` — a FIFO
+  spread of total consumption (tests) *and* prior admin claw-backs across the user's active grants,
+  oldest first — to find how much of this specific grant is still unspent.
+- Untouched (`unused === credits`) → the row is deleted outright, same as today.
+- Partly spent (`0 < unused < credits`) → the row is **kept**, and a new negative
+  `SOURCE_ADMIN_REVOKED` row (`credits = -$unused`) is written alongside it. The original grant still
+  shows what was given; the counter-entry shows what was taken back. Nothing is ever deleted or edited in
+  place.
+- Fully spent (`unused === 0`) → nothing to take back. The controller returns **422** ("These credits
+  have already been used and can no longer be removed."), not a silent no-op.
+- **Unlimited grant** → still deleted outright (there is no "unspent part" of unlimited), but losing it
+  turns everything consumed while it was active into a debt against the user's finite credits — the same
+  hidden-deficit problem as above, just triggered by losing the *unlimited flag* instead of a finite
+  grant. `revokeGrant()` calls `Credits::settleNegativeBalance($userId)` afterward, which writes a
+  `SOURCE_ADJUSTMENT` row for exactly the deficit if one now exists.
+- **Already-expired grant** → deleted outright; an expired grant already counted for nothing, so there is
+  nothing to hand back and nothing to unbalance.
+- The whole thing runs inside `DB::transaction()` with `self::where('user_id', $userId)->lockForUpdate()`
+  first — holding the user's ledger for the transaction so two concurrent revokes on the same user can't
+  both read the same unspent balance and each write a counter-entry for it. No-op on SQLite (no row
+  locks), so this protection is real only under MySQL.
+
+`CreditsController::destroy()`'s response now also reports what actually happened
+(`{data: {revoked_credits, available_credits}}`, plus a message naming the split when only part of a
+grant was taken back), and `GET api/credits` (the list) is enriched the same way: every row now carries
+server-computed `used_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a
+grant's real state and gray out / disable revoking what's already gone (`AddCredits.js`,
+`addCreditsColumns.js` — new "Utilized" column and "Revoked" status).
+
+**One-time repair for accounts already carrying the old bug's hidden debt:**
+`php artisan credits:settle-negative-balances` (dry run by default; `--apply` to write) walks every user
+with any `credit_consume` history, and for each whose `consumed > granted` writes a `SOURCE_ADJUSTMENT`
+row for the deficit — the same repair `revokeGrant()` now does proactively for the unlimited-grant case.
+
 ---
 
 ## The client's copy of the balance goes stale
@@ -114,6 +173,10 @@ broadcasting in this stack. The SPA re-fetches instead: `TCV-Frontend/src/hooks/
 (ws-397, 2026-08-28 — committed, *not yet merged or deployed*) refreshes on mount, on route change, on
 tab focus and on a 60 s visible-only interval, so a grant or revoke shows up without a manual page
 refresh. Details and its gotchas are in [FRONTEND.md](../FRONTEND.md#the-credit-balance-is-polled-not-pushed).
+
+**`ws-402` (unmerged) extends the admin-facing `AddCredits` grant list, not the balance poll above.** The
+per-grant "Utilized" column and "Revoked" status come from the enriched `GET api/credits` response (see
+Admin revocation, above) — a page load, not a timer, so it does not add to the polling cost noted below.
 
 ☠️ **That polling multiplies the derived-balance cost.** Every call is two aggregate `SUM`s — there is no
 balance column and the result must not be cached — so each open portal tab now costs one such pair per
@@ -137,7 +200,11 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 4. **`CreditsPolicy` returns `false` for everything except `delete`**, and `delete` allows it only for
    `source === SOURCE_MANUAL`. Purchased and revoked grants can never be deleted. Only
    `CreditsController::destroy()` calls `authorize()`; `store()`, `index()` and `show()` do not — they
-   rely on `auth:sanctum` alone.
+   rely on `auth:sanctum` alone. **On `ws-402` (unmerged)** `delete` also allows a `SOURCE_REVOKED` row
+   whose `original_source === SOURCE_MANUAL` — a refund is deletable only when it traces back to money
+   the user never paid for. A denial is **403** on that branch, not 500 (see
+   [ERROR_HANDLING.md](../ERROR_HANDLING.md)); `destroy()` itself no longer plain-deletes even a
+   Manual/eligible row — see `Credits::revokeGrant()` above.
 5. **`GET api/credits/{coupon-code}` is unreachable.** `Route::resource('credits', …)` is registered on
    the line *above* it, so `GET credits/{credit}` (the resource `show`) matches first and
    `checkDiscountCodeValidity()` is dead code. See [ROUTES.md](../ROUTES.md#ordering-traps).
@@ -151,3 +218,13 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 7. **`CreditsController::show($userId)` calls `->get($userId)`**, passing an int where Eloquent expects a
    column list. It is not routed (the resource `show` is), so it is currently unreachable — do not
    "restore" it without fixing the call.
+8. **`ws-402` (unmerged): `traceConsumedOrigin()` is a read-only replay, not a stored link — trust it
+   accordingly.** It has no way to know which grant funded a test if the test was sent while the user held
+   an *unlimited* grant (unlimited draws from no finite grant), so that case — and any other it can't pin
+   down — falls back to `SOURCE_PURCHASE`, deliberately the never-admin-deletable answer. Do not read a
+   `SOURCE_PURCHASE` `original_source` as proof the user paid Stripe for it; it may just mean the trace
+   gave up safely.
+9. **`ws-402` (unmerged): the admin-revoke lock is MySQL-only.** `revokeGrant()`'s
+   `lockForUpdate()` is a no-op on SQLite, so the "two concurrent revokes on the same user" race it exists
+   to close is only actually closed in a MySQL-backed environment (dev/QA/prod) — a SQLite test suite can
+   pass while the race still exists.
