@@ -92,7 +92,7 @@ Group by severity, most severe first. For each finding:
 ```
 CRITICAL · routes/api.php:53
 `GET api/tests/{unique_test_id}` was guarded on develop and is public on this branch.
-Why: ROUTES.md — guarding is positional; 21 endpoints are already public.
+Why: ROUTES.md — guarding is positional; 20 endpoints are already public.
 ```
 
 **Every finding needs `file:line`, what is wrong, and the KB doc that explains why.** The reference is

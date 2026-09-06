@@ -1,6 +1,6 @@
 # Database Table Index
 
-**52 tables**, reconstructed from 120 migrations.
+**52 tables**, reconstructed from 118 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -44,11 +44,11 @@ the only authority before you write a migration against a column.
 | `TABLE-034` | `sessions` | 6 | `0001_01_01_000001_create_users_table.php` | 2 |
 | `TABLE-035` | `test_conditions` | 4 | `2025_06_20_071025_create_test_conditions_table.php` | 2 |
 | `TABLE-036` | `test_email_templates` | 0 | _altered only_ | 3 |
-| `TABLE-037` | `test_invitations` | 9 | `2026_02_26_084221_create_test_invitations_table.php` | 6 |
+| `TABLE-037` | `test_invitations` | 12 | `2026_02_26_084221_create_test_invitations_table.php` | 8 |
 | `TABLE-038` | `test_resume_tokens` | 5 | `2026_05_25_000002_create_test_resume_tokens_table.php` | 2 |
 | `TABLE-039` | `test_section_plates` | 6 | `2025_06_20_071402_create_test_section_plates_table.php` | 2 |
 | `TABLE-040` | `test_sections` | 22 | `2025_06_20_071148_create_test_sections_table.php` | 8 |
-| `TABLE-041` | `test_sessions` | 8 | `2026_03_02_180000_create_test_sessions_table.php` | 8 |
+| `TABLE-041` | `test_sessions` | 6 | `2026_03_02_180000_create_test_sessions_table.php` | 4 |
 | `TABLE-042` | `testanswers` | 17 | `2025_06_20_070717_create_test_answers_table.php` | 16 |
 | `TABLE-043` | `tests` | 8 | `2025_06_20_070605_create_test_table_table.php` | 6 |
 | `TABLE-044` | `transaction_details` | 12 | `2025_10_15_123744_create_transaction_details_table.php` | 8 |
@@ -511,6 +511,9 @@ _No columns detected (index/constraint-only migrations)._
 | `expires_at` | timestamp | `2026_02_26_084221_create_test_invitations_table.php` |
 | `is_revoked` | boolean | `2026_05_06_114739_add_is_revoked_to_test_invitations_table.php` |
 | `resend_count` | unsignedInteger | `2026_05_06_122126_add_resend_count_to_test_invitations_table.php` |
+| `email_status` | string | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `email_sent_at` | timestamp | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `email_error` | text | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
 
 _Dropped later by a migration (may still be listed above): `is_revoked`, `resend_count`._
 
@@ -573,10 +576,6 @@ _Dropped later by a migration (may still be listed above): `is_active`, `skip_if
 | `started_at` | timestamp | `2026_03_02_180000_create_test_sessions_table.php` |
 | `expires_at` | timestamp | `2026_03_02_180000_create_test_sessions_table.php` |
 | `test_invitation_id` | unsignedBigInteger | `2026_05_25_000001_make_test_invitation_id_nullable_in_test_sessions.php` |
-| `invalidated_reason` | string | `2026_08_17_092413_add_invalidated_reason_to_test_sessions_table.php` |
-| `patient_id` | unsignedBigInteger | `2026_09_02_000001_add_patient_id_to_test_sessions_table.php` |
-
-_Dropped later by a migration (may still be listed above): `invalidated_reason`, `patient_id`._
 
 ### `testanswers` — `TABLE-042`
 
@@ -733,4 +732,4 @@ _Dropped later by a migration (may still be listed above): `usertype`, `includeW
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-04. Do not hand-edit — re-run the generator._

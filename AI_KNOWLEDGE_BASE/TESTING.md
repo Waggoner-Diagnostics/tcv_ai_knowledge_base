@@ -140,7 +140,7 @@ branch `ws-400`, 2026-09-01; `develop` alone is 73, the same set minus `emailPla
 | File | Tests | Covers |
 |---|---|---|
 | `src/components/DiscountCodeModal.test.js` | **49** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`) |
-| `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400` — **unmerged branch**, [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
+| `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400`, merged into `develop`; [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
 | `src/redux/slices/userCredits/userCreditSlice.test.js` | 9 | credit-read ordering and identity guards (`ws-397`) |
 | `src/redux/slices/userProfile/passwordChangeSlice.test.js` | 6 | password-change slice (`ws-395`) |
 | `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |

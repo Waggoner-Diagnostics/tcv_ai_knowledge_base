@@ -24,17 +24,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
-
-### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `CONTEXT_KEY` | `'auth_context'` | [22](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L22) |
-| `TIER_SANCTUM` | `'sanctum'` | [24](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L24) |
-| `TIER_TEST_SESSION` | `'test_session'` | [25](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L25) |
-| `TIER_LMS_SESSION` | `'lms_session'` | [26](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L26) |
-| `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [27](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L27) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -62,6 +52,20 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `GENDER` | — | [11](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php#L11) |
+
+### `SendTestInvitationEmailsJob` — `app/Jobs/SendTestInvitationEmailsJob.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `BATCH_SIZE` | `25` | [40](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L40) |
+| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [43](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L43) |
+
+### `PrefixEmailSubject` — `app/Listeners/PrefixEmailSubject.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `BRAND` | `'Testing Color Vision'` | [20](../../../TCV-Backend/app/Listeners/PrefixEmailSubject.php#L20) |
+| `PREFIX` | — | [22](../../../TCV-Backend/app/Listeners/PrefixEmailSubject.php#L22) |
 
 ### `CreditConsume` — `app/Models/CreditConsume.php`
 
@@ -149,6 +153,10 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `INVITATION_VALIDITY_DAYS` | `7` | [12](../../../TCV-Backend/app/Models/TestInvitation.php#L12) |
+| `EMAIL_STATUS_PENDING` | `'pending'` | [15](../../../TCV-Backend/app/Models/TestInvitation.php#L15) |
+| `EMAIL_STATUS_SENDING` | `'sending'` | [25](../../../TCV-Backend/app/Models/TestInvitation.php#L25) |
+| `EMAIL_STATUS_SENT` | `'sent'` | [26](../../../TCV-Backend/app/Models/TestInvitation.php#L26) |
+| `EMAIL_STATUS_FAILED` | `'failed'` | [28](../../../TCV-Backend/app/Models/TestInvitation.php#L28) |
 
 ### `TestSection` — `app/Models/TestSection.php`
 
@@ -183,7 +191,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `BASE_URL` | `'https://api.hubapi.com'` | [12](../../../TCV-Backend/app/Services/HubSpotService.php#L12) |
+| `BASE_URL` | `'https://api.hubapi.com'` | [14](../../../TCV-Backend/app/Services/HubSpotService.php#L14) |
+| `SOURCE_UNSUPPORTED_KEY` | `'hubspot.ticket_source_unsupported.'` | [23](../../../TCV-Backend/app/Services/HubSpotService.php#L23) |
+| `SOURCE_UNSUPPORTED_TTL` | `86400` | [24](../../../TCV-Backend/app/Services/HubSpotService.php#L24) |
 
 ### `TestAssignmentService` — `app/Services/TestAssignmentService.php`
 
@@ -201,6 +211,14 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `URL_PATTERN` | `'/https?:\/\/(?:&(?:amp|#0*38);|(?!&[a-zA-Z#][a-zA-Z0-9]{0,30};)[^\s<>"'])+/i'` | [23](../../../TCV-Backend/app/Support/EmailContent.php#L23) |
 | `RAW_TEXT_TAGS` | `'style|script'` | [27](../../../TCV-Backend/app/Support/EmailContent.php#L27) |
 | `BLOCK_TAGS` | `'p|div|table|thead|tbody|tfoot|tr|td|th|ul|ol|li|dl|dt|dd|h[1-6]|blockquote|section|article|header|footer|main|body|hr|form|pre|center'` | [31](../../../TCV-Backend/app/Support/EmailContent.php#L31) |
+
+### `EmailHeader` — `app/Support/EmailHeader.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `LEGACY_BRANDING_HTML` | — | [19](../../../TCV-Backend/app/Support/EmailHeader.php#L19) |
+| `PORTAL_TITLE` | `'Waggoner CCVT Licensing Portal'` | [23](../../../TCV-Backend/app/Support/EmailHeader.php#L23) |
+| `SENDER_LINE` | `'WaggonerLicensingPortal'` | [25](../../../TCV-Backend/app/Support/EmailHeader.php#L25) |
 
 ### `EmailSignature` — `app/Support/EmailSignature.php`
 
@@ -236,4 +254,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-02. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-04. Do not hand-edit — re-run the generator._

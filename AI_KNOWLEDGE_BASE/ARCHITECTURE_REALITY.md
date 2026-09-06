@@ -14,7 +14,7 @@
 |---|---|---|
 | Controllers | **34** | Thin-ish. Real logic mostly delegated to Services. |
 | Services | **32** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree. |
-| Models | **40** | Eloquent, 70 declared relationships. |
+| Models | **40** | Eloquent, 69 declared relationships. |
 | FormRequests | **24** | Validation is genuinely centralised here — follow this. |
 | Middleware | **4** | One of them (`EnsureTokenIsValid`) is **dead** — see below. |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |

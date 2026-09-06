@@ -32,7 +32,7 @@ file change. Locally, `php artisan route:clear` after editing `routes/api.php`.
 
 | Group | Proves | Does **not** prove |
 |---|---|---|
-| none (21 endpoints) | nothing | — |
+| none (20 endpoints) | nothing | — |
 | `auth:sanctum` (133) | a valid, unexpired 15-minute token | any role or ownership |
 | `FlexibleAuthMiddleware` (23) | one of four session kinds is valid | **which** patient/test/org it is for |
 

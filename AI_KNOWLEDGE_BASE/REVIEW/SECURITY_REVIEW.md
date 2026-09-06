@@ -27,7 +27,7 @@ can become public because a `});` moved, with no change to the route's own line.
 ### 2. Is a new endpoint public by accident?
 
 `R-B00` at **HIGH** = a new public endpoint. Ask: does this genuinely precede any credential
-(login, a token exchange)? 21 endpoints are already public — several of them shouldn't be
+(login, a token exchange)? 20 endpoints are already public — several of them shouldn't be
 ([S-01](../SECURITY.md), [S-13](../SECURITY.md)).
 
 ### 3. Is an id trusted from the request?

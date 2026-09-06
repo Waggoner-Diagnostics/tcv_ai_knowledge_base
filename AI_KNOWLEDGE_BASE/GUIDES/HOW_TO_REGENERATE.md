@@ -26,12 +26,22 @@ a feature branch silently indexes that branch **and** labels the KB with it. Bef
 ```bash
 git -C ../TCV-Backend  rev-parse --abbrev-ref HEAD    # expect develop
 git -C ../TCV-Frontend rev-parse --abbrev-ref HEAD    # expect develop
-git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect website-integration
+git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect develop
 ```
 
-The website is tracked on **`website-integration`**, not `develop` — the two are the same commit today
-(`ce410d5`), but the integration branch is the one to index. Put each repo back on its own working
-branch afterwards, and remember that the *next* regeneration will pick up wherever you left it.
+All three are indexed from **`develop`**. The website used to be tracked on `website-integration`;
+`develop` has since absorbed it and moved two commits past (`ce410d5` → `3ec94ec`, 2026-09-03), so
+`develop` is now the branch to index there too. Put each repo back on its own working branch
+afterwards, and remember that the *next* regeneration will pick up wherever you left it.
+
+☠️ **Never index a feature branch — not even a fix branch.** The 2026-09-02 sync was generated from
+`tcv-backend-codefix` (backend) and `QA` (frontend). That branch carries the ownership-scoping fixes
+for `S-02`/`S-03`/`S-14` and had moved the five Stripe payment routes inside `auth:sanctum`, so the
+KB reported those findings as **fixed** and
+[PUBLIC_ROUTE_AUDIT](../INDEXES/PUBLIC_ROUTE_AUDIT.md) showed **15** public endpoints. None of it was
+on `develop`, where the real figure was 20 and all three findings were open. Indexing a fix branch
+does not just date the KB — it **hides live holes**, because guarding here is positional. Run
+`git merge-base --is-ancestor origin/<branch> origin/develop` before you believe any "fixed" note.
 
 Cross-check the `git` block in `facts.json` against the **Branches indexed** row in
 [AI_KNOWLEDGE_BASE/README.md](../README.md) after every run; a mismatch there means the wrong tree was
@@ -85,7 +95,19 @@ first time the source flips; a step change in the **`api/*`** rows is what deser
 `php artisan route:list --json`** — Laravel's own router is authoritative and should be used when it is
 available. The static parser is the fallback, not the preference.
 
-**As of the 2026-08-28 sync, TCV-Backend *does* have `vendor/`, so the artisan path is what runs.**
+**As of the 2026-09-04 sync, TCV-Backend has neither `vendor/` nor a `.env`, so the AST fallback is
+what runs.** `extract.php` only checks for `vendor/autoload.php` before shelling out to artisan — with
+no `.env`, artisan cannot boot, `route:list --json` returns no parsable JSON, and the fallback takes
+over silently (correctly, and recorded in `routes_source`). To get the authoritative list back:
+
+```bash
+cd ../TCV-Backend && composer install && cp .env.example .env && php artisan key:generate
+```
+
+Then regenerate. **Expect the eleven framework/package web routes to reappear** —
+`sanctum/csrf-cookie`, `storage/{path}` (GET + PUT), `up`, and the seven `nnjeim/world`
+`{prefix?}/…` endpoints — and `GET` to become `GET|HEAD` throughout. Those rows are live in
+production either way; their absence is an extraction limit, not a code change.
 Check `routes_source` in `facts.json` rather than assuming either one.
 
 ### Middleware names differ between the two sources — they are normalised
