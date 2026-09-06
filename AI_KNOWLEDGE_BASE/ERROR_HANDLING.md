@@ -44,6 +44,18 @@ Likewise, all ~20 `$this->authorize()` call sites (`TestController`, `TestCondit
 403. That is why the SPA's error handling cannot distinguish "you may not do this" from "the server
 broke".
 
+**☠️ `ws-402` (unmerged, credit revocation) fixes exactly this case.** `Handler.php` gains a dedicated
+`instanceof AuthorizationException` branch returning `{success: false, message}` at **403**, ahead of the
+generic 500 fallback. It is scoped to that one exception type — `ModelNotFoundException`,
+`NotFoundHttpException` and the rest below are untouched and still surface as 500. The motivating case is
+`CreditsController::destroy()`'s `$this->authorize('delete', $credits)`, which the same branch also
+changes from a hard delete to a partial claw-back — see
+[CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md). This is not the "breaking change for the SPA"
+the section below warns about: `src/services/errorHandler.js` already has a `case 403:` (type
+`AUTHORIZATION`, a fixed "You do not have permission to perform this action." message — it discards
+`error.response.data.message`), so a denial that used to fall into the generic `case 500:` "Server error"
+toast now shows that friendlier one instead. An improvement, not a regression to coordinate.
+
 ### Consequences you will actually hit
 
 - **Debugging:** a 500 in the logs means nothing on its own. Read the logged exception class before

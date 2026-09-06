@@ -28,14 +28,18 @@ different times, both live:
 |---|---|---|
 | Controller | `StripePaymentController` | `PaymentController` |
 | Abstraction | none — calls `StripeService` directly | `PaymentManager` → `PaymentProviderInterface` |
-| Guard | ☠️ **public** (no middleware) | `auth:sanctum` |
+| Guard | ☠️ **none — fully public** on `develop` (`routes/api.php:48-52`); moved under `auth:sanctum` only on unmerged `tcv-backend-codefix` | `auth:sanctum` |
 | Endpoints | `create-payment-intent`, `confirm-payment`, `payment-methods`, `payment-methods/set-default`, `payment-methods/{id}` (DELETE) | `setup-intent`, `providers`, `initialize`, `confirm`, `webhook/{provider}` |
 
-☠️ **Every `api/stripe/*` route is public** ([PUBLIC_ROUTE_AUDIT](../INDEXES/PUBLIC_ROUTE_AUDIT.md)) yet
-every handler starts with `Auth::user()`. Unauthenticated, that is `null`, and `StripeService`'s
-signatures are typed `User $user` — so the call throws a `TypeError`, the controller's `catch` swallows
-it, and the response is a **500 containing the exception message**. They are simultaneously exposed and
-non-functional. Treat `api/stripe/*` as the deprecated surface; build on `api/payment/*`.
+☠️ **`api/stripe/*` is public on `develop`** — all five routes sit at `routes/api.php:48-52`, outside
+every middleware group, alongside genuinely public routes like `/login`
+([S-17](../SECURITY.md#s-17--five-stripe-payment-endpoints-are-public-on-develop)). Every handler starts
+with `Auth::user()`, and unauthenticated that is `null` — `StripeService`'s signatures are typed
+`User $user`, so the call throws a `TypeError` that the controller's `catch` swallows into a **500
+containing the exception message**: exposed and non-functional at the same time. Only a `TypeError`
+stands between an anonymous caller and these endpoints. The unmerged `tcv-backend-codefix` (2026-09-04)
+moves all five into the `auth:sanctum` group, fixing it at the routing level rather than adding a null
+check per method — but it has not merged. Treat `api/stripe/*` as the deprecated surface regardless; build on `api/payment/*`.
 
 `app/Services/PaymentProviders/` also carries commented-out routes for `partialRefund` / `refund` in
 `routes/api.php` — refunds exist in the controller but are **not routed**.

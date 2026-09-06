@@ -27,6 +27,15 @@ vendor/bin/phpunit --testsuite=Feature
 `Schema::defaultStringLength(191)`. The `havingRaw` in `TestExecutionService::getSessionDetails()` is a
 live example of a query worth verifying against real MySQL.
 
+☠️ **SQLite does not enforce `VARCHAR(n)` at all** — it is the same trap, and the one most likely to bite
+a data migration, because the tests cannot fail on it. Code that *lengthens* a stored string (every
+`[token]` → `{{token}}` rewrite is two characters longer) passes green here and, on MySQL, either throws
+`Data too long` in strict mode or truncates the column silently. Check the width in PHP with
+`mb_strlen()` and test *that* guard; there is no driver behaviour to assert against.
+`Schema::getColumns()` will not save you either — Laravel's SQLite grammar emits a bare `varchar`, so the
+declared width is not in the schema the tests see. `ws-401`'s
+`test_a_subject_that_would_outgrow_its_column_is_left_alone` is the worked example.
+
 ☠️ **`QUEUE_CONNECTION=sync` in tests.** `ProcessLmsDeliveryJob` runs inline, so the delivery tests
 never exercise the fact that **production has no queue worker at all** ([QUEUES.md](QUEUES.md)).
 
@@ -43,18 +52,21 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 |---|---|---|---|
 | `tests/Feature/Lms/` | 5 + 1 fixture trait | **54** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
+| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **19** | `ws-402`, **not yet merged** — `CreditRevocationTest`: `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns. `CreditRevokeOriginTest`: `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
 | `tests/Feature/DiscountCodes/` | 2 | **19** | code validation + redemption, and the live-code unique index migration (`ws-392`, merged) |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 | `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, merged into `ws-404`) |
 | `tests/Feature/TestInvitations/` | 3 | **36** | `ws-404`, **not yet merged to develop** — batched send + 202, after-response delivery, SMTP 421 retry vs 5xx, credit charge/refund, the recovery command, placeholder validation (typo / markup-split / space-padded), the review-fix regressions, and the `ws-373` linkify guard |
+| `tests/Feature/TestInvitations/NormalizeLegacyBracketPlaceholdersMigrationTest.php` | 1 | **13** | `ws-401`, **not yet merged** — the legacy `[bracket]` → `{{token}}` repair migration: the rewrite itself, `[link]` → an anchored Start Test button, subjects rewritten *without* anchoring, and the four ways it must hold back — a token the row's `type` does not render, a row whose type has no vocabulary at all, a subject that would outgrow its column, and `<style>` block contents. Also pins that `email_template` is untouched, that a canonical row is byte-identical afterwards, and that a second `migrate` is a no-op |
 | `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417`, **not yet merged** — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
 | `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
 | `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
 
-**93 real tests on `develop`** — **149 on `ws-404`**, and **186 on `ws-417`** (which branches off the
-`ws-404` line). Still untested: the test execution loop, resume, patients, payments, reports,
+**93 real tests on `develop`** — **149 on `ws-404`**, **186 on `ws-417`** (which branches off the
+`ws-404` line), and **245 on `ws-401`** (which has `develop` merged in and carries the `ws-404`/`ws-417`
+work with it). Still untested: the test execution loop, resume, patients, payments, reports,
 organisations.
 
 ☠️ **`ws-417` is the first auth coverage that has ever existed**, but it is narrow: registration,
@@ -65,6 +77,12 @@ Counts measured with `php artisan test` on 2026-09-03. `ws-417` reports **185 pa
 failure is `DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which **fails on a
 clean tree too** (verified by stashing). It is pre-existing and unrelated to that branch; do not treat
 a green-except-that-one run as a regression.
+
+`ws-401` measured 2026-09-04: **245 passed, 741 assertions, 0 failed** in ~24 s — including that
+`DiscountCodeIndexMigrationTest` case, which is green on this line. ☠️ **CI still runs no tests**, so a
+branch is only ever as verified as the last person to run the suite by hand; state in the PR whether you
+did. `TCV-Backend/vendor/` must be installed for `php artisan test` to work at all — a checkout without
+it cannot run a single test, which is exactly how a suite goes four months unnoticed-red.
 
 `ws-404`'s suite is the first coverage the invitation subsystem has ever had. Two patterns in it are
 worth reusing:

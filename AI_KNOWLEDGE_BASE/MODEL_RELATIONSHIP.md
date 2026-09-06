@@ -26,6 +26,7 @@ erDiagram
     PatientTest     ||--o{ TestResumeToken  : ""
 
     TestInvitation  ||--o{ TestSession      : "redeemed into"
+    Patient         ||--o{ TestSession      : "org-added patient (test_invitation_id null)"
 
     Organization    ||--o{ LmsProviderConfig : ""
     LmsProviderConfig ||--o{ LmsSession      : ""

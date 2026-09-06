@@ -69,6 +69,72 @@ still live in production.** To get the authoritative list back, run `composer in
 [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) changed only in `API-nnn` renumbering and
 the generation date — no client call lost its endpoint, no page became unreachable.
 
+### ⚠️ `tcv-backend-codefix` delta — what this branch adds on top of that baseline
+
+Beyond the three merges above, `tcv-backend-codefix` carries its own unmerged security-hardening pass
+(2026-09-02, re-verified 2026-09-04). Highlights, each cross-referenced to its finding:
+
+| Area | Before | On `tcv-backend-codefix` |
+|---|---|---|
+| Session tokens | `test_sessions.session_token` and `organization_patient_sessions.token` stored **plaintext** | **SHA-256 hashed**, matching the LMS tier — see [SECURITY.md "what is done well"](SECURITY.md#what-is-done-well) |
+| Patient / test-session ownership | `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail`, certificate download had **no** ownership check (or one built on forgeable request input) | All read the new unforgeable `auth_context` request attribute — [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) (partial), [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address), [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping), [S-18](SECURITY.md#s-18--assigntest--getactivetest-let-a-session-act-on-another-organizations-patient) — all fixed **on that branch only; every one of them is still open on `develop`** |
+| Rate limiting | none on login/register/password-reset/signature-verify/bulk-invitations/plate-url | 6 named `throttle:` limiters added — but see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert): they currently share one bucket, fix written but held back |
+| Migration failure | silent — container serves traffic on a stale schema | `entrypoint.sh` writes a marker; `/up` health check fails loudly (two open bugs in the fix itself — see [DEPLOYMENT.md](DEPLOYMENT.md)) |
+| Request correlation | none | `AddRequestId` middleware + JSON log formatter — see [MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md) |
+| `Route::resource` on JSON-only controllers | registered unreachable `create`/`edit` form routes | switched to `Route::apiResource` throughout |
+| Dead code | `EnsureTokenIsValid` middleware present, never wired | deleted |
+
+☠️ **A near-miss during this same pass:** the branch briefly registered `App\Providers\EventServiceProvider`
+in `bootstrap/providers.php`, colliding with the auto-discovery that [EVENTS.md](EVENTS.md) and
+[ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md) already warned about by name — confirmed by test to
+double-send the `SendAfterPasswordReset` notification. Caught and reverted 2026-09-04 before merge; see
+[ARCHITECTURE_REALITY.md §1](ARCHITECTURE_REALITY.md#1-eventserviceprovider-is-never-loaded).
+
+Full detail: [SECURITY.md](SECURITY.md), [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md),
+[MIDDLEWARE.md](MIDDLEWARE.md), [DEPLOYMENT.md](DEPLOYMENT.md).
+
+**☠️ `ws-401` is not indexed** (legacy email-placeholder repair, 2026-09-03/04 — the line `ws-402`
+branched off). Passages flagged `ws-401` describe that branch, not the indexed tree. What changes if it
+merges:
+
+| Area | On `develop` (indexed) | On `ws-401` |
+|---|---|---|
+| Legacy `[bracket]` placeholders in stored templates | stored as written, mailed out unsubstituted, and **invisible to every tool** — the validators and `templates:check-placeholders` recognise `{{…}}` only | `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` rewrites them to canonical tokens across `test_email_templates` and `user_email_templates`. `email_template` is deliberately excluded: a bare `[link]` there could be `{{verification_link}}`, `{{reset_url}}` or `{{set_password_url}}` |
+| What a repair migration may write | — | the rewrite is scoped to the row's own `type` via `EmailTemplatePlaceholders::known()`. A token valid for one template type is a **hard 422 for the other**, and the migration is irreversible, so an unscoped map would lock the editor on the rows it was repairing ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)) |
+| A subject near its column width | — | a rewrite that would exceed `VARCHAR(225)` / `VARCHAR(250)` is skipped and logged, instead of leaving MySQL to truncate it or abort the migration half-applied ([DATABASE.md](DATABASE.md#migration-practice)) |
+| A bracket token nothing can map (`[Link]`, `[org_name]`) | — | logged as residue at migrate time — the only moment such a token is ever visible |
+
+Adds one migration and one test file (`NormalizeLegacyBracketPlaceholdersMigrationTest`, 13 tests), so a
+regeneration on `ws-401` moves the migration count by one.
+
+☠️ **Do not regenerate while `ws-401` is checked out.** It is not a superset of the indexed tree: it
+predates the `Route::apiResource` sweep and the two `test_sessions` migrations above, so `composer regenerate`
+there reports **119 migrations · 176 endpoints · 20 public** against the indexed **118 · 178 · 20** and
+rewrites every index to that older picture — including deleting `test_sessions.patient_id`. Measured
+2026-09-04; see [HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md#check-out-the-right-branch-first).
+
+**☠️ `ws-402` is not indexed** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
+— backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
+them as "if ws-402 merges". What changes when it does:
+
+| Area | On `develop` (indexed) | On `ws-402` |
+|---|---|---|
+| `CreditsController::destroy()` | hard-deletes the whole grant row, even the spent part — pushes `granted` below `consumed`, hidden by the `max(0, …)` clamp | `Credits::revokeGrant()` takes back only the **unspent** part; a partly-used grant is kept, with a negative `SOURCE_ADMIN_REVOKED` counter-entry, instead of being deleted |
+| `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
+| `credits.original_source` | column does not exist | new nullable column; on a `SOURCE_REVOKED` row it records which underlying grant (Manual/Purchase) funded the test being refunded, traced FIFO via `Credits::traceConsumedOrigin()` |
+| `CreditsPolicy::delete()` | `true` only for `source === SOURCE_MANUAL` | also `true` for a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` — a refund of manually-granted credits is deletable; one tracing back to a purchase never is |
+| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / `remaining_credits`, from `Credits::getGrantAllocation()` — FIFO spread of consumption + prior claw-backs across active grants |
+| `AuthorizationException` (`$this->authorize()` denial) | **500**, per fact #1 above / [ERROR_HANDLING.md](ERROR_HANDLING.md) | **403** — `Handler.php` gains a dedicated branch. Scoped to this one exception type only; `ModelNotFoundException` and the rest are still 500 |
+| Artisan commands | — | + `credits:settle-negative-balances {--apply}` — one-time repair for accounts already carrying pre-fix hidden debt (dry run by default) |
+| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column (`used` / `remaining`); delete is disabled with a tooltip once a grant's `remaining` hits 0; the confirm dialog states the exact used/remaining split |
+| SPA `DiscountCodeModal.jsx` price-tier chips | every tier selectable regardless of Minimum Order | a tier whose priciest possible order still falls short of Minimum Order renders disabled and is auto-dropped from the selection if Minimum Order is raised past it |
+
+See [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md),
+[CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md), [ERROR_HANDLING.md](ERROR_HANDLING.md),
+[POLICIES.md](POLICIES.md) and [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md). Adds two migrations
+(`2026_09_03_101500_…`, `2026_09_03_140000_…`) and one console command, so a regeneration on `ws-402`
+moves the migration count by two and the command count by one.
+
 ---
 
 ## Read this first: how to use this KB
@@ -110,13 +176,18 @@ before writing code.
 1. **Every unhandled exception becomes a 500.** `app/Exceptions/Handler.php` catches
    `AuthenticationException` and `ValidationException`, then funnels **everything else** through one
    `$request->expectsJson()` branch that returns **500**. `findOrFail()` → 500, not 404. A failed
-   `$this->authorize()` → 500, not 403. An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
+   `$this->authorize()` → 500, not 403 (fixed for this one exception type on the unmerged `ws-402`
+   branch — see the delta above). An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
 2. **`usertype` skips 3.** `1 = SUPER_ADMIN`, `2 = CUSTOMER`, `4 = ORGANIZATION`. There is no `3`.
    Never iterate `1..n`, never assume contiguity. Identical in all three repos.
-3. **Test-session endpoints authenticate the caller but never check the caller owns the test.**
-   `FlexibleAuthMiddleware` proves you hold *a* valid session; `unique_test_id` then comes from the URL
-   and is used unchecked. The UUID's unguessability is the only thing protecting another patient's
-   test. See [SECURITY.md](SECURITY.md) and [CONTEXT/TEST_EXECUTION_CONTEXT.md](CONTEXT/TEST_EXECUTION_CONTEXT.md).
+3. **Five session-token endpoints still authenticate the caller without checking they own the test.**
+   `FlexibleAuthMiddleware` proves you hold *a* valid session; on these five, `unique_test_id` comes
+   from the URL and is used unchecked, so the UUID's unguessability is the only thing protecting
+   another patient's test. `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail` and the
+   result-certificate download **were** the same shape but are now scoped by reading the unforgeable
+   `auth_context` request attribute — don't copy their old pattern.
+   See [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) and
+   [CONTEXT/TEST_EXECUTION_CONTEXT.md](CONTEXT/TEST_EXECUTION_CONTEXT.md).
 4. **`POST /api/register` is public and accepts `usertype: 1`.** `UserRequest` validates `usertype`
    against `in:1,2,4` and `account_status` against `in:active,inactive,suspended` — with no restriction
    on who may ask for which. See [SECURITY.md](SECURITY.md#s-01--public-registration-accepts-usertype--1).
@@ -168,9 +239,9 @@ before writing code.
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 34 |
 | [SERVICES.md](SERVICES.md) | ✅ 33 — the real home of business logic |
 | [REQUESTS.md](REQUESTS.md) | ✅ 24 FormRequest classes |
-| [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (one is dead) |
+| [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
-| [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery, not by the provider |
+| [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
 | [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 2 jobs · `database` driver · **no worker in compose** |
 | [REPOSITORIES.md](REPOSITORIES.md) | ⚠️ 1 only — not a pattern |
 | [HELPERS.md](HELPERS.md) | ✅ static classes, **no** global functions |
@@ -291,7 +362,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 109 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 118 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

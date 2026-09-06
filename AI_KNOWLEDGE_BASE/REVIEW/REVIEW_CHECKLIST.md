@@ -89,6 +89,30 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
 - [ ] Table name verified against the model's `$table` — `testanswers`, `credit_consume`,
       `email_template` don't follow convention.
 
+### 6a. Data migrations (a migration that writes rows, not schema)
+
+The scanner has no rule for these and the tests run on SQLite, so this section is entirely manual.
+
+- [ ] **Would the app accept what the migration writes?** A migration answers to no FormRequest. Take one
+      rewritten row and walk it through the save path by hand — if a validator would 422 it, the
+      migration has locked that record's editor, and an irreversible one has locked it for good. The live
+      example: the placeholder vocabulary is scoped by template `type`, so a map applied to every row
+      writes tokens the app rejects. [INVITATION_CONTEXT](../CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)
+- [ ] **Does the rewrite make any value longer?** Then it can outgrow its column. MySQL strict mode aborts
+      the migration mid-run — there is no transaction around a chunked loop, so the rows already written
+      stay written — and `entrypoint.sh` serves traffic through the failure and retries the same
+      half-applied migration on the next boot. **SQLite cannot fail this in tests.**
+      [DATABASE.md](../DATABASE.md#migration-practice) · [TESTING.md](../TESTING.md)
+- [ ] **What does it silently miss?** A literal match is case-sensitive and knows only the spellings
+      someone remembered. If a missed row is invisible to every other tool afterwards, the migration must
+      log it — that one boot-log line is the whole detection story. [LOGGING.md](../LOGGING.md)
+- [ ] **Is `down()` honest?** An empty `down()` with a comment saying why beats one that guesses — but an
+      irreversible migration raises the bar on everything above it, because there is no recovery.
+- [ ] **Is it idempotent?** `migrate --force` runs every boot and a failed migration is retried forever,
+      so a second pass over a row it already fixed must be a no-op. Pin it with a test that reapplies.
+- [ ] The map or match is keyed on the row's own discriminator (`type`, `name`, `status`), not applied
+      blanket — the `select()` usually already fetches that column.
+
 ## 7. API shape & conventions
 
 - [ ] Uses `ApiResponse::success/error` + an `HttpStatus` constant + a key added to
