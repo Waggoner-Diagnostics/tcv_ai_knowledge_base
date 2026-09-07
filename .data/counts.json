@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
     "routes": 178,
     "public": 20,
     "classes": 196,
@@ -6,6 +7,15 @@
     "functions": 0,
     "tables": 52,
     "migrations": 118,
+=======
+    "routes": 176,
+    "public": 20,
+    "classes": 186,
+    "methods": 711,
+    "functions": 0,
+    "tables": 52,
+    "migrations": 109,
+>>>>>>> Stashed changes
     "controllers": 34,
     "models": 40,
     "services": 33,
@@ -14,7 +24,11 @@
     "middleware": 4,
     "jobs": 2,
     "events": 3,
+<<<<<<< Updated upstream
     "listeners": 4,
+=======
+    "listeners": 3,
+>>>>>>> Stashed changes
     "relations": 69,
     "spa_routes": 64,
     "spa_api_calls": 87,
