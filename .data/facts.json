@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
     "generated_at": "2026-09-06T16:46:12+02:00",
     "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Backend",
     "git": {
@@ -10,6 +11,19 @@
         "frontend": {
             "sha": "1867676",
             "branch": "develop",
+=======
+    "generated_at": "2026-09-03T11:09:29+00:00",
+    "root": "C:\\Users\\ShantanuDhaybar\\Documents\\GitHub\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
+    "git": {
+        "backend": {
+            "sha": "26ba2022",
+            "branch": "WS-390",
+            "date": "2026-08-27"
+        },
+        "frontend": {
+            "sha": "f16637c",
+            "branch": "WS-406",
+>>>>>>> Stashed changes
             "date": "2026-09-03"
         },
         "website": {
@@ -20,6 +34,7 @@
     },
     "classes": [
         {
+<<<<<<< Updated upstream
             "name": "BackfillStripeSourceApp",
             "fqcn": "App\\Console\\Commands\\BackfillStripeSourceApp",
             "kind": "class",
@@ -198,6 +213,8 @@
             "relations": []
         },
         {
+=======
+>>>>>>> Stashed changes
             "name": "UploadTestPlates",
             "fqcn": "App\\Console\\Commands\\UploadTestPlates",
             "kind": "class",
@@ -1090,7 +1107,11 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
+<<<<<<< Updated upstream
             "line": 33,
+=======
+            "line": 31,
+>>>>>>> Stashed changes
             "end_line": 776,
             "extends": "Controller",
             "implements": [],
@@ -1099,8 +1120,13 @@
             "methods": [
                 {
                     "name": "__construct",
+<<<<<<< Updated upstream
                     "line": 37,
                     "end_line": 40,
+=======
+                    "line": 35,
+                    "end_line": 38,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1112,8 +1138,13 @@
                 },
                 {
                     "name": "login",
+<<<<<<< Updated upstream
                     "line": 42,
                     "end_line": 138,
+=======
+                    "line": 40,
+                    "end_line": 171,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1141,8 +1172,13 @@
                 },
                 {
                     "name": "createStripeCustomer",
+<<<<<<< Updated upstream
                     "line": 140,
                     "end_line": 147,
+=======
+                    "line": 173,
+                    "end_line": 180,
+>>>>>>> Stashed changes
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1158,8 +1194,13 @@
                 },
                 {
                     "name": "register",
+<<<<<<< Updated upstream
                     "line": 149,
                     "end_line": 207,
+=======
+                    "line": 182,
+                    "end_line": 228,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1189,8 +1230,13 @@
                 },
                 {
                     "name": "sendResetLinkEmail",
+<<<<<<< Updated upstream
                     "line": 209,
                     "end_line": 239,
+=======
+                    "line": 230,
+                    "end_line": 260,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1215,8 +1261,13 @@
                 },
                 {
                     "name": "setOrResetPassword",
+<<<<<<< Updated upstream
                     "line": 241,
                     "end_line": 320,
+=======
+                    "line": 262,
+                    "end_line": 341,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1251,8 +1302,13 @@
                 },
                 {
                     "name": "verifySetupToken",
+<<<<<<< Updated upstream
                     "line": 322,
                     "end_line": 342,
+=======
+                    "line": 343,
+                    "end_line": 363,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1272,8 +1328,13 @@
                 },
                 {
                     "name": "verifyEmail",
+<<<<<<< Updated upstream
                     "line": 345,
                     "end_line": 365,
+=======
+                    "line": 366,
+                    "end_line": 386,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1293,8 +1354,13 @@
                 },
                 {
                     "name": "logout",
+<<<<<<< Updated upstream
                     "line": 367,
                     "end_line": 372,
+=======
+                    "line": 388,
+                    "end_line": 393,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1311,8 +1377,13 @@
                 },
                 {
                     "name": "impersonateUser",
+<<<<<<< Updated upstream
                     "line": 374,
                     "end_line": 393,
+=======
+                    "line": 395,
+                    "end_line": 414,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1332,8 +1403,13 @@
                 },
                 {
                     "name": "stopImpersonation",
+<<<<<<< Updated upstream
                     "line": 395,
                     "end_line": 405,
+=======
+                    "line": 416,
+                    "end_line": 426,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1354,8 +1430,13 @@
                 },
                 {
                     "name": "isTokenValid",
+<<<<<<< Updated upstream
                     "line": 413,
                     "end_line": 465,
+=======
+                    "line": 434,
+                    "end_line": 486,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1374,8 +1455,13 @@
                 },
                 {
                     "name": "verifyPassword",
+<<<<<<< Updated upstream
                     "line": 473,
                     "end_line": 485,
+=======
+                    "line": 494,
+                    "end_line": 506,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1393,8 +1479,13 @@
                 },
                 {
                     "name": "changePassword",
+<<<<<<< Updated upstream
                     "line": 493,
                     "end_line": 520,
+=======
+                    "line": 514,
+                    "end_line": 541,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1424,7 +1515,11 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
+<<<<<<< Updated upstream
                     "line": 527,
+=======
+                    "line": 548,
+>>>>>>> Stashed changes
                     "end_line": 648,
                     "visibility": "private",
                     "static": false,
@@ -1442,8 +1537,11 @@
                         "first",
                         "where",
                         "DB::table",
+<<<<<<< Updated upstream
                         "EmailContent::linkify",
                         "EmailContent::styleAnchors",
+=======
+>>>>>>> Stashed changes
                         "Mail::html",
                         "from",
                         "subject",
@@ -1748,7 +1846,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
             "line": 18,
-            "end_line": 253,
+            "end_line": 255,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1956,7 +2054,7 @@
                 {
                     "name": "codeAvailable",
                     "line": 204,
-                    "end_line": 219,
+                    "end_line": 221,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1969,14 +2067,15 @@
                         "json",
                         "exists",
                         "when",
-                        "DiscountCode::where",
+                        "where",
+                        "DiscountCode::withTrashed",
                         "whereKeyNot"
                     ]
                 },
                 {
                     "name": "formatDiscount",
-                    "line": 223,
-                    "end_line": 252,
+                    "line": 225,
+                    "end_line": 254,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2744,8 +2843,8 @@
             "fqcn": "App\\Http\\Controllers\\OrganizationPatientController",
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationPatientController.php",
-            "line": 16,
-            "end_line": 315,
+            "line": 15,
+            "end_line": 305,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -2753,8 +2852,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 18,
-                    "end_line": 21,
+                    "line": 17,
+                    "end_line": 20,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2766,8 +2865,8 @@
                 },
                 {
                     "name": "verifyTurnstileToken",
-                    "line": 26,
-                    "end_line": 49,
+                    "line": 25,
+                    "end_line": 48,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2783,8 +2882,8 @@
                 },
                 {
                     "name": "storeProlificPatient",
-                    "line": 55,
-                    "end_line": 175,
+                    "line": 54,
+                    "end_line": 174,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2816,8 +2915,8 @@
                 },
                 {
                     "name": "storeDefaultPatient",
-                    "line": 181,
-                    "end_line": 314,
+                    "line": 180,
+                    "end_line": 304,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2831,8 +2930,6 @@
                         "verifyTurnstileToken",
                         "Organization::find",
                         "all",
-                        "validate",
-                        "Validator::make",
                         "DB::transaction",
                         "Patient::create",
                         "advanceStatus",
@@ -3124,7 +3221,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/PaymentController.php",
             "line": 12,
-            "end_line": 283,
+            "end_line": 279,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3180,7 +3277,7 @@
                 {
                     "name": "initializePayment",
                     "line": 56,
-                    "end_line": 92,
+                    "end_line": 88,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3201,8 +3298,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 94,
-                    "end_line": 151,
+                    "line": 90,
+                    "end_line": 147,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3222,8 +3319,8 @@
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 153,
-                    "end_line": 169,
+                    "line": 149,
+                    "end_line": 165,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3242,8 +3339,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 174,
-                    "end_line": 202,
+                    "line": 170,
+                    "end_line": 198,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3266,8 +3363,8 @@
                 },
                 {
                     "name": "getCreditHistory",
-                    "line": 211,
-                    "end_line": 282,
+                    "line": 207,
+                    "end_line": 278,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3772,7 +3869,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/StripePaymentController.php",
             "line": 19,
-            "end_line": 416,
+            "end_line": 410,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3920,7 +4017,7 @@
                 {
                     "name": "partialRefund",
                     "line": 314,
-                    "end_line": 346,
+                    "end_line": 343,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3933,15 +4030,14 @@
                         "Transaction::findOrFail",
                         "json",
                         "Refund::create",
-                        "StripeService::appSource",
                         "save",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "refund",
-                    "line": 351,
-                    "end_line": 378,
+                    "line": 348,
+                    "end_line": 372,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3953,7 +4049,6 @@
                         "validated",
                         "Transaction::findOrFail",
                         "Refund::create",
-                        "StripeService::appSource",
                         "save",
                         "json",
                         "getMessage"
@@ -3961,8 +4056,8 @@
                 },
                 {
                     "name": "paymentCallback",
-                    "line": 380,
-                    "end_line": 391,
+                    "line": 374,
+                    "end_line": 385,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3977,8 +4072,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 396,
-                    "end_line": 415,
+                    "line": 390,
+                    "end_line": 409,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4008,7 +4103,11 @@
             "kind": "class",
             "file": "app/Http/Controllers/SuperAdminDashboardController.php",
             "line": 14,
+<<<<<<< Updated upstream
             "end_line": 163,
+=======
+            "end_line": 173,
+>>>>>>> Stashed changes
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4047,6 +4146,7 @@
                         "orWhere",
                         "get",
                         "whereIn",
+                        "monthGroupExpr",
                         "buildMonthlyGrid",
                         "keyBy",
                         "format",
@@ -4060,9 +4160,30 @@
                     ]
                 },
                 {
+                    "name": "monthGroupExpr",
+                    "line": 150,
+                    "end_line": 155,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $column"
+                    ],
+                    "returns": "string",
+                    "doc": "SQLite (local dev) has no DATE_FORMAT(); MySQL (deployed) has no strftime().",
+                    "calls": [
+                        "getDriverName",
+                        "DB::connection"
+                    ]
+                },
+                {
                     "name": "buildMonthlyGrid",
+<<<<<<< Updated upstream
                     "line": 147,
                     "end_line": 162,
+=======
+                    "line": 157,
+                    "end_line": 172,
+>>>>>>> Stashed changes
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4765,8 +4886,13 @@
             "fqcn": "App\\Http\\Controllers\\TestEmailTemplateController",
             "kind": "class",
             "file": "app/Http/Controllers/TestEmailTemplateController.php",
+<<<<<<< Updated upstream
             "line": 15,
             "end_line": 269,
+=======
+            "line": 13,
+            "end_line": 309,
+>>>>>>> Stashed changes
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4774,8 +4900,13 @@
             "methods": [
                 {
                     "name": "index",
+<<<<<<< Updated upstream
                     "line": 24,
                     "end_line": 69,
+=======
+                    "line": 22,
+                    "end_line": 66,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4783,7 +4914,6 @@
                     "doc": "Get all admin default email templates.",
                     "calls": [
                         "get",
-                        "orderByRaw",
                         "TestEmailTemplates::whereIn",
                         "firstWhere",
                         "json",
@@ -4794,8 +4924,13 @@
                 },
                 {
                     "name": "update",
+<<<<<<< Updated upstream
                     "line": 78,
                     "end_line": 174,
+=======
+                    "line": 75,
+                    "end_line": 162,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4828,8 +4963,13 @@
                 },
                 {
                     "name": "validateTemplateData",
+<<<<<<< Updated upstream
                     "line": 183,
                     "end_line": 197,
+=======
+                    "line": 171,
+                    "end_line": 185,
+>>>>>>> Stashed changes
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4844,8 +4984,13 @@
                 },
                 {
                     "name": "validateRequiredPlaceholders",
+<<<<<<< Updated upstream
                     "line": 207,
                     "end_line": 258,
+=======
+                    "line": 194,
+                    "end_line": 226,
+>>>>>>> Stashed changes
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4864,8 +5009,13 @@
                 },
                 {
                     "name": "getPlaceholders",
+<<<<<<< Updated upstream
                     "line": 260,
                     "end_line": 268,
+=======
+                    "line": 234,
+                    "end_line": 308,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4888,7 +5038,11 @@
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
             "line": 20,
+<<<<<<< Updated upstream
             "end_line": 601,
+=======
+            "end_line": 547,
+>>>>>>> Stashed changes
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4910,7 +5064,11 @@
                 {
                     "name": "sendInvitations",
                     "line": 27,
+<<<<<<< Updated upstream
                     "end_line": 182,
+=======
+                    "end_line": 199,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4980,8 +5138,13 @@
                 },
                 {
                     "name": "getUnregisteredInvitations",
+<<<<<<< Updated upstream
                     "line": 249,
                     "end_line": 318,
+=======
+                    "line": 205,
+                    "end_line": 255,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5013,8 +5176,13 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
+<<<<<<< Updated upstream
                     "line": 324,
                     "end_line": 378,
+=======
+                    "line": 261,
+                    "end_line": 290,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5043,8 +5211,13 @@
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
+<<<<<<< Updated upstream
                     "line": 383,
                     "end_line": 419,
+=======
+                    "line": 295,
+                    "end_line": 331,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5072,8 +5245,13 @@
                 },
                 {
                     "name": "sendInvitationEmail",
+<<<<<<< Updated upstream
                     "line": 427,
                     "end_line": 430,
+=======
+                    "line": 333,
+                    "end_line": 376,
+>>>>>>> Stashed changes
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5087,13 +5265,29 @@
                     "returns": "void",
                     "doc": "Send a single invitation email inline.",
                     "calls": [
+<<<<<<< Updated upstream
                         "send"
+=======
+                        "getTemplateForUser",
+                        "format",
+                        "addDays",
+                        "Carbon::now",
+                        "Mail::send",
+                        "subject",
+                        "to",
+                        "Log::info"
+>>>>>>> Stashed changes
                     ]
                 },
                 {
                     "name": "verifyCode",
+<<<<<<< Updated upstream
                     "line": 435,
                     "end_line": 533,
+=======
+                    "line": 381,
+                    "end_line": 479,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5123,8 +5317,13 @@
                 },
                 {
                     "name": "checkTokenStatus",
+<<<<<<< Updated upstream
                     "line": 538,
                     "end_line": 599,
+=======
+                    "line": 484,
+                    "end_line": 545,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6393,8 +6592,8 @@
             "fqcn": "App\\Http\\Requests\\PatientAddRequest",
             "kind": "class",
             "file": "app/Http/Requests/PatientAddRequest.php",
-            "line": 8,
-            "end_line": 37,
+            "line": 7,
+            "end_line": 38,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6402,8 +6601,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 12,
-                    "end_line": 15,
+                    "line": 13,
+                    "end_line": 16,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6413,8 +6612,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 17,
-                    "end_line": 31,
+                    "line": 18,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6424,8 +6623,8 @@
                 },
                 {
                     "name": "failedValidation",
-                    "line": 33,
-                    "end_line": 36,
+                    "line": 34,
+                    "end_line": 37,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6439,8 +6638,8 @@
             "constants": [
                 {
                     "name": "GENDER",
-                    "value": "",
-                    "line": 11
+                    "value": "[…]",
+                    "line": 9
                 }
             ],
             "relations": []
@@ -6450,8 +6649,8 @@
             "fqcn": "App\\Http\\Requests\\PatientUpdateRequest",
             "kind": "class",
             "file": "app/Http/Requests/PatientUpdateRequest.php",
-            "line": 8,
-            "end_line": 32,
+            "line": 7,
+            "end_line": 33,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6459,8 +6658,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 12,
-                    "end_line": 15,
+                    "line": 13,
+                    "end_line": 16,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6470,8 +6669,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 17,
-                    "end_line": 31,
+                    "line": 18,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6485,8 +6684,8 @@
             "constants": [
                 {
                     "name": "GENDER",
-                    "value": "",
-                    "line": 11
+                    "value": "[…]",
+                    "line": 9
                 }
             ],
             "relations": []
@@ -6624,7 +6823,6 @@
                     "returns": "array",
                     "doc": "",
                     "calls": [
-                        "whereNull",
                         "Rule::unique",
                         "Rule::in"
                     ]
@@ -9435,7 +9633,7 @@
             "kind": "class",
             "file": "app/Models/Patient.php",
             "line": 9,
-            "end_line": 71,
+            "end_line": 40,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -9445,22 +9643,9 @@
             "doc": "",
             "methods": [
                 {
-                    "name": "genderLabel",
-                    "line": 47,
-                    "end_line": 54,
-                    "visibility": "public",
-                    "static": true,
-                    "params": [
-                        "$gender"
-                    ],
-                    "returns": "?string",
-                    "doc": "Human readable label for a stored gender value.",
-                    "calls": []
-                },
-                {
                     "name": "user",
-                    "line": 59,
-                    "end_line": 62,
+                    "line": 28,
+                    "end_line": 31,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9472,8 +9657,8 @@
                 },
                 {
                     "name": "tests",
-                    "line": 67,
-                    "end_line": 70,
+                    "line": 36,
+                    "end_line": 39,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9484,40 +9669,19 @@
                     ]
                 }
             ],
-            "constants": [
-                {
-                    "name": "GENDER_MALE",
-                    "value": "1",
-                    "line": 13
-                },
-                {
-                    "name": "GENDER_FEMALE",
-                    "value": "2",
-                    "line": 14
-                },
-                {
-                    "name": "GENDER_INTERSEX",
-                    "value": "3",
-                    "line": 15
-                },
-                {
-                    "name": "GENDERS",
-                    "value": "[…]",
-                    "line": 23
-                }
-            ],
+            "constants": [],
             "relations": [
                 {
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 59
+                    "line": 28
                 },
                 {
                     "method": "tests",
                     "type": "hasMany",
                     "target": "PatientTest",
-                    "line": 67
+                    "line": 36
                 }
             ]
         },
@@ -11108,8 +11272,13 @@
             "fqcn": "App\\Notifications\\ResetPasswordNotification",
             "kind": "class",
             "file": "app/Notifications/ResetPasswordNotification.php",
+<<<<<<< Updated upstream
             "line": 11,
             "end_line": 96,
+=======
+            "line": 10,
+            "end_line": 85,
+>>>>>>> Stashed changes
             "extends": "Notification",
             "implements": [],
             "traits": [
@@ -11119,8 +11288,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 21,
-                    "end_line": 25,
+                    "line": 20,
+                    "end_line": 24,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11133,8 +11302,8 @@
                 },
                 {
                     "name": "via",
-                    "line": 30,
-                    "end_line": 33,
+                    "line": 29,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11146,8 +11315,13 @@
                 },
                 {
                     "name": "toMail",
+<<<<<<< Updated upstream
                     "line": 38,
                     "end_line": 87,
+=======
+                    "line": 37,
+                    "end_line": 76,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11159,16 +11333,24 @@
                         "first",
                         "where",
                         "DB::table",
+<<<<<<< Updated upstream
                         "EmailContent::linkify",
                         "EmailContent::styleAnchors",
+=======
+>>>>>>> Stashed changes
                         "view",
                         "subject"
                     ]
                 },
                 {
                     "name": "toArray",
+<<<<<<< Updated upstream
                     "line": 92,
                     "end_line": 95,
+=======
+                    "line": 81,
+                    "end_line": 84,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11540,8 +11722,13 @@
             "fqcn": "App\\Providers\\AppServiceProvider",
             "kind": "class",
             "file": "app/Providers/AppServiceProvider.php",
+<<<<<<< Updated upstream
             "line": 12,
             "end_line": 57,
+=======
+            "line": 9,
+            "end_line": 50,
+>>>>>>> Stashed changes
             "extends": "ServiceProvider",
             "implements": [],
             "traits": [],
@@ -11549,8 +11736,13 @@
             "methods": [
                 {
                     "name": "register",
+<<<<<<< Updated upstream
                     "line": 17,
                     "end_line": 20,
+=======
+                    "line": 14,
+                    "end_line": 17,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -11560,8 +11752,13 @@
                 },
                 {
                     "name": "boot",
+<<<<<<< Updated upstream
                     "line": 25,
                     "end_line": 34,
+=======
+                    "line": 22,
+                    "end_line": 27,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -11569,14 +11766,22 @@
                     "doc": "Bootstrap any application services.",
                     "calls": [
                         "Schema::defaultStringLength",
+<<<<<<< Updated upstream
                         "Event::listen",
+=======
+>>>>>>> Stashed changes
                         "warnIfFrontendAppUrlLooksInvalid"
                     ]
                 },
                 {
                     "name": "warnIfFrontendAppUrlLooksInvalid",
+<<<<<<< Updated upstream
                     "line": 44,
                     "end_line": 56,
+=======
+                    "line": 37,
+                    "end_line": 49,
+>>>>>>> Stashed changes
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -12154,7 +12359,7 @@
             "kind": "class",
             "file": "app/Services/DiscountCodeService.php",
             "line": 10,
-            "end_line": 161,
+            "end_line": 156,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -12163,7 +12368,7 @@
                 {
                     "name": "validate",
                     "line": 16,
-                    "end_line": 74,
+                    "end_line": 69,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12176,7 +12381,6 @@
                     "doc": "Validate a discount code against the user, amount and credits.",
                     "calls": [
                         "first",
-                        "orderBy",
                         "whereNull",
                         "where",
                         "DiscountCode::with",
@@ -12192,8 +12396,8 @@
                 },
                 {
                     "name": "calculate",
-                    "line": 79,
-                    "end_line": 94,
+                    "line": 74,
+                    "end_line": 89,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12206,8 +12410,8 @@
                 },
                 {
                     "name": "syncRestrictions",
-                    "line": 99,
-                    "end_line": 107,
+                    "line": 94,
+                    "end_line": 102,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12225,8 +12429,8 @@
                 },
                 {
                     "name": "countUses",
-                    "line": 112,
-                    "end_line": 120,
+                    "line": 107,
+                    "end_line": 115,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12245,8 +12449,8 @@
                 },
                 {
                     "name": "creditMatchesTier",
-                    "line": 124,
-                    "end_line": 132,
+                    "line": 119,
+                    "end_line": 127,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12259,8 +12463,8 @@
                 },
                 {
                     "name": "success",
-                    "line": 134,
-                    "end_line": 155,
+                    "line": 129,
+                    "end_line": 150,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12275,8 +12479,8 @@
                 },
                 {
                     "name": "fail",
-                    "line": 157,
-                    "end_line": 160,
+                    "line": 152,
+                    "end_line": 155,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -14030,7 +14234,7 @@
             "kind": "class",
             "file": "app/Services/PaymentProviders/StripeProvider.php",
             "line": 14,
-            "end_line": 309,
+            "end_line": 261,
             "extends": "BasePaymentProvider",
             "implements": [],
             "traits": [],
@@ -14039,7 +14243,7 @@
                 {
                     "name": "__construct",
                     "line": 20,
-                    "end_line": 33,
+                    "end_line": 26,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14054,8 +14258,8 @@
                 },
                 {
                     "name": "getSupportedMethods",
-                    "line": 35,
-                    "end_line": 48,
+                    "line": 28,
+                    "end_line": 41,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -14065,8 +14269,8 @@
                 },
                 {
                     "name": "createSetupIntent",
-                    "line": 50,
-                    "end_line": 76,
+                    "line": 43,
+                    "end_line": 62,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14078,14 +14282,13 @@
                         "User::find",
                         "getOrCreateCustomer",
                         "create",
-                        "StripeService::appSource",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "initializePayment",
-                    "line": 78,
-                    "end_line": 152,
+                    "line": 64,
+                    "end_line": 104,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14096,7 +14299,6 @@
                     "calls": [
                         "User::find",
                         "getOrCreateCustomer",
-                        "StripeService::appSource",
                         "create",
                         "logPaymentActivity",
                         "getName",
@@ -14105,8 +14307,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 154,
-                    "end_line": 225,
+                    "line": 106,
+                    "end_line": 177,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14130,8 +14332,8 @@
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 227,
-                    "end_line": 254,
+                    "line": 179,
+                    "end_line": 206,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14148,8 +14350,8 @@
                 },
                 {
                     "name": "getOrCreateCustomer",
-                    "line": 256,
-                    "end_line": 259,
+                    "line": 208,
+                    "end_line": 211,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -14163,8 +14365,8 @@
                 },
                 {
                     "name": "attachAndPersistPaymentMethod",
-                    "line": 261,
-                    "end_line": 308,
+                    "line": 213,
+                    "end_line": 260,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -14193,7 +14395,11 @@
             "kind": "class",
             "file": "app/Services/Reports/DiscountCodeReportService.php",
             "line": 7,
+<<<<<<< Updated upstream
             "end_line": 181,
+=======
+            "end_line": 145,
+>>>>>>> Stashed changes
             "extends": "",
             "implements": [],
             "traits": [],
@@ -14202,7 +14408,7 @@
                 {
                     "name": "getReports",
                     "line": 9,
-                    "end_line": 22,
+                    "end_line": 29,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14217,8 +14423,8 @@
                 },
                 {
                     "name": "getSummary",
-                    "line": 24,
-                    "end_line": 86,
+                    "line": 31,
+                    "end_line": 81,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14240,22 +14446,26 @@
                 },
                 {
                     "name": "buildQuery",
+<<<<<<< Updated upstream
                     "line": 94,
                     "end_line": 165,
+=======
+                    "line": 83,
+                    "end_line": 144,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "?string $search",
-                        "$sortBy",
-                        "$sortOrder",
+                        "string $sortBy",
+                        "string $sortOrder",
                         "?string $fromDate",
                         "?string $toDate",
                         "?string $code"
                     ],
                     "returns": "",
-                    "doc": "`$sortBy` and `$sortOrder` are deliberately untyped: `ReportController` hands them",
+                    "doc": "",
                     "calls": [
-                        "normaliseSort",
                         "whereIn",
                         "whereNotNull",
                         "select",
@@ -14267,6 +14477,7 @@
                         "orWhere",
                         "orderBy"
                     ]
+<<<<<<< Updated upstream
                 },
                 {
                     "name": "normaliseSort",
@@ -14281,6 +14492,8 @@
                     "returns": "array",
                     "doc": "",
                     "calls": []
+=======
+>>>>>>> Stashed changes
                 }
             ],
             "constants": [],
@@ -14544,7 +14757,7 @@
             "kind": "class",
             "file": "app/Services/StripeService.php",
             "line": 14,
-            "end_line": 430,
+            "end_line": 328,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -14552,13 +14765,11 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 22,
-                    "end_line": 36,
+                    "line": 18,
+                    "end_line": 26,
                     "visibility": "public",
                     "static": false,
-                    "params": [
-                        "?Stripe\\StripeClient $stripe = null"
-                    ],
+                    "params": [],
                     "returns": "",
                     "doc": "",
                     "calls": [
@@ -14566,20 +14777,9 @@
                     ]
                 },
                 {
-                    "name": "appSource",
-                    "line": 50,
-                    "end_line": 63,
-                    "visibility": "public",
-                    "static": true,
-                    "params": [],
-                    "returns": "string",
-                    "doc": "The app-identity tag applied to every Stripe object this app creates, and",
-                    "calls": []
-                },
-                {
                     "name": "getStripeClient",
-                    "line": 69,
-                    "end_line": 72,
+                    "line": 32,
+                    "end_line": 35,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -14589,8 +14789,8 @@
                 },
                 {
                     "name": "createOrGetCustomer",
-                    "line": 77,
-                    "end_line": 175,
+                    "line": 40,
+                    "end_line": 75,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14601,19 +14801,15 @@
                     "calls": [
                         "retrieve",
                         "Log::warning",
-                        "self::appSource",
-                        "all",
-                        "autoPagingIterator",
-                        "Log::error",
-                        "getMessage",
+                        "search",
                         "create",
                         "UserStripeDetail::updateOrCreate"
                     ]
                 },
                 {
                     "name": "getCustomerPaymentMethods",
-                    "line": 181,
-                    "end_line": 212,
+                    "line": 81,
+                    "end_line": 112,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14630,8 +14826,8 @@
                 },
                 {
                     "name": "paymentMethodExists",
-                    "line": 218,
-                    "end_line": 241,
+                    "line": 118,
+                    "end_line": 141,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14649,8 +14845,8 @@
                 },
                 {
                     "name": "createStripePaymentIntent",
-                    "line": 246,
-                    "end_line": 284,
+                    "line": 146,
+                    "end_line": 183,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14665,14 +14861,13 @@
                     "calls": [
                         "createOrGetCustomer",
                         "toDateTimeString",
-                        "self::appSource",
                         "create"
                     ]
                 },
                 {
                     "name": "createACHPaymentIntent",
-                    "line": 289,
-                    "end_line": 312,
+                    "line": 188,
+                    "end_line": 210,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14686,14 +14881,13 @@
                     "calls": [
                         "createOrGetCustomer",
                         "create",
-                        "toDateTimeString",
-                        "self::appSource"
+                        "toDateTimeString"
                     ]
                 },
                 {
                     "name": "createBankTransferTransaction",
-                    "line": 317,
-                    "end_line": 358,
+                    "line": 215,
+                    "end_line": 256,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14713,8 +14907,8 @@
                 },
                 {
                     "name": "getPaymentMethods",
-                    "line": 363,
-                    "end_line": 366,
+                    "line": 261,
+                    "end_line": 264,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14728,8 +14922,8 @@
                 },
                 {
                     "name": "setDefaultPaymentMethod",
-                    "line": 371,
-                    "end_line": 396,
+                    "line": 269,
+                    "end_line": 294,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14748,8 +14942,8 @@
                 },
                 {
                     "name": "removePaymentMethod",
-                    "line": 401,
-                    "end_line": 421,
+                    "line": 299,
+                    "end_line": 319,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -14771,8 +14965,8 @@
                 },
                 {
                     "name": "attachPaymentMethod",
-                    "line": 423,
-                    "end_line": 429,
+                    "line": 321,
+                    "end_line": 327,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15275,8 +15469,8 @@
             "fqcn": "App\\Services\\TestResultService",
             "kind": "class",
             "file": "app/Services/TestResultService.php",
-            "line": 13,
-            "end_line": 138,
+            "line": 12,
+            "end_line": 137,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -15284,8 +15478,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 17,
-                    "end_line": 20,
+                    "line": 16,
+                    "end_line": 19,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15297,8 +15491,8 @@
                 },
                 {
                     "name": "generateTestResult",
-                    "line": 27,
-                    "end_line": 137,
+                    "line": 26,
+                    "end_line": 136,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15324,8 +15518,7 @@
                         "value",
                         "OrganizationSettingsOption::where",
                         "with",
-                        "Organization::where",
-                        "Patient::genderLabel"
+                        "Organization::where"
                     ]
                 }
             ],
@@ -15539,7 +15732,6 @@
                         "Test::findOrFail",
                         "get",
                         "TestSection::where",
-                        "Patient::genderLabel",
                         "toDateString",
                         "count",
                         "TestAnswer::where"
@@ -15788,6 +15980,7 @@
             "relations": []
         },
         {
+<<<<<<< Updated upstream
             "name": "EmailContent",
             "fqcn": "App\\Support\\EmailContent",
             "kind": "class",
@@ -16183,6 +16376,8 @@
             "relations": []
         },
         {
+=======
+>>>>>>> Stashed changes
             "name": "HttpStatus",
             "fqcn": "App\\Support\\HttpStatus",
             "kind": "class",
@@ -16533,8 +16728,13 @@
             "fqcn": "Database\\Seeders\\EmailTemplateSeeder",
             "kind": "class",
             "file": "database/seeders/EmailTemplateSeeder.php",
+<<<<<<< Updated upstream
             "line": 9,
             "end_line": 55,
+=======
+            "line": 8,
+            "end_line": 58,
+>>>>>>> Stashed changes
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -16542,8 +16742,13 @@
             "methods": [
                 {
                     "name": "run",
+<<<<<<< Updated upstream
                     "line": 11,
                     "end_line": 54,
+=======
+                    "line": 10,
+                    "end_line": 57,
+>>>>>>> Stashed changes
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19089,16 +19294,6 @@
                     "name": "test_condition",
                     "type": "tinyInteger",
                     "migration": "database/migrations/2026_02_18_082947_alter_test_condition_nullable_in_patients_table.php"
-                },
-                {
-                    "name": "gender",
-                    "type": "tinyInteger",
-                    "migration": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php"
-                },
-                {
-                    "name": "gender",
-                    "type": "tinyInteger",
-                    "migration": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php"
                 }
             ],
             "foreign_keys": [
@@ -19138,16 +19333,6 @@
                     "file": "database/migrations/2026_02_18_082947_alter_test_condition_nullable_in_patients_table.php",
                     "op": "table",
                     "line": 23
-                },
-                {
-                    "file": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php",
-                    "op": "table",
-                    "line": 17
-                },
-                {
-                    "file": "database/migrations/2026_08_28_000001_add_intersex_to_patients_gender_comment.php",
-                    "op": "table",
-                    "line": 24
                 }
             ]
         },
@@ -19707,16 +19892,6 @@
                     "kind": "unique",
                     "column": "",
                     "migration": "database/migrations/2026_04_17_000001_rebuild_discount_codes_system.php"
-                },
-                {
-                    "kind": "index",
-                    "column": "code",
-                    "migration": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php"
-                },
-                {
-                    "kind": "unique",
-                    "column": "code",
-                    "migration": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php"
                 }
             ],
             "migrations": [
@@ -19774,36 +19949,6 @@
                     "file": "database/migrations/2026_04_23_135313_modify_max_uses_per_user_nullable_on_discount_codes_table.php",
                     "op": "table",
                     "line": 17
-                },
-                {
-                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
-                    "op": "table",
-                    "line": 33
-                },
-                {
-                    "file": "database/migrations/2026_08_27_000001_drop_unique_index_on_discount_codes_code.php",
-                    "op": "table",
-                    "line": 45
-                },
-                {
-                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
-                    "op": "table",
-                    "line": 47
-                },
-                {
-                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
-                    "op": "table",
-                    "line": 63
-                },
-                {
-                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
-                    "op": "table",
-                    "line": 71
-                },
-                {
-                    "file": "database/migrations/2026_08_31_000001_add_live_code_unique_index_to_discount_codes.php",
-                    "op": "table",
-                    "line": 77
                 }
             ]
         },
@@ -21948,13 +22093,20 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/credits/create",
             "action": "CreditsController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/credits/create",
+            "action": "App\\Http\\Controllers\\CreditsController@create",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
+<<<<<<< Updated upstream
             "name": "",
             "line": 179,
             "source": "ast:resource"
@@ -21963,6 +22115,16 @@
             "method": "GET",
             "uri": "api/credits/{coupon-code}",
             "action": "CreditsController@checkDiscountCodeValidity",
+=======
+            "name": "credits.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/credits/{coupon-code}",
+            "action": "App\\Http\\Controllers\\CreditsController@checkDiscountCodeValidity",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -21984,9 +22146,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/credits/{credit}",
             "action": "CreditsController@show",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/credits/{credit}/edit",
+            "action": "App\\Http\\Controllers\\CreditsController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "credits.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/discount-codes",
+            "action": "App\\Http\\Controllers\\DiscountCodeController@index",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -22486,19 +22666,34 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/patients/create",
             "action": "PatientController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/patients/create",
+            "action": "App\\Http\\Controllers\\PatientController@create",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware"
             ],
+<<<<<<< Updated upstream
             "name": "",
             "line": 72,
             "source": "ast:resource"
         },
         {
             "method": "GET",
+=======
+            "name": "patients.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+>>>>>>> Stashed changes
             "uri": "api/patients/{id}/tests",
             "action": "PatientController@getPatientTests",
             "middleware": [
@@ -22556,6 +22751,18 @@
             "name": "",
             "line": 72,
             "source": "ast:resource"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/patients/{patient}/edit",
+            "action": "App\\Http\\Controllers\\PatientController@edit",
+            "middleware": [
+                "api",
+                "FlexibleAuthMiddleware"
+            ],
+            "name": "patients.edit",
+            "line": 0,
+            "source": "artisan"
         },
         {
             "method": "POST",
@@ -22878,6 +23085,30 @@
             "source": "ast:apiResource"
         },
         {
+            "method": "PUT|PATCH",
+            "uri": "api/restricted-ips/{}",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@update",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "update",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "DELETE",
+            "uri": "api/restricted-ips/{}",
+            "action": "App\\Http\\Controllers\\RestrictedIpController@destroy",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
             "method": "POST",
             "uri": "api/stop-impersonate/{id}",
             "action": "AuthController@stopImpersonation",
@@ -23029,7 +23260,23 @@
         {
             "method": "POST",
             "uri": "api/test-invitations/send",
+<<<<<<< Updated upstream
             "action": "TestInvitationController@sendInvitations",
+=======
+            "action": "App\\Http\\Controllers\\TestInvitationController@sendInvitations",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/test-invitations/unregistered",
+            "action": "App\\Http\\Controllers\\TestInvitationController@getUnregisteredInvitations",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23117,7 +23364,11 @@
             "middleware": [
                 "api",
                 "FlexibleAuthMiddleware",
+<<<<<<< Updated upstream
                 "lms.status:test_assigned"
+=======
+                "LmsSessionStatusMiddleware:test_assigned"
+>>>>>>> Stashed changes
             ],
             "name": "",
             "line": 99,
@@ -23222,6 +23473,18 @@
             "source": "ast:resource"
         },
         {
+            "method": "GET|HEAD",
+            "uri": "api/tests/create",
+            "action": "App\\Http\\Controllers\\TestController@create",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "tests.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
             "method": "POST",
             "uri": "api/tests/perform",
             "action": "TestController@performTest",
@@ -23271,9 +23534,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/answers/create",
             "action": "TestAnswerController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/answers/create",
+            "action": "App\\Http\\Controllers\\TestAnswerController@create",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "answers.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/answers/{answer}",
+            "action": "App\\Http\\Controllers\\TestAnswerController@show",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23331,6 +23612,18 @@
             "source": "ast:resource"
         },
         {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/answers/{answer}/edit",
+            "action": "App\\Http\\Controllers\\TestAnswerController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "answers.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
             "method": "POST",
             "uri": "api/tests/{testID}/clone",
             "action": "TestController@cloneTest",
@@ -23367,9 +23660,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/conditions/create",
             "action": "TestConditionController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/conditions/create",
+            "action": "App\\Http\\Controllers\\TestConditionController@create",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "conditions.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/conditions/{condition}",
+            "action": "App\\Http\\Controllers\\TestConditionController@show",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23391,9 +23702,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/conditions/{condition}",
             "action": "TestConditionController@show",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/conditions/{condition}/edit",
+            "action": "App\\Http\\Controllers\\TestConditionController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "conditions.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/section/plates",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@index",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23451,9 +23780,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/section/plates/create",
             "action": "TestSectionPlateController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/section/plates/create",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@create",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "plates.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/section/plates/{plate}",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@show",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23475,9 +23822,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/section/plates/{plate}",
             "action": "TestSectionPlateController@show",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/section/plates/{plate}/edit",
+            "action": "App\\Http\\Controllers\\TestSectionPlateController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "plates.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/sections",
+            "action": "App\\Http\\Controllers\\TestSectionController@index",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23535,9 +23900,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/sections/create",
             "action": "TestSectionController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/sections/create",
+            "action": "App\\Http\\Controllers\\TestSectionController@create",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "sections.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/sections/{section}",
+            "action": "App\\Http\\Controllers\\TestSectionController@show",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23559,9 +23942,27 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{testID}/sections/{section}",
             "action": "TestSectionController@show",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{testID}/sections/{section}/edit",
+            "action": "App\\Http\\Controllers\\TestSectionController@edit",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "sections.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/tests/{test}",
+            "action": "App\\Http\\Controllers\\TestController@show",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -23607,6 +24008,7 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/tests/{test}",
             "action": "TestController@show",
@@ -23634,16 +24036,30 @@
             "method": "GET",
             "uri": "api/tests/{test}/edit",
             "action": "TestController@edit",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/tests/{test}/edit",
+            "action": "App\\Http\\Controllers\\TestController@edit",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
+<<<<<<< Updated upstream
             "name": "",
             "line": 139,
             "source": "ast:resource"
         },
         {
             "method": "DELETE",
+=======
+            "name": "tests.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+>>>>>>> Stashed changes
             "uri": "api/user-email-template",
             "action": "UserEmailTemplateController@destroy",
             "middleware": [
@@ -23811,19 +24227,34 @@
             "source": "ast"
         },
         {
+<<<<<<< Updated upstream
             "method": "GET",
             "uri": "api/users/create",
             "action": "UserController@create",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/users/create",
+            "action": "App\\Http\\Controllers\\UserController@create",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
+<<<<<<< Updated upstream
             "name": "",
             "line": 124,
             "source": "ast:resource"
         },
         {
             "method": "GET",
+=======
+            "name": "users.create",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+>>>>>>> Stashed changes
             "uri": "api/users/type/{usertype}",
             "action": "UserController@userWithType",
             "middleware": [
@@ -23859,6 +24290,7 @@
             "source": "ast:resource"
         },
         {
+<<<<<<< Updated upstream
             "method": "PUT|PATCH",
             "uri": "api/users/{user}",
             "action": "UserController@update",
@@ -23874,16 +24306,30 @@
             "method": "GET",
             "uri": "api/users/{user}/edit",
             "action": "UserController@edit",
+=======
+            "method": "GET|HEAD",
+            "uri": "api/users/{user}/edit",
+            "action": "App\\Http\\Controllers\\UserController@edit",
+>>>>>>> Stashed changes
             "middleware": [
                 "api",
                 "auth:sanctum"
             ],
+<<<<<<< Updated upstream
             "name": "",
             "line": 124,
             "source": "ast:resource"
         },
         {
             "method": "GET",
+=======
+            "name": "users.edit",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+>>>>>>> Stashed changes
             "uri": "api/validate-token",
             "action": "AuthController@isTokenValid",
             "middleware": [
@@ -23945,18 +24391,27 @@
             "kind": "dispatch",
             "event": "App\\Events\\UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
+<<<<<<< Updated upstream
             "line": 282
+=======
+            "line": 303
+>>>>>>> Stashed changes
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
+<<<<<<< Updated upstream
             "line": 297
+=======
+            "line": 318
+>>>>>>> Stashed changes
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
+<<<<<<< Updated upstream
             "line": 358
         },
         {
@@ -23965,6 +24420,9 @@
             "listener": "PrefixEmailSubject",
             "file": "app/Providers/AppServiceProvider.php",
             "line": 31
+=======
+            "line": 379
+>>>>>>> Stashed changes
         },
         {
             "kind": "listen",
@@ -23993,6 +24451,11 @@
             "line": 172
         }
     ],
+<<<<<<< Updated upstream
     "migration_count": 118,
     "routes_source": "AST static parse of routes/api.php + routes/web.php (TCV-Backend/vendor absent, so artisan cannot boot)"
+=======
+    "migration_count": 109,
+    "routes_source": "artisan route:list --json"
+>>>>>>> Stashed changes
 }
