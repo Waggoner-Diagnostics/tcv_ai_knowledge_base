@@ -155,7 +155,29 @@ section while the header still thinks they are outside it, and the prompt comes 
 Both build URLs from a `baseUrl` at runtime, which is why they show as `_scanner limit_` rows in
 [CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md) — that is expected, not a finding.
 
+☠️ **`deleteItem` throws the server's response away** — `await axiosInstance.delete(...); return id;`, in
+*both* factories. Any endpoint whose delete says something worth reading (a partial outcome, a count, a
+warning) is silently reduced to "it happened", and the calling component ends up hardcoding its own
+success toast. Check what the endpoint actually returns before assuming a delete is all-or-nothing.
+
+> **`ws-402` (unmerged) fixes this in `createPaginatedCrudSlice` only.** Its `deleteItem` now returns
+> `{ id, ...data }`, and because the payload is no longer the bare id, the `fulfilled` reducer takes the
+> id from `a.meta.arg` (the thunk argument) to filter the row out of `state.list`. `createSlice.js` is
+> untouched and still discards. The motivating case is credit revocation, where the response says how
+> much was actually taken back — see [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md). Only
+> `credits/creditsSlice.js` consumes delete from the paginated factory, so the blast radius is one page;
+> the other paginated slices (`reports/patientTestsSlice`, `reports/userTestsReportSlice`) are read-only.
+> Covered by `src/redux/slices/createpaginatedslice.test.js`.
+
 Table column definitions live one-file-per-table in `src/utils/columns/`, fed straight into `react-table`.
+
+> **`ws-402` (unmerged) — a column trap worth knowing.** `addCreditsColumns.js` decides whether to render
+> the Delete action by mirroring `CreditsPolicy::delete()`. The policy compares `original_source === 0`
+> in PHP, where `null === 0` is **false**; the column originally compared `Number(original_source) === 0`
+> in JS, where `Number(null)` is **0** — so every legacy `SOURCE_REVOKED` row (the column is new and
+> nullable, so all of them) got a Delete button that returned 403. Any client-side mirror of a policy has
+> to reproduce its null handling, not just its value. Covered by
+> `src/utils/columns/addCreditsColumns.test.js`.
 
 ## Error handling
 

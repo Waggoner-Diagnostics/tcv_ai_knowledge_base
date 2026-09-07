@@ -82,17 +82,35 @@ them as "if ws-402 merges". What changes when it does:
 | `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
 | `credits.original_source` | column does not exist | new nullable column; on a `SOURCE_REVOKED` row it records which underlying grant (Manual/Purchase) funded the test being refunded, traced FIFO via `Credits::traceConsumedOrigin()` |
 | `CreditsPolicy::delete()` | `true` only for `source === SOURCE_MANUAL` | also `true` for a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` — a refund of manually-granted credits is deletable; one tracing back to a purchase never is |
-| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / `remaining_credits`, from `Credits::getGrantAllocation()` — FIFO spread of consumption + prior claw-backs across active grants |
+| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / `remaining_credits`, from `Credits::getGrantAllocation()` — FIFO spread of consumption + prior claw-backs across active grants. **`null`, not `0`, on a row the allocation never covered** (unlimited, or expired) — null means "not computed" |
+| `DELETE api/credits/{id}` response | hand-built `response()->json()` | `ApiResponse` on both branches, so the 422 carries `success: false`; 200 returns `{revoked_credits, available_credits}` and a message naming the split when only part of a grant was taken. Adds 3 lang keys and a trailing `array $replace` to `ApiResponse::success()`/`error()` |
 | `AuthorizationException` (`$this->authorize()` denial) | **500**, per fact #1 above / [ERROR_HANDLING.md](ERROR_HANDLING.md) | **403** — `Handler.php` gains a dedicated branch. Scoped to this one exception type only; `ModelNotFoundException` and the rest are still 500 |
 | Artisan commands | — | + `credits:settle-negative-balances {--apply}` — one-time repair for accounts already carrying pre-fix hidden debt (dry run by default) |
-| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column (`used` / `remaining`); delete is disabled with a tooltip once a grant's `remaining` hits 0; the confirm dialog states the exact used/remaining split |
+| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column (`used` / `remaining`); delete is disabled with a tooltip once a grant's `remaining` hits 0; the confirm dialog states the exact used/remaining split, or says the record no longer counts toward the balance when usage was never computed; the success toast reports the server's message instead of a hardcoded one |
+| SPA `createPaginatedCrudSlice.deleteItem` | discards the response, returns the bare `id` | returns `{id, ...data}`; the `fulfilled` reducer filters `state.list` on `a.meta.arg`. `createSlice.js` is untouched and still discards |
 | SPA `DiscountCodeModal.jsx` price-tier chips | every tier selectable regardless of Minimum Order | a tier whose priciest possible order still falls short of Minimum Order renders disabled and is auto-dropped from the selection if Minimum Order is raised past it |
 
 See [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md),
 [CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md), [ERROR_HANDLING.md](ERROR_HANDLING.md),
-[POLICIES.md](POLICIES.md) and [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md). Adds two migrations
-(`2026_09_03_101500_…`, `2026_09_03_140000_…`) and one console command, so a regeneration on `ws-402`
-moves the migration count by two and the command count by one.
+[POLICIES.md](POLICIES.md), [HELPERS.md](HELPERS.md), [FRONTEND.md](FRONTEND.md),
+[TESTING.md](TESTING.md) and [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md).
+
+**What the generated indexes under `INDEXES/` do not yet carry**, because they are built from
+`tcv-backend-codefix` and this branch is not indexed: the `credits.original_source` column
+(`TABLE-007` still reads 10 columns / 6 migrations), the two new migrations
+(`2026_09_03_101500_…`, `2026_09_03_140000_…`), the `credits:settle-negative-balances` command, and the
+three new `api.php` lang keys. A regeneration on `ws-402` moves the migration count by two, the command
+count by one and the table's column count by one. Routes are untouched, so
+[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and the endpoint index are unaffected.
+
+**Review pass, 2026-09-07 — prose above reflects the post-review branch.** Seven findings were applied
+across both repos (the `null` list contract, the `ApiResponse` shapes, the `original_source` integer
+cast, the strict null guard in `addCreditsColumns.js`, the delete-thunk response, the
+`traceConsumedOrigin()` same-second tiebreak) and backend tests grew 19 → 26 with two new frontend files.
+☠️ **One reported finding was rejected as incorrect and deliberately not applied** — "the settle command
+grants free credits to healthy accounts", which would have re-opened the very hole the command closes.
+It is written up as trap 10 in [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) with the
+measurement that disproves it; read that before touching the deficit maths.
 
 ---
 

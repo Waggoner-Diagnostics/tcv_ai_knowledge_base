@@ -38,6 +38,17 @@ Two things to know:
   `string $messageKey`). Legal but deprecated in PHP 8; always pass both, always as
   `ApiResponse::success(HttpStatus::OK, 'api.key')`.
 
+> **`ws-402` (unmerged) adds a trailing `array $replace = []` to both methods**, passed to
+> `__($messageKey, $replace)`, so a message can interpolate `:placeholders`. It is the *last* parameter
+> on both — on `success()` that means the dead `$meta` sits in front of it, so an interpolating call has
+> to pass `[]` for meta first:
+> ```php
+> ApiResponse::success(HttpStatus::OK, 'api.credits_partially_revoked', $data, [], ['revoked' => 6, 'used' => 4]);
+> ```
+> Its only caller today is `CreditsController::destroy()` — see
+> [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md). The branch also adds 3 keys to `api.php`
+> (`credits_deleted`, `credits_partially_revoked`, `credits_already_used`), taking the count to 81.
+
 ## `HttpStatus`
 
 `OK` `CREATED` `ACCEPTED` `NO_CONTENT` · `BAD_REQUEST` `UNAUTHORIZED` `FORBIDDEN` `NOT_FOUND`

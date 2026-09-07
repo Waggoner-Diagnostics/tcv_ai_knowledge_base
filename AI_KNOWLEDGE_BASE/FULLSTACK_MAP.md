@@ -65,6 +65,13 @@ browser with a Bearer token.
   place a patient can see, never put it in a URL the patient might share.
 - **Response envelopes are not uniform** — eight shapes exist ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
   New endpoints should use `ApiResponse`; new client code should not assume a single shape.
+- ☠️ **Enriching a response is only half a change — check the thunk still passes it on.** The generic
+  Redux CRUD factories drop the body on delete (`return id`), so a backend that starts saying something
+  meaningful there reaches nobody, and the component's hardcoded toast keeps claiming the old outcome.
+  `ws-402`'s partial credit revocation is the worked example: the API began returning *"Removed 6 unused
+  credit(s). The other 4 had already been used…"* while the SPA still said "Credits deleted
+  successfully." over a row that was still on screen. Fixed in `createPaginatedCrudSlice` only; the
+  `createSlice.js` factory still discards ([FRONTEND.md](FRONTEND.md#redux)).
 - **403 and 404 arrive as 500.** The backend's exception handler collapses them, so the SPA cannot
   branch on status. Any change to `Handler.php` is a coordinated two-repo change.
 - **`API_URL` (website, server-only) vs `REACT_APP_BASE_URL` (SPA, browser).** Two different variables

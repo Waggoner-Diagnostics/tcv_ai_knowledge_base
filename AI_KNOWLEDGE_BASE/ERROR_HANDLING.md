@@ -50,7 +50,10 @@ generic 500 fallback. It is scoped to that one exception type — `ModelNotFound
 `NotFoundHttpException` and the rest below are untouched and still surface as 500. The motivating case is
 `CreditsController::destroy()`'s `$this->authorize('delete', $credits)`, which the same branch also
 changes from a hard delete to a partial claw-back — see
-[CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md). This is not the "breaking change for the SPA"
+[CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md). That method's own responses were hand-built
+`response()->json()` calls on the same branch and now go through `ApiResponse` on both branches, so its
+422 ("these credits have already been used") carries the `success: false` every other error shape in the
+app has. This is not the "breaking change for the SPA"
 the section below warns about: `src/services/errorHandler.js` already has a `case 403:` (type
 `AUTHORIZATION`, a fixed "You do not have permission to perform this action." message — it discards
 `error.response.data.message`), so a denial that used to fall into the generic `case 500:` "Server error"

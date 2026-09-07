@@ -1,6 +1,6 @@
 # Context: Credits
 
-> Load this **instead of** reading the credits subsystem. ~1.7k tokens. Credits are the product's
+> Load this **instead of** reading the credits subsystem. ~2.3k tokens. Credits are the product's
 > currency: one credit ≈ one test.
 
 ## Files
@@ -37,7 +37,7 @@ request, and never "correct" a balance by writing a number — write a grant or 
 |---|---|
 | `credits` | quantity granted — **negative on `ws-402` (unmerged)** for a `SOURCE_ADMIN_REVOKED` counter-entry |
 | `source` | `0 = SOURCE_MANUAL` · `1 = SOURCE_PURCHASE` · `2 = SOURCE_REVOKED` · on `ws-402` (unmerged) also `3 = SOURCE_ADMIN_REVOKED` · `4 = SOURCE_ADJUSTMENT` |
-| `original_source` | **`ws-402` only, column doesn't exist on `develop`.** Meaningful only on a `SOURCE_REVOKED` row: which grant (Manual/Purchase) funded the test this refund covers. Null otherwise |
+| `original_source` | **`ws-402` only, column doesn't exist on `develop`.** Meaningful only on a `SOURCE_REVOKED` row: which grant (Manual/Purchase) funded the test this refund covers. Null otherwise — including on every refund written before the column existed. Cast to `integer` alongside `source`, because `CreditsPolicy::delete()` compares it with `===` and MySQL's PDO can hand an integer column back as a string |
 | `has_expiry` / `expiry_date` | expiry is opt-in; `expiry_date >= today` to count |
 | `is_unlimited_credit` | see below |
 | `coupon_code`, `price_per_credit`, `total_price`, `credited_by` | provenance |
@@ -118,6 +118,15 @@ unlimited grant, which draws from no finite grant at all); understating what's r
 direction to be wrong in here. The point of recording it: `CreditsPolicy::delete()` (below) uses it to
 decide whether *this refund itself* may later be deleted by an admin.
 
+The two "prior outflow" queries inside it are **deliberately asymmetric**. `$priorConsumed` breaks a
+same-timestamp tie on `id` (`created_at <` OR `created_at =` AND `id <`) because both sides are
+`credit_consume` rows. `$priorAdminRevoked` cannot: those are `credits` rows being compared against a
+`credit_consume` row, two independent id sequences with nothing meaningful to order across. It uses
+`created_at <=` instead, counting a same-second claw-back as prior. That only ever pushes `$position`
+further down the grant list, toward the `SOURCE_PURCHASE` fallback; under-counting would pull it back
+onto an earlier Manual grant and mark a refund deletable that isn't. Do not "tidy" this into a matching
+`id` tiebreak — there is no shared sequence to tiebreak on.
+
 ### Admin revocation (`DELETE api/credits/{id}`, `CreditsController::destroy()`)
 
 This is the opposite direction from a refund — an admin taking back credits they (or a purchase) granted
@@ -151,17 +160,46 @@ resulting deficit — invisible right up until the user's *next* grant or purcha
   both read the same unspent balance and each write a counter-entry for it. No-op on SQLite (no row
   locks), so this protection is real only under MySQL.
 
-`CreditsController::destroy()`'s response now also reports what actually happened
-(`{data: {revoked_credits, available_credits}}`, plus a message naming the split when only part of a
-grant was taken back), and `GET api/credits` (the list) is enriched the same way: every row now carries
-server-computed `used_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a
-grant's real state and gray out / disable revoking what's already gone (`AddCredits.js`,
-`addCreditsColumns.js` — new "Utilized" column and "Revoked" status).
+`CreditsController::destroy()`'s response now also reports what actually happened. Both branches go
+through `ApiResponse`, so they carry the standard `{success, status_code, message}` envelope:
+
+| Outcome | Status | Message key | `data` |
+|---|---|---|---|
+| Whole grant removed | 200 | `api.credits_deleted` | `{revoked_credits, available_credits}` |
+| Only the unspent part taken | 200 | `api.credits_partially_revoked` — `":revoked"` / `":used"` | `{revoked_credits, available_credits}` |
+| Nothing left to take | 422 | `api.credits_already_used` | — |
+
+Those three keys are new in `resources/lang/en/api.php` (+3 on the indexed tree's 78). The partial
+message interpolates, which is why `ApiResponse::success()` / `error()` gained a trailing
+`array $replace = []` passed straight to `__()` — see [HELPERS.md](../HELPERS.md#apiresponse).
+
+⭐ **The partial message is the whole point of the feature, so it has to reach the user.** The grant row
+is still on screen with a counter-entry beside it; a flat "Credits deleted successfully" toast would
+contradict what the admin is looking at. That means the SPA delete thunk must not discard the response —
+see the `createPaginatedCrudSlice` note in [FRONTEND.md](../FRONTEND.md#redux).
+
+`GET api/credits` (the list) is enriched the same way: every row carries server-computed
+`used_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a grant's real
+state and gray out / disable revoking what's already gone (`AddCredits.js`, `addCreditsColumns.js` — new
+"Utilized" column and "Revoked" status).
+
+☠️ **Both fields are `null`, not `0`, on a row `getGrantAllocation()` never allocated against** — an
+unlimited grant, or an expired one (the allocation walks `active()` grants only). `null` means "not
+computed"; `0` would claim the grant was never touched. An expired grant of 500 that was spent in full
+is the case that matters: reporting `0 used / 0 remaining` made the confirm dialog read *"0 of 0 credits
+have been utilized. Delete this record and remove the remaining 0?"*. The SPA mirrors the distinction —
+the Utilized column renders `—` and the dialog says the record no longer counts toward the balance
+rather than quoting numbers. Any new consumer must treat null and zero as different answers.
 
 **One-time repair for accounts already carrying the old bug's hidden debt:**
 `php artisan credits:settle-negative-balances` (dry run by default; `--apply` to write) walks every user
 with any `credit_consume` history, and for each whose `consumed > granted` writes a `SOURCE_ADJUSTMENT`
 row for the deficit — the same repair `revokeGrant()` now does proactively for the unlimited-grant case.
+
+A pre-fix revocation is not the only way an account gets there. **Expiry produces the identical
+deficit**: consumption never decays, but a grant stops counting the day it expires, so a grant that was
+spent and then expired — an expired *unlimited* grant included — leaves the same hole with no admin
+involved. Those accounts are meant to be settled here too.
 
 ---
 
@@ -228,3 +266,27 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
    `lockForUpdate()` is a no-op on SQLite, so the "two concurrent revokes on the same user" race it exists
    to close is only actually closed in a MySQL-backed environment (dev/QA/prod) — a SQLite test suite can
    pass while the race still exists.
+10. ☠️ **`ws-402` (unmerged): the deficit maths compares active grants to all-time consumption, and that
+    is correct. Do not "fix" it.** `settleNegativeBalance()` and `credits:settle-negative-balances` both
+    compute `CreditConsume::getTotalConsumed()` (all-time, no expiry notion) minus
+    `getTotalUserCredit()` (`active()` grants only). It reads like a bug — two different populations —
+    and it has already been reported as one: *"grants free credits to healthy accounts"*, on the
+    reasoning that a grant spent in full and then expired shows a deficit while owing nothing.
+
+    It owes plenty. Consumption never decays but the grant stops counting at expiry, so the spend stays
+    on the books with nothing behind it, and `getAvailableCredits()` — the same two sums — clamps the
+    result at zero. Measured on a grant of 10, spent in full, then expired:
+
+    ```
+    active granted 0 · all-time granted 10 · consumed 10 → balance 0
+    user then buys 5                                     → balance 0   ← the purchase is eaten
+    ```
+
+    The `SOURCE_ADJUSTMENT` row is what stops that, and it is always **exactly** the deficit, so it
+    settles the balance to zero and never above it — no spendable credit is created at the moment it
+    runs. Counting expired grants on the grant side instead (the suggested "fix") leaves the hole open:
+    the deficit computes to 0, nothing is written, and the next purchase still disappears. The same
+    applies to `revokeGrant()`'s unlimited branch — netting an expired grant off there under-credits by
+    that grant's amount and re-opens the hole it exists to close. Locked down by
+    `CreditRevocationTest::test_settle_command_repairs_a_grant_spent_before_it_expired()` and
+    `…_does_not_hand_back_credits_that_expired_unspent()`.

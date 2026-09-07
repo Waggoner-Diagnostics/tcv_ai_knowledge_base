@@ -37,6 +37,17 @@ row. Purchased (`1`) and revoked (`2`) grants are undeletable by anyone.
 > the money it's returning traces back to a manual grant, never when it traces back to a purchase. `$user`
 > is still ignored. A denial now returns **403**, not 500 — see the `ws-402` note in
 > [ERROR_HANDLING.md](ERROR_HANDLING.md). Full detail: [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md).
+>
+> **Both comparisons are `===`, so both operands must be integers.** `Credits::$casts` covers `source`
+> and `original_source` for exactly this reason — MySQL's PDO can return an integer column as a string,
+> and `"0" === 0` is false, which would 403 a refund that is genuinely deletable. A SQLite test suite
+> will not reproduce that; it returns native integers. If you add another `===` comparison here, cast the
+> column it reads.
+>
+> `original_source` is **nullable and null on every `SOURCE_REVOKED` row written before the column
+> existed**, so those are all undeletable (`null === 0` is false). Any UI that mirrors this policy must
+> reproduce the null case rather than coercing — see the `addCreditsColumns.js` note in
+> [FRONTEND.md](FRONTEND.md#redux).
 
 ## ☠️ Three traps
 
