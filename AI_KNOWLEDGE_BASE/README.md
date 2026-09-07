@@ -151,13 +151,18 @@ them as "if ws-402 merges". What changes when it does:
 | `CreditsController::destroy()` | hard-deletes the whole grant row, even the spent part — pushes `granted` below `consumed`, hidden by the `max(0, …)` clamp | `Credits::revokeGrant()` takes back only the **unspent** part; a partly-used grant is kept, with a negative `SOURCE_ADMIN_REVOKED` counter-entry, instead of being deleted |
 | `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
 | `credits.original_source` | column does not exist | new nullable column; on a `SOURCE_REVOKED` row it records which underlying grant (Manual/Purchase) funded the test being refunded, traced FIFO via `Credits::traceConsumedOrigin()` |
-| `CreditsPolicy::delete()` | `true` only for `source === SOURCE_MANUAL` | also `true` for a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` — a refund of manually-granted credits is deletable; one tracing back to a purchase never is |
-| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / `remaining_credits`, from `Credits::getGrantAllocation()` — FIFO spread of consumption + prior claw-backs across active grants. **`null`, not `0`, on a row the allocation never covered** (unlimited, or expired) — null means "not computed" |
-| `DELETE api/credits/{id}` response | hand-built `response()->json()` | `ApiResponse` on both branches, so the 422 carries `success: false`; 200 returns `{revoked_credits, available_credits}` and a message naming the split when only part of a grant was taken. Adds 3 lang keys and a trailing `array $replace` to `ApiResponse::success()`/`error()` |
+| `CreditsPolicy::delete()` | `true` only for `source === SOURCE_MANUAL`, **and `$user` is never read** — any authenticated user can delete anyone's grant ([S-19](SECURITY.md#s-19)) | `$user->isSuperAdmin()` **first**, then the source rules. Also `true` for a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` — a refund of manually-granted credits is deletable; one tracing back to a purchase never is. ⚠️ `index()` stays unscoped |
+| `GET api/credits` (list) response | grant rows only | each row also carries `used_credits` / **`revoked_credits`** / `remaining_credits` from `Credits::getGrantAllocation()`. used and revoked are **separate** — both draw a grant down, but only `used` is something the user did. **All three are `null`, not `0`, on a row the allocation never covered** (unlimited, or expired) — null means "not computed" |
+| `DELETE api/credits/{id}` response | hand-built `response()->json()` | `ApiResponse` on both branches, so the 422 carries `success: false`; 200 returns `{revoked_credits, available_credits, removed}` and a message naming the split when only part of a grant was taken. `removed: false` tells the client the row survived. Adds 3 lang keys and a trailing `array $replace` to `ApiResponse::success()`/`error()` |
 | `AuthorizationException` (`$this->authorize()` denial) | **500**, per fact #1 above / [ERROR_HANDLING.md](ERROR_HANDLING.md) | **403** — `Handler.php` gains a dedicated branch. Scoped to this one exception type only; `ModelNotFoundException` and the rest are still 500 |
 | Artisan commands | — | + `credits:settle-negative-balances {--apply}` — one-time repair for accounts already carrying pre-fix hidden debt (dry run by default) |
-| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column (`used` / `remaining`); delete is disabled with a tooltip once a grant's `remaining` hits 0; the confirm dialog states the exact used/remaining split, or says the record no longer counts toward the balance when usage was never computed; the success toast reports the server's message instead of a hardcoded one |
-| SPA `createPaginatedCrudSlice.deleteItem` | discards the response, returns the bare `id` | returns `{id, ...data}`; the `fulfilled` reducer filters `state.list` on `a.meta.arg`. `createSlice.js` is untouched and still discards |
+| SPA `AddCredits` page / `addCreditsColumns.js` | Available / Used / Expired status; delete always removes the row | + "Revoked" status and an "Utilized" column showing **used and revoked separately** (`3` · `7 revoked · 0 remaining`); delete is disabled once `remaining` hits 0, with a tooltip that names *why* rather than blaming the user for an admin's claw-back; the confirm dialog counts against `row.credits` and names the claw-back separately, or says the record no longer counts toward the balance when usage was never computed; the success toast reports the server's message |
+| SPA `createPaginatedCrudSlice.deleteItem` | discards the response, returns the bare `id`; omits `skipErrorPopup`, so a component with its own toast shows two popups | returns `{id, ...data}`; the `fulfilled` reducer filters `state.list` on `a.meta.arg` and **skips the removal entirely on `data.removed === false`**, so a partial revoke no longer makes the row vanish and reappear; now passes `{ skipErrorPopup: true }` like `createSlice.js`. `createSlice.js` itself is untouched and still discards the body |
+| `credits` counter-entry expiry | n/a | the negative `SOURCE_ADMIN_REVOKED` row **inherits the grant's `has_expiry`/`expiry_date`**. Written non-expiring it outlives the grant it offsets and drives the active total negative — the hidden-debt bug this branch exists to fix |
+| `Credits::countsTowardBalance()` | n/a | new row-level mirror of `scopeActive()`. `revokeGrant()` branches on it, **not `hasExpired()`** — the two disagree on a `has_expiry = 1, expiry_date = NULL` row, which was left permanently undeletable behind a false 422 |
+| `CreditsAddRequest` | `expiry_date` merely `nullable` | `required_if:has_expiry,true,1`, so that unusable combination can no longer be created |
+| `getAvailableCredits()` negative-balance log | n/a | warns when the balance is negative, **throttled to once an hour per user** — it is on a 60s poll per open tab |
+| `GET api/user/credit-history` `type` | `purchase` · `admin_assigned` · `revoked` | + `admin_revoked` · `adjustment`, with matching `TYPE_LABEL` entries **and** `&--type-*` SCSS rules in `CreditPage.js`/`.scss` — the badge falls back to the raw string, so a missing label shows a customer a literal `admin_revoked` ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | SPA `DiscountCodeModal.jsx` price-tier chips | every tier selectable regardless of Minimum Order | a tier whose priciest possible order still falls short of Minimum Order renders disabled and is auto-dropped from the selection if Minimum Order is raised past it |
 
 See [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md),
@@ -165,13 +170,30 @@ See [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md),
 [POLICIES.md](POLICIES.md), [HELPERS.md](HELPERS.md), [FRONTEND.md](FRONTEND.md),
 [TESTING.md](TESTING.md) and [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md).
 
-**What the generated indexes under `INDEXES/` do not yet carry**, because they are built from
-`tcv-backend-codefix` and this branch is not indexed: the `credits.original_source` column
-(`TABLE-007` still reads 10 columns / 6 migrations), the two new migrations
-(`2026_09_03_101500_…`, `2026_09_03_140000_…`), the `credits:settle-negative-balances` command, and the
-three new `api.php` lang keys. A regeneration on `ws-402` moves the migration count by two, the command
-count by one and the table's column count by one. Routes are untouched, so
-[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and the endpoint index are unaffected.
+**What the generated indexes under `INDEXES/` do not carry**, because they are built from `develop`
+and this branch is not indexed: the `credits.original_source` column (`TABLE-007` still reads its
+`develop` column count), the three new migrations, the `credits:settle-negative-balances` command, and
+the three new `api.php` lang keys. A regeneration on `ws-402` moves the migration count by three, the
+command count by one and that table's column count by one. **Routes are untouched**, so
+[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and the endpoint index are unaffected — the
+scanner's `R-B00` staying silent on every run of this branch confirms it.
+
+#### ☠️ `ws-402` carries more than credit revocation — check the scope before reviewing
+
+The branch name describes about two thirds of it. The rest arrived via commits `8810fd9f`, `596a807`
+and `816fbd1`, and reviewing "credit revocation" means reviewing these too:
+
+| Also in `ws-402` | What it is | Why it matters |
+|---|---|---|
+| `2026_09_03_000001_convert_legacy_bracket_placeholders_in_email_templates.php` (199 lines + a 186-line test) | the **`ws-401`** email-template repair | `origin/ws-401` exists separately and this migration is **not** on `develop`. If `ws-401` merges first this is a no-op; if not, `ws-402` silently ships an email-template rewrite that needs its own review. **Confirm the merge order.** |
+| `DiscountCodeModal.jsx` (+92) and its test (+71) | price-tier reachability against Minimum Order | a complete discount feature, unrelated to credits — see [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) |
+| `Register.js` (+12) | signup popup copy | small and justified, but it is signup, not credits |
+| `CustomTooltip.js` (+3) | a global `wordBreak` change | ⚠️ affects **every tooltip in the SPA**, not just the credits grid |
+| four `.scss` files | popup, discount, AddCredits and UserManagement styling | cosmetic, but widens the blast radius |
+
+Splitting the branch, or at least renaming it, would make all of this reviewable. `TCV-Frontend`'s
+`ws-402` is also **21 commits behind `origin/develop`** (the backend is current); the update is
+**conflict-free** — the two sides touch no file in common — but it has not been done.
 
 **Review pass, 2026-09-07 — prose above reflects the post-review branch.** Seven findings were applied
 across both repos (the `null` list contract, the `ApiResponse` shapes, the `original_source` integer

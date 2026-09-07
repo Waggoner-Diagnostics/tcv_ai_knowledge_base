@@ -32,10 +32,23 @@ public function delete(User $user, Credits $credits): bool
 Note it ignores `$user` entirely — **any** authenticated user may delete **any** manually-granted credit
 row. Purchased (`1`) and revoked (`2`) grants are undeletable by anyone.
 
-> ☠️ **`ws-402` (unmerged, credit revocation) widens this.** `delete()` also returns `true` for a
-> `SOURCE_REVOKED` row whose new `original_source` column is `SOURCE_MANUAL` — a refund is deletable when
-> the money it's returning traces back to a manual grant, never when it traces back to a purchase. `$user`
-> is still ignored. A denial now returns **403**, not 500 — see the `ws-402` note in
+> ☠️ **`ws-402` (unmerged, credit revocation) both widens and finally gates this.** `delete()` also
+> returns `true` for a `SOURCE_REVOKED` row whose new `original_source` column is `SOURCE_MANUAL` — a
+> refund is deletable when the money it's returning traces back to a manual grant, never when it traces
+> back to a purchase.
+>
+> **`$user` is no longer ignored.** `delete()` now returns `false` unless `$user->isSuperAdmin()`,
+> checked *before* the source rules — who first, then what. That closes
+> [S-19](SECURITY.md#s-19): the route carries only `auth:sanctum`, so while the policy read nothing but
+> `source`, any authenticated customer could delete a stranger's grant by id — and since `destroy()`
+> stopped being a row delete, that meant *mutating* their ledger (counter-entry, possibly a
+> `SOURCE_ADJUSTMENT` row, possibly `settleNegativeBalance()`). `/add-credits` is a Super Admin page in
+> the SPA, so this was never intended access.
+>
+> ⚠️ **`index()` is still ungated** — it reads `user_id` from the request and never scopes it to the
+> caller, now leaking four per-grant usage fields as well.
+>
+> A denial returns **403**, not 500 — see the `ws-402` note in
 > [ERROR_HANDLING.md](ERROR_HANDLING.md). Full detail: [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md).
 >
 > **Both comparisons are `===`, so both operands must be integers.** `Credits::$casts` covers `source`

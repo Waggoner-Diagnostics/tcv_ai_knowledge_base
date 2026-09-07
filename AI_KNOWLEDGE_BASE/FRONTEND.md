@@ -155,6 +155,14 @@ section while the header still thinks they are outside it, and the prompt comes 
 Both build URLs from a `baseUrl` at runtime, which is why they show as `_scanner limit_` rows in
 [CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md) — that is expected, not a finding.
 
+☠️ **`deleteItem` in `createPaginatedCrudSlice` omitted `skipErrorPopup` until 2026-09-07.**
+`createSlice.js` passes `{ skipErrorPopup: true }` on the request; the paginated twin did not. The
+`showPopup: false` in the thunk's catch only suppresses the *handler's* popup — the Axios response
+interceptor has already fired its own by then, so any component rendering its own toast showed the
+message twice. Harmless while failed deletes were rare; `ws-402` makes 422 (nothing left to revoke)
+and 403 (not a super admin) routine, so it became a double popup on every attempt. Both factories now
+match. See the `skipErrorPopup` trap below.
+
 ☠️ **`deleteItem` throws the server's response away** — `await axiosInstance.delete(...); return id;`, in
 *both* factories. Any endpoint whose delete says something worth reading (a partial outcome, a count, a
 warning) is silently reduced to "it happened", and the calling component ends up hardcoding its own
@@ -178,6 +186,15 @@ Table column definitions live one-file-per-table in `src/utils/columns/`, fed st
 > nullable, so all of them) got a Delete button that returned 403. Any client-side mirror of a policy has
 > to reproduce its null handling, not just its value. Covered by
 > `src/utils/columns/addCreditsColumns.test.js`.
+>
+> **A second lesson from the same file: a disabled control's tooltip is a factual claim.** The
+> "Utilized" column and the disabled-Delete tooltip originally showed one merged figure, so a grant of
+> 10 where the user spent 3 and an admin clawed back 7 read "10 utilized" and told the admin
+> *"Already used by the user — cannot be removed."* The user used 3. The server now sends
+> `used_credits` and `revoked_credits` separately and the column renders both
+> (`3` · `7 revoked · 0 remaining`), with the tooltip naming whichever actually applies. If a
+> column merges two quantities for a calculation, check nothing downstream is *describing* the merged
+> figure to a human.
 
 ## Error handling
 

@@ -12,7 +12,7 @@
 | `app/Http/Controllers/CreditsController.php` | List, grant, delete, revoke |
 | `app/Http/Controllers/PaymentController.php` | `getCreditHistory()` — the unified view |
 | `app/Http/Requests/CreditsAddRequest.php` | Grant validation |
-| `app/Policies/CreditsPolicy.php` | Only `delete` returns anything but `false` |
+| `app/Policies/CreditsPolicy.php` | Only `delete` returns anything but `false`. On `ws-402` it finally reads `$user` — see trap 4 and [S-19](../SECURITY.md#s-19) |
 | `app/Console/Commands/SettleNegativeCreditBalances.php` | **`ws-402` only.** `credits:settle-negative-balances`, one-time repair for pre-fix hidden debt |
 
 ## Tables
@@ -160,7 +160,18 @@ resulting deficit — invisible right up until the user's *next* grant or purcha
   oldest first — to find how much of this specific grant is still unspent.
 - Untouched (`unused === credits`) → the row is deleted outright, same as today.
 - Partly spent (`0 < unused < credits`) → the row is **kept**, and a new negative
-  `SOURCE_ADMIN_REVOKED` row (`credits = -$unused`) is written alongside it. The original grant still
+  `SOURCE_ADMIN_REVOKED` row (`credits = -$unused`) is written alongside it.
+
+  ☠️ **The counter-entry inherits the grant's `has_expiry` / `expiry_date`, and must.**
+  Written with `has_expiry = false` it outlived the grant it offsets: `scopeActive()` kept the −N
+  forever while the +N dropped out on its expiry date, so the account's active total went negative by
+  exactly the revoked amount and the user's next purchase silently vanished into the deficit. Grant 10
+  with an expiry, spend 3, revoke 7 → correct today, **−7** the day the grant expires. That is the
+  hidden-debt mechanism this method exists to eliminate, reintroduced by the fix for it — and
+  `settleNegativeBalance()` is no safety net, because it is manual, one-shot, and this deficit is
+  spurious rather than historical, so settling it would mint credits from nothing. Keep the pair
+  symmetric: both count, or neither does. Pinned by
+  `test_a_partial_revoke_does_not_leave_a_deficit_once_the_grant_expires()`. The original grant still
   shows what was given; the counter-entry shows what was taken back. Nothing is ever deleted or edited in
   place.
 - Fully spent (`unused === 0`) → nothing to take back. The controller returns **422** ("These credits
@@ -208,7 +219,7 @@ contradict what the admin is looking at. That means the SPA delete thunk must no
 see the `createPaginatedCrudSlice` note in [FRONTEND.md](../FRONTEND.md#redux).
 
 `GET api/credits` (the list) is enriched the same way: every row carries server-computed
-`used_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a grant's real
+`used_credits` / `revoked_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a grant's real
 state and gray out / disable revoking what's already gone (`AddCredits.js`, `addCreditsColumns.js` — new
 "Utilized" column and "Revoked" status).
 
@@ -220,6 +231,15 @@ a disabled Delete tooltip reading *"Already used by the user"*. That is a factua
 person's behaviour, and it was wrong. `getGrantAllocation()` now runs two FIFO passes over the same
 ordering — consumption first, then claw-backs against what each grant has left — which yields exactly
 the `remaining` the single-pool version did, so `revokeGrant()` is unaffected.
+
+⚠️ **Consumption recorded under a lapsed unlimited grant is still spread across finite grants.**
+`getGrantAllocation()` excludes `is_unlimited_credit` rows from the grant pool but draws on *all-time*
+`credit_consume`, so an account that spent 10 under unlimited and is then granted 10 finite credits
+sees that brand-new grant reported `used: 10, remaining: 0`, and revoking it returns 422. This is
+**consistent, not corrupt** — `getAvailableCredits()` already returns 0 for that account, and deleting
+the grant would push granted below consumed, which is the bug this whole branch exists to prevent. It
+is trap 10's unlimited case; the remedy is `credits:settle-negative-balances`, not a change here. On
+`develop` the row simply deleted, which is why it can look like a regression.
 
 ☠️ **Both fields are `null`, not `0`, on a row `getGrantAllocation()` never allocated against** — an
 unlimited grant, or an expired one (the allocation walks `active()` grants only). `null` means "not
@@ -315,6 +335,15 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
    down — falls back to `SOURCE_PURCHASE`, deliberately the never-admin-deletable answer. Do not read a
    `SOURCE_PURCHASE` `original_source` as proof the user paid Stripe for it; it may just mean the trace
    gave up safely.
+
+   📌 **The code and this note used to disagree, and the code was wrong (fixed 2026-09-07).** Excluding
+   `is_unlimited_credit` rows from the FIFO walk is not sufficient on its own: for a user holding
+   unlimited *and* a finite Manual grant, the walk landed inside the Manual grant and returned
+   `SOURCE_MANUAL` — marking the refund admin-deletable for a test that grant never funded, which
+   overstates what is revocable. `traceConsumedOrigin()` now checks whether an unlimited grant was
+   active at the event's timestamp and short-circuits to `SOURCE_PURCHASE` if so. Detectable only while
+   that unlimited row still exists — an admin-revoked one is hard-deleted, and then the walk applies as
+   before. Pinned by `test_unlimited_wins_over_a_finite_grant_the_test_never_drew_on()`.
 9. **`ws-402` (unmerged): the admin-revoke lock is MySQL-only.** `revokeGrant()`'s
    `lockForUpdate()` is a no-op on SQLite, so the "two concurrent revokes on the same user" race it exists
    to close is only actually closed in a MySQL-backed environment (dev/QA/prod) — a SQLite test suite can

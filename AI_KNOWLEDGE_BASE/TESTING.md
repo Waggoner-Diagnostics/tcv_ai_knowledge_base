@@ -72,7 +72,7 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 |---|---|---|---|
 | `tests/Feature/Lms/` | 5 + 1 fixture trait | **54** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
-| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **31** | `ws-402`, **not yet merged** — `CreditRevocationTest` (17): `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns; then the expiry set added post-review — the settle command repairing a grant spent *before* it expired, not handing back credits that expired *unspent*, idempotence, `used_credits`/`remaining_credits` reported as null rather than 0 for an unallocated grant, the partial-revocation message and `data`, and a legacy refund with a null `original_source` returning 403; then a third round (2026-09-07) covering [S-19](SECURITY.md#s-19) — a non-super-admin gets 403 and writes no counter-entry or adjustment — the `has_expiry = 1, expiry_date = NULL` grant being deletable rather than 422, and `used` vs `revoked` being reported as separate figures. `CreditRevokeOriginTest` (9): `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
+| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **34** | `ws-402`, **not yet merged** — `CreditRevocationTest` (17): `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns; then the expiry set added post-review — the settle command repairing a grant spent *before* it expired, not handing back credits that expired *unspent*, idempotence, `used_credits`/`remaining_credits` reported as null rather than 0 for an unallocated grant, the partial-revocation message and `data`, and a legacy refund with a null `original_source` returning 403; then a third round (2026-09-07) covering [S-19](SECURITY.md#s-19) — a non-super-admin gets 403 and writes no counter-entry or adjustment — the `has_expiry = 1, expiry_date = NULL` grant being deletable rather than 422, and `used` vs `revoked` being reported as separate figures; then a fourth round (2026-09-07) adding the counter-entry expiry symmetry (a partial revoke must not leave a deficit once the grant expires) and the unlimited-beats-finite origin trace. `CreditRevokeOriginTest` (9): `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
 | `tests/Feature/DiscountCodes/` | 2 | **19** | code validation + redemption, and the live-code unique index migration (`ws-392`, merged) |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
@@ -119,7 +119,7 @@ empty database, not by the suite — nothing in PHPUnit boots a container. Sever
 authorization tests are `assertNotEquals(200)` rather than an exact status, so an unrelated 500 would
 satisfy them.
 
-`ws-402` measured 2026-09-07 (after the third review round): **270 passed, 806 assertions, 0 failed**. It
+`ws-402` measured 2026-09-07 (after the fourth review round): **273 passed, 817 assertions, 0 failed**. It
 branches off the `ws-401` line, so it carries all of the above; its own delta is the 7 credits cases
 added when the review findings were applied (19 → 26 across the two revocation files).
 
@@ -198,15 +198,15 @@ npm test -- --testPathPattern=src/App.test.js
 
 **Seven test files exist** on `develop`, and the SPA is no longer entirely untested — **84 tests pass**
 (measured 2026-09-04; `ws-400` is merged in now, so `emailPlaceholders.test.js` is part of the baseline
-rather than a branch extra). On the unmerged `ws-402` it is **nine files / 104 tests** (measured
+rather than a branch extra). On the unmerged `ws-402` it is **nine files / 110 tests** (measured
 2026-09-07) — the two credits files below, plus `ws-402`'s six extra `DiscountCodeModal` cases:
 
 | File | Tests | Covers |
 |---|---|---|
 | `src/components/DiscountCodeModal.test.js` | **49** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`). **55 on the unmerged `ws-402`** (+6): tier-reachability gating and auto-drop on a Minimum Order raise |
 | `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400`, merged into `develop`; [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
-| `src/utils/columns/addCreditsColumns.test.js` | **11** | `ws-402`, **not yet merged** — the credit grid's Delete-visibility rules mirrored against `CreditsPolicy::delete()` (Manual yes, Purchased no, Revoked only when `original_source` is Manual, legacy null origin no), and the Utilized column's null-vs-zero rendering. The one frontend guard on the 403-on-every-legacy-row bug |
-| `src/redux/slices/createpaginatedslice.test.js` | **3** | `ws-402`, **not yet merged** — `deleteItem` handing the server's response back to the caller, still dropping the row from `state.list` (now via `a.meta.arg`), and surviving an empty response body |
+| `src/utils/columns/addCreditsColumns.test.js` | **15** | `ws-402`, **not yet merged** — the credit grid's Delete-visibility rules mirrored against `CreditsPolicy::delete()` (Manual yes, Purchased no, Revoked only when `original_source` is Manual, legacy null origin no), and the Utilized column's null-vs-zero rendering. Extended 2026-09-07: used vs revoked shown separately, and the disabled-Delete tooltip never blaming the user for an admin's claw-back. The one frontend guard on the 403-on-every-legacy-row bug |
+| `src/redux/slices/createpaginatedslice.test.js` | **5** | `ws-402`, **not yet merged** — `deleteItem` handing the server's response back to the caller, still dropping the row from `state.list` (now via `a.meta.arg`), surviving an empty response body, and — added 2026-09-07 — **keeping** the row when the server reports `removed: false`, plus asserting the request carries `skipErrorPopup` so a failed delete cannot raise two popups |
 | `src/redux/slices/userCredits/userCreditSlice.test.js` | 9 | credit-read ordering and identity guards (`ws-397`) |
 | `src/redux/slices/userProfile/passwordChangeSlice.test.js` | 6 | password-change slice (`ws-395`) |
 | `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |

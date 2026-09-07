@@ -153,5 +153,30 @@ public and session-based, unlike everything else. See [ROUTES.md](../ROUTES.md).
 chronological list: admin-assigned grants, Stripe purchases (with the transaction id), and revocations.
 It is the only place those three views are reconciled — reuse it rather than re-deriving.
 
+### ☠️ `type` is a closed vocabulary the SPA must mirror
+
+Each entry carries a `type`, and the consumer renders it through a lookup map with a **raw-string
+fallback** (`TYPE_LABEL[entry.type] ?? entry.type` — `CreditPage.js`). A value the map doesn't know is
+therefore shown to the *customer* verbatim, as a badge reading literally `admin_revoked`. There is no
+error and nothing fails; it just looks broken.
+
+| `type` | Emitted for | Label |
+|---|---|---|
+| `purchase` | Stripe purchase | Purchase |
+| `admin_assigned` | admin grant | Admin Assigned |
+| `revoked` | refund (`SOURCE_REVOKED`) | Revoked |
+| `admin_revoked` | **`ws-402`** — admin claw-back counter-entry | Admin Removed |
+| `adjustment` | **`ws-402`** — ledger-balancing entry | Balance Adjustment |
+
+**Adding a `type` is a two-repo change**, and a third edit besides: `TYPE_LABEL` in `CreditPage.js`
+*and* a `&--type-<value>` rule in `CreditPage.scss`, or the badge renders unstyled. `ws-402` added the
+last two rows and shipped the backend half first — the labels and styles were added later, in review.
+
+⚠️ **`CreditHistory.js` is not the consumer.** It is dead mock UI; the live page is
+`pages/UserPannel/CreditPage/CreditPage.js`. Editing the wrong one is a silent no-op.
+
+Note the two new types carry `amount: '0.00'` (rendered as `—`) because a counter-entry and an
+adjustment move credits, not money.
+
 _[not deeply traced]: the ACH / bank-transfer branches of `StripeService`, and `TransactionDetail`'s
 exact column semantics._
