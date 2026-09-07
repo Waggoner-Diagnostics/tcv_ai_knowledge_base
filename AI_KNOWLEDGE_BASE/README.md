@@ -1,32 +1,73 @@
 # TCV — AI Knowledge Base
 
 Single source of truth for **TestingColorVision** across its three repos, built so an AI assistant can
-work on the project **without rescanning ~61,700 lines across 506 source files**
-(`TCV-Backend/app` 164 · `TCV-Frontend/src` 248 · `TCV-Website` 94).
+work on the project **without rescanning ~66,100 lines across 524 source files**
+(`TCV-Backend/app` 174 · `TCV-Frontend/src` 256 · `TCV-Website` 94).
 
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `TCV-Backend`: `tcv-backend-codefix` (`develop` merged in 2026-09-04 — see *tcv-backend-codefix delta* below) · `TCV-Frontend`: `ws-398` · `TCV-Website`: `ws-website-343` — frontend/website are indexed from an **unmerged feature branch**, each exactly `develop` + one commit. `TCV-Website` is **unchanged since the last sync** — `ws-website-343` is the pre-merge parent of `website-integration`'s `ce410d5`, identical tree |
+| **Branches indexed** | `develop` · `develop` · `develop` — all three, for the first time since 2026-08-19. No feature branch is in the tree behind these indexes |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `f96382ea` (2026-09-04) · `TCV-Frontend` `73667c1` (2026-08-28) · `TCV-Website` `2166ec0` (2026-08-26, same tree as `ce410d5`) |
-| **Backend scale** | 196 classes/interfaces/traits · 773 methods · 158 API endpoints · 52 tables · 122 migrations |
+| **Code state at sync** | `TCV-Backend` `486a5cef` (2026-09-03) · `TCV-Frontend` `1867676` (2026-09-03) · `TCV-Website` `3ec94ec` (2026-09-03) — generated 2026-09-04 |
+| **Backend scale** | 196 classes/interfaces/traits · 761 methods · 178 API endpoints · 52 tables · 118 migrations |
 | **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
 
-### ✅ ws-398 / ws-392 / ws-417 — merged, now baseline
+### ⚠️ Read this before trusting any "FIXED" note
 
-Three backend branches previously tracked here as "unmerged deltas" (`ws-398` intersex gender,
-`ws-392` discount-code unique index, `ws-417` email verification rework) are now **all confirmed present**
-in the indexed tree — `tcv-backend-codefix` is `develop` with all three already folded in, plus its own
-work (below). Prose elsewhere in this KB that reads "since `ws-417`" or "`ws-398` adds …" is describing
-**current baseline behaviour**, not a hypothetical; nothing needs to be read as "if it merges" anymore.
-See [CONTEXT/PATIENT_CONTEXT.md](CONTEXT/PATIENT_CONTEXT.md) (gender), [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md)
-(unique index) and [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) / [AUTHENTICATION.md](AUTHENTICATION.md)
-(verification rework) for the detail. Route, endpoint, public-route and contract-drift counts already
-reflect this — see *Backend scale* above.
+The 2026-09-02 sync was generated from **`tcv-backend-codefix`**, an unmerged branch that is now 17
+commits ahead of `develop` and carries the ownership-scoping fixes for
+[S-02](SECURITY.md), [S-03](SECURITY.md) and [S-14](SECURITY.md). This sync indexes `develop`, where
+**none of those fixes exist**. Every `FIXED … (tcv-backend-codefix)` line in
+[SECURITY.md](SECURITY.md) means *fixed on a branch nobody has merged* — verified 2026-09-04 by
+grepping `develop` for `callerOwnsPatient`, `callerOwnsPatientTest` and
+`test_sessions.patient_id`: all absent.
+
+**☠️ Never sync this KB from a feature branch.** Indexing a fix branch makes the generated views
+describe code that does not ship, and they then contradict the prose instead of confirming it: the
+2026-09-02 audit reported **15** public endpoints because `tcv-backend-codefix` had moved the five
+Stripe payment routes inside `auth:sanctum`, while [ROUTES.md](ROUTES.md),
+[API_INDEX.md](API_INDEX.md) and [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) went on correctly
+calling them public. On `develop` they sit at `routes/api.php:48-52`, outside every group — see
+[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and
+[S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-are-public-on-develop). `verify.php`'s
+prose-count check is what catches this class of divergence; do not wave it through.
+
+`ws-392`, `ws-398`, `ws-400`, `ws-404` and `ws-417` are all **merged into `develop`** as of this sync,
+so passages that once read "if ws-nnn merges" now describe the indexed tree. `ws-401` and `ws-402`
+remain open and are **not** indexed.
+
+### What the 2026-09-04 sync changed
+
+Moving from `tcv-backend-codefix` to `develop` — and from `artisan route:list` to the AST parser —
+moves numbers in both directions. Read the deltas, not just the totals:
+
+| Count | 2026-09-02 | 2026-09-04 | Why |
+|---|---|---|---|
+| Endpoints in the index | 158 | **178** | `api/*` only, both times — real growth from the feature work `develop` has absorbed since the last sync |
+| Public `api/*` | 15 | **20** | five Stripe routes are outside every guard on `develop` ([S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-are-public-on-develop)) |
+| `routes/web.php` rows | 13 | **2** | ⚠️ extraction artefact, not a code change — see below |
+| Classes · methods | 189 · 731 | **196 · 761** | merged feature work |
+| Migrations | 120 | **118** | `tcv-backend-codefix` carried two that are not on `develop` |
+| Relationships | 70 | **69** | one relation removed with the merges |
+| Jobs · listeners | 1 · 3 | **2 · 4** | `SendTestInvitationEmailsJob` (`ws-404`), `PrefixEmailSubject` (`ws-417`) |
+
+⚠️ **`routes_source` flipped to the AST parser.** `TCV-Backend` no longer has a `vendor/` directory
+*or* a `.env`, so `artisan route:list --json` cannot boot and `extract.php` fell back to the static
+parse — recorded in `.data/facts.json` → `routes_source` and printed at the top of
+[API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md). The parser cannot see framework or package
+routes, so `sanctum/csrf-cookie`, `storage/{path}`, `up` and the seven `nnjeim/world` `{prefix?}/…`
+endpoints dropped out of the web-route table, and `GET|HEAD` now reads `GET`. **Those eleven rows are
+still live in production.** To get the authoritative list back, run `composer install` in
+`TCV-Backend` and copy `.env.example` to `.env`, then regenerate — see
+[GUIDES/HOW_TO_REGENERATE.md](GUIDES/HOW_TO_REGENERATE.md).
+
+[CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md) and
+[FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) changed only in `API-nnn` renumbering and
+the generation date — no client call lost its endpoint, no page became unreachable.
 
 ### ⚠️ `tcv-backend-codefix` delta — what this branch adds on top of that baseline
 
@@ -36,7 +77,7 @@ Beyond the three merges above, `tcv-backend-codefix` carries its own unmerged se
 | Area | Before | On `tcv-backend-codefix` |
 |---|---|---|
 | Session tokens | `test_sessions.session_token` and `organization_patient_sessions.token` stored **plaintext** | **SHA-256 hashed**, matching the LMS tier — see [SECURITY.md "what is done well"](SECURITY.md#what-is-done-well) |
-| Patient / test-session ownership | `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail`, certificate download had **no** ownership check (or one built on forgeable request input) | All read the new unforgeable `auth_context` request attribute — [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) (partial), [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address), [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping), [S-17](SECURITY.md#s-17--assigntest--getactivetest-let-a-session-act-on-another-organizations-patient) — all fixed |
+| Patient / test-session ownership | `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail`, certificate download had **no** ownership check (or one built on forgeable request input) | All read the new unforgeable `auth_context` request attribute — [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) (partial), [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address), [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping), [S-18](SECURITY.md#s-18--assigntest--getactivetest-let-a-session-act-on-another-organizations-patient) — all fixed **on that branch only; every one of them is still open on `develop`** |
 | Rate limiting | none on login/register/password-reset/signature-verify/bulk-invitations/plate-url | 6 named `throttle:` limiters added — but see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert): they currently share one bucket, fix written but held back |
 | Migration failure | silent — container serves traffic on a stale schema | `entrypoint.sh` writes a marker; `/up` health check fails loudly (two open bugs in the fix itself — see [DEPLOYMENT.md](DEPLOYMENT.md)) |
 | Request correlation | none | `AddRequestId` middleware + JSON log formatter — see [MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md) |
@@ -56,7 +97,7 @@ Full detail: [SECURITY.md](SECURITY.md), [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_
 branched off). Passages flagged `ws-401` describe that branch, not the indexed tree. What changes if it
 merges:
 
-| Area | On the indexed tree (`tcv-backend-codefix`) | On `ws-401` |
+| Area | On `develop` (indexed) | On `ws-401` |
 |---|---|---|
 | Legacy `[bracket]` placeholders in stored templates | stored as written, mailed out unsubstituted, and **invisible to every tool** — the validators and `templates:check-placeholders` recognise `{{…}}` only | `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` rewrites them to canonical tokens across `test_email_templates` and `user_email_templates`. `email_template` is deliberately excluded: a bare `[link]` there could be `{{verification_link}}`, `{{reset_url}}` or `{{set_password_url}}` |
 | What a repair migration may write | — | the rewrite is scoped to the row's own `type` via `EmailTemplatePlaceholders::known()`. A token valid for one template type is a **hard 422 for the other**, and the migration is irreversible, so an unscoped map would lock the editor on the rows it was repairing ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)) |
@@ -68,7 +109,7 @@ regeneration on `ws-401` moves the migration count by one.
 
 ☠️ **Do not regenerate while `ws-401` is checked out.** It is not a superset of the indexed tree: it
 predates the `Route::apiResource` sweep and the two `test_sessions` migrations above, so `composer regenerate`
-there reports **119 migrations · 176 endpoints · 20 public** against the indexed **122 · 158 · 15** and
+there reports **119 migrations · 176 endpoints · 20 public** against the indexed **118 · 178 · 20** and
 rewrites every index to that older picture — including deleting `test_sessions.patient_id`. Measured
 2026-09-04; see [HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md#check-out-the-right-branch-first).
 
@@ -76,7 +117,7 @@ rewrites every index to that older picture — including deleting `test_sessions
 — backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
 them as "if ws-402 merges". What changes when it does:
 
-| Area | On the indexed tree (`tcv-backend-codefix`) | On `ws-402` |
+| Area | On `develop` (indexed) | On `ws-402` |
 |---|---|---|
 | `CreditsController::destroy()` | hard-deletes the whole grant row, even the spent part — pushes `granted` below `consumed`, hidden by the `max(0, …)` clamp | `Credits::revokeGrant()` takes back only the **unspent** part; a partly-used grant is kept, with a negative `SOURCE_ADMIN_REVOKED` counter-entry, instead of being deleted |
 | `credits.source` values | `0` Manual · `1` Purchased · `2` Revoked | + `3` `SOURCE_ADMIN_REVOKED` · `4` `SOURCE_ADJUSTMENT` (ledger-balancing entry) |
@@ -208,7 +249,7 @@ before writing code.
 |---|---|
 | [ROUTES.md](ROUTES.md) / [API_INDEX.md](API_INDEX.md) | Route groups, guarding, the ordering traps |
 | [DATABASE.md](DATABASE.md) | Schema conventions, the tables that matter |
-| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 70 declared relationships |
+| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 69 declared relationships |
 
 ### Layers
 | Doc | Exists? |
@@ -238,10 +279,10 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 158 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 178 |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 196 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 773 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 761 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |
 | [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 52 |
 | [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 196 |
@@ -339,7 +380,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 122 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 118 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

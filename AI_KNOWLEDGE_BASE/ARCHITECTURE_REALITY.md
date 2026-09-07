@@ -14,9 +14,9 @@
 |---|---|---|
 | Controllers | **34** | Thin-ish. Real logic mostly delegated to Services. |
 | Services | **33** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`). |
-| Models | **40** | Eloquent, 70 declared relationships. |
+| Models | **40** | Eloquent, 69 declared relationships. |
 | FormRequests | **24** | Validation is genuinely centralised here — follow this. |
-| Middleware | **4** | `EnsureTokenIsValid` (dead) was **deleted** in `tcv-backend-codefix`; `AddRequestId` (correlation ids) was added in its place — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
+| Middleware | **4** | One global (`RestrictIpMiddleware`), two aliased, and `EnsureTokenIsValid` — dead but **still present** on `develop` — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |
 | Events / Listeners | **3 / 4** | Wired by **auto-discovery** + `LmsServiceProvider` + one explicit `AppServiceProvider` hook (`PrefixEmailSubject`, `ws-417`) — *not* by `EventServiceProvider`. |
 | Jobs | **2** | `ProcessLmsDeliveryJob` (`database` queue driver) · `SendTestInvitationEmailsJob` (`ws-404` — batches invitation sends). |
@@ -68,12 +68,13 @@ Full picture: [INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) · [EVENTS.md](EV
 
 ### 2. `EnsureTokenIsValid` middleware — deleted
 
-`app/Http/Middleware/EnsureTokenIsValid.php` was never aliased in `bootstrap/app.php` and appeared in no
-route. Confirmed dead, then **deleted** in `tcv-backend-codefix` (2026-09-02) — grep the repo before
-assuming it still exists. Do not reach for it when you need a guard — use `auth:sanctum` or
-`FlexibleAuthMiddleware` ([MIDDLEWARE.md](MIDDLEWARE.md)). The middleware slot it occupied (`MW-001`) is
-now `AddRequestId`, a real global middleware that stamps a correlation id onto every request/log line —
-see [MIDDLEWARE.md](MIDDLEWARE.md) and [LOGGING.md](LOGGING.md).
+`app/Http/Middleware/EnsureTokenIsValid.php` is never aliased in `bootstrap/app.php` and appears in no
+route. Confirmed dead — and **still present on `develop`** (verified at `486a5cef`). It is deleted only
+on the unmerged `tcv-backend-codefix` (2026-09-02), which also adds `AddRequestId` in its `MW-001` slot,
+a real global middleware stamping a correlation id onto every request/log line — neither change has
+shipped, so `develop` has no request correlation. Do not reach for `EnsureTokenIsValid` when you need a
+guard — use `auth:sanctum` or `FlexibleAuthMiddleware`
+([MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md)).
 
 ### 3. `app/Repositories` holds exactly one class
 
@@ -203,5 +204,5 @@ legitimately belongs behind the existing registry/interface seam. Follow `Corner
 ---
 
 _Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`) by filesystem check, provider-list
-read and repo-wide grep — not by convention. Counts and the two "not wired" items re-verified 2026-09-04
-against `tcv-backend-codefix` (`f96382ea`, `develop` merged in) the same way._
+read and repo-wide grep — not by convention. Counts and the two "not wired" items re-verified against
+`develop` at `486a5cef` the same way._

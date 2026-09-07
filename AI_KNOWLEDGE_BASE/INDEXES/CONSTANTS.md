@@ -24,17 +24,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
-
-### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `CONTEXT_KEY` | `'auth_context'` | [22](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L22) |
-| `TIER_SANCTUM` | `'sanctum'` | [24](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L24) |
-| `TIER_TEST_SESSION` | `'test_session'` | [25](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L25) |
-| `TIER_LMS_SESSION` | `'lms_session'` | [26](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L26) |
-| `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [27](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L27) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -264,4 +254,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-04. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._

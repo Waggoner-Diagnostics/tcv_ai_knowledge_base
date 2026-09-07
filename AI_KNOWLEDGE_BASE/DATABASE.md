@@ -1,7 +1,7 @@
 # Database
 
-MySQL, **52 tables**, reconstructed from 122 migrations — the indexed snapshot, taken from
-`tcv-backend-codefix` after the `develop` merge of 2026-09-04. Full column detail:
+MySQL, **52 tables**, reconstructed from 118 migrations — the indexed snapshot, taken from
+`develop` at `486a5cef` (2026-09-03). Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
@@ -78,10 +78,9 @@ recreates them. **Only `discount_code_users` is live.**
   - **`users.email` — still uniquely indexed.** The DB enforces it regardless of `deleted_at`, so a
     deleted user's address is **not** reusable. `UserRequest` validates without a
     `whereNull('deleted_at')` clause so validation agrees with the DB ([REQUESTS.md](REQUESTS.md)).
-  - **`discount_codes.code` — unique index narrowed to live rows on `ws-392`** (2026-08-27).
-    ☠️ **Not in the indexed tree** — the indexes come from `ws-398` (= `develop`), where one unique
-    index spans trashed rows too and a deleted code's name stays reserved. The rest of this bullet
-    applies only if ws-392 merges.
+  - **`discount_codes.code` — unique index narrowed to live rows** (`ws-392`, 2026-08-27).
+    ✅ **In the indexed tree** — `ws-392` is merged; both `2026_08_27_000001` and `2026_08_31_000001`
+    are on `develop` at `486a5cef`.
     Deleting a code now **releases** its name. The blanket unique index became a plain index plus
     `discount_codes_code_active_unique`, unique over **live rows only**: on MySQL a virtual generated
     column `code_active` that is `NULL` whenever `deleted_at` is set, on SQLite a partial index with

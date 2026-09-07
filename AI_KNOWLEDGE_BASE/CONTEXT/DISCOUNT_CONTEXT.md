@@ -159,15 +159,16 @@ whenever the form has anything to lose, and done silently when it does not.
    `$amount < $discount->minimum_order_amount` works via PHP's numeric-string comparison, but do not
    assume you are holding a float.
 
-**Deleting a discount code releases its name for reuse** — reversed on `ws-392` (2026-08-27), and this
-is the opposite of how it behaved on `develop`.
+**Deleting a discount code releases its name for reuse** — changed by `ws-392` (2026-08-27), the
+opposite of how it behaved before.
 
-> ☠️ **`ws-392` is not the indexed tree.** This KB is generated from `ws-398` (= `develop` + the
-> intersex-gender commit), so the **`develop`** column below is what the indexes describe. The branch is
-> still open and unmerged — read the `ws-392` column as "if ws-392 merges".
-> See [README](../README.md#-ws-398-delta--what-is-indexed-and-what-is-no-longer).
+> ✅ **`ws-392` is merged and is the indexed tree** (as of the 2026-09-04 sync of `develop` at
+> `486a5cef`). Both migrations are present, and `DiscountCodeController::codeAvailable()` now checks
+> the default non-trashed scope with no `withTrashed()`
+> ([DiscountCodeController.php:204-218](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L204)).
+> Read the right-hand column as current; the left is history.
 
-| | `develop` (≤ 2026-08-26) | **`ws-392`** |
+| | before `ws-392` (≤ 2026-08-26) | **`ws-392`, now on `develop`** |
 |---|---|---|
 | `discount_codes.code` index | **unique**, spanning trashed rows | plain index (`2026_08_27_000001`) **+ `discount_codes_code_active_unique`** (`2026_08_31_000001`) — unique over live rows only |
 | Where uniqueness is enforced | the database | the database, **narrowed to live rows**; `Rule::unique(…)->whereNull('deleted_at')` in `StoreDiscountCodeRequest` *and* `UpdateDiscountCodeRequest` supplies the 422 |

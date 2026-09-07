@@ -90,7 +90,13 @@ clean tree too** (verified by stashing). It is pre-existing and unrelated to tha
 a green-except-that-one run as a regression.
 
 `ws-401` measured 2026-09-04: **245 passed, 741 assertions, 0 failed** in ~24 s — including that
-`DiscountCodeIndexMigrationTest` case, which is green on this line. ☠️ **CI still runs no tests**, so a
+`DiscountCodeIndexMigrationTest` case, which is green on this line.
+
+`ws-402` measured 2026-09-07 (post-review): **265 passed, 783 assertions, 0 failed** in ~31 s. It
+branches off the `ws-401` line, so it carries all of the above; its own delta is the 7 credits cases
+added when the review findings were applied (19 → 26 across the two revocation files).
+
+☠️ **CI still runs no tests**, so a
 branch is only ever as verified as the last person to run the suite by hand; state in the PR whether you
 did. `TCV-Backend/vendor/` must be installed for `php artisan test` to work at all — a checkout without
 it cannot run a single test, which is exactly how a suite goes four months unnoticed-red.
@@ -163,15 +169,15 @@ npm test -- --watchAll=false               # once (CI)
 npm test -- --testPathPattern=src/App.test.js
 ```
 
-**Seven test files exist**, and the SPA is no longer entirely untested — **84 tests pass** (measured on
-branch `ws-400`, 2026-09-01; `develop` alone is 73, the same set minus `emailPlaceholders.test.js`).
-On the unmerged `ws-402` it is **nine files / 104 tests** (measured 2026-09-07), the two extra files
-being the credits ones below:
+**Seven test files exist** on `develop`, and the SPA is no longer entirely untested — **84 tests pass**
+(measured 2026-09-04; `ws-400` is merged in now, so `emailPlaceholders.test.js` is part of the baseline
+rather than a branch extra). On the unmerged `ws-402` it is **nine files / 104 tests** (measured
+2026-09-07) — the two credits files below, plus `ws-402`'s six extra `DiscountCodeModal` cases:
 
 | File | Tests | Covers |
 |---|---|---|
-| `src/components/DiscountCodeModal.test.js` | **53** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`); tier-reachability gating and auto-drop on a Minimum Order raise (+4, `ws-402`, **not yet merged**) |
-| `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400` — **unmerged branch**, [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
+| `src/components/DiscountCodeModal.test.js` | **49** | the discount drawer: keystroke limits, tier-derived bounds, type-switch reset (added `ws-356`, extended `ws-392`). **55 on the unmerged `ws-402`** (+6): tier-reachability gating and auto-drop on a Minimum Order raise |
+| `src/components/richTextEditor/emailPlaceholders.test.js` | **11** | the locked email-template placeholders: bare-token healing, the nested-anchor case, `data-inner` sanitising, the round-trip fixed point (`ws-400`, merged into `develop`; [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)) |
 | `src/utils/columns/addCreditsColumns.test.js` | **11** | `ws-402`, **not yet merged** — the credit grid's Delete-visibility rules mirrored against `CreditsPolicy::delete()` (Manual yes, Purchased no, Revoked only when `original_source` is Manual, legacy null origin no), and the Utilized column's null-vs-zero rendering. The one frontend guard on the 403-on-every-legacy-row bug |
 | `src/redux/slices/createpaginatedslice.test.js` | **3** | `ws-402`, **not yet merged** — `deleteItem` handing the server's response back to the caller, still dropping the row from `state.list` (now via `a.meta.arg`), and surviving an empty response body |
 | `src/redux/slices/userCredits/userCreditSlice.test.js` | 9 | credit-read ordering and identity guards (`ws-397`) |

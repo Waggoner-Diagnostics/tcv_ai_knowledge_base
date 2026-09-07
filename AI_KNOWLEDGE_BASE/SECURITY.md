@@ -1,13 +1,22 @@
 # Security — Posture and Known Gaps
 
 > **What this is.** Findings from *reading* TCV-Backend's auth, routing, session and payment paths at
-> `85586469`, re-checked against `develop` at `26ba2022` (2026-08-27), and again against
-> `tcv-backend-codefix` at `f96382ea` (2026-09-04, `develop` merged in). No exploit was attempted and no
+> `85586469`, re-checked against `develop` at `486a5cef` (2026-09-04). No exploit was attempted and no
 > pen test was run. Each finding names the file and line it
 > came from so you can re-verify it in one read. Treat severities as this document's judgement, not a
 > customer-facing rating.
 
 Findings carry stable `S-nn` IDs so other docs can point at them without restating detail.
+
+> ☠️ **"Fixed on `tcv-backend-codefix`" does not mean fixed.** `S-02`, `S-03` and `S-14` were marked
+> fixed on 2026-09-02 against that branch. It is **still unmerged** — 17 commits ahead of `develop` —
+> so on the branch that ships, all three are **open**. Re-verified 2026-09-04 by grepping `develop`:
+> `PatientController::callerOwnsPatient`, `TestResumeController::callerOwnsPatientTest`,
+> `TestController::callerOwnsPatientTest` and a `test_sessions.patient_id` migration are all **absent**,
+> and `PatientController::update()` still reads `$request->all()`
+> ([PatientController.php:123](../../TCV-Backend/app/Http/Controllers/PatientController.php#L123)).
+> Each label below now says which tree it applies to. Never mark a finding fixed against an unmerged
+> branch without saying so in the same sentence.
 
 ---
 
@@ -99,8 +108,9 @@ from `$request->user()`. The shipped fix went further than this sketch — it re
 
 ### S-02 — Test-session endpoints never check that the caller owns the test
 
-**Severity: high** — **PARTIALLY FIXED 2026-09-02** (`tcv-backend-codefix`). Still open for the five
-endpoints in the table below.
+**Severity: high** — **OPEN on `develop`.** A partial fix exists on `tcv-backend-codefix` (2026-09-02),
+which is **unmerged**; `TestController::callerOwnsPatientTest()` does not exist on `develop` (checked
+2026-09-04). The five endpoints in the table below were never covered by that fix either.
 
 **What the partial fix covered:** only `GET api/test-result/{unique_test_id}/download-pdf`, which is
 not in the table below but had the same defect. It gained
@@ -140,9 +150,13 @@ answers into another patient's test, given the id. UUIDs make `unique_test_id` u
 
 ### S-14 — `patients/{id}` show/update/destroy have no ownership scoping
 
-**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`).
+**Severity: high** — **OPEN on `develop`.** Fixed on `tcv-backend-codefix` (2026-09-02), which is
+**unmerged**. On `develop`, `show()` is still `Patient::findOrFail($id)` with no scoping and
+`update()` still reads `$request->all()`
+([PatientController.php:107-123](../../TCV-Backend/app/Http/Controllers/PatientController.php#L107)),
+so the `user_id` reassignment below is live too.
 
-**What the fix did:** `show()` and `update()` now go through a new
+**What the fix on that branch did:** `show()` and `update()` now go through a new
 `PatientController::callerOwnsPatient()`, which mirrors `TestController`'s check and reads the
 middleware-resolved credential rather than request input. `destroy()` is staff-only — a test-taker's
 own session can no longer delete the patient record it is bound to. All three return
@@ -176,14 +190,16 @@ different account.
 **Fix shape:** scope by `auth()->id()` (or the session's `patient_id`) in all three methods, and switch
 `update()` to `$request->validated()`.
 
-### S-17 — `assignTest` / `getActiveTest` let a session act on another organization's patient
+### S-18 — `assignTest` / `getActiveTest` let a session act on another organization's patient
 
-**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`). Distinct from `S-02` above: that
+**Severity: high** — **OPEN on `develop`.** Fixed on `tcv-backend-codefix` (2026-09-02), which is
+**unmerged** — `callerOwnsPatient()`, the `auth_context` request attribute and
+`tests/Feature/Authorization/` are all absent from `develop` (checked 2026-09-04). Distinct from `S-02` above: that
 finding is about the five `unique_test_id`-keyed endpoints; this one is about the `patient_id`-keyed
 surface (`POST api/tests/assign`, `POST api/tests/check-active`), which had no ownership check of any
 kind — not even the informational, request-input version.
 
-**What the fix did:** both methods now call the same `TestController::callerOwnsPatient()` used by
+**What the fix does (on that branch):** both methods call the same `TestController::callerOwnsPatient()` used by
 `PatientController` ([S-14](#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)), reading
 `FlexibleAuthMiddleware::context()` rather than trusting `$request->input('patient_id')`. Before the
 fix, any tier-2/3/4 session — including one org's own test-taker session — could pass an arbitrary
@@ -196,9 +212,11 @@ sessions carry no invitation).
 
 ### S-03 — `sendResumeEmail` mails a resume link for any test to any address
 
-**Severity: high** — **FIXED 2026-09-02** (`tcv-backend-codefix`).
+**Severity: high** — **OPEN on `develop`.** Fixed on `tcv-backend-codefix` (2026-09-02), which is
+**unmerged**. Neither `TestResumeController::callerOwnsPatientTest()` nor the
+`test_sessions.patient_id` column the fix depends on exists on `develop` (checked 2026-09-04).
 
-**What the fix did:** `TestResumeController::callerOwnsPatientTest()` now reads the resolved
+**What the fix on that branch did:** `TestResumeController::callerOwnsPatientTest()` now reads the resolved
 credential instead of request input. The earlier attempt at this check still fell through to a
 body-supplied `patient_id` whenever `test_invitation_id` was null — which is *every org-added
 patient session* — so the hole stayed open on the exact tier it mattered on. Sessions are now bound
@@ -429,15 +447,63 @@ If a `TRUSTED_PROXIES` env override is added, parse it as `trim(...) ?: <default
 variable, and `env()` returns that empty string instead of the default, leaving an empty proxy list
 that means "trust no proxy" and silently reinstates the bug.
 
+### S-17 — Five Stripe payment endpoints are public on `develop`
+
+**Severity: medium** — **open**, found 2026-09-04 by the first `develop` regeneration since 2026-08-19.
+
+[`routes/api.php:48-52`](../../TCV-Backend/routes/api.php#L48) registers five payment routes at the top
+of the file, **before** the `FlexibleAuthMiddleware` group (line 69) and the `auth:sanctum` group
+(line 118) — so they take no middleware at all:
+
+```
+POST   api/stripe/create-payment-intent
+POST   api/stripe/confirm-payment
+GET    api/stripe/payment-methods
+POST   api/stripe/payment-methods/set-default
+DELETE api/stripe/payment-methods/{payment_method_id}
+```
+
+Every handler opens with `$user = Auth::user();` and passes the result straight into
+[`StripeService`](../../TCV-Backend/app/Services/StripeService.php), whose methods are all typed
+`User $user` (`getPaymentMethods` :363, `setDefaultPaymentMethod` :371, `removePaymentMethod` :401,
+`createStripePaymentIntent` :246).
+
+**What actually happens today:** with no token, `Auth::user()` is `null`, so the typed parameter throws
+a **`TypeError` on entry to the service** — before `paymentMethods->detach()` or any other Stripe call
+runs. `TypeError` extends `Error`, not `Exception`, so the controllers' `catch (\Exception $e)` does
+**not** catch it and it reaches `Handler.php` as a 500 ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
+
+So there is **no exploit path right now** — but the safety is accidental:
+
+- It rests entirely on those `User` type hints. Widen one to `?User` and
+  `DELETE api/stripe/payment-methods/{payment_method_id}` becomes an unauthenticated
+  `paymentMethods->detach($id)` on any `pm_…` id an attacker knows.
+- A caller with an expired token gets a **500**, not a 401 — Sanctum's 15-minute expiry makes this a
+  routine client state, and the SPA cannot tell "log in again" from "the payment system broke".
+- Five unauthenticated routes into the Stripe integration are reachable for probing.
+
+**Fix:** move the five lines inside the `auth:sanctum` group and read the user from
+`$request->user()`. **This fix already exists** on `tcv-backend-codefix`, where the same routes sit at
+lines 131-135 *inside* that group — it is one of the 17 unmerged commits on that branch.
+
+⚠️ **The prose had this right; the generated audit did not.** [ROUTES.md](ROUTES.md) (Zone 1),
+[API_INDEX.md](API_INDEX.md) and [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) have all described these
+five as public and broken for some time. But the 2026-09-02 sync was generated from
+`tcv-backend-codefix`, where they sit inside `auth:sanctum`, so
+[PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) listed 15 endpoints and these five were **absent** —
+the index contradicted the prose for two days. `verify.php`'s prose-count check is what surfaced it
+(prose said 20, the index said 15). Trust the audit only when `facts.json`'s `git` block says
+`develop`.
+
 ## Summary table
 | ID | Finding | Severity | Where |
 |---|---|---|---|
 | `S-01` | Public registration accepts `usertype: 1` | **critical** | `UserRequest` · `AuthController::register()` |
 | `S-13` | ✅ **fixed 2026-08-26** — public invitation send spent any user's credits (≤500 emails) | ~~critical~~ | `TestInvitationController::sendInvitations()` |
-| `S-02` | No test-ownership check on session endpoints (⚠️ **partially fixed 2026-09-02** — `download-pdf` scoped; the 5 listed endpoints still open) | **high** | `TestController` · `TestExecutionService` |
-| `S-03` | ✅ **fixed 2026-09-02** — `sendResumeEmail` accepted arbitrary test + address | ~~high~~ | `TestResumeController` |
-| `S-14` | ✅ **fixed 2026-09-02** — `patients/{id}` unscoped + `update()` used `$request->all()` | ~~high~~ | `PatientController` |
-| `S-17` | ✅ **fixed 2026-09-02** — `assignTest`/`getActiveTest` had no ownership check on `patient_id` | ~~high~~ | `TestController` |
+| `S-02` | No test-ownership check on session endpoints — ⚠️ **open on `develop`**; partial fix sits on unmerged `tcv-backend-codefix` | **high** | `TestController` · `TestExecutionService` |
+| `S-03` | `sendResumeEmail` accepts arbitrary test + address — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `TestResumeController` |
+| `S-14` | `patients/{id}` unscoped + `update()` uses `$request->all()` — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `PatientController` |
+| `S-18` | `assignTest`/`getActiveTest` have no ownership check on `patient_id` — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `TestController` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
@@ -449,6 +515,7 @@ that means "trust no proxy" and silently reinstates the bug.
 | `S-11` | `revokeAccess()` leaves the S3 URL live | low | `SecureImageService` |
 | `S-12` | Trace/message leak outside production | low | `Exceptions\Handler` |
 | `S-16` | Proxy IP makes all rate limits one global bucket and `RestrictIpMiddleware` inert (fix written, **held back** — both halves must ship together) | **high** | `nginx.conf` · `bootstrap/app.php` |
+| `S-17` | Five Stripe payment routes sit outside every middleware group; only a `TypeError` stops them | medium | `routes/api.php:48-52` · `StripePaymentController` |
 
 ---
 

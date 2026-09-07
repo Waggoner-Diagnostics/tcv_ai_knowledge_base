@@ -1,21 +1,20 @@
 # Routes
 
-`routes/api.php` — **158 endpoints** as of `tcv-backend-codefix` (2026-09-04; was 176 before the
-`Route::resource` → `apiResource` cleanup below removed unreachable `create`/`edit` form routes).
-Authorisation here is expressed by a route's **physical position** inside one
-of two group blocks. Use [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) to answer
+`routes/api.php` is **15 KB, 268 lines**, registering **178 `api/*` endpoints** — small enough to read,
+which is exactly why people read it and draw the wrong conclusion. Authorisation here is expressed
+by a route's **physical position** inside one of two group blocks. Use [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) to answer
 "is this guarded?", not the route's own line.
 
 ## The three zones
 
 ```php
-// ── Zone 1: top of file, NO middleware ───────────────── 15 endpoints, fully public
+// ── Zone 1: top of file, NO middleware ───────────────── 21 endpoints, 20 fully public
 Route::post('/login', …);  Route::post('/register', …);  Route::post('/password/forgot', …);  …
 
-// ── Zone 2: session-token routes ─────────────────────── ~22 endpoints
+// ── Zone 2: session-token routes ─────────────────────── 23 endpoints
 Route::middleware('FlexibleAuthMiddleware')->group(function () { … });
 
-// ── Zone 3: Sanctum-only routes ──────────────────────── ~121 endpoints
+// ── Zone 3: Sanctum-only routes ──────────────────────── 134 endpoints
 Route::middleware('auth:sanctum')->group(function () { … });
 ```
 
@@ -30,26 +29,25 @@ Plus `routes/web.php`: `GET /` (a view) and `GET /payment/callback` → `StripeP
 | `FlexibleAuthMiddleware` | `App\Http\Middleware\FlexibleAuthMiddleware` |
 | `lms.status` | `App\Http\Middleware\LmsSessionStatusMiddleware` |
 
-`auth:sanctum`, `signed` and `throttle` are Laravel's own. `EnsureTokenIsValid` — never aliased, never
-routed — was confirmed dead and **deleted** in `tcv-backend-codefix` ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)).
+`auth:sanctum`, `signed` and `throttle` are Laravel's own. `EnsureTokenIsValid` is **not aliased and
+never used** ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)).
 
 ---
 
 ## Zone 1 — what is public
 
-15 `api/*` endpoints plus both web routes. The full list is in
-[INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md). Group them by *why*:
+21 `api/*` endpoints sit here, plus both web routes. **20 of them are reachable with no credential at
+all** — the odd one out is `GET api/verify-email/{id}/{hash}`, which carries `signed`, so Laravel's
+signature check guards it even though no auth group does. That is why
+[INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) reports **20 of 178**, not 21. The full
+list is there. Group them by *why*:
 
 | Why it's public | Endpoints |
 |---|---|
 | Precedes a token, legitimately | `login`, `register`, `password/forgot`, `password/reset`, `password/verify-setup-token`, `verify-email-token`, `resend-verification-by-token`, `resend_email_verification_link`, `validate-token`, `countries-with-states` |
 | Authenticates by its own emailed/embedded token | `test-invitation/verify-code`, `test-invitation/check-validity`, `test/resume`, `organization/verify-signature` |
+| ⚠️ Public but broken — every handler needs `Auth::user()` | all five `stripe/*` routes ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | Leftover | `reset-password/{token}` (a closure echoing the token back) |
-
-✅ **The five `stripe/*` routes are no longer public.** `tcv-backend-codefix` moved them into the
-`auth:sanctum` group (they were previously registered at the top of the file, alongside genuinely public
-routes like `/login`, despite every handler calling `Auth::user()` with no null check — an
-unauthenticated caller got a raw 500 instead of a 401). See [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md).
 
 **Re-read the public audit after every route change.** A route added at the top of the file, or after the
 closing `});` of a group, is public with no warning.
@@ -70,65 +68,61 @@ be in state X"* — it does nothing for the other three tiers ([MIDDLEWARE.md](M
 
 ## Ordering traps
 
-Laravel matches the **first** registered route. Two places used to get this wrong; both were fixed in
-`tcv-backend-codefix` (2026-09-04) — read as history, and as the shape to follow for new routes.
+Laravel matches the **first** registered route. Two places get this wrong:
 
-### 1. `credits/{coupon-code}` was unreachable — ✅ fixed
-
+### 1. `credits/{coupon-code}` is unreachable
 ```php
-// before
-Route::resource('credits', CreditsController::class);                     // → GET credits/{credit}
-Route::get('credits/{coupon-code}', [CreditsController::class, 'checkDiscountCodeValidity']);
+Route::resource('credits', CreditsController::class);                     // line 179 → GET credits/{credit}
+Route::get('credits/{coupon-code}', [CreditsController::class, 'checkDiscountCodeValidity']);  // line 180
 ```
-Two independent bugs stacked here. `GET api/credits/anything` always matched `CreditsController@show`
-first, since `credits/{coupon-code}` was registered second at the exact same shape. Separately,
-`{coupon-code}` is not a valid Symfony route parameter name (hyphens aren't allowed in a `{param}`), so
-it compiled as a *literal* path segment — the route only ever matched the literal string
-`GET credits/coupon-code`, not any real coupon. The fix moved the endpoint under its own prefix, renamed
-the parameter, and switched the resource to `apiResource`:
-```php
-Route::apiResource('credits', CreditsController::class);
-Route::get('credits/coupon/{coupon_code}', [CreditsController::class, 'checkDiscountCodeValidity'])
-    ->name('credits.checkDiscountCodeValidity');
-```
-`CreditsController::checkDiscountCodeValidity()` also had to change signature — it used to call
-`$request->validate(['coupon_code' => …])`, but `Request::validate()` only sees query + body, never
-route parameters, so every call 422'd before the handler ran. It now validates the route parameter
-directly. See [CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md).
+**Three independent bugs are stacked here, all live on `develop`.** First, `GET api/credits/anything`
+always hits `CreditsController@show`, because the literal route is registered *second* at the same
+shape. Second, `{coupon-code}` is not a valid route parameter name — Laravel's compiler only treats
+`{\w+}` as a placeholder, and the hyphen breaks that, so the segment compiles as a **literal**: the
+route could only ever match the exact path `GET credits/coupon-code`, never a real coupon. Third,
+`checkDiscountCodeValidity()` calls `$request->validate(['coupon_code' => …])`, but `Request::validate()`
+reads query + body only and never route parameters, so the handler would 422 before running even if it
+were reachable. `checkDiscountCodeValidity()` is therefore dead code three times over. Fixing it means
+moving the literal route **above** the resource (the way the `discount-codes` block correctly does),
+renaming the parameter to `{coupon_code}`, and validating the route parameter rather than the request
+([CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md)).
 
-### 2. `restricted-ips` was registered twice — ✅ fixed
-
+### 2. `restricted-ips` is registered twice
 ```php
-// before, both present
 Route::prefix('restricted-ips')->group(function () {
-    Route::apiResource('/', RestrictedIpController::class)->except(['show']);   // malformed
+    Route::apiResource('/', RestrictedIpController::class)->except(['show']);   // line 183 — malformed
 });
 …
-Route::apiResource('restricted-ips', RestrictedIpController::class)->except(['show']);
+Route::apiResource('restricted-ips', RestrictedIpController::class)->except(['show']);  // line 210
 ```
-The first form passed `'/'` as the resource name, producing a degenerate parameter name. Both mapped to
-the same controller, so behaviour was unaffected — but the duplicate made `route:list` confusing and the
-two registrations could drift. The `prefix` block was deleted; only the second registration remains.
+The first form passes `'/'` as the resource name, which produces a degenerate parameter name. Both map
+to the same controller, so behaviour is unaffected — but the duplicate makes `route:list` confusing and
+the two registrations can drift. Delete the `prefix` block; keep line 210.
 
 ### 3. Ordering that is correct — do not "tidy" it
 ```php
 Route::put('users/change-password', …);                       // before the resource — deliberate
-Route::apiResource('users', UserController::class)->except(['show']);
+Route::resource('users', UserController::class)->except(['show']);
 Route::get('users/{id}', [UserController::class, 'edit'])->name('users.show');   // show is excluded above
 Route::get('discount-codes/stats', …);  Route::get('discount-codes/form-options', …);
 Route::post('discount-codes/validate', …);  Route::patch('discount-codes/{discount_code}/toggle', …);
 Route::apiResource('discount-codes', DiscountCodeController::class);   // literals first — correct
 ```
 
-### `Route::resource` → `Route::apiResource`, throughout
+### ⚠️ All three traps above are still live on `develop`
 
-Every `Route::resource(...)` call in `routes/api.php` (`patients`, `users`, `tests`, `conditions`,
-`answers`, `sections`, `section/plates`, `credits`) became `Route::apiResource(...)` in the same pass.
-This is a **pure JSON API** — none of these controllers implement `create()`/`edit()` (except
-`UserController`, kept and re-exposed as `GET users/{id}` above, per the block that must not be
-"tidied"). `resource()` additionally registers `GET .../create` and `GET .../{id}/edit`, neither backed
-by a real form page, so both would 500 if ever hit. This is also *why* the total endpoint count dropped
-from 176 to 158: those unreachable form routes are gone.
+The unmerged `tcv-backend-codefix` branch (2026-09-04) fixes them, and it is the shape to follow — but
+none of it ships yet. Verified on `develop` at `486a5cef`: `routes/api.php` still has **8**
+`Route::resource(...)` calls, `credits/{coupon-code}` still sits after the resource at line 180,
+`restricted-ips` is still registered twice (lines 183 and 210), and `EnsureTokenIsValid` still exists.
+On that branch every `Route::resource(...)` in this file (`patients`, `users`, `tests`, `conditions`,
+`answers`, `sections`, `section/plates`, `credits`) becomes `Route::apiResource(...)`: this is a **pure
+JSON API**, and `resource()` additionally registers `GET .../create` and `GET .../{id}/edit`, neither
+backed by a real form page, so both 500 if hit. `UserController` is the one exception — its `edit` is
+kept and re-exposed as `GET users/{id}`, per the block above that must not be "tidied". Dropping those
+unreachable form routes is what moves the endpoint total; do not read a count change there as new
+surface. Until the branch merges, treat this section as *the fix*, not *the state*
+([README.md](README.md), [GUIDES/HOW_TO_REGENERATE.md](GUIDES/HOW_TO_REGENERATE.md)).
 
 ---
 
@@ -138,15 +132,9 @@ from 176 to 158: those unreachable form routes are gone.
    patient must reach it with a session token. Only use Zone 1 if it genuinely precedes any credential.
 2. **Literal segments before parameterised ones** within the same prefix.
 3. **Name the route** if the SPA or a notification links to it (`->name('…')`).
-4. **Throttle anything that sends mail or costs money.** `POST api/contact` (`throttle:10,1`) and, since
-   `tcv-backend-codefix`, six more: `login`, `register`, `password/forgot`/`reset`/`verify-setup-token`
-   (`throttle:password-reset`), `organization/verify-signature` (`throttle:signature-verify`),
-   `test-invitations/send` (`throttle:bulk-invitations`) and the plate-url endpoint
-   (`throttle:plate-url`, keyed on the session token, not IP). ☠️ The five ip-keyed ones currently share
-   **one global bucket** across every client — see
-   [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)
-   before treating this as fully solved. The resend endpoints (`resend_email_verification_link`,
-   `resend-verification-by-token`) still have none.
+4. **Throttle anything that sends mail or costs money.** Today only `POST api/contact` has
+   `throttle:10,1` — `test-invitations/send` (≤500 emails, now `auth:sanctum` but still unthrottled),
+   `password/forgot` and the resend endpoints have none.
 5. **Re-run the generator** and check the diff of `PUBLIC_ROUTE_AUDIT.md`
    ([GUIDES/HOW_TO_REGENERATE.md](GUIDES/HOW_TO_REGENERATE.md)).
 
