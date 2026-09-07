@@ -512,6 +512,39 @@ in a branch that had already added `throttle:bulk-invitations` and `throttle:pas
 `RateLimitScopeTest` now asserts every `throttle:<name>` a route references resolves to a registered
 limiter, because that mismatch otherwise surfaces only when a live caller hits the route.
 
+### S-19 — `DELETE api/credits/{id}` let any authenticated user mutate a stranger's ledger
+
+**Severity: high** — **open on `develop`.** Fixed on the unmerged `ws-402` (2026-09-07).
+
+`CreditsPolicy::delete()` decided purely on `$credits->source` and **never read its `User $user`
+parameter**. [`routes/api.php:179`](../../TCV-Backend/routes/api.php#L179) registers
+`Route::resource('credits', …)` inside the `auth:sanctum` group opened at line 118 — authentication
+only, no role middleware, no `Gate::before`. So any logged-in customer could
+`DELETE api/credits/{id}` against a grant belonging to anyone, by id. `/add-credits` is a Super Admin
+page in the SPA, so this was never intended access — the gate simply did not exist server-side.
+`CreditsController::index()` has the same shape: it reads `user_id` from the request and never scopes
+it to the caller.
+
+**Why it is worse on `ws-402` than the equivalent gap on `develop`.** Two changes widen it:
+
+- the allow-list grows — a `SOURCE_REVOKED` row whose `original_source === SOURCE_MANUAL` is now
+  deletable too, where before only `SOURCE_MANUAL` was;
+- `destroy()` stopped being a row delete. It now writes negative `SOURCE_ADMIN_REVOKED`
+  counter-entries, can write a `SOURCE_ADJUSTMENT` row, and can trigger `settleNegativeBalance()`.
+  An unauthorized caller therefore **mutates** another user's ledger rather than merely removing a row
+  from it — and every one of those writes is designed to be permanent, because the whole subsystem
+  treats history as append-only.
+
+**Fix (on `ws-402`):** `delete()` now returns `false` unless `$user->isSuperAdmin()`, checked *before*
+the source rules — who first, then what. Covered by
+`CreditRevocationTest::test_a_customer_cannot_revoke_another_users_grant()` and
+`…_the_grant_owner_cannot_revoke_their_own_grant_either()`, both of which also assert that no
+counter-entry or adjustment row was written.
+
+⚠️ **`index()` is not fixed.** Listing another user's grants — now including per-grant
+`used_credits` / `revoked_credits` / `remaining_credits` — still only requires being logged in.
+Distinct from [S-04](#s-04--revokecredit-idor-abandons-any-test), which covers `revokeCredit()`.
+
 ### S-17 — Five Stripe payment endpoints are public on `develop`
 
 **Severity: medium** — **open**, found 2026-09-04 by the first `develop` regeneration since 2026-08-19.
@@ -569,6 +602,7 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 | `S-03` | `sendResumeEmail` accepts arbitrary test + address — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `TestResumeController` |
 | `S-14` | `patients/{id}` unscoped + `update()` uses `$request->all()` — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `PatientController` |
 | `S-18` | `assignTest`/`getActiveTest` have no ownership check on `patient_id` — ⚠️ **open on `develop`**; fix sits on unmerged `tcv-backend-codefix` | **high** | `TestController` |
+| `S-19` | `CreditsPolicy::delete()` ignores `$user` and the route has no role gate — any authenticated user could delete/mutate anyone's credit ledger. ⚠️ **open on `develop`**; fix sits on unmerged `ws-402`. `index()` still unscoped | **high** | `CreditsPolicy` · `routes/api.php:179` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |

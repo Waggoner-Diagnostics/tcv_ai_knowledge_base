@@ -72,7 +72,7 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 |---|---|---|---|
 | `tests/Feature/Lms/` | 5 + 1 fixture trait | **54** | launch + signature, admin config/keys/dead-letters, delivery + retry, section progress, xAPI batching |
 | `tests/Feature/Credits/` | 1 | **12** | `CreditHistoryTest` — the unified credit-history view |
-| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **26** | `ws-402`, **not yet merged** — `CreditRevocationTest` (17): `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns; then the expiry set added post-review — the settle command repairing a grant spent *before* it expired, not handing back credits that expired *unspent*, idempotence, `used_credits`/`remaining_credits` reported as null rather than 0 for an unallocated grant, the partial-revocation message and `data`, and a legacy refund with a null `original_source` returning 403. `CreditRevokeOriginTest` (9): `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
+| `tests/Feature/Credits/CreditRevocationTest.php` · `CreditRevokeOriginTest.php` | 2 | **31** | `ws-402`, **not yet merged** — `CreditRevocationTest` (17): `revokeGrant()`'s unspent-only claw-back, the 422 on a fully-spent grant, unlimited-grant removal + `settleNegativeBalance()`, the 403 an ineligible `destroy()` now returns; then the expiry set added post-review — the settle command repairing a grant spent *before* it expired, not handing back credits that expired *unspent*, idempotence, `used_credits`/`remaining_credits` reported as null rather than 0 for an unallocated grant, the partial-revocation message and `data`, and a legacy refund with a null `original_source` returning 403; then a third round (2026-09-07) covering [S-19](SECURITY.md#s-19) — a non-super-admin gets 403 and writes no counter-entry or adjustment — the `has_expiry = 1, expiry_date = NULL` grant being deletable rather than 422, and `used` vs `revoked` being reported as separate figures. `CreditRevokeOriginTest` (9): `traceConsumedOrigin()`'s FIFO replay across Manual/Purchase/Revoked grants, and the `SOURCE_PURCHASE` fallback when the trace can't be pinned down |
 | `tests/Feature/DiscountCodes/` | 2 | **19** | code validation + redemption, and the live-code unique index migration (`ws-392`, merged) |
 | `tests/Feature/ContactFormTest.php` | 1 | **4** | contact enquiry → HubSpot upsert + ticket; optional `company_name` |
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
@@ -119,7 +119,7 @@ empty database, not by the suite — nothing in PHPUnit boots a container. Sever
 authorization tests are `assertNotEquals(200)` rather than an exact status, so an unrelated 500 would
 satisfy them.
 
-`ws-402` measured 2026-09-07 (post-review): **265 passed, 783 assertions, 0 failed** in ~31 s. It
+`ws-402` measured 2026-09-07 (after the third review round): **270 passed, 806 assertions, 0 failed**. It
 branches off the `ws-401` line, so it carries all of the above; its own delta is the 7 credits cases
 added when the review findings were applied (19 → 26 across the two revocation files).
 

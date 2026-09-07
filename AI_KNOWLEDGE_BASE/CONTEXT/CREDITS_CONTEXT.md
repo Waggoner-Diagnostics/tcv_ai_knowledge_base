@@ -170,8 +170,20 @@ resulting deficit — invisible right up until the user's *next* grant or purcha
   hidden-deficit problem as above, just triggered by losing the *unlimited flag* instead of a finite
   grant. `revokeGrant()` calls `Credits::settleNegativeBalance($userId)` afterward, which writes a
   `SOURCE_ADJUSTMENT` row for exactly the deficit if one now exists.
-- **Already-expired grant** → deleted outright; an expired grant already counted for nothing, so there is
-  nothing to hand back and nothing to unbalance.
+- **A grant that doesn't count toward the balance** → deleted outright; it already counted for nothing,
+  so there is nothing to hand back and nothing to unbalance.
+
+  ☠️ **This branches on `Credits::countsTowardBalance()`, not `hasExpired()` — the two are not
+  opposites.** A row with `has_expiry = 1` and `expiry_date = NULL` (which `CreditsAddRequest` accepted
+  until `required_if` was added) falls between them: `scopeActive()` excludes it, because
+  `NULL >= today` is NULL and neither branch matches, so it never appears in `getGrantAllocation()` and
+  its unused count defaults to `0`; while `hasExpired()` calls it *live*, because
+  `&& $this->expiry_date` short-circuits before the date compare. Branching on `hasExpired()` here
+  therefore skipped the delete and fell through to `$unused <= 0` → **422 "These credits have already
+  been used and can no longer be removed"** on a grant nobody had ever spent. Permanently undeletable,
+  and a regression against `develop`, which just deleted the row. `countsTowardBalance()` is the
+  row-level mirror of `scopeActive()`; keep the two in step, and prefer it anywhere the real question
+  is "does removing this row change the balance?"
 - The whole thing runs inside `DB::transaction()` with `self::where('user_id', $userId)->lockForUpdate()`
   first — holding the user's ledger for the transaction so two concurrent revokes on the same user can't
   both read the same unspent balance and each write a counter-entry for it. No-op on SQLite (no row
@@ -199,6 +211,15 @@ see the `createPaginatedCrudSlice` note in [FRONTEND.md](../FRONTEND.md#redux).
 `used_credits` / `remaining_credits` from `getGrantAllocation()`, so the SPA can show a grant's real
 state and gray out / disable revoking what's already gone (`AddCredits.js`, `addCreditsColumns.js` — new
 "Utilized" column and "Revoked" status).
+
+⭐ **`used` and `revoked` are reported separately** (`used_credits` / `revoked_credits`, alongside
+`remaining_credits`). Both draw a grant down identically and the revocation maths only ever needs
+`remaining` — but only `used` is something the *user* did. They were once summed into a single `used`
+figure, so a grant of 10 where the user spent 3 and an admin clawed back 7 displayed "10 utilized" and
+a disabled Delete tooltip reading *"Already used by the user"*. That is a factual claim about a
+person's behaviour, and it was wrong. `getGrantAllocation()` now runs two FIFO passes over the same
+ordering — consumption first, then claw-backs against what each grant has left — which yields exactly
+the `remaining` the single-pool version did, so `revokeGrant()` is unaffected.
 
 ☠️ **Both fields are `null`, not `0`, on a row `getGrantAllocation()` never allocated against** — an
 unlimited grant, or an expired one (the allocation walks `active()` grants only). `null` means "not
@@ -233,6 +254,14 @@ refresh. Details and its gotchas are in [FRONTEND.md](../FRONTEND.md#the-credit-
 per-grant "Utilized" column and "Revoked" status come from the enriched `GET api/credits` response (see
 Admin revocation, above) — a page load, not a timer, so it does not add to the polling cost noted below.
 
+⚠️ **`getAvailableCredits()` logs a warning when the balance is negative — throttled to once an hour
+per user.** It has to be: this is the hottest path in the subsystem (the poll above hits it every 60s
+per open tab), and the accounts that trip it are exactly the ones still awaiting
+`credits:settle-negative-balances`, so an unthrottled warning is one line per tab per minute,
+indefinitely, per affected account. The throttle is a `Cache::add` on
+`credits:negative-balance-warned:{userId}`. It is a standing condition, not an event — if you need
+per-occurrence detail, log from the write paths instead of loosening this.
+
 ☠️ **That polling multiplies the derived-balance cost.** Every call is two aggregate `SUM`s — there is no
 balance column and the result must not be cached — so each open portal tab now costs one such pair per
 minute on top of its normal traffic. Any work that makes `getAvailableCredits()` heavier (extra joins,
@@ -252,14 +281,21 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
    no `SELECT … FOR UPDATE` on the aggregate. Two concurrent assigns can both pass a 1-credit check.
 3. **`Credits::transactions()` is a `hasOne`** despite the plural name, and it joins on `ref_id`
    (`hasOne(Transaction::class, 'ref_id')`). Do not assume a collection.
-4. **`CreditsPolicy` returns `false` for everything except `delete`**, and `delete` allows it only for
-   `source === SOURCE_MANUAL`. Purchased and revoked grants can never be deleted. Only
-   `CreditsController::destroy()` calls `authorize()`; `store()`, `index()` and `show()` do not — they
-   rely on `auth:sanctum` alone. **On `ws-402` (unmerged)** `delete` also allows a `SOURCE_REVOKED` row
-   whose `original_source === SOURCE_MANUAL` — a refund is deletable only when it traces back to money
-   the user never paid for. A denial is **403** on that branch, not 500 (see
+4. **`CreditsPolicy` returns `false` for everything except `delete`.** On `develop`, `delete` allows it
+   only for `source === SOURCE_MANUAL` — and ☠️ **decides purely on the row, never reading `$user`**,
+   while `Route::resource('credits', …)` carries only `auth:sanctum`. Any authenticated user can
+   therefore delete anyone's Manual grant by id: [S-19](../SECURITY.md#s-19). Only
+   `CreditsController::destroy()` calls `authorize()`; `store()`, `index()` and `show()` do not.
+
+   **On `ws-402` (unmerged)** the policy checks `$user->isSuperAdmin()` **first**, then the source
+   rules — who, then what. `delete` also allows a `SOURCE_REVOKED` row whose
+   `original_source === SOURCE_MANUAL`, so a refund is deletable only when it traces back to money the
+   user never paid for. A denial is **403** on that branch, not 500 (see
    [ERROR_HANDLING.md](../ERROR_HANDLING.md)); `destroy()` itself no longer plain-deletes even a
    Manual/eligible row — see `Credits::revokeGrant()` above.
+
+   ⚠️ **`index()` is still unscoped even on `ws-402`** — it reads `user_id` from the request, so any
+   authenticated caller can list another user's grants along with the new per-grant usage figures.
 5. **`GET api/credits/{coupon-code}` is unreachable.** `Route::resource('credits', …)` is registered on
    the line *above* it, so `GET credits/{credit}` (the resource `show`) matches first and
    `checkDiscountCodeValidity()` is dead code. See [ROUTES.md](../ROUTES.md#ordering-traps).
