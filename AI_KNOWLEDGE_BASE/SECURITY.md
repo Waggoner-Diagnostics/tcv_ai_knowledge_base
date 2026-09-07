@@ -17,6 +17,14 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 > ([PatientController.php:123](../../TCV-Backend/app/Http/Controllers/PatientController.php#L123)).
 > Each label below now says which tree it applies to. Never mark a finding fixed against an unmerged
 > branch without saying so in the same sentence.
+>
+> 📌 **This banner has to flip in the merge commit.** `tcv-backend-codefix → develop` is in review
+> (2026-09-07 pass: two blocking findings fixed, see [DEPLOYMENT.md](DEPLOYMENT.md) traps 3–4 and the
+> session-retirement note under [S-14](#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)).
+> The moment it lands, every "still unmerged / open on `develop`" label here becomes wrong in the other
+> direction — the KB would claim fixed-but-unmerged for findings that actually shipped. Re-sync the KB
+> from `develop` **after** the merge, never from the feature branch (see the README's
+> "Never sync this KB from a feature branch").
 
 ---
 
@@ -163,6 +171,28 @@ own session can no longer delete the patient record it is bound to. All three re
 `api.patient_not_found` (404, not 403: the caller is not entitled to learn whether the id exists).
 `update()` switched to `$request->validated()` and explicitly `unset($validated['user_id'])`, so a
 patient can no longer be reassigned to another account. The description below is kept for history.
+
+⚠️ **Two consequences of that fix shape, both handled 2026-09-07 — carry them if you copy it.**
+
+*`validated()` silently narrows the writable column set to whatever the FormRequest lists.*
+`test_condition` is in `Patient::$fillable` but was absent from `PatientUpdateRequest::rules()`, so the
+switch from `all()` made it permanently unwritable through `PUT` — no error, the key is just dropped.
+It went unnoticed because the SPA does not send it today. A rule was added
+(`sometimes|nullable|integer|in:1,2,3`, the domain the column's own comment documents — unrelated to the
+`test_conditions` table, which describes test flow). **Whenever you swap `all()` for `validated()`,
+diff `$fillable` against the request's rules first.**
+
+*The ownership check needs an identity the session can actually carry.* The binding lives in the new
+`test_sessions.patient_id`, and rows predating it cannot be backfilled: an org-added-patient session
+records no invitation, `test_sessions` has no other column referencing a patient, and
+`organization_patient_sessions` — the one place the pairing was ever known — holds no reference back to
+the session. Guessing by timestamp could bind a session to the *wrong* patient, which is worse than
+losing it. Left alone such a session keeps authenticating while publishing `patient_id = null`, so
+ownership-checked endpoints 404 while everything else keeps working — half-broken, and differently per
+endpoint. The migration now expires those rows instead, making the outcome one deterministic thing.
+Bounded by the 2 h session TTL, so it only touches sessions in flight at deploy; invitation-backed
+sessions are untouched, their identity still resolving through the invitation. Pinned by
+`tests/Feature/Authorization/TestSessionPatientIdMigrationTest.php`.
 
 ---
 
@@ -446,6 +476,32 @@ If a `TRUSTED_PROXIES` env override is added, parse it as `trim(...) ?: <default
 `env('TRUSTED_PROXIES', <default>)` — docker-compose substitutes an *empty string* for an unset
 variable, and `env()` returns that empty string instead of the default, leaving an empty proxy list
 that means "trust no proxy" and silently reinstates the bug.
+
+**Interim mitigation on `tcv-backend-codefix`, and what it does *not* cover.** Rather than wait for
+the nginx half, the limiters were re-keyed through `AppServiceProvider::callerKey()`, which leads with
+the identifier the endpoint already carries (the account's email, the org id, the caller's user id) and
+appends the IP. That removes the platform-wide bucket — one account's attempts can no longer lock out
+another — and becomes per-client automatically if nginx is ever fixed, with no code change.
+
+☠️ **The residual gap: there is now no global ceiling on authentication attempts.** The key is
+`email|ip`, and the email half is attacker-supplied, so N distinct emails buy N independent 5/min
+budgets. Password *spraying* and credential stuffing — one attempt against each of many accounts — are
+therefore unthrottled, where before they hit the shared bucket. This is a deliberate trade: a
+self-inflicted platform-wide outage was the more certain harm, and per-account keying is the standard
+shape. It is not a complete answer, and the honest fix is still the nginx half above, after which a
+real per-IP limiter can sit alongside the per-account one.
+
+Adding a global limiter *now*, before nginx forwards the real peer, would recreate the exact outage
+this replaced — every caller shares one address, so any global ceiling is a platform-wide kill switch.
+Do not add one until `$request->ip()` means something.
+
+A seventh limiter, `send-resume-email` (3/min), was added 2026-09-07: it mails a caller-supplied
+address and keeps no resend counter, so an unthrottled session holder could loop it as an email relay.
+It keys on the session/bearer token — the caller's own identity on that tier — not on the target
+address, which the caller chooses and could vary freely. It was the one email sender left unthrottled
+in a branch that had already added `throttle:bulk-invitations` and `throttle:password-reset`.
+`RateLimitScopeTest` now asserts every `throttle:<name>` a route references resolves to a registered
+limiter, because that mismatch otherwise surfaces only when a live caller hits the route.
 
 ### S-17 — Five Stripe payment endpoints are public on `develop`
 

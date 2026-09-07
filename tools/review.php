@@ -89,7 +89,7 @@ foreach ($repos as $repoKey) {
     $context[] = sprintf('`%s` — %d file(s) changed, %d line(s) added', $repoKey, count($changes), array_sum(array_map(fn($c) => count($c['added']), $changes)));
 
     foreach (patternFindings($repoKey, $changes, $facts) as $f) $report[] = $f + ['repo' => $repoKey];
-    foreach (crossFindings($repoKey, $changes) as $f)           $report[] = $f + ['repo' => $repoKey];
+    foreach (crossFindings($repoKey, $repoPath, $changes) as $f) $report[] = $f + ['repo' => $repoKey];
 
     if ($repoKey === 'backend' && $base !== null) {
         foreach (routeDelta($repoPath, $base, $head ?? 'HEAD', $parser) as $f) $report[] = $f + ['repo' => $repoKey];
@@ -266,7 +266,24 @@ function patternFindings(string $repo, array $changes, array $facts): array
     return $out;
 }
 
-function crossFindings(string $repo, array $changes): array
+/**
+ * Is this provider class actually listed in bootstrap/providers.php at HEAD?
+ *
+ * Unreadable file → treat as registered. A false negative here is a silent miss; a false
+ * positive is a HIGH finding on every provider change, which is what this replaced.
+ */
+function providerIsRegistered(string $repoPath, string $providerClass): bool
+{
+    $src = @file_get_contents($repoPath . '/bootstrap/providers.php');
+
+    if ($src === false || trim($src) === '') {
+        return true;
+    }
+
+    return (bool) preg_match('#\b' . preg_quote($providerClass, '#') . '::class#', $src);
+}
+
+function crossFindings(string $repo, string $repoPath, array $changes): array
 {
     $out = [];
     foreach ($changes as $file => $c) {
@@ -279,11 +296,22 @@ function crossFindings(string $repo, array $changes): array
             $out[] = ['id' => 'R-X02', 'severity' => 'LOW', 'file' => $file, 'line' => 1, 'snippet' => '',
                       'message' => 'Documentation added inside a code repo. The standing convention is that **all docs live in the KB**.', 'ref' => '.agent-memory/update-kb-after-passing-tasks.md'];
         }
-        if ($repo === 'backend' && str_contains($file, 'app/Providers/') && !isset($changes['bootstrap/providers.php'])) {
-            if (preg_match('#app/Providers/\w+ServiceProvider\.php$#', $file) && !str_contains($file, 'EventServiceProvider')) {
-                $out[] = ['id' => 'R-B16', 'severity' => 'HIGH', 'file' => $file, 'line' => 1, 'snippet' => '',
-                          'message' => 'A provider changed but `bootstrap/providers.php` is not in the diff. A provider absent from that list never runs — with no error.', 'ref' => 'CONFIGURATION.md'];
-            }
+        // R-B16: a provider absent from bootstrap/providers.php never runs, with no error.
+        //
+        // Resolved against providers.php as it exists at HEAD, not against the diff. Keying
+        // on "providers.php isn't in this diff" fired on *every* change to an
+        // already-registered provider — which is most of them — so the rule cried wolf
+        // permanently and taught readers to skip it. Same shape as gatingFindings() below:
+        // read the real file, and a pre-existing gap in a file you touched still surfaces.
+        if ($repo === 'backend'
+            && preg_match('#app/Providers/(\w+ServiceProvider)\.php$#', $file, $pm)
+            && !str_contains($file, 'EventServiceProvider')
+            && !providerIsRegistered($repoPath, $pm[1])) {
+            $out[] = ['id' => 'R-B16', 'severity' => 'HIGH', 'file' => $file, 'line' => 1, 'snippet' => '',
+                      'message' => sprintf(
+                          '`%s` is not listed in `bootstrap/providers.php`. A provider absent from that list never runs — with no error.',
+                          $pm[1]
+                      ), 'ref' => 'CONFIGURATION.md'];
         }
     }
     return $out;

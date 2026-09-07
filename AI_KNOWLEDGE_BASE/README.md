@@ -78,8 +78,11 @@ Beyond the three merges above, `tcv-backend-codefix` carries its own unmerged se
 |---|---|---|
 | Session tokens | `test_sessions.session_token` and `organization_patient_sessions.token` stored **plaintext** | **SHA-256 hashed**, matching the LMS tier — see [SECURITY.md "what is done well"](SECURITY.md#what-is-done-well) |
 | Patient / test-session ownership | `patients/{id}`, `assignTest`, `getActiveTest`, `sendResumeEmail`, certificate download had **no** ownership check (or one built on forgeable request input) | All read the new unforgeable `auth_context` request attribute — [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test) (partial), [S-03](SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address), [S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping), [S-18](SECURITY.md#s-18--assigntest--getactivetest-let-a-session-act-on-another-organizations-patient) — all fixed **on that branch only; every one of them is still open on `develop`** |
-| Rate limiting | none on login/register/password-reset/signature-verify/bulk-invitations/plate-url | 6 named `throttle:` limiters added — but see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert): they currently share one bucket, fix written but held back |
-| Migration failure | silent — container serves traffic on a stale schema | `entrypoint.sh` writes a marker; `/up` health check fails loudly (two open bugs in the fix itself — see [DEPLOYMENT.md](DEPLOYMENT.md)) |
+| Rate limiting | none on login/register/password-reset/signature-verify/bulk-invitations/plate-url | **7** named `throttle:` limiters (`send-resume-email` added 2026-09-07), keyed per account via `callerKey()` rather than per shared IP. See [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert): the global-bucket outage is gone, but there is now **no global ceiling**, so credential stuffing is unthrottled until the nginx half ships |
+| Migration failure | silent — container serves traffic on a stale schema | `entrypoint.sh` writes a marker; `/up` health check fails loudly. Both bugs in the fix itself are now **closed** (2026-09-07) — see [DEPLOYMENT.md](DEPLOYMENT.md) traps 3–4 |
+| Fresh-database boot | n/a | ☠️ was **bricked** by `migrate --isolated` taking its lock in a table a migration creates — fixed 2026-09-07 by bootstrapping `create_cache_table` first ([DEPLOYMENT.md](DEPLOYMENT.md) trap 3) |
+| `test_sessions.patient_id` | column does not exist | new nullable FK carrying the session→patient binding. Rows predating it **cannot** be backfilled, so the migration expires them rather than leaving them half-authenticated ([S-14](SECURITY.md#s-14--patientsid-showupdatedestroy-have-no-ownership-scoping)) |
+| Credit / coupon expiry | a credit dated "expires today" stopped counting at 00:00 that day | compared DATE-to-DATE, so it is valid all day — a **real production behaviour change**, see [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 | Request correlation | none | `AddRequestId` middleware + JSON log formatter — see [MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md) |
 | `Route::resource` on JSON-only controllers | registered unreachable `create`/`edit` form routes | switched to `Route::apiResource` throughout |
 | Dead code | `EnsureTokenIsValid` middleware present, never wired | deleted |
@@ -92,6 +95,32 @@ double-send the `SendAfterPasswordReset` notification. Caught and reverted 2026-
 
 Full detail: [SECURITY.md](SECURITY.md), [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md),
 [MIDDLEWARE.md](MIDDLEWARE.md), [DEPLOYMENT.md](DEPLOYMENT.md).
+
+#### Review pass, 2026-09-07 — and why the indexes were *not* regenerated
+
+Both blocking findings from the `tcv-backend-codefix → develop` review were fixed and verified by
+reproduction (fresh-database boot; the migration's data step), plus five of the non-blocking ones:
+the duplicate FK index, `test_condition` becoming unwritable under `validated()`, the unthrottled
+`send-resume-email`, a `RateLimiter::clear()` call that cleared nothing, and the mislabelled
+credit-expiry comment. Backend suite **263 passed** with 11 new cases.
+
+Three were deliberately **not** fixed here, each for a stated reason — the credential-stuffing gap
+(the honest fix is the nginx half of [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert),
+and adding a global limiter first would recreate the outage it replaced), and two `TCV-Frontend`
+changes: the `test_completed` 409 with no client arm, and the unread `error_type` vocabulary. Both are
+written up in [FULLSTACK_MAP.md](FULLSTACK_MAP.md).
+
+☠️ **`composer regenerate` was deliberately skipped, even though routes, models and migrations all
+changed.** The repo is checked out on `tcv-backend-codefix`, and regenerating now would re-index the
+KB from a feature branch — precisely what the warning above forbids, and exactly what produced the
+15-vs-20 public-endpoint contradiction in the 2026-09-02 sync. **Regenerate after the merge, with
+`TCV-Backend` on `develop`**, then diff [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md),
+[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and
+[DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) — `test_sessions` gains `patient_id`, and
+[S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-are-public-on-develop)'s five Stripe routes move
+inside `auth:sanctum`, taking public `api/*` from 20 back to 15. Flip the `S-02`/`S-03`/`S-14`/`S-18`
+labels in [SECURITY.md](SECURITY.md) in the same pass, or the KB will claim fixed-but-unmerged for
+findings that have shipped.
 
 **☠️ `ws-401` is not indexed** (legacy email-placeholder repair, 2026-09-03/04 — the line `ws-402`
 branched off). Passages flagged `ws-401` describe that branch, not the indexed tree. What changes if it

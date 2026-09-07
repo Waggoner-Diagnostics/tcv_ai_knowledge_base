@@ -38,7 +38,7 @@ request, and never "correct" a balance by writing a number — write a grant or 
 | `credits` | quantity granted — **negative on `ws-402` (unmerged)** for a `SOURCE_ADMIN_REVOKED` counter-entry |
 | `source` | `0 = SOURCE_MANUAL` · `1 = SOURCE_PURCHASE` · `2 = SOURCE_REVOKED` · on `ws-402` (unmerged) also `3 = SOURCE_ADMIN_REVOKED` · `4 = SOURCE_ADJUSTMENT` |
 | `original_source` | **`ws-402` only, column doesn't exist on `develop`.** Meaningful only on a `SOURCE_REVOKED` row: which grant (Manual/Purchase) funded the test this refund covers. Null otherwise — including on every refund written before the column existed. Cast to `integer` alongside `source`, because `CreditsPolicy::delete()` compares it with `===` and MySQL's PDO can hand an integer column back as a string |
-| `has_expiry` / `expiry_date` | expiry is opt-in; `expiry_date >= today` to count |
+| `has_expiry` / `expiry_date` | expiry is opt-in; `expiry_date >= today` to count — **compared as a DATE, see below** |
 | `is_unlimited_credit` | see below |
 | `coupon_code`, `price_per_credit`, `total_price`, `credited_by` | provenance |
 
@@ -50,6 +50,23 @@ request, and never "correct" a balance by writing a number — write a grant or 
 | `ref_id` | **JSON array** (cast to `array`) of the ids the spend covers |
 
 `CreditConsume::consume()` records **even for unlimited holders**, deliberately, for audit.
+
+### ⚠️ Expiry is compared DATE-to-DATE, and that changed behaviour
+
+`expiry_date` is a **DATE** column. Comparing it against a DATETIME (`now()`, or
+`now()->startOfDay()`) made a credit dated "expires today" stop counting from 00:00 **on its own expiry
+day** — MySQL widens the DATE to midnight so `'2026-09-07' >= '2026-09-07 09:00'` is false, and SQLite
+compares the two as strings with the same outcome. The holder lost a full day they were entitled to.
+
+`getTotalUserCredit()` (both the unlimited probe and the finite sum) and
+`CreditsController::checkDiscountCodeValidity()` now compare against `now()->toDateString()`, so a
+credit or coupon dated today is valid for the whole of that day.
+
+☠️ **This is a production behaviour change, not a portability no-op.** The in-code comment originally
+described it as a SQLite fix, which undersold it — the same bug and the same change apply on MySQL.
+Anything that reconciles credit balances across the boundary will see the shift. Pinned by
+`tests/Feature/Credits/CreditsExpiryBoundaryTest.php`, which walks the day before / first second /
+last minute / day after, for both finite and unlimited grants.
 
 ---
 

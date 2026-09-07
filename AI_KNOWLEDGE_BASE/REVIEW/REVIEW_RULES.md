@@ -53,7 +53,7 @@ Regexes over **added lines only**, skipping comment lines.
 | `R-B13` | MEDIUM | empty `catch (…) {}` | swallows the only diagnostic this codebase gives you | [ERROR_HANDLING.md](../ERROR_HANDLING.md) |
 | `R-B14` | LOW | `ApiResponse::success(200` — a bare status integer | use an `HttpStatus` constant | [HELPERS.md](../HELPERS.md) |
 | `R-B15` | LOW | change to `TEST_PLATE_URL_*_SECONDS` | cache TTL (880) must stay **below** URL validity (900) | [CACHE.md](../CACHE.md) |
-| `R-B16` | HIGH | a `*ServiceProvider.php` changed **without** `bootstrap/providers.php` in the diff | an unregistered provider never runs, with no error | [CONFIGURATION.md](../CONFIGURATION.md) |
+| `R-B16` | HIGH | a `*ServiceProvider.php` changed and that class is **not listed in `bootstrap/providers.php` at HEAD** | an unregistered provider never runs, with no error | [CONFIGURATION.md](../CONFIGURATION.md) |
 | `R-B17` | MEDIUM | `$request->all()` under `app/Services` | services should receive validated data, not the request | [SERVICES.md](../SERVICES.md) |
 
 ### Frontend
@@ -67,8 +67,15 @@ Regexes over **added lines only**, skipping comment lines.
 | `R-F05` | **CRITICAL** | a secret literal | every `REACT_APP_*` value ships to the browser | [ENVIRONMENT.md](../ENVIRONMENT.md) |
 | `R-F06` | HIGH | a route in `protectedRoutes.js` granted in **no** role's `parentRoutes` | `Router.js` filters it out — the page never renders and there is no error | [FRONTEND.md](../FRONTEND.md) |
 
-`R-F06` is checked against the files **as they exist at HEAD**, not the diff, so a pre-existing gap in a
-file the PR touches still surfaces.
+`R-F06` and `R-B16` are checked against the files **as they exist at HEAD**, not the diff, so a
+pre-existing gap in a file the PR touches still surfaces.
+
+> **`R-B16` was corrected on 2026-09-07.** It used to fire whenever a provider changed and
+> `bootstrap/providers.php` merely wasn't *in the diff* — which is the normal case for an
+> already-registered provider, so it raised a HIGH on essentially every provider change and trained
+> readers to wave it through. It now reads `bootstrap/providers.php` and fires only when the class is
+> genuinely absent. If a rule's condition is "the fix isn't in this diff", it is almost always the
+> wrong condition: check the state, not the changeset.
 
 ### Website
 

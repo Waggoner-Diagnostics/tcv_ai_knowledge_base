@@ -65,6 +65,22 @@ browser with a Bearer token.
   place a patient can see, never put it in a URL the patient might share.
 - **Response envelopes are not uniform** — eight shapes exist ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
   New endpoints should use `ApiResponse`; new client code should not assume a single shape.
+- ☠️ **`error_type` is a backend-only vocabulary the SPA barely reads.** `FlexibleAuthMiddleware` and
+  `TestResumeController` emit `token_expired`, `session_expired`, `session_superseded` and
+  `test_completed`, but `ResumeTest.js:34` branches on **`token_expired` alone**; every other value
+  falls into a generic "This link is invalid or has already been used." Test pages are
+  `isPublicRoute()`, so there is no global handler behind it either. Adding a new `error_type` without
+  the matching client arm ships a string nothing reads.
+  - **Live instance (`tcv-backend-codefix`, unmerged):** the new `test_completed` **409** breaks a
+    branch that used to work. `ResumeTest.js:27` navigates to the result page when
+    `test_status === "completed"`, which only runs on the success path — so a patient who finishes a
+    test and then clicks the link still sitting in their inbox now gets "Link Unavailable" instead of
+    their result. The backend already returns `data.unique_test_id` on that 409 precisely so the client
+    can build the result URL, so the backend half is done and only the frontend arm is missing. Fixing
+    it is a `TCV-Frontend` change (add a `test_completed` case that navigates to
+    `/test-invitation/test/start-test/result/{unique_test_id}`), or a result-only session if product
+    wants the link to keep working as a session. **Do not "fix" it by reverting the 409** — it exists
+    to stop a live session being minted for a test that is already done.
 - ☠️ **Enriching a response is only half a change — check the thunk still passes it on.** The generic
   Redux CRUD factories drop the body on delete (`return id`), so a backend that starts saying something
   meaningful there reaches nobody, and the component's hardcoded toast keeps claiming the old outcome.

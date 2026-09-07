@@ -74,6 +74,9 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417`, **not yet merged** — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
 | `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
 | `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
+| `tests/Feature/Authorization/` | 3 | **22** | `tcv-backend-codefix`, **not yet merged** — `SessionOwnershipTest` (9) and `OrganizationScopeTest` (8) cover [S-02](SECURITY.md)/[S-03](SECURITY.md)/[S-14](SECURITY.md)/[S-18](SECURITY.md): they build real SHA-256 sessions rather than stubbing the middleware, so a forged `patient_id`/`org_id` is genuinely rejected. `TestSessionPatientIdMigrationTest` (5, added 2026-09-07) covers the migration's data step — sessions with no recoverable identity are expired, invitation-backed ones are untouched, an already-expired row keeps its timestamp, and no duplicate index is left beside the foreign key |
+| `tests/Feature/RateLimitScopeTest.php` | 1 | **3** | `tcv-backend-codefix`, **not yet merged** — the limiters are keyed per account, not per (shared) IP: one account exhausting its budget must not lock out another, asserted only after confirming the first really is 429 so it cannot pass vacuously. Plus (2026-09-07) that every `throttle:<name>` a route references resolves to a registered limiter |
+| `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix`, **not yet merged** — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
 **93 real tests on `develop`** — **149 on `ws-404`**, **186 on `ws-417`** (which branches off the
 `ws-404` line), and **245 on `ws-401`** (which has `develop` merged in and carries the `ws-404`/`ws-417`
@@ -91,6 +94,20 @@ a green-except-that-one run as a regression.
 
 `ws-401` measured 2026-09-04: **245 passed, 741 assertions, 0 failed** in ~24 s — including that
 `DiscountCodeIndexMigrationTest` case, which is green on this line.
+
+`tcv-backend-codefix` measured 2026-09-07 (post-review): **263 passed, 708 assertions, 0 failed** in
+~24 s, including the 11 cases added when that review's findings were applied. Note this branch is a
+*different line* from the `ws-401`/`ws-402` chain below — the two sets of totals are not comparable and
+neither contains the other.
+
+☠️ **Still uncovered on that branch, and "the suite passes" is not evidence for any of it:** the
+session-token hashing migration, the `session_superseded` / `test_completed` middleware branches,
+`organizationAllowsDownload()`'s positive path, the `/up` marker behaviour, and every
+`lockForUpdate()` concurrency claim. The entrypoint bootstrap fix
+([DEPLOYMENT.md](DEPLOYMENT.md) traps 3–4) is likewise verified by direct reproduction against a real
+empty database, not by the suite — nothing in PHPUnit boots a container. Several assertions in the
+authorization tests are `assertNotEquals(200)` rather than an exact status, so an unrelated 500 would
+satisfy them.
 
 `ws-402` measured 2026-09-07 (post-review): **265 passed, 783 assertions, 0 failed** in ~31 s. It
 branches off the `ws-401` line, so it carries all of the above; its own delta is the 7 credits cases

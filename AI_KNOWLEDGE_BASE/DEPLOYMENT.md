@@ -52,7 +52,9 @@ APP_KEY      unset → FATAL, exit 1
 FRONTEND_URL unset → FATAL, exit 1
 config:clear route:clear cache:clear
 config:cache route:cache
+php artisan migrate --force --path=…create_cache_table.php   ← lock bootstrap, non-fatal
 php artisan migrate --force --isolated   ← failure writes an unhealthy marker, then PROCEEDS
+  └ on success, marker cleared only if `migrate:status --pending` says none are pending
 exec php-fpm
 ```
 
@@ -60,22 +62,41 @@ Operational consequences:
 1. **A failed migration still yields a "running" container** on a half-migrated schema — deliberately,
    so it can be debugged. It writes `storage/framework/migration_failed`, which `/up` reports on, so
    orchestration sees the replica as unhealthy. Read the boot log; a container being "up" says nothing
-   about the schema, and per trap 4 below the marker itself is not yet reliable across replicas.
+   about the schema.
 2. **Routes and config are cached at boot** — a route or config change needs a restart, not just a new
    file.
-3. ☠️ **Open — a fresh database cannot bootstrap.** `--isolated` takes its lock through the default
-   cache store, which is the *database* store (`CACHE_STORE` defaults to `database`), and `cache_locks`
-   is itself created by a migration. On a brand-new database the lock INSERT hits a table that does not
-   exist yet and kills the whole run before applying anything. **Fix shape:** run the framework's
-   `create_cache_table` migration unisolated first, then take the lock for the rest. Written
-   2026-09-02, held back with the rest of `entrypoint.sh`.
-4. ☠️ **Open — a skipping replica erases another replica's failure marker.** `--isolated` exits 0 when
-   it *skipped* because another replica held the lock, and the success branch clears the marker
-   unconditionally. On the shared `storage` volume that lets a skipping replica wipe the marker a
-   genuinely failing replica just wrote, marking every replica healthy on an unmigrated schema — the
-   exact silent failure the marker exists to prevent. **Fix shape:** clear it only after
-   `migrate:status --pending` confirms none are pending, matching the literal string
-   `"No pending migrations"` (grepping for `pending` alone also matches that message). Same hold.
+3. ✅ **Fixed 2026-09-07 (`tcv-backend-codefix`, unmerged) — a fresh database could not bootstrap.**
+   `--isolated` takes its lock through the default cache store, which is the *database* store
+   (`CACHE_STORE` defaults to `database`), and `cache_locks` is itself created by a migration. On a
+   brand-new database the lock INSERT hit a table that did not exist yet and killed the whole run
+   before applying anything — then the `else` branch wrote the marker, so `/up` failed **permanently**
+   on any new environment, DR restore or `migrate:fresh` recovery, with an error naming the database
+   rather than the lock. `entrypoint.sh` now runs the framework's `create_cache_table` migration
+   unisolated first, so the lock has somewhere to live; that step is deliberately non-fatal and
+   unmarked (a no-op on an already-migrated database, and harmless if two replicas race it — the
+   isolated run below stays the sole authority). Reproduced before the fix and verified after, both on
+   a genuinely empty database.
+4. ✅ **Fixed 2026-09-07 (same branch) — a skipping replica erased another replica's failure marker.**
+   `--isolated` exits 0 when it *skipped* because another replica held the lock, and the success branch
+   cleared the marker unconditionally. On the shared `storage` volume that let a skipping replica wipe
+   the marker a genuinely failing replica had just written, marking every replica healthy on an
+   unmigrated schema — the exact silent failure the marker exists to prevent. The success branch now
+   clears it only when `migrate:status --pending --no-ansi` reports `"No pending migrations"`;
+   otherwise it logs and leaves the health state untouched.
+
+   Three things about that check, each verified by measurement and each easy to "improve" into a bug:
+   - ☠️ **The exit code cannot be used.** `migrate:status --pending` exits **0 whether or not anything
+     is pending** — it only exits non-zero when it cannot read the `migrations` table at all (which
+     also fails the string match, so that path stays safe). Swapping the grep for `if php artisan
+     migrate:status --pending; then` clears the marker unconditionally and silently undoes this fix.
+   - Match the **whole** phrase, not `pending` alone: the "No pending migrations" message contains the
+     word too, so a loose match clears the marker in both directions. `--no-ansi` keeps the phrase free
+     of colour escapes however TTY detection goes.
+   - The `else` branch deliberately does **not** write a marker. A replica that booted while another
+     was mid-migration would otherwise be stranded permanently unhealthy, because nothing re-evaluates
+     the marker after boot. The accepted cost is that such a replica may briefly serve an incomplete
+     schema; a genuinely failing replica still surfaces through its own marker, which this branch no
+     longer erases.
 
 ## Deployment checklist
 
