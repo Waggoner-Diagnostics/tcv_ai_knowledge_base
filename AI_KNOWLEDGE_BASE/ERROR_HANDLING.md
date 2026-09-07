@@ -115,6 +115,16 @@ Eight shapes. A client cannot key on one field. The SPA copes by checking severa
 (`error.response?.data?.error_code`, `?.message`, `?.error_type`). **New code should use `ApiResponse`**
 — do not add a ninth.
 
+> ⚠️ **The `error_type` family is the one place "just use `ApiResponse`" is wrong.** Five responses put
+> `error_type` at the **top level** — `FlexibleAuthMiddleware` (`session_expired`, `session_superseded`)
+> and `TestResumeController` (`token_invalid`, `token_expired`, and `test_completed` on
+> `tcv-backend-codefix`). `ApiResponse::error()` has no slot for it: anything extra lands under `errors`,
+> so converting these moves the field to `data.errors.error_type` and silently breaks
+> `ResumeTest.js:34`, which reads `payload?.error_type`. The scanner's `R-B10` flags these lines
+> correctly as hand-built — but acting on it piecemeal is a regression, not a cleanup. Either extend
+> `ApiResponse` with a first-class `error_type`, or leave the family alone; do not convert one member of
+> it in isolation. See the `error_type` note in [FULLSTACK_MAP.md](FULLSTACK_MAP.md).
+
 Message keys resolve through `__()` against `resources/lang/en/api.php` (78 keys). A missing key renders
 as the raw key string, which is how `api.resticted` (sic) is visible in responses today.
 
