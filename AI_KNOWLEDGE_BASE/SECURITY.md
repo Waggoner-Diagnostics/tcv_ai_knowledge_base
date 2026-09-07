@@ -174,13 +174,22 @@ patient can no longer be reassigned to another account. The description below is
 
 ⚠️ **Two consequences of that fix shape, both handled 2026-09-07 — carry them if you copy it.**
 
-*`validated()` silently narrows the writable column set to whatever the FormRequest lists.*
-`test_condition` is in `Patient::$fillable` but was absent from `PatientUpdateRequest::rules()`, so the
-switch from `all()` made it permanently unwritable through `PUT` — no error, the key is just dropped.
-It went unnoticed because the SPA does not send it today. A rule was added
-(`sometimes|nullable|integer|in:1,2,3`, the domain the column's own comment documents — unrelated to the
-`test_conditions` table, which describes test flow). **Whenever you swap `all()` for `validated()`,
-diff `$fillable` against the request's rules first.**
+*`validated()` silently narrows the writable column set to whatever the FormRequest lists.* This bit
+**twice**, and the second one was live:
+
+- `test_condition` is in `Patient::$fillable` but had no rule at all, so it became unwritable through
+  `PUT`. Unnoticed because the SPA does not send it. Rule added
+  (`sometimes|nullable|integer|in:1,2,3` — the domain the column's own comment documents, unrelated to
+  the `test_conditions` table, which describes test flow).
+- ☠️ `zipcode` **was being sent by the SPA and silently discarded.** The rule said `zip_code` while the
+  column, the fillable key and `usePatientForm.js:150` all say `zipcode`, so `validated()` dropped it —
+  no 422, no log. `PatientAddRequest` spells it correctly, so *create* kept working and only *update*
+  broke, which is why it survived review: the field appeared to work end to end.
+
+**Whenever you swap `all()` for `validated()`, diff `$fillable` against the request's rules — in both
+directions.** `tests/Feature/Patients/PatientUpdateFieldsTest.php` now does exactly that as a standing
+assertion, so the next misspelling fails a test instead of shipping; a per-field test would not have
+generalised.
 
 *The ownership check needs an identity the session can actually carry.* The binding lives in the new
 `test_sessions.patient_id`, and rows predating it cannot be backfilled: an org-added-patient session

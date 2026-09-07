@@ -43,6 +43,15 @@ and both are in `Credits::$casts` for exactly that reason. A test asserting the 
 be green either way, so the cast is not something the suite can protect; check it by reading
 [POLICIES.md](POLICIES.md).
 
+☠️ **`dropForeign()` on SQLite: the array form works, the name form throws.**
+`compileDropForeign()` in Laravel 12's SQLite grammar raises
+`RuntimeException('This database driver does not support dropping foreign keys by name.')` only when
+the command carries no columns — i.e. `dropForeign('fk_name')`. `dropForeign(['column'])` passes the
+column through and is handled by SQLite's table rebuild, so a `down()` written that way rolls back
+fine under `RefreshDatabase`. Worth knowing before adding a `DB::getDriverName()` guard that isn't
+needed: `TestSessionPatientIdMigrationTest` rolls its migration back and forward on SQLite precisely
+because the migration uses the array form.
+
 ☠️ **`lockForUpdate()` is a no-op on SQLite.** `Credits::revokeGrant()` (`ws-402`) holds the user's
 ledger with one to stop two concurrent revokes both reading the same unspent balance. The suite cannot
 exercise that race at all — it is only really closed on MySQL (dev/QA/prod).
@@ -74,8 +83,9 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417`, **not yet merged** — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
 | `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
 | `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
-| `tests/Feature/Authorization/` | 3 | **22** | `tcv-backend-codefix`, **not yet merged** — `SessionOwnershipTest` (9) and `OrganizationScopeTest` (8) cover [S-02](SECURITY.md)/[S-03](SECURITY.md)/[S-14](SECURITY.md)/[S-18](SECURITY.md): they build real SHA-256 sessions rather than stubbing the middleware, so a forged `patient_id`/`org_id` is genuinely rejected. `TestSessionPatientIdMigrationTest` (5, added 2026-09-07) covers the migration's data step — sessions with no recoverable identity are expired, invitation-backed ones are untouched, an already-expired row keeps its timestamp, and no duplicate index is left beside the foreign key |
+| `tests/Feature/Authorization/` | 3 | **22** | `tcv-backend-codefix`, **not yet merged** — `SessionOwnershipTest` (9) and `OrganizationScopeTest` (8) cover [S-02](SECURITY.md)/[S-03](SECURITY.md)/[S-14](SECURITY.md)/[S-18](SECURITY.md): they build real SHA-256 sessions rather than stubbing the middleware, so a forged `patient_id`/`org_id` is genuinely rejected. `TestSessionPatientIdMigrationTest` (5, added 2026-09-07) covers the migration's data step — sessions with no recoverable identity are expired, invitation-backed ones are untouched, an already-expired row keeps its timestamp, and no duplicate index is left beside the foreign key. All three files were tightened on 2026-09-07: `assertNotEquals(200, …)` — which a stray 500 satisfies — was replaced with exact statuses, and `test_staff_cannot_reassign_a_patient_to_another_account` now asserts the PUT actually returned 200, so it can no longer confuse "ownership is protected" with "the route is broken" |
 | `tests/Feature/RateLimitScopeTest.php` | 1 | **3** | `tcv-backend-codefix`, **not yet merged** — the limiters are keyed per account, not per (shared) IP: one account exhausting its budget must not lock out another, asserted only after confirming the first really is 429 so it cannot pass vacuously. Plus (2026-09-07) that every `throttle:<name>` a route references resolves to a registered limiter |
+| `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix`, **not yet merged** — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix`, **not yet merged** — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
 **93 real tests on `develop`** — **149 on `ws-404`**, **186 on `ws-417`** (which branches off the
@@ -95,8 +105,8 @@ a green-except-that-one run as a regression.
 `ws-401` measured 2026-09-04: **245 passed, 741 assertions, 0 failed** in ~24 s — including that
 `DiscountCodeIndexMigrationTest` case, which is green on this line.
 
-`tcv-backend-codefix` measured 2026-09-07 (post-review): **263 passed, 708 assertions, 0 failed** in
-~24 s, including the 11 cases added when that review's findings were applied. Note this branch is a
+`tcv-backend-codefix` measured 2026-09-07 (after a second review pass): **267 passed, 722 assertions,
+0 failed** in ~25 s, including the 15 cases added while working through both reviews. Note this branch is a
 *different line* from the `ws-401`/`ws-402` chain below — the two sets of totals are not comparable and
 neither contains the other.
 

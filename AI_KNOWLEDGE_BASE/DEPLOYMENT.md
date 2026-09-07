@@ -76,12 +76,23 @@ Operational consequences:
    unmarked (a no-op on an already-migrated database, and harmless if two replicas race it — the
    isolated run below stays the sole authority). Reproduced before the fix and verified after, both on
    a genuinely empty database.
-4. ✅ **Fixed 2026-09-07 (same branch) — a skipping replica erased another replica's failure marker.**
+4. ✅ **Fixed 2026-09-07 (same branch) — a replica reported healthy without ever verifying the schema.**
    `--isolated` exits 0 when it *skipped* because another replica held the lock, and the success branch
-   cleared the marker unconditionally. On the shared `storage` volume that let a skipping replica wipe
-   the marker a genuinely failing replica had just written, marking every replica healthy on an
-   unmigrated schema — the exact silent failure the marker exists to prevent. The success branch now
-   clears it only when `migrate:status --pending --no-ansi` reports `"No pending migrations"`;
+   cleared the marker unconditionally — so a replica that migrated nothing still asserted a healthy
+   schema.
+
+   📌 **Correction to how this trap was previously described here.** It was written up as "a skipping
+   replica wipes another replica's marker *off the shared `storage` volume*". That premise is wrong:
+   `docker-compose.yml` bind-mounts only `/var/www/html/storage/logs` and declares no named volumes,
+   so `storage/framework/migration_failed` is **per-container** and one replica cannot erase another's.
+   Verified against both `docker-compose.yml` and `docker-compose-dev.yml`. The fix is still correct —
+   a replica must not claim a schema it never checked — but the cross-replica wipe it was said to
+   prevent could not occur. This also settles the apparent disagreement between `entrypoint.sh` and
+   `AppServiceProvider::configureMigrationHealthCheck()` over whether the marker is shared: **it is
+   not.**
+
+   The success branch now clears the marker only when `migrate:status --pending --no-ansi` reports
+   `"No pending migrations"`;
    otherwise it logs and leaves the health state untouched.
 
    Three things about that check, each verified by measurement and each easy to "improve" into a bug:
@@ -97,6 +108,26 @@ Operational consequences:
      the marker after boot. The accepted cost is that such a replica may briefly serve an incomplete
      schema; a genuinely failing replica still surfaces through its own marker, which this branch no
      longer erases.
+
+## ☠️ Rolling deploys are not safe for schema-changing releases
+
+`migrate --force --isolated` means exactly **one** replica migrates while the others carry straight on
+serving. Those others are running the *new* image against the *old* schema for the length of the
+migration, and nothing gates them behind it — the `/up` marker only records this replica's own boot
+result, and it is per-container (trap 4 above), so orchestration has no signal that the schema is mid-
+flight anywhere else.
+
+For `tcv-backend-codefix` that window is not cosmetic. Two of its migrations change data the running
+code depends on:
+
+- **Session-token hashing** — until the migration lands, a replica running new code hashes the
+  presented token and finds no row, so **every in-flight patient session 401s**.
+- **`test_sessions.patient_id`** — a replica on the new code calling `TestSession::create()` against
+  the old schema hits a column that does not exist yet, and **500s**.
+
+Deploy this release with a **single replica**, or take a short maintenance window. The same caution
+applies to any future release whose migrations change a column the request path reads on every call —
+check the migration list before choosing a rolling deploy.
 
 ## Deployment checklist
 
