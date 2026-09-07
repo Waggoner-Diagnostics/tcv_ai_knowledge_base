@@ -1,13 +1,7 @@
 {
-<<<<<<< Updated upstream
-    "generated_at": "2026-09-06T16:46:22+02:00",
+    "generated_at": "2026-09-07T15:49:23+02:00",
     "frontend": {
-        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Frontend",
-=======
-    "generated_at": "2026-09-03T11:09:34+00:00",
-    "frontend": {
-        "root": "C:\\Users\\ShantanuDhaybar\\Documents\\GitHub\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
->>>>>>> Stashed changes
+        "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
             {
                 "kind": "public",
@@ -1510,19 +1504,11 @@
             "hooks": 16,
             "pages": 84,
             "components": 49,
-<<<<<<< Updated upstream
-            "loc": 35928
+            "loc": 36031
         }
     },
     "website": {
-        "root": "D:\\Git\\TCV\\tcv-ai-knowledge-base/../TCV-Website",
-=======
-            "loc": 36010
-        }
-    },
-    "website": {
-        "root": "C:\\Users\\ShantanuDhaybar\\Documents\\GitHub\\TCV\\tcv_ai_knowledge_base/../TCV-Website",
->>>>>>> Stashed changes
+        "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Website",
         "pages": [
             {
                 "route": "/",

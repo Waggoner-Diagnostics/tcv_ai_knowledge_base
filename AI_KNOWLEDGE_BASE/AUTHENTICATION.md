@@ -41,9 +41,9 @@ Three additional credential types exist, all resolved by `FlexibleAuthMiddleware
 
 | Type | Table | Stored | TTL |
 |---|---|---|---|
-| Test session | `test_sessions.session_token` | ☠️ **plaintext** `Str::random(32)` (hashing is on unmerged `tcv-backend-codefix`, 2026-09-02) | 2 h |
+| Test session | `test_sessions.session_token` | **SHA-256 hashed** (merged from `tcv-backend-codefix`; backfilled by `2026_08_14_121502_hash_existing_session_tokens`). Clients hold the raw token | 2 h |
 | LMS session | `lms_sessions.session_token` | **SHA-256** of a 32-byte random | 120 or 180 min (provider config) |
-| Legacy org session | `organization_patient_sessions.token` | ☠️ **plaintext** (hashing is on unmerged `tcv-backend-codefix`, 2026-09-02) | per row |
+| Legacy org session | `organization_patient_sessions.token` | **SHA-256 hashed** (same merge and backfill) | per row |
 
 ⚠️ **Neither `test_sessions.patient_id` nor `invalidated_reason` exists on `develop`** — the table has
 only its create migration and the one making `test_invitation_id` nullable. On unmerged

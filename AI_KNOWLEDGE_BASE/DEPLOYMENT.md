@@ -65,7 +65,7 @@ Operational consequences:
    about the schema.
 2. **Routes and config are cached at boot** — a route or config change needs a restart, not just a new
    file.
-3. ✅ **Fixed 2026-09-07 (`tcv-backend-codefix`, unmerged) — a fresh database could not bootstrap.**
+3. ✅ **Fixed 2026-09-07 (`tcv-backend-codefix`, since merged into `develop`) — a fresh database could not bootstrap.**
    `--isolated` takes its lock through the default cache store, which is the *database* store
    (`CACHE_STORE` defaults to `database`), and `cache_locks` is itself created by a migration. On a
    brand-new database the lock INSERT hit a table that did not exist yet and killed the whole run
@@ -76,7 +76,7 @@ Operational consequences:
    unmarked (a no-op on an already-migrated database, and harmless if two replicas race it — the
    isolated run below stays the sole authority). Reproduced before the fix and verified after, both on
    a genuinely empty database.
-4. ✅ **Fixed 2026-09-07 (same branch) — a replica reported healthy without ever verifying the schema.**
+4. ✅ **Fixed 2026-09-07 (same branch, since merged) — a replica reported healthy without ever verifying the schema.**
    `--isolated` exits 0 when it *skipped* because another replica held the lock, and the success branch
    cleared the marker unconditionally — so a replica that migrated nothing still asserted a healthy
    schema.

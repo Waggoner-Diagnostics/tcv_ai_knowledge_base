@@ -7,38 +7,49 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `develop` — all three, for the first time since 2026-08-19. No feature branch is in the tree behind these indexes |
+| **Branches indexed** | `develop` · `develop` · `develop` — all three. No feature branch is in the tree behind these indexes |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `486a5cef` (2026-09-03) · `TCV-Frontend` `1867676` (2026-09-03) · `TCV-Website` `3ec94ec` (2026-09-03) — generated 2026-09-04 |
-| **Backend scale** | 196 classes/interfaces/traits · 761 methods · 178 API endpoints · 52 tables · 118 migrations |
+| **Code state at sync** | `TCV-Backend` `52804ee9` · `TCV-Frontend` `c1fe3d6` · `TCV-Website` `3ec94ec` — all on `develop`, generated **2026-09-07** |
+| **Backend scale** | 196 classes/interfaces/traits · 775 methods · 158 API endpoints · 52 tables · 123 migrations |
 | **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
 
-### ⚠️ Read this before trusting any "FIXED" note
+### ✅ `tcv-backend-codefix` and `ws-401` have merged — labels flipped 2026-09-07
 
-The 2026-09-02 sync was generated from **`tcv-backend-codefix`**, an unmerged branch that is now 17
-commits ahead of `develop` and carries the ownership-scoping fixes for
-[S-02](SECURITY.md), [S-03](SECURITY.md) and [S-14](SECURITY.md). This sync indexes `develop`, where
-**none of those fixes exist**. Every `FIXED … (tcv-backend-codefix)` line in
-[SECURITY.md](SECURITY.md) means *fixed on a branch nobody has merged* — verified 2026-09-04 by
-grepping `develop` for `callerOwnsPatient`, `callerOwnsPatientTest` and
-`test_sessions.patient_id`: all absent.
+The 2026-09-02 sync was generated from `tcv-backend-codefix` while it was unmerged, which is why this
+file spent two syncs warning that its "FIXED" notes described code that did not ship. **It has now
+merged into `develop`**, verified at `52804ee9` by finding `callerOwnsPatient`, `auth_context`,
+`AddRequestId`, the hashing migration and the `entrypoint.sh` boot fixes all present. `S-02` (partial),
+`S-03`, `S-14`, `S-18` and `S-17` are flipped in [SECURITY.md](SECURITY.md) accordingly.
 
-**☠️ Never sync this KB from a feature branch.** Indexing a fix branch makes the generated views
-describe code that does not ship, and they then contradict the prose instead of confirming it: the
-2026-09-02 audit reported **15** public endpoints because `tcv-backend-codefix` had moved the five
-Stripe payment routes inside `auth:sanctum`, while [ROUTES.md](ROUTES.md),
-[API_INDEX.md](API_INDEX.md) and [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) went on correctly
-calling them public. On `develop` they sit at `routes/api.php:48-52`, outside every group — see
-[PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) and
-[S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-are-public-on-develop). `verify.php`'s
+`ws-401` merged too, as `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`.
+
+**☠️ The rule that produced that mess still stands: never sync this KB from a feature branch.**
+Indexing a fix branch makes the generated views describe code that does not ship, and they then
+contradict the prose instead of confirming it — the 2026-09-02 audit reported **15** public endpoints
+because `tcv-backend-codefix` had already guarded the Stripe routes, while [ROUTES.md](ROUTES.md) and
+[BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) went on correctly calling them public. `verify.php`'s
 prose-count check is what catches this class of divergence; do not wave it through.
 
-`ws-392`, `ws-398`, `ws-400`, `ws-404` and `ws-417` are all **merged into `develop`** as of this sync,
-so passages that once read "if ws-nnn merges" now describe the indexed tree. `ws-401` and `ws-402`
-remain open and are **not** indexed.
+`ws-392`, `ws-398`, `ws-400`, `ws-401`, `ws-404`, `ws-417` and `tcv-backend-codefix` are all **merged
+into `develop`**. **`ws-402` is not** — passages flagged `ws-402` still describe an unmerged branch.
+
+### What the 2026-09-07 sync changed
+
+`tcv-backend-codefix` and `ws-401` merged, and `vendor/` is installed again so route extraction is back
+to the authoritative `artisan route:list --json` (it had fallen back to the AST parser). Read the
+deltas, not just the totals:
+
+| Count | 2026-09-04 | 2026-09-07 | Why |
+|---|---|---|---|
+| Endpoints in the index | 178 | **158** | ⭐ **not a loss of features.** `tcv-backend-codefix` converted 8 `Route::resource` → `Route::apiResource`, dropping the 16 unreachable `create`/`edit` form routes each pair registered, plus other route tidying |
+| Public `api/*` | 20 | **15** | ✅ the five Stripe routes moved inside `auth:sanctum` — [S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop) fixed |
+| Methods | 761 | **775** | merged security-hardening work |
+| Migrations | 118 | **123** | +5 from the two merged branches |
+| Relationships | 69 | **70** | `test_sessions.patient_id` |
+| `routes_source` | AST parser (fallback) | **`artisan route:list --json`** | `vendor/` reinstalled, so the authoritative list is back — framework and package routes are visible again |
 
 ### What the 2026-09-04 sync changed
 
@@ -69,10 +80,11 @@ still live in production.** To get the authoritative list back, run `composer in
 [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) changed only in `API-nnn` renumbering and
 the generation date — no client call lost its endpoint, no page became unreachable.
 
-### ⚠️ `tcv-backend-codefix` delta — what this branch adds on top of that baseline
+### ✅ `tcv-backend-codefix` — merged; what `develop` gained
 
-Beyond the three merges above, `tcv-backend-codefix` carries its own unmerged security-hardening pass
-(2026-09-02, re-verified 2026-09-04). Highlights, each cross-referenced to its finding:
+This security-hardening pass (2026-09-02) **is now on `develop`**, verified 2026-09-07. Kept as a
+change log because several entries changed behaviour rather than only fixing bugs. Each is
+cross-referenced to its finding:
 
 | Area | Before | On `tcv-backend-codefix` |
 |---|---|---|
@@ -122,25 +134,10 @@ inside `auth:sanctum`, taking public `api/*` from 20 back to 15. Flip the `S-02`
 labels in [SECURITY.md](SECURITY.md) in the same pass, or the KB will claim fixed-but-unmerged for
 findings that have shipped.
 
-**☠️ `ws-401` is not indexed** (legacy email-placeholder repair, 2026-09-03/04 — the line `ws-402`
-branched off). Passages flagged `ws-401` describe that branch, not the indexed tree. What changes if it
-merges:
-
-| Area | On `develop` (indexed) | On `ws-401` |
-|---|---|---|
-| Legacy `[bracket]` placeholders in stored templates | stored as written, mailed out unsubstituted, and **invisible to every tool** — the validators and `templates:check-placeholders` recognise `{{…}}` only | `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` rewrites them to canonical tokens across `test_email_templates` and `user_email_templates`. `email_template` is deliberately excluded: a bare `[link]` there could be `{{verification_link}}`, `{{reset_url}}` or `{{set_password_url}}` |
-| What a repair migration may write | — | the rewrite is scoped to the row's own `type` via `EmailTemplatePlaceholders::known()`. A token valid for one template type is a **hard 422 for the other**, and the migration is irreversible, so an unscoped map would lock the editor on the rows it was repairing ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)) |
-| A subject near its column width | — | a rewrite that would exceed `VARCHAR(225)` / `VARCHAR(250)` is skipped and logged, instead of leaving MySQL to truncate it or abort the migration half-applied ([DATABASE.md](DATABASE.md#migration-practice)) |
-| A bracket token nothing can map (`[Link]`, `[org_name]`) | — | logged as residue at migrate time — the only moment such a token is ever visible |
-
-Adds one migration and one test file (`NormalizeLegacyBracketPlaceholdersMigrationTest`, 13 tests), so a
-regeneration on `ws-401` moves the migration count by one.
-
-☠️ **Do not regenerate while `ws-401` is checked out.** It is not a superset of the indexed tree: it
-predates the `Route::apiResource` sweep and the two `test_sessions` migrations above, so `composer regenerate`
-there reports **119 migrations · 176 endpoints · 20 public** against the indexed **118 · 178 · 20** and
-rewrites every index to that older picture — including deleting `test_sessions.patient_id`. Measured
-2026-09-04; see [HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md#check-out-the-right-branch-first).
+**✅ `ws-401` merged into `develop`** (legacy email-placeholder repair). It landed as
+`2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`, which scopes the rewrite
+by template type. Passages elsewhere flagged `ws-401` now describe the indexed tree. ⚠️ Note `ws-402`
+carries a **second, different** implementation of the same repair — see the collision warning below.
 
 **☠️ `ws-402` is not indexed** (credit revocation, 2026-09-03/04, branched off the `ws-401` line
 — backend and frontend both). Passages flagged `ws-402` describe that branch, not the indexed tree. Read
@@ -185,11 +182,31 @@ and `816fbd1`, and reviewing "credit revocation" means reviewing these too:
 
 | Also in `ws-402` | What it is | Why it matters |
 |---|---|---|
-| `2026_09_03_000001_convert_legacy_bracket_placeholders_in_email_templates.php` (199 lines + a 186-line test) | the **`ws-401`** email-template repair | `origin/ws-401` exists separately and this migration is **not** on `develop`. If `ws-401` merges first this is a no-op; if not, `ws-402` silently ships an email-template rewrite that needs its own review. **Confirm the merge order.** |
+| `2026_09_03_000001_convert_legacy_bracket_placeholders_in_email_templates.php` (199 lines + a 186-line test) | a **second, different** email-template repair | ☠️ **See the collision below — this is now the branch's biggest merge hazard.** |
 | `DiscountCodeModal.jsx` (+92) and its test (+71) | price-tier reachability against Minimum Order | a complete discount feature, unrelated to credits — see [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) |
 | `Register.js` (+12) | signup popup copy | small and justified, but it is signup, not credits |
 | `CustomTooltip.js` (+3) | a global `wordBreak` change | ⚠️ affects **every tooltip in the SPA**, not just the credits grid |
 | four `.scss` files | popup, discount, AddCredits and UserManagement styling | cosmetic, but widens the blast radius |
+
+☠️ **The bracket-placeholder migration now collides with one already on `develop`.** `ws-401` merged,
+landing its repair as `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`.
+`ws-402` carries its **own** implementation of the same repair under a different name and an
+**earlier** timestamp, `2026_09_03_000001_convert_…`. They are two different files, so nothing
+deduplicates them — merging `ws-402` runs **both**, and the `ws-402` one runs **first**.
+
+That ordering is the wrong way round. `develop`'s `..._000002_normalize_` scopes the rewrite **by
+template type**, only ever writing tokens `EmailTemplatePlaceholders::known()` renders for that row's
+own type. `ws-402`'s `..._000001_convert_` applies `TOKEN_MAP` **blanket** to every row of both
+template tables — it selects `type` but uses it only for logging — so it can write a `test_link`-only
+token into an `org_test_link` row, producing a template the app's own validators reject
+(`UpdateUserEmailTemplateRequest` and `TestEmailTemplateController` both 422 on an unrecognised
+placeholder) and whose `down()` is empty. The type-scoped migration then runs against rows the blanket
+one has already mangled.
+
+**Resolve before merging `ws-402`:** drop its `..._000001_convert_` migration and its test, since
+`develop` already has the better implementation. This was previously written up here as "if `ws-401`
+merges first this is a no-op" — that is now known to be **wrong**, because they are separate files
+rather than the same one.
 
 Splitting the branch, or at least renaming it, would make all of this reviewable. `TCV-Frontend`'s
 `ws-402` is also **21 commits behind `origin/develop`** (the backend is current); the update is
@@ -300,7 +317,7 @@ before writing code.
 |---|---|
 | [ROUTES.md](ROUTES.md) / [API_INDEX.md](API_INDEX.md) | Route groups, guarding, the ordering traps |
 | [DATABASE.md](DATABASE.md) | Schema conventions, the tables that matter |
-| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 69 declared relationships |
+| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 70 declared relationships |
 
 ### Layers
 | Doc | Exists? |
@@ -331,7 +348,7 @@ before writing code.
 | Index | Rows |
 |---|---|
 | [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 178 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 196 |
 | [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 761 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |

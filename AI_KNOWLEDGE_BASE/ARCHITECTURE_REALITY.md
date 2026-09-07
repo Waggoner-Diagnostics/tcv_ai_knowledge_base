@@ -14,7 +14,7 @@
 |---|---|---|
 | Controllers | **34** | Thin-ish. Real logic mostly delegated to Services. |
 | Services | **33** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`). |
-| Models | **40** | Eloquent, 69 declared relationships. |
+| Models | **40** | Eloquent, 70 declared relationships. |
 | FormRequests | **24** | Validation is genuinely centralised here — follow this. |
 | Middleware | **4** | One global (`RestrictIpMiddleware`), two aliased, and `EnsureTokenIsValid` — dead but **still present** on `develop` — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |
@@ -70,7 +70,7 @@ Full picture: [INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) · [EVENTS.md](EV
 
 `app/Http/Middleware/EnsureTokenIsValid.php` is never aliased in `bootstrap/app.php` and appears in no
 route. Confirmed dead — and **still present on `develop`** (verified at `486a5cef`). It is deleted only
-on the unmerged `tcv-backend-codefix` (2026-09-02), which also adds `AddRequestId` in its `MW-001` slot,
+on `tcv-backend-codefix` (merged into `develop`), which also adds `AddRequestId` in its `MW-001` slot,
 a real global middleware stamping a correlation id onto every request/log line — neither change has
 shipped, so `develop` has no request correlation. Do not reach for `EnsureTokenIsValid` when you need a
 guard — use `auth:sanctum` or `FlexibleAuthMiddleware`

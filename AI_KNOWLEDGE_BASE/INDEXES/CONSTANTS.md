@@ -24,7 +24,17 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
+
+### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CONTEXT_KEY` | `'auth_context'` | [25](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L25) |
+| `TIER_SANCTUM` | `'sanctum'` | [27](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L27) |
+| `TIER_TEST_SESSION` | `'test_session'` | [28](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L28) |
+| `TIER_LMS_SESSION` | `'lms_session'` | [29](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L29) |
+| `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [30](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L30) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -164,6 +174,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `CATEGORIES` | `[…]` | [13](../../../TCV-Backend/app/Models/TestSection.php#L13) |
 
+### `TestSession` — `app/Models/TestSession.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `INVALIDATED_SUPERSEDED` | `'superseded'` | [14](../../../TCV-Backend/app/Models/TestSession.php#L14) |
+
 ### `User` — `app/Models/User.php`
 
 | Constant | Value | Line |
@@ -254,4 +270,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-07. Do not hand-edit — re-run the generator._

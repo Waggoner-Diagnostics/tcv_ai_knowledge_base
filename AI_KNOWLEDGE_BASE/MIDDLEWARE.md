@@ -9,7 +9,7 @@ Four classes exist in `app/Http/Middleware/`. **One is global, two are aliased, 
 | `FlexibleAuthMiddleware` | `MW-002` | alias `FlexibleAuthMiddleware` | The four-tier session gate |
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
 
-⚠️ **`AddRequestId` does not exist on `develop`.** The unmerged `tcv-backend-codefix` branch adds it
+✅ **`AddRequestId` is now on `develop`** (merged from `tcv-backend-codefix`). It
 (prepended globally, stamping an `X-Request-Id` correlation id into Laravel's `Context` so every log line
 for a request — and any job it dispatches — carries it, paired with a JSON log formatter). Until that
 merges, there is no request correlation; see [LOGGING.md](LOGGING.md).
@@ -54,13 +54,13 @@ Tries in order and returns on the first hit. Full detail in
 | Tier | Source | Lookup | Merges |
 |---|---|---|---|
 | 1 | `Auth::guard('sanctum')` | — | normal `$request->user()` |
-| 2 | `test_sessions` | ☠️ **plaintext** `session_token` — raw-value lookup (hashing is on unmerged `tcv-backend-codefix`) | `test_session_id`, `test_invitation_id`, `session_token` |
+| 2 | `test_sessions` | **SHA-256 hashed** `session_token` — the presented token is hashed before lookup | `test_session_id`, `test_invitation_id`, `session_token`, `patient_id` |
 | 3 | `lms_sessions` | **SHA-256** of the token | `lms_session_id`, `org_session_id`, `org_id`, `patient_id`, `unique_test_id`, `$request->attributes['lmsSession']` |
-| 4 | `organization_patient_sessions` | ☠️ **plaintext** `token` — raw-value lookup (hashing is on unmerged `tcv-backend-codefix`) | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
+| 4 | `organization_patient_sessions` | **SHA-256 hashed** `token` — hashed before lookup | `org_session_id`, `org_id`, `patient_id`, `test_id`, `org_session_token` |
 
 The token is read from `Authorization: Bearer` **or** the `X-Session-Token` header.
 
-⚠️ **`auth_context` does not exist on `develop`.** On unmerged `tcv-backend-codefix` (2026-09-02) the
+✅ **`auth_context` is now on `develop`** (merged from `tcv-backend-codefix`). The
 middleware also publishes an unforgeable `auth_context` request attribute — `FlexibleAuthMiddleware::context($request)` returns
 `['tier', 'user_id', 'org_id', 'patient_id', 'test_invitation_id', 'test_session_id']`, set on
 `$request->attributes` (never reachable by client input, unlike the *Merges* column above). Full detail:

@@ -1,6 +1,6 @@
 # Event & Listener Index
 
-**3 events · 4 listeners · 3 explicit `Event::listen` bindings.**
+**3 events · 4 listeners · 4 explicit `Event::listen` bindings.**
 
 ## Dispatch sites (`event(new …)`)
 
@@ -16,7 +16,8 @@
 
 | Event | Listener | Bound in |
 |---|---|---|
-| `MessageSending` | `PrefixEmailSubject` | [app/Providers/AppServiceProvider.php:31](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L31) |
+| `MessageSending` | `PrefixEmailSubject` | [app/Providers/AppServiceProvider.php:40](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L40) |
+| `DiagnosingHealth` | `` | [app/Providers/AppServiceProvider.php:56](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L56) |
 | `TestCompleted` | `HandleLmsNotificationOnCompletion` | [app/Providers/LmsServiceProvider.php:38](../../../TCV-Backend/app/Providers/LmsServiceProvider.php#L38) |
 | `TestSectionCompleted` | `HandleLmsSectionProgressOnCompletion` | [app/Providers/LmsServiceProvider.php:39](../../../TCV-Backend/app/Providers/LmsServiceProvider.php#L39) |
 
@@ -27,4 +28,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-07. Do not hand-edit — re-run the generator._

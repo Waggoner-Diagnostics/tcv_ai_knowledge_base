@@ -71,7 +71,7 @@ browser with a Bearer token.
   falls into a generic "This link is invalid or has already been used." Test pages are
   `isPublicRoute()`, so there is no global handler behind it either. Adding a new `error_type` without
   the matching client arm ships a string nothing reads.
-  - **Live instance (`tcv-backend-codefix`, unmerged):** the new `test_completed` **409** breaks a
+  - **Live instance — now on `develop`:** the `test_completed` **409** breaks a
     branch that used to work. `ResumeTest.js:27` navigates to the result page when
     `test_status === "completed"`, which only runs on the success path — so a patient who finishes a
     test and then clicks the link still sitting in their inbox now gets "Link Unavailable" instead of

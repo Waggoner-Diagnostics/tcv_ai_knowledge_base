@@ -111,7 +111,7 @@ Route::apiResource('discount-codes', DiscountCodeController::class);   // litera
 
 ### ⚠️ All three traps above are still live on `develop`
 
-The unmerged `tcv-backend-codefix` branch (2026-09-04) fixes them, and it is the shape to follow — but
+`tcv-backend-codefix` (merged into `develop` 2026-09-07) fixed them, and it is the shape to follow — but
 none of it ships yet. Verified on `develop` at `486a5cef`: `routes/api.php` still has **8**
 `Route::resource(...)` calls, `credits/{coupon-code}` still sits after the resource at line 180,
 `restricted-ips` is still registered twice (lines 183 and 210), and `EnsureTokenIsValid` still exists.

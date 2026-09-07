@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **52 tables**, reconstructed from 118 migrations — the indexed snapshot, taken from
+MySQL, **52 tables**, reconstructed from 123 migrations — the indexed snapshot, taken from
 `develop` at `486a5cef` (2026-09-03). Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
