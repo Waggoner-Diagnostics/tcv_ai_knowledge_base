@@ -139,7 +139,13 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
 - [ ] Lazy imports use `lazyWithRetry`.
 - [ ] No client logic that branches on a **403** — the backend returns 500 for those.
 - [ ] Paginated tables use `createPaginatedCrudSlice`.
-- [ ] `eslint src --max-warnings 0` passes (one new warning fails it).
+- [ ] `eslint src --max-warnings 0` on the PR branch reports the **same or fewer** problems as
+      the same command run against `develop`. Not an absolute zero-warnings gate — `develop`
+      itself has never passed `--max-warnings 0` outright (198+ pre-existing warnings, 2
+      pre-existing errors as of 2026-09), so treating this as "must pass clean" makes it an
+      always-failing checklist item that gets learned-around rather than used. Run it against
+      both branches and diff the counts; a branch that adds zero fails nothing here even if the
+      absolute number is non-zero.
 
 ## 9. Website (TCV-Website)
 
