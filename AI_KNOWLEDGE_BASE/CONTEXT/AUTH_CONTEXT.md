@@ -322,3 +322,19 @@ but it is the first thing to revisit if white-label branding becomes a real requ
    existing environment on the old text — pair it with a match-on-old-value data migration (`ws-373`).
 9. **Never hand-write the sign-off.** It is `App\Support\EmailSignature::HTML`, referenced by both the
    seeder and the restyle migration precisely so the contact details cannot drift between them.
+10. ☠️ **The SPA's `auth.user` is written by two slices now (`ws-407`, merged 2026-09-08).**
+    `redux/slices/auth/loginSlice.js` is no longer the only writer: it adds an
+    `.addCase(updateProfile.fulfilled)` — importing the thunk from
+    `slices/userProfile/profileSlice.js` — that merges the saved user into `state.user` and rewrites the
+    `auth` key in `localStorage`. Before this, Settings ▸ Profile saved only into the *profile* slice, so
+    anything reading `auth.user` (Checkout's billing pre-fill: `phone_no`, `state_id`, `city`, …) kept
+    showing pre-edit values until the next login. Consequences worth knowing:
+    - **`auth.user` is a merge, not a replacement** (`{ ...state.user, ...action.payload.user }`), and
+      `userType` is re-derived from `usertype` on the merged object. A `PUT api/profile` response that
+      omits `usertype` therefore leaves the old one standing — but one that *returns a different* one
+      silently re-roles the session in the client. Keep the profile response's user shape aligned with
+      login's.
+    - The reducer no-ops on `!action.payload?.user`, so a profile endpoint that stops returning `user`
+      degrades to the old stale-prefill behaviour **silently**, with no error anywhere.
+    - `localStorage.auth` is now written from two places with the same four keys
+      (`token`, `user`, `userType`, `isAuthenticated`). Adding a fifth means editing both.

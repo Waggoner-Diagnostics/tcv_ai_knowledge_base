@@ -110,6 +110,8 @@ Read the row for the thing you are about to change **before** you change it.
 | Patient `gender` values | `Patient::GENDERS` (drives both FormRequests' `in:` rule and `genderLabel()`) + `GENDER_OPTIONS` in the SPA's `testUtils.js` — two lists, one per repo, that must agree |
 | Adding an SPA page | `protectedRoutes.js` + `routeConfig.js` + `USER_PANEL_WITH_HEADER` |
 | Login/registration payload | backend + SPA + **the website's proxy routes** |
+| The `PUT api/profile` response's `user` shape | since `ws-407` it feeds `auth.user` **and** `localStorage.auth`, not just the profile slice — dropping a key there stales out Checkout's billing pre-fill silently, and changing `usertype` there re-roles the client session ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md#-traps) trap 10) |
+| A patient-field format rule | there are **two** validators behind one Add Patient screen — `formUtils.js`'s `FORMAT_VALIDATORS` (org/field-rules branch) and the inline checks in `usePatientForm.js` (edit + fallback). `ws-407` added `EMAIL_PATTERN` to the first only ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-traps) trap 8) |
 
 ---
 

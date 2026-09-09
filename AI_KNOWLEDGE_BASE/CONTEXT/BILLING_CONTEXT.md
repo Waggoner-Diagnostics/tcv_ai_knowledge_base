@@ -149,6 +149,34 @@ don't "fix" it by swapping the values.
 `GET /payment/callback` (named `payment.callback`) is the only non-`api/` route with a controller. It is
 public and session-based, unlike everything else. See [ROUTES.md](../ROUTES.md).
 
+### 8. ☠️ The SPA checkout gates the Pay button on `billingInfo`, and a *validation error* lives in it
+
+The billing form is client-only state — one `billingInfo` object in
+`pages/UserPannel/CheckOutPage/Checkout.js`, handed whole to `components/PaymentForm/PaymentForm.js`,
+which computes `isBillingComplete` from it and disables Pay. Nothing on the backend validates these
+fields; they become Stripe `billing_details` on the intent and nothing else.
+
+**`ws-407` (on `ws-407`, not yet on `develop`) made Phone optional there**, and the shape of the fix is
+the part to remember:
+
+- `isBillingComplete` no longer requires `billingInfo.phone`; it requires `!billingInfo.phoneError`.
+  So `billingInfo` now mixes field values with a **validation flag under the same roof**, and any new
+  `*Error` key you add to that object is invisible to the gate unless you also add it here. A blank
+  phone is valid; a half-typed one blocks Pay.
+- `phone` is sent as `billingInfo.phone || undefined`. Stripe rejects `billing_details.phone: ""` —
+  omit the key, don't send an empty string.
+- The digit cap is counted on **digits, not characters**: `(` `)` `-` `+` and spaces are kept in the
+  value so `+1 (234) 567-8900` doesn't eat into the 15 digits E.164 allows (`maxLength` on the input is
+  20 for the same reason). A keystroke past 15 digits returns `prev` unchanged rather than slicing, so
+  the number is never cut mid-way. Below 10 digits (and non-blank) is the error case.
+- ⚠️ The phone branch does its own `setBillingInfo(prev => …)` and **returns early**. Adding another
+  field that needs derived state means a second early return, not an extra key on a shared `updates`
+  object — the old shape, which computed `updates` outside the updater, was the impure-updater bug this
+  replaced.
+
+The form pre-fills from `auth.user` (`user.phone_no`, `user.state_id`, …), which is why the profile-save
+sync in trap 9 of [AUTH_CONTEXT](AUTH_CONTEXT.md#-traps) matters here.
+
 ---
 
 ## Credit history

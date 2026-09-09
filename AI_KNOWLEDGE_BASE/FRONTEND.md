@@ -177,6 +177,15 @@ success toast. Check what the endpoint actually returns before assuming a delete
 > the other paginated slices (`reports/patientTestsSlice`, `reports/userTestsReportSlice`) are read-only.
 > Covered by `src/redux/slices/createpaginatedslice.test.js`.
 
+☠️ **Slices are not islands — `auth` listens to `profile` (`ws-407`, merged 2026-09-08).**
+`loginSlice.js` imports `updateProfile` from `slices/userProfile/profileSlice.js` and handles its
+`fulfilled` in `extraReducers`, merging the saved user into `auth.user` and rewriting `localStorage`.
+This is the pattern to copy when one slice's write has to be visible through another (here: Settings ▸
+Profile edits showing up in Checkout's billing pre-fill) — cross-slice `addCase`, not a duplicate
+dispatch at the call site. Two things follow: the profile save now mutates **two** slices, and
+`auth.user`'s writers are no longer greppable by `loginSlice` alone. Details and the failure modes in
+[CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md#-traps) trap 10.
+
 Table column definitions live one-file-per-table in `src/utils/columns/`, fed straight into `react-table`.
 
 > **`ws-402` (unmerged) — a column trap worth knowing.** `addCreditsColumns.js` decides whether to render

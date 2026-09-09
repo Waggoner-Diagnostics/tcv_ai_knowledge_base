@@ -101,7 +101,23 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
    — `form.gender === "1"` — and `formUtils.buildPayload()` ships it as-is. Both land in the same column.
    `GENDER_OPTIONS` in `src/utils/testUtils.js` is the single list both render from, but check which
    shape a form is in before comparing `form.gender` to anything.
-8. **The Patients menu's password prompt is a client-side speed bump.** The SPA asks for the password
+8. ☠️ **Add Patient validates `email` two different ways on the same screen (`ws-407`, merged
+   2026-09-08).** The split follows trap 7's: `AddPatient.js` calls `formUtils.validateForm()` only on
+   the **org/field-rules** branch (`!isEditMode && fieldRules`), and everything else — edit mode, and
+   the no-field-rules fallback — goes to `usePatientForm.validate()`.
+   - `formUtils.js` now has `EMAIL_PATTERN` wired into `FORMAT_VALIDATORS.email`. It is deliberately
+     stricter than the `/^\S+@\S+\.\S+$/` check used in `usePatientForm.js`, `services/validations.js`
+     and `SendTestModal.js`, which accepts stray `/ [ ;` in the local part — `skdjfh234424//[;/sdf234@
+     yopmail.com` passed silently before.
+   - So the strict pattern is live on the org intake path **only**. `usePatientForm.js` imports
+     `NAME_PATTERN` and `PATIENT_ID_PATTERN` from `formUtils` but *not* `EMAIL_PATTERN`; the loose regex
+     is still inline there. Adding a pattern to `formUtils` does not reach the fallback form — wire it
+     into the hook as well, or the same address is accepted on one branch and rejected on the other.
+   - `FORMAT_VALIDATORS` run through `validateFormat()`, which returns early on a blank value. Format
+     checks apply **whenever a value is present**, required or not; requiredness is a separate branch
+     above them. Nothing on the backend enforces this — `PatientAddRequest` is the only real gate, and
+     patients are never deduplicated by email (trap 5).
+9. **The Patients menu's password prompt is a client-side speed bump.** The SPA asks for the password
    before navigating into `/user-panel/patients`, but `api/verify-password` is stateless and no patient
    endpoint knows the prompt exists — a typed URL or any in-app `navigate()` walks straight past it.
    ws-399 (2026-08-28, unmerged) narrows it further: no re-prompt once you are already inside the
