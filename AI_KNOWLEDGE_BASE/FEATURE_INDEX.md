@@ -40,6 +40,7 @@ commits can reference a feature without restating it.
 | **F-071** | Super-admin dashboard | `GET api/super-admin/dashboard` | `SuperAdminDashboardController` | many | [REPORTING](CONTEXT/REPORTING_CONTEXT.md) |
 | **F-080** | Contact / enquiry | `POST api/contact` | `ContactController` · `HubSpotService` | — | [THIRD_PARTY](THIRD_PARTY.md) |
 | **F-081** | Reference data | `api/dropdown/*` · `GET api/countries-with-states` | `DropdownValuesController` | `countries`, `states`, `compliances`, `privileges`, `organization_types`, `organization_settings_options` | — |
+| **F-082** | Audit trail (`feat/ui-audit-trail`, not yet in `develop`) | `GET api/audit-logs`, `api/audit-logs/people`, `api/audit-logs/{id}` (Super Admin only) | `AuditLogController` · `Audit\AuditService` · `Audit\AuditEventCatalog` (61 events / 8 categories, only login/logout wired to a real call site so far) | `audit_logs` | [AUDIT_TRAIL_BACKEND](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md), [AUDIT_TRAIL_FRONTEND](CONTEXT/AUDIT_TRAIL_FRONTEND_CONTEXT.md) |
 
 ## Depth of tracing
 

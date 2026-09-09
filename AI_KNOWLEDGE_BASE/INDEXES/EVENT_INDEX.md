@@ -1,14 +1,15 @@
 # Event & Listener Index
 
-**3 events · 4 listeners · 3 explicit `Event::listen` bindings.**
+**3 events · 4 listeners · 4 explicit `Event::listen` bindings.**
 
 ## Dispatch sites (`event(new …)`)
 
 | Event | Dispatched from |
 |---|---|
-| `UserPasswordSet` | [app/Http/Controllers/AuthController.php:282](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L282) |
-| `PasswordReset` | [app/Http/Controllers/AuthController.php:297](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L297) |
-| `Verified` | [app/Http/Controllers/AuthController.php:358](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L358) |
+| `UserPasswordSet` | [app/Http/Controllers/AuthController.php:341](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L341) |
+| `PasswordReset` | [app/Http/Controllers/AuthController.php:356](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L356) |
+| `Verified` | [app/Http/Controllers/AuthController.php:417](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L417) |
+| `UserPasswordSet` | [app/Http/Controllers/Qa/QaAutomationController.php:194](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L194) |
 | `TestSectionCompleted` | [app/Services/TestExecutionService.php:97](../../../TCV-Backend/app/Services/TestExecutionService.php#L97) |
 | `TestCompleted` | [app/Services/TestExecutionService.php:172](../../../TCV-Backend/app/Services/TestExecutionService.php#L172) |
 
@@ -16,7 +17,8 @@
 
 | Event | Listener | Bound in |
 |---|---|---|
-| `MessageSending` | `PrefixEmailSubject` | [app/Providers/AppServiceProvider.php:31](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L31) |
+| `MessageSending` | `PrefixEmailSubject` | [app/Providers/AppServiceProvider.php:40](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L40) |
+| `DiagnosingHealth` | `` | [app/Providers/AppServiceProvider.php:56](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L56) |
 | `TestCompleted` | `HandleLmsNotificationOnCompletion` | [app/Providers/LmsServiceProvider.php:38](../../../TCV-Backend/app/Providers/LmsServiceProvider.php#L38) |
 | `TestSectionCompleted` | `HandleLmsSectionProgressOnCompletion` | [app/Providers/LmsServiceProvider.php:39](../../../TCV-Backend/app/Providers/LmsServiceProvider.php#L39) |
 
@@ -27,4 +29,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-09. Do not hand-edit — re-run the generator._

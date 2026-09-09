@@ -4,7 +4,7 @@ Derived view: TCV-Frontend / TCV-Website call sites whose URL matches **no route
 [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md). Each one is a request that reaches the API and comes
 back **404**.
 
-**7 unmatched of 87 distinct SPA calls.**
+**8 unmatched of 88 distinct SPA calls.**
 
 Read the `Why` column before acting — a row is one of three things:
 
@@ -23,6 +23,7 @@ Read the `Why` column before acting — a row is one of three things:
 | POST | `/api/user/tests/bulk-update-visibility` | **no such path** | [src/redux/slices/tests/testVisibilitySlice.js:44](../../../TCV-Frontend/src/redux/slices/tests/testVisibilitySlice.js#L44) |
 | GET | `/{param}` | _scanner limit_ | [src/redux/slices/createpaginatedslice.js:65](../../../TCV-Frontend/src/redux/slices/createpaginatedslice.js#L65) |
 | DELETE | `/{param}/{param}` | _scanner limit_ | [src/redux/slices/createSlice.js:94](../../../TCV-Frontend/src/redux/slices/createSlice.js#L94) _(+1)_ |
+| GET | `/{param}/{param}` | _scanner limit_ | [src/apis/fetchAuditLogDetail.js:17](../../../TCV-Frontend/src/apis/fetchAuditLogDetail.js#L17) |
 | PUT | `/{param}/{param}` | _scanner limit_ | [src/redux/slices/createSlice.js:77](../../../TCV-Frontend/src/redux/slices/createSlice.js#L77) _(+1)_ |
 | GET | `/{param}{param}` | _scanner limit_ | [src/apis/miscApis.js:7](../../../TCV-Frontend/src/apis/miscApis.js#L7) |
 
@@ -35,11 +36,11 @@ the backend, so the browser only ever talks to the website's own origin.
 
 | Website route | Methods | Forwards to | Backend route exists? |
 |---|---|---|---|
-| `/api/auth` | POST | `/api/login` | ✅ `API-035` |
-| `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-010` |
-| `/api/logout` | POST | `/api/logout` | ✅ `API-036` |
-| `/api/register` | POST | `/api/register` | ✅ `API-075` |
+| `/api/auth` | POST | `/api/login` | ✅ `API-036` |
+| `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-013` |
+| `/api/logout` | POST | `/api/logout` | ✅ `API-037` |
+| `/api/register` | POST | `/api/register` | ✅ `API-074` |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-09. Do not hand-edit — re-run the generator._

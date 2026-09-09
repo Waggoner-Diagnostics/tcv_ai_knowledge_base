@@ -7,11 +7,11 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `develop` — all three, for the first time since 2026-08-19. No feature branch is in the tree behind these indexes |
+| **Branches indexed** | `feat/ui-audit-trail` · `feat/ui-audit-trail` · `website-integration` — **TCV-Backend and TCV-Frontend are on the audit-trail feature branch, not `develop`**, at the time of this generation. Counts below reflect that branch, not `develop`. |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `486a5cef` (2026-09-03) · `TCV-Frontend` `1867676` (2026-09-03) · `TCV-Website` `3ec94ec` (2026-09-03) — generated 2026-09-04 |
-| **Backend scale** | 196 classes/interfaces/traits · 761 methods · 178 API endpoints · 52 tables · 118 migrations |
-| **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
+| **Code state at sync** | `TCV-Backend` `a7d1c8c9` · `TCV-Frontend` `85bce9a` · `TCV-Website` `edc69f8` — generated 2026-09-09 |
+| **Backend scale** | 204 classes/interfaces/traits · 822 methods · 161 API endpoints · 53 tables · 126 migrations |
+| **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -278,14 +278,14 @@ before writing code.
 |---|---|
 | [ROUTES.md](ROUTES.md) / [API_INDEX.md](API_INDEX.md) | Route groups, guarding, the ordering traps |
 | [DATABASE.md](DATABASE.md) | Schema conventions, the tables that matter |
-| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 69 declared relationships |
+| [MODEL_RELATIONSHIP.md](MODEL_RELATIONSHIP.md) | ER diagram, 70 declared relationships |
 
 ### Layers
 | Doc | Exists? |
 |---|---|
-| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 34 |
-| [SERVICES.md](SERVICES.md) | ✅ 33 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 24 FormRequest classes |
+| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 36 |
+| [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
+| [REQUESTS.md](REQUESTS.md) | ✅ 25 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
@@ -308,13 +308,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 178 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **20 public** |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 196 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 761 |
-| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |
-| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 52 |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 196 |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 161 |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 204 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 822 |
+| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |
+| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 204 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |
@@ -409,7 +409,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 118 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 126 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

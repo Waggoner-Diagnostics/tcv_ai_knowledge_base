@@ -20,17 +20,41 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
 
+### `QaAutomationController` — `app/Http/Controllers/Qa/QaAutomationController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `ENVIRONMENTS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L36) |
+
 ### `TestResumeController` — `app/Http/Controllers/TestResumeController.php`
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
+
+### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CONTEXT_KEY` | `'auth_context'` | [25](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L25) |
+| `TIER_SANCTUM` | `'sanctum'` | [27](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L27) |
+| `TIER_TEST_SESSION` | `'test_session'` | [28](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L28) |
+| `TIER_LMS_SESSION` | `'lms_session'` | [29](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L29) |
+| `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [30](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L30) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
 | Constant | Value | Line |
 |---|---|---|
 | `ERROR_CODE` | `'IP_RESTRICTED'` | [11](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L11) |
+
+### `AuditLogIndexRequest` — `app/Http/Requests/AuditLogIndexRequest.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CATEGORIES` | `[…]` | [15](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L15) |
+| `SENSITIVITY_LEVELS` | `[…]` | [21](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L21) |
+| `SORTABLE` | `[…]` | [24](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L24) |
 
 ### `CreateTestRequest` — `app/Http/Requests/CreateTestRequest.php`
 
@@ -78,9 +102,11 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SOURCE_MANUAL` | `0` | [16](../../../TCV-Backend/app/Models/Credits.php#L16) |
-| `SOURCE_PURCHASE` | `1` | [17](../../../TCV-Backend/app/Models/Credits.php#L17) |
-| `SOURCE_REVOKED` | `2` | [18](../../../TCV-Backend/app/Models/Credits.php#L18) |
+| `SOURCE_MANUAL` | `0` | [29](../../../TCV-Backend/app/Models/Credits.php#L29) |
+| `SOURCE_PURCHASE` | `1` | [30](../../../TCV-Backend/app/Models/Credits.php#L30) |
+| `SOURCE_REVOKED` | `2` | [31](../../../TCV-Backend/app/Models/Credits.php#L31) |
+| `SOURCE_ADMIN_REVOKED` | `3` | [33](../../../TCV-Backend/app/Models/Credits.php#L33) |
+| `SOURCE_ADJUSTMENT` | `4` | [35](../../../TCV-Backend/app/Models/Credits.php#L35) |
 
 ### `LmsDeliveryQueue` — `app/Models/LmsDeliveryQueue.php`
 
@@ -164,6 +190,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `CATEGORIES` | `[…]` | [13](../../../TCV-Backend/app/Models/TestSection.php#L13) |
 
+### `TestSession` — `app/Models/TestSession.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `INVALIDATED_SUPERSEDED` | `'superseded'` | [14](../../../TCV-Backend/app/Models/TestSession.php#L14) |
+
 ### `User` — `app/Models/User.php`
 
 | Constant | Value | Line |
@@ -178,6 +210,18 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `TYPE_TEST_LINK` | `'test_link'` | [33](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L33) |
 | `TYPE_ORG_TEST_LINK` | `'org_test_link'` | [34](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L34) |
+
+### `AuditEventCatalog` — `app/Services/Audit/AuditEventCatalog.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `EVENTS` | `[…]` | [64](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L64) |
+
+### `AuditService` — `app/Services/Audit/AuditService.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `DENYLIST` | `[…]` | [32](../../../TCV-Backend/app/Services/Audit/AuditService.php#L32) |
 
 ### `PricingAuditService` — `app/Services/Audit/PricingAuditService.php`
 
@@ -252,6 +296,16 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `DEFAULT_TEST_TITLE` | `'Adult Diagnostic'` | [7](../../../TCV-Backend/app/Support/TestConstants.php#L7) |
 
+### `AuditLogSeeder` — `database/seeders/AuditLogSeeder.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `ADMIN` | `[…]` | [30](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L30) |
+| `OTHER_ADMIN` | `[…]` | [33](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L33) |
+| `ORG` | `[…]` | [35](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L35) |
+| `CUSTOMER` | `[…]` | [37](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L37) |
+| `DAY_OFFSET_CYCLE` | `[…]` | [44](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L44) |
+
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-06. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-09. Do not hand-edit — re-run the generator._
