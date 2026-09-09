@@ -36,6 +36,25 @@ prose-count check is what catches this class of divergence; do not wave it throu
 `ws-392`, `ws-398`, `ws-400`, `ws-401`, `ws-404`, `ws-417` and `tcv-backend-codefix` are all **merged
 into `develop`**. **`ws-402` is not** — passages flagged `ws-402` still describe an unmerged branch.
 
+### TCV-Website has moved well past its indexed SHA — read [WEBSITE.md](WEBSITE.md) before its indexes
+
+The website indexes are still generated from `develop` at `3ec94ec`. **The website prose is now ahead of
+them on purpose**, because the gap is not a detail: since that SHA the repo has gained a `Dockerfile`,
+`docker-compose.yml`, its **own `nginx.conf`** — which now fronts the SPA and the API, not the other way
+round — and **two** deploy workflows, one with a manual approval gate for uat/prod. None of that exists
+at `3ec94ec`, so no generated view mentions it. `website-integration` (`208eed6`) is a strict superset
+of `develop` (`feabac8`) and is the integration truth for anything infrastructural.
+
+**This does not license syncing from `website-integration`.** The rule above still holds; the deltas are
+written as prose, flagged by branch, exactly so the indexes can stay on `develop`.
+
+**`ws-website-373` (TCV-Website, 2026-09-09) is unmerged** — an `AuthModal` corner-clipping fix,
+written up in [WEBSITE.md](WEBSITE.md#the-auth-modals-rounded-clip--ws-website-373-unmerged). It is
+**not** in the `website-integration` line either.
+⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
+website repo holds local branches under both names, so read every `ws-373` note together with the repo
+it belongs to — as with `ws-343` / `ws-website-343`.
+
 ### What the 2026-09-07 sync changed
 
 `tcv-backend-codefix` and `ws-401` merged, and `vendor/` is installed again so route extraction is back

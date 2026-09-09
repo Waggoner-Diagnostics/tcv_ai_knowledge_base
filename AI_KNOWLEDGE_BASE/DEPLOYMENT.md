@@ -18,6 +18,13 @@ dispatch inputs default to. Confirm which branch you are deploying before assumi
 
 ☠️ **There is no production workflow in this repo.** Whatever promotes to production lives elsewhere.
 
+⭐ **Scope note, 2026-09-09: this whole page is about `TCV-Backend`.** `TCV-Website` grew its own
+independent stack — `Dockerfile`, `docker-compose.yml`, `nginx.conf`, and **two** workflows including a
+uat/prod one with a manual approval gate. Nothing here describes it; see
+[WEBSITE.md](WEBSITE.md#deployment--docker-nginx-and-two-github-workflows). The website's nginx is now
+the **edge for the whole product** and proxies to the SPA, which changes what "separate deployments"
+means in point 9 of the checklist below.
+
 ## Image build
 
 Multi-stage `Dockerfile` (see [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)):
