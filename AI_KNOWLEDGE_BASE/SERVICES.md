@@ -46,13 +46,22 @@ One deliberate escape hatch exists: `app(TestAssignmentService::class)` inside
    (dead). Change the PHP; delete the JS ([FULLSTACK_MAP.md](FULLSTACK_MAP.md)).
 3. **`SecureImageService::revokeAccess()` only clears a cache key** — the S3 URL stays live for 900 s
    ([S-11](SECURITY.md#s-11--revokeaccess-does-not-revoke-s3-access)).
-4. **`AuditLogger` is generic but used once.** Its only caller is `PricingAuditService`, writing to
-   `pricing_audit_logs`. **There is no general audit trail in this application** — do not assume user or
-   credit actions are recorded anywhere but the application log.
-5. **`TestService` vs `TestExecutionService` vs `TestAssignmentService`** are three different things with
+4. **`AuditLogger` (the old one) is generic but used once.** Its only caller is `PricingAuditService`,
+   writing to `pricing_audit_logs` — unrelated to the general audit trail below; both still exist
+   side by side ([CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md) §9, Q3: migrate later, not yet).
+5. **A general audit trail exists on `develop`** (merged 2026-09-09, PR #227) —
+   `App\Services\Audit\AuditService` is the single write chokepoint for the `audit_logs` table
+   (masking, role resolution, GeoIP/browser enrichment, session correlation), backed by
+   `AuditEventCatalog` (61 defined events across 8 categories) and read via `AuditLogController`
+   (Super Admin only). **Coverage is a first slice, not comprehensive**: only `AuthController::login()`/
+   `logout()` actually call it today (login success/failed in its several forms, and logout). Every
+   other module's events (accounts/orgs, billing, credits, test activity, patients, settings) exist
+   only as catalog entries with no call site yet — do not assume those actions are recorded until
+   their instrumentation lands. See [CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md) for the full design.
+6. **`TestService` vs `TestExecutionService` vs `TestAssignmentService`** are three different things with
    similar names. `TestService` is the thin one used by `PatientController`; the other two own the real
    flow.
-6. **Services throw; controllers catch.** Nearly every service method lets exceptions propagate and the
+7. **Services throw; controllers catch.** Nearly every service method lets exceptions propagate and the
    controller converts them to `ApiResponse::error(…SERVER_ERROR…)`. That means a service exception is
    indistinguishable from a crash at the API boundary ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
 

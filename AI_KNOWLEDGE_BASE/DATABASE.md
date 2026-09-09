@@ -1,13 +1,13 @@
 # Database
 
 MySQL, **53 tables**, reconstructed from 127 migrations — the indexed snapshot, taken from
-`develop` at `486a5cef` (2026-09-03). Full column detail:
+`TCV-Backend@develop` at `940238fd` (2026-09-09, with the Audit Trail merged). Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
 > appears. `DESCRIBE` is the only authority before you write a migration.
 
-## What the 52 include
+## What the 53 include
 
 | Group | Tables |
 |---|---|
@@ -21,7 +21,7 @@ MySQL, **53 tables**, reconstructed from 127 migrations — the indexed snapshot
 | Money | `credits`, `credit_consume`, `transactions`, `transaction_details`, `user_stripe_details`, `price_details`, `discount_codes`, `discount_code_users`, `discount_code_price_tiers` |
 | Email | `email_template`, `user_email_templates`, `test_email_templates` |
 | Assignment | `user_assigned_tests`, `user_hidden_tests` |
-| Audit | `pricing_audit_logs` |
+| Audit | `pricing_audit_logs`, `audit_logs` (general audit trail, on `develop` since 2026-09-09 — see SERVICES.md) |
 | **Historical names** | `user_emails`, `admin_settings`, `user_email_settings`, `discount_code_user` — see below |
 
 ---

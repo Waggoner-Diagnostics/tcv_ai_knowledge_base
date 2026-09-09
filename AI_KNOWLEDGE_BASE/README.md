@@ -7,9 +7,9 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `develop` — all three. No feature branch is in the tree behind these indexes |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — the two code repos are back on `develop`; `feat/ui-audit-trail` merged into both, so the audit-trail counts below are `develop` counts now. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)) |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `52804ee9` · `TCV-Frontend` `c1fe3d6` · `TCV-Website` `3ec94ec` — all on `develop`, generated **2026-09-07** |
+| **Code state at sync** | `TCV-Backend` `940238fd` (develop) · `TCV-Frontend` `6b6c5ae` (develop) · `TCV-Website` `208eed6` (website-integration) — generated **2026-09-09** |
 | **Backend scale** | 204 classes/interfaces/traits · 823 methods · 161 API endpoints · 53 tables · 127 migrations |
 | **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
@@ -352,8 +352,8 @@ before writing code.
 ### Layers
 | Doc | Exists? |
 |---|---|
-| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 34 |
-| [SERVICES.md](SERVICES.md) | ✅ 33 — the real home of business logic |
+| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 36 |
+| [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
 | [REQUESTS.md](REQUESTS.md) | ✅ 25 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
@@ -377,13 +377,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 178 |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 196 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 761 |
-| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 40 |
-| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 52 |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 196 |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 161 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** (non-QA environment) |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 204 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 823 |
+| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |
+| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 204 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |
@@ -478,7 +478,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 118 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 126 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

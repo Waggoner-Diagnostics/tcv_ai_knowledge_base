@@ -12,10 +12,10 @@
 
 | Layer | Count | Notes |
 |---|---|---|
-| Controllers | **34** | Thin-ish. Real logic mostly delegated to Services. |
-| Services | **33** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`). |
-| Models | **40** | Eloquent, 70 declared relationships. |
-| FormRequests | **24** | Validation is genuinely centralised here — follow this. |
+| Controllers | **36** | Thin-ish. Real logic mostly delegated to Services. Two added 2026-09-08/09: `AuditLogController`, `Qa/QaAutomationController`. |
+| Services | **35** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`), plus `Audit/AuditService` + `Audit/AuditEventCatalog` (on `develop` since 2026-09-09). |
+| Models | **41** | Eloquent, 70 declared relationships. `AuditLog` is the newest. |
+| FormRequests | **25** | Validation is genuinely centralised here — follow this. |
 | Middleware | **4** | One global (`RestrictIpMiddleware`), two aliased, and `EnsureTokenIsValid` — dead but **still present** on `develop` — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |
 | Events / Listeners | **3 / 4** | Wired by **auto-discovery** + `LmsServiceProvider` + one explicit `AppServiceProvider` hook (`PrefixEmailSubject`, `ws-417`) — *not* by `EventServiceProvider`. |
@@ -78,7 +78,7 @@ guard — use `auth:sanctum` or `FlexibleAuthMiddleware`
 
 ### 3. `app/Repositories` holds exactly one class
 
-`EmailTemplateRepository` is the only repository. **There is no repository layer** — 39 of 40 models are
+`EmailTemplateRepository` is the only repository. **There is no repository layer** — 40 of 41 models are
 queried directly from controllers and services. Do not "follow the repository pattern"; there isn't
 one. See [REPOSITORIES.md](REPOSITORIES.md).
 
@@ -150,7 +150,7 @@ graph TD
     SV --> EV["event() → auto-discovered Listener"]
     EV --> J["ProcessLmsDeliveryJob<br/>database queue"]
     SV --> EXT["Stripe · S3 · HubSpot · Turnstile · Cornerstone LRS"]
-    M --> DB[("MySQL — 52 tables")]
+    M --> DB[("MySQL — 53 tables")]
 
     style G fill:#c0392b,color:#fff
     style S2 fill:#e67e22,color:#fff
@@ -162,7 +162,7 @@ graph TD
 - **Start at the Service, not the controller.** `TestController` is 679 lines but most methods are a
   `try` → one service call → `ApiResponse`. The behaviour you want to change is in
   `TestExecutionService`, `TestAssignmentService`, `TestResultService` or `TestSectionProgressionService`.
-- **Validation belongs in a FormRequest.** 24 of them exist and are used consistently. Adding inline
+- **Validation belongs in a FormRequest.** 25 of them exist and are used consistently. Adding inline
   `$request->validate()` in a controller that already has a FormRequest is the wrong shape — though
   note `AuthController` does exactly that throughout, because it predates the convention.
 - **Authorisation is *not* uniform.** Three different mechanisms coexist:
