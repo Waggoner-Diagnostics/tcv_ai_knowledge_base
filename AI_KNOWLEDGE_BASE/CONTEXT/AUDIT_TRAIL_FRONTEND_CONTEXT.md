@@ -15,7 +15,7 @@ Delivered in three phases:
 | 1 | Page UI — route, sidebar entry, header/toolbar, table, fixture data | **done** |
 | 2 | Filter popup + filter/query logic + active-filter chips | **done** |
 | 3 | Row detail side drawer | **done** |
-| 4 | Swap fixtures for the live endpoint | blocked on backend |
+| 4 | Swap fixtures for the live endpoint | **done** (2026-09-08) — `src/apis/fixtures/` deleted, the three API modules call the real endpoints |
 
 Backend work is tracked separately (see [Backend — not in phase 1](#backend--not-in-phase-1)).
 
