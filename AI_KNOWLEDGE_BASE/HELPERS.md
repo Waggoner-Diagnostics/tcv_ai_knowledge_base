@@ -38,7 +38,7 @@ Two things to know:
   `string $messageKey`). Legal but deprecated in PHP 8; always pass both, always as
   `ApiResponse::success(HttpStatus::OK, 'api.key')`.
 
-> **`ws-402` (unmerged) adds a trailing `array $replace = []` to both methods**, passed to
+> **`ws-402` (merged 2026-09-07) adds a trailing `array $replace = []` to both methods**, passed to
 > `__($messageKey, $replace)`, so a message can interpolate `:placeholders`. It is the *last* parameter
 > on both — on `success()` that means the dead `$meta` sits in front of it, so an interpolating call has
 > to pass `[]` for meta first:

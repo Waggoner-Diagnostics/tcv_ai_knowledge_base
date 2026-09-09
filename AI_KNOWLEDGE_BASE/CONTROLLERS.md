@@ -1,8 +1,12 @@
 # Controllers
 
-**34 classes under `app/Http/Controllers/`** (including the base `Controller` and the 6 unused
+**36 classes under `app/Http/Controllers/`** (including the base `Controller` and the 6 unused
 `Auth/` scaffolding classes). Full list with line numbers:
 [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`CTRL-nnn`).
+
+Two arrived on 2026-09-08/09: `AuditLogController` (220 lines — the Audit Trail read API) and
+`Qa/QaAutomationController` (384 lines — QA-only account helpers, the first controller in a
+subdirectory other than `Auth/`). See [SECURITY.md](SECURITY.md) before touching the second.
 
 ## Size — where the weight is
 
@@ -15,7 +19,8 @@
 | `PatientController` | 432 | CRUD + `getPatientTests` + `resendTestLink` |
 | `StripePaymentController` | 410 | the **deprecated** payment surface |
 | `UserController` | 361 | user management + credit aggregation |
-| … 27 more | < 320 each | |
+| `Qa/QaAutomationController` | 384 | ⚠️ QA-only account takeover helpers — [SECURITY.md](SECURITY.md) |
+| … 28 more | < 320 each | |
 
 The three big ones are the ones to read via [INDEXES/METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) rather
 than opening.

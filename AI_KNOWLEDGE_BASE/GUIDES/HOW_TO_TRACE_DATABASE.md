@@ -2,7 +2,7 @@
 
 ## 1. Start at the index, not the migrations folder
 
-[INDEXES/DATABASE_TABLE_INDEX.md](../INDEXES/DATABASE_TABLE_INDEX.md) — **52 tables**, each with its
+[INDEXES/DATABASE_TABLE_INDEX.md](../INDEXES/DATABASE_TABLE_INDEX.md) — **53 tables**, each with its
 `TABLE-nnn` id, column count, the migration that created it, and a full column list.
 
 > ☠️ **It is a union across 109 migrations, not a live schema.** A column added and later dropped still

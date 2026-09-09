@@ -6,7 +6,7 @@ The clinician/admin portal **and** the patient test player. Served under `/app`
 | | |
 |---|---|
 | Stack | React 18 · Redux Toolkit · React Router **v7** · Axios · Bootstrap 5 / React-Bootstrap · Formik + Yup · Stripe.js · Sass |
-| Scale | 252 source files · ~34k lines · 64 top-level routes · 42 Redux slices · 16 hooks |
+| Scale | 272 source files · ~38k lines · 65 top-level routes · 43 Redux slices · 16 hooks |
 | Env | `REACT_APP_BASE_URL`, `REACT_APP_STRIPE_PUBLIC_KEY`, `REACT_APP_TURNSTILE_SITE_KEY`, `PUBLIC_URL` |
 | Build | `react-scripts` (CRA 5) |
 
@@ -123,7 +123,7 @@ behind it have their own ownership gap
 reset every time the modal closes, so it is a one-shot handshake between modal and header, never
 session state. Do not build authorisation on it.
 
-**ws-399** (2026-08-28 — committed, *not yet merged or deployed*) stops the prompt re-firing from
+**ws-399** (merged into `develop` 2026-08-31) stops the prompt re-firing from
 inside the section:
 
 | Click **Patients** while… | before | ws-399 |
@@ -168,7 +168,7 @@ match. See the `skipErrorPopup` trap below.
 warning) is silently reduced to "it happened", and the calling component ends up hardcoding its own
 success toast. Check what the endpoint actually returns before assuming a delete is all-or-nothing.
 
-> **`ws-402` (unmerged) fixes this in `createPaginatedCrudSlice` only.** Its `deleteItem` now returns
+> **`ws-402` (merged 2026-09-07) fixes this in `createPaginatedCrudSlice` only.** Its `deleteItem` now returns
 > `{ id, ...data }`, and because the payload is no longer the bare id, the `fulfilled` reducer takes the
 > id from `a.meta.arg` (the thunk argument) to filter the row out of `state.list`. `createSlice.js` is
 > untouched and still discards. The motivating case is credit revocation, where the response says how
@@ -188,7 +188,7 @@ dispatch at the call site. Two things follow: the profile save now mutates **two
 
 Table column definitions live one-file-per-table in `src/utils/columns/`, fed straight into `react-table`.
 
-> **`ws-402` (unmerged) — a column trap worth knowing.** `addCreditsColumns.js` decides whether to render
+> **`ws-402` (merged 2026-09-07) — a column trap worth knowing.** `addCreditsColumns.js` decides whether to render
 > the Delete action by mirroring `CreditsPolicy::delete()`. The policy compares `original_source === 0`
 > in PHP, where `null === 0` is **false**; the column originally compared `Number(original_source) === 0`
 > in JS, where `Number(null)` is **0** — so every legacy `SOURCE_REVOKED` row (the column is new and
@@ -232,7 +232,7 @@ Tell the two apart by **title**, which is unique to each source:
 | `Validation Error` · `Server Error` · `Network Error` · `Access Denied` … | `errorHandler.getErrorTitle()` — the **interceptor** |
 | anything else (`Error`, `Password Changed`, …) | the component's own `showPopup` call |
 
-Fixed for password change in **ws-395** (2026-08-28 — committed, *not yet merged or deployed*). A 422
+Fixed for password change in **ws-395** (merged into `develop` 2026-09-07). A 422
 from `PUT api/password/change` raised both `Validation Error — "…has appeared in a data leak…"`
 (interceptor, flattening `errors`) and `Error — "The given data was invalid."` (the slice echoing the
 backend's useless top-level `message`, see [ERROR_HANDLING.md](ERROR_HANDLING.md)). **Copy this fix:**
@@ -261,7 +261,7 @@ was fetched a single time per page load and stayed stale until a manual refresh.
 no `config/broadcasting.php` and no Pusher/Reverb dependency; the SPA has no socket, Echo or
 `EventSource`. Do not go looking for a channel to subscribe to — refreshing means re-fetching.
 
-`src/hooks/useCreditsSync.js` (ws-397, 2026-08-28 — committed, *not yet merged or deployed*) owns the
+`src/hooks/useCreditsSync.js` (ws-397, merged into `develop` 2026-08-31) owns the
 re-fetching. `Header.js` is its only caller: `useCreditsSync(Boolean(user))`. Four triggers:
 
 | Trigger | Call | Throttled? |

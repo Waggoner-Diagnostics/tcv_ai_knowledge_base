@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-07T15:49:23+02:00",
+    "generated_at": "2026-09-09T16:36:57+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -155,364 +155,371 @@
                 "path": "/user-panel",
                 "element": "UserPanelHome",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 60
+                "line": 62
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/patients",
                 "element": "PatientPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 63
+                "line": 65
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/patients/add",
                 "element": "AddPatient",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 64
+                "line": 66
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/patients/edit/:patientId",
                 "element": "AddPatient",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 65
+                "line": 67
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/patient-tests/:patientId",
                 "element": "PatientTestList",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 66
+                "line": 68
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/:testId/patients",
                 "element": "PatientPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 69
+                "line": 71
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/:testId/patients/add",
                 "element": "AddPatient",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 70
+                "line": 72
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/:testId/confirm/:patientId",
                 "element": "StartTestConfirmPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 71
+                "line": 73
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/instruction",
                 "element": "InstructionPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 74
+                "line": 76
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/test",
                 "element": "TestPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 75
+                "line": 77
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/instruction/:uniqueTestId",
                 "element": "InstructionPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 78
+                "line": 80
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/prepare/:uniqueTestId",
                 "element": "PrepareScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 79
+                "line": 81
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/countdown/:uniqueTestId",
                 "element": "CountdownScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 80
+                "line": 82
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/test/:uniqueTestId",
                 "element": "TestPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 81
+                "line": 83
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/section-complete/:uniqueTestId",
                 "element": "SectionCompleteScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 82
+                "line": 84
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/transition/:uniqueTestId",
                 "element": "TransitionScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 83
+                "line": 85
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/start-test/result/:uniqueTestId",
                 "element": "ResultPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 84
+                "line": 86
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/credit",
                 "element": "CreditPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 86
+                "line": 88
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/contact",
                 "element": "ContactUs",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 87
+                "line": 89
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/patient-tests",
                 "element": "PatientTestList",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 88
+                "line": 90
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/settings",
                 "element": "SettingsPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 89
+                "line": 91
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/checkout",
                 "element": "CheckoutPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 90
+                "line": 92
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/payment-status",
                 "element": "PaymentStatusPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 91
+                "line": 93
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/done",
                 "element": "DonePage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 92
+                "line": 94
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/next",
                 "element": "NextScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 93
+                "line": 95
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/result",
                 "element": "ResultPage",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 94
+                "line": 96
             },
             {
                 "kind": "protected",
                 "path": "/user-panel/timer",
                 "element": "TimerScreen",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 95
+                "line": 97
             },
             {
                 "kind": "protected",
                 "path": "/dashboard",
                 "element": "DashboardWrapper",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 97
+                "line": 99
             },
             {
                 "kind": "protected",
                 "path": "/users",
                 "element": "Users",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 98
+                "line": 100
             },
             {
                 "kind": "protected",
                 "path": "/pricing",
                 "element": "Pricing",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 99
+                "line": 101
             },
             {
                 "kind": "protected",
                 "path": "/admin",
                 "element": "Admin",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 100
+                "line": 102
             },
             {
                 "kind": "protected",
                 "path": "/discount",
                 "element": "DiscountCodes",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 101
+                "line": 103
             },
             {
                 "kind": "protected",
                 "path": "/tests",
                 "element": "Test",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 102
+                "line": 104
             },
             {
                 "kind": "protected",
                 "path": "/reports",
                 "element": "ReportsWrapper",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 103
+                "line": 105
             },
             {
                 "kind": "protected:child",
                 "path": "user-tests",
                 "element": "UserTests",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 106
+                "line": 108
             },
             {
                 "kind": "protected:child",
                 "path": "discount-code",
                 "element": "DiscountCode",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 107
+                "line": 109
             },
             {
                 "kind": "protected",
                 "path": "/reports/user-tests/patient/:patientId/:userName",
                 "element": "UserTestDetail",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 110
+                "line": 112
             },
             {
                 "kind": "protected",
                 "path": "/organisation",
                 "element": "Organisation",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 111
+                "line": 113
             },
             {
                 "kind": "protected",
                 "path": "/view-test-plate",
                 "element": "ViewTestPlate",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 112
+                "line": 114
             },
             {
                 "kind": "protected",
                 "path": "/settings",
                 "element": "Settings",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 114
+                "line": 116
             },
             {
                 "kind": "protected:child",
                 "path": "profile-summary",
                 "element": "ProfileSummary",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 117
+                "line": 119
             },
             {
                 "kind": "protected:child",
                 "path": "test-email-template-configuraion",
                 "element": "TestEmailTemplate",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 118
+                "line": 120
             },
             {
                 "kind": "protected:child",
                 "path": "profile",
                 "element": "ProfileSettings",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 119
+                "line": 121
             },
             {
                 "kind": "protected:child",
                 "path": "test-qa",
                 "element": "TestQA",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 120
+                "line": 122
             },
             {
                 "kind": "protected:child",
                 "path": "restricted-ips",
                 "element": "RestrictedIps",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 121
+                "line": 123
             },
             {
                 "kind": "protected:child",
                 "path": "webgl-result",
                 "element": "WebglReports",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 122
+                "line": 124
             },
             {
                 "kind": "protected",
                 "path": "/public-pages",
                 "element": "PublicPagesWraper",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 125
+                "line": 127
             },
             {
                 "kind": "protected:child",
                 "path": "page-categories",
                 "element": "PageCategories",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 128
+                "line": 130
             },
             {
                 "kind": "protected:child",
                 "path": "public-pages",
                 "element": "PublicPages",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 129
+                "line": 131
+            },
+            {
+                "kind": "protected",
+                "path": "/audit-trail",
+                "element": "AuditTrail",
+                "file": "src/router/routes/protectedRoutes.js",
+                "line": 134
             },
             {
                 "kind": "protected",
                 "path": "/credit-history",
                 "element": "CreditHistory",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 132
+                "line": 135
             },
             {
                 "kind": "protected",
                 "path": "/add-credits",
                 "element": "AddCredits",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 133
+                "line": 136
             },
             {
                 "kind": "protected",
                 "path": "/view-webgl-report",
                 "element": "ViewWebglReport",
                 "file": "src/router/routes/protectedRoutes.js",
-                "line": 134
+                "line": 137
             },
             {
                 "kind": "shared",
@@ -536,6 +543,7 @@
                     "/view-webgl-report",
                     "/organisation",
                     "/settings",
+                    "/audit-trail",
                     "/credit-history",
                     "/add-credits",
                     "/page-categories",
@@ -712,7 +720,7 @@
                 "path": "/api/countries-with-states",
                 "raw": "/api/countries-with-states",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 182,
+                "line": 183,
                 "orphan": false
             },
             {
@@ -832,7 +840,7 @@
                 "path": "/api/login",
                 "raw": "api/login",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 10,
+                "line": 11,
                 "orphan": false
             },
             {
@@ -840,7 +848,7 @@
                 "path": "/api/logout",
                 "raw": "/api/logout",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 72,
+                "line": 73,
                 "orphan": false
             },
             {
@@ -920,7 +928,7 @@
                 "path": "/api/password/forgot",
                 "raw": "api/password/forgot",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 85,
+                "line": 86,
                 "orphan": false
             },
             {
@@ -928,7 +936,7 @@
                 "path": "/api/password/reset",
                 "raw": "api/password/reset",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 134,
+                "line": 135,
                 "orphan": false
             },
             {
@@ -936,7 +944,7 @@
                 "path": "/api/password/verify-setup-token",
                 "raw": "api/password/verify-setup-token",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 147,
+                "line": 148,
                 "orphan": false
             },
             {
@@ -1048,7 +1056,7 @@
                 "path": "/api/resend_email_verification_link",
                 "raw": "api/resend_email_verification_link",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 52,
+                "line": 53,
                 "orphan": false
             },
             {
@@ -1112,7 +1120,7 @@
                 "path": "/api/test-invitation/check-validity",
                 "raw": "/api/test-invitation/check-validity",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 116,
+                "line": 117,
                 "orphan": false
             },
             {
@@ -1120,7 +1128,7 @@
                 "path": "/api/test-invitation/verify-code",
                 "raw": "/api/test-invitation/verify-code",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 99,
+                "line": 100,
                 "orphan": false
             },
             {
@@ -1336,7 +1344,7 @@
                 "path": "/api/users/change-password",
                 "raw": "/api/users/change-password",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 162,
+                "line": 163,
                 "orphan": false
             },
             {
@@ -1344,7 +1352,7 @@
                 "path": "/api/users/{param}",
                 "raw": "/api/users/${user.id}",
                 "file": "src/redux/slices/auth/loginSlice.js",
-                "line": 222,
+                "line": 223,
                 "orphan": false
             },
             {
@@ -1400,7 +1408,15 @@
                 "path": "/{param}/{param}",
                 "raw": "${baseUrl}/${id}",
                 "file": "src/redux/slices/createpaginatedslice.js",
-                "line": 161,
+                "line": 167,
+                "orphan": false
+            },
+            {
+                "method": "GET",
+                "path": "/{param}/{param}",
+                "raw": "${AUDIT_LOG_DETAIL_ENDPOINT}/${id}",
+                "file": "src/apis/fetchAuditLogDetail.js",
+                "line": 17,
                 "orphan": false
             },
             {
@@ -1440,6 +1456,7 @@
             "src/redux/slices/auth/signatureVerificationSlice.js",
             "src/redux/slices/createSlice.js",
             "src/redux/slices/createpaginatedslice.js",
+            "src/redux/slices/createpaginatedslice.test.js",
             "src/redux/slices/creditHistory/creditHistorySlice.js",
             "src/redux/slices/credits/creditsSlice.js",
             "src/redux/slices/discount/discountSlice.js",
@@ -1497,14 +1514,14 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 256,
-            "spa_routes": 74,
-            "api_calls": 92,
-            "slices": 42,
+            "source_files": 272,
+            "spa_routes": 75,
+            "api_calls": 93,
+            "slices": 43,
             "hooks": 16,
-            "pages": 84,
-            "components": 49,
-            "loc": 36031
+            "pages": 91,
+            "components": 48,
+            "loc": 38703
         }
     },
     "website": {
@@ -1872,7 +1889,7 @@
             "api_routes": 4,
             "views": 26,
             "components": 26,
-            "loc": 10414
+            "loc": 10563
         }
     }
 }

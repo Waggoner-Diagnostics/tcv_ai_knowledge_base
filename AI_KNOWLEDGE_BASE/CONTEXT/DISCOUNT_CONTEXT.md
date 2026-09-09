@@ -110,7 +110,7 @@ reopening such a code fails validation on a field nobody touched. For the same r
 attribute stays at `0` whatever the tiers say: Formik does not set `noValidate`, and a `min` of `$29.60`
 would have the browser block the submit before the schema ever saw the `0`.
 
-☠️ **`ws-402` (unmerged) adds tier-reachability gating to the price-tier chips.** A package chip is
+☠️ **`ws-402` (merged 2026-09-07) adds tier-reachability gating to the price-tier chips.** A package chip is
 rendered disabled (`dc-chip--disabled`, with a title explaining why) when that package's priciest
 possible order still falls short of the current Minimum Order — `tierReachesMinimum(tier, minOrder)`
 checks `round2(tier.to × tier.price_per_credit) >= minOrder`, always `true` for an open-ended top tier

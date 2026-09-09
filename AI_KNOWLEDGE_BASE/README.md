@@ -10,8 +10,8 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | **Branches indexed** | `develop` · `develop` · `develop` — all three. No feature branch is in the tree behind these indexes |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `52804ee9` · `TCV-Frontend` `c1fe3d6` · `TCV-Website` `3ec94ec` — all on `develop`, generated **2026-09-07** |
-| **Backend scale** | 196 classes/interfaces/traits · 775 methods · 158 API endpoints · 52 tables · 123 migrations |
-| **Client scale** | 64 top-level routes · 42 Redux slices (SPA) · 32 marketing pages (website) |
+| **Backend scale** | 204 classes/interfaces/traits · 823 methods · 161 API endpoints · 53 tables · 127 migrations |
+| **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -33,8 +33,19 @@ because `tcv-backend-codefix` had already guarded the Stripe routes, while [ROUT
 [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) went on correctly calling them public. `verify.php`'s
 prose-count check is what catches this class of divergence; do not wave it through.
 
-`ws-392`, `ws-398`, `ws-400`, `ws-401`, `ws-404`, `ws-417` and `tcv-backend-codefix` are all **merged
-into `develop`**. **`ws-402` is not** — passages flagged `ws-402` still describe an unmerged branch.
+`ws-392`, `ws-398`, `ws-400`, `ws-401`, `ws-402`, `ws-417` and `tcv-backend-codefix` are all **merged
+into backend `develop`** — `ws-402` landed 2026-09-07 (PR #213), so passages flagged `ws-402` now
+describe shipped behaviour, not a branch. Backend `develop` has since taken two features this KB
+tracks separately: the **QA automation helpers** (PR #223, 2026-09-08 — see
+[SECURITY.md](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env))
+and the **Audit Trail** read API (PR #227, 2026-09-09 — `AuditLogController`, `Services/Audit/`,
+`audit_logs`; the context packs for it are written but still sit on the KB branch `ws-422`).
+
+⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — a single commit
+(`b69a2c37`, 2026-09-09, "email not send some patient issue"); everything else the KB flags `ws-404`
+is merged. On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
+`ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
+backend halves of the same ticket number are not in the same state, so check per repo.
 
 ### TCV-Website has moved well past its indexed SHA — read [WEBSITE.md](WEBSITE.md) before its indexes
 
@@ -281,8 +292,8 @@ before writing code.
 1. **Every unhandled exception becomes a 500.** `app/Exceptions/Handler.php` catches
    `AuthenticationException` and `ValidationException`, then funnels **everything else** through one
    `$request->expectsJson()` branch that returns **500**. `findOrFail()` → 500, not 404. A failed
-   `$this->authorize()` → 500, not 403 (fixed for this one exception type on the unmerged `ws-402`
-   branch — see the delta above). An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
+   `$this->authorize()` → 500, not 403 (fixed for this one exception type by `ws-402`, on `develop`
+   since 2026-09-07 — see the delta above). An unmatched route → 500. See [ERROR_HANDLING.md](ERROR_HANDLING.md).
 2. **`usertype` skips 3.** `1 = SUPER_ADMIN`, `2 = CUSTOMER`, `4 = ORGANIZATION`. There is no `3`.
    Never iterate `1..n`, never assume contiguity. Identical in all three repos.
 3. **Five session-token endpoints still authenticate the caller without checking they own the test.**
@@ -343,7 +354,7 @@ before writing code.
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 34 |
 | [SERVICES.md](SERVICES.md) | ✅ 33 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 24 FormRequest classes |
+| [REQUESTS.md](REQUESTS.md) | ✅ 25 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |

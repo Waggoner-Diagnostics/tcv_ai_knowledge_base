@@ -6,9 +6,10 @@
 
 | Event | Dispatched from |
 |---|---|
-| `UserPasswordSet` | [app/Http/Controllers/AuthController.php:282](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L282) |
-| `PasswordReset` | [app/Http/Controllers/AuthController.php:297](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L297) |
-| `Verified` | [app/Http/Controllers/AuthController.php:358](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L358) |
+| `UserPasswordSet` | [app/Http/Controllers/AuthController.php:367](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L367) |
+| `PasswordReset` | [app/Http/Controllers/AuthController.php:382](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L382) |
+| `Verified` | [app/Http/Controllers/AuthController.php:443](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L443) |
+| `UserPasswordSet` | [app/Http/Controllers/Qa/QaAutomationController.php:194](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L194) |
 | `TestSectionCompleted` | [app/Services/TestExecutionService.php:97](../../../TCV-Backend/app/Services/TestExecutionService.php#L97) |
 | `TestCompleted` | [app/Services/TestExecutionService.php:172](../../../TCV-Backend/app/Services/TestExecutionService.php#L172) |
 
@@ -28,4 +29,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-07. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-09. Do not hand-edit — re-run the generator._

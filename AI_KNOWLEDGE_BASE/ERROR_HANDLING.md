@@ -44,7 +44,7 @@ Likewise, all ~20 `$this->authorize()` call sites (`TestController`, `TestCondit
 403. That is why the SPA's error handling cannot distinguish "you may not do this" from "the server
 broke".
 
-**✅ Fixed on `ws-402` (2026-09-07, unmerged) — `AuthorizationException` only.** `Handler.php` gains a dedicated
+**✅ Fixed on `develop` 2026-09-07 (`ws-402`) — `AuthorizationException` only.** `Handler.php` gains a dedicated
 `instanceof AuthorizationException` branch returning `{success: false, message}` at **403**, ahead of the
 generic 500 fallback. It is scoped to that one exception type — `ModelNotFoundException`,
 `NotFoundHttpException` and the rest below are untouched and still surface as 500. The motivating case is

@@ -1,21 +1,21 @@
 {
-    "generated_at": "2026-09-07T15:49:18+02:00",
+    "generated_at": "2026-09-09T16:36:51+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "52804ee9",
+            "sha": "940238fd",
             "branch": "develop",
-            "date": "2026-09-07"
+            "date": "2026-09-09"
         },
         "frontend": {
-            "sha": "c1fe3d6",
+            "sha": "6b6c5ae",
             "branch": "develop",
-            "date": "2026-09-07"
+            "date": "2026-09-09"
         },
         "website": {
-            "sha": "3ec94ec",
-            "branch": "develop",
-            "date": "2026-09-03"
+            "sha": "208eed6",
+            "branch": "website-integration",
+            "date": "2026-09-08"
         }
     },
     "classes": [
@@ -198,6 +198,44 @@
             "relations": []
         },
         {
+            "name": "SettleNegativeCreditBalances",
+            "fqcn": "App\\Console\\Commands\\SettleNegativeCreditBalances",
+            "kind": "class",
+            "file": "app/Console/Commands/SettleNegativeCreditBalances.php",
+            "line": 32,
+            "end_line": 109,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "One-time repair: heal accounts whose credit ledger is already negative.",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 38,
+                    "end_line": 108,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "option",
+                        "line",
+                        "pluck",
+                        "groupBy",
+                        "CreditConsume::selectRaw",
+                        "isEmpty",
+                        "info",
+                        "Credits::getTotalUserCredit",
+                        "DB::transaction",
+                        "Credits::create"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
             "name": "UploadTestPlates",
             "fqcn": "App\\Console\\Commands\\UploadTestPlates",
             "kind": "class",
@@ -344,8 +382,8 @@
             "fqcn": "App\\Exceptions\\Handler",
             "kind": "class",
             "file": "app/Exceptions/Handler.php",
-            "line": 13,
-            "end_line": 61,
+            "line": 14,
+            "end_line": 71,
             "extends": "ExceptionHandler",
             "implements": [],
             "traits": [],
@@ -353,8 +391,8 @@
             "methods": [
                 {
                     "name": "render",
-                    "line": 15,
-                    "end_line": 60,
+                    "line": 16,
+                    "end_line": 70,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -365,12 +403,12 @@
                     "doc": "",
                     "calls": [
                         "json",
+                        "getMessage",
                         "errors",
                         "getResponse",
                         "expectsJson",
                         "error",
                         "environment",
-                        "getMessage",
                         "getTrace",
                         "parent::render"
                     ]
@@ -794,7 +832,7 @@
             "kind": "class",
             "file": "app/Helpers/ApiResponse.php",
             "line": 7,
-            "end_line": 45,
+            "end_line": 47,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -803,14 +841,15 @@
                 {
                     "name": "success",
                     "line": 9,
-                    "end_line": 26,
+                    "end_line": 27,
                     "visibility": "public",
                     "static": true,
                     "params": [
                         "int $statusCode = 200",
                         "string $messageKey",
                         "$data = null",
-                        "array $meta = []"
+                        "array $meta = []",
+                        "array $replace = []"
                     ],
                     "returns": "JsonResponse",
                     "doc": "",
@@ -820,14 +859,15 @@
                 },
                 {
                     "name": "error",
-                    "line": 28,
-                    "end_line": 44,
+                    "line": 29,
+                    "end_line": 46,
                     "visibility": "public",
                     "static": true,
                     "params": [
                         "int $statusCode = 400",
                         "string $messageKey",
-                        "$errors = null"
+                        "$errors = null",
+                        "array $replace = []"
                     ],
                     "returns": "JsonResponse",
                     "doc": "",
@@ -889,6 +929,114 @@
                     "returns": "?string",
                     "doc": "Extract eye code from section instruction",
                     "calls": []
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
+            "name": "AuditLogController",
+            "fqcn": "App\\Http\\Controllers\\AuditLogController",
+            "kind": "class",
+            "file": "app/Http/Controllers/AuditLogController.php",
+            "line": 12,
+            "end_line": 220,
+            "extends": "Controller",
+            "implements": [],
+            "traits": [],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "index",
+                    "line": 17,
+                    "end_line": 116,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditLogIndexRequest $request"
+                    ],
+                    "returns": "",
+                    "doc": "GET /api/audit-logs",
+                    "calls": [
+                        "input",
+                        "AuditLog::query",
+                        "where",
+                        "orWhere",
+                        "filled",
+                        "boolean",
+                        "first",
+                        "selectRaw",
+                        "orderBy",
+                        "paginate",
+                        "toArray",
+                        "toListArray",
+                        "items",
+                        "ApiResponse::success",
+                        "Log::error",
+                        "getMessage",
+                        "ApiResponse::error"
+                    ]
+                },
+                {
+                    "name": "people",
+                    "line": 125,
+                    "end_line": 175,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "GET /api/audit-logs/people",
+                    "calls": [
+                        "isSuperAdmin",
+                        "user",
+                        "ApiResponse::error",
+                        "limit",
+                        "orderByDesc",
+                        "select",
+                        "whereNotNull",
+                        "AuditLog::query",
+                        "map",
+                        "values",
+                        "unique",
+                        "get",
+                        "union",
+                        "ApiResponse::success",
+                        "Log::error",
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "show",
+                    "line": 180,
+                    "end_line": 219,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "int $id"
+                    ],
+                    "returns": "",
+                    "doc": "GET /api/audit-logs/{id}",
+                    "calls": [
+                        "isSuperAdmin",
+                        "user",
+                        "ApiResponse::error",
+                        "AuditLog::find",
+                        "toDetailArray",
+                        "values",
+                        "map",
+                        "get",
+                        "limit",
+                        "orderByDesc",
+                        "where",
+                        "AuditLog::query",
+                        "toIso8601String",
+                        "ApiResponse::success",
+                        "Log::error",
+                        "getMessage"
+                    ]
                 }
             ],
             "constants": [],
@@ -1091,8 +1239,8 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 33,
-            "end_line": 776,
+            "line": 34,
+            "end_line": 860,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1100,12 +1248,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 37,
-                    "end_line": 40,
+                    "line": 40,
+                    "end_line": 44,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "StripeService $stripeService"
+                        "StripeService $stripeService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -1113,8 +1262,8 @@
                 },
                 {
                     "name": "login",
-                    "line": 42,
-                    "end_line": 138,
+                    "line": 46,
+                    "end_line": 222,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1131,19 +1280,21 @@
                         "first",
                         "where",
                         "User::withTrashed",
+                        "log",
                         "ApiResponse::error",
                         "trashed",
                         "Hash::check",
                         "createStripeCustomer",
                         "Log::info",
                         "isSuperAdmin",
-                        "createToken"
+                        "createToken",
+                        "AuditService::sessionKeyForToken"
                     ]
                 },
                 {
                     "name": "createStripeCustomer",
-                    "line": 140,
-                    "end_line": 147,
+                    "line": 224,
+                    "end_line": 231,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1159,8 +1310,8 @@
                 },
                 {
                     "name": "register",
-                    "line": 149,
-                    "end_line": 207,
+                    "line": 233,
+                    "end_line": 292,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1190,8 +1341,8 @@
                 },
                 {
                     "name": "sendResetLinkEmail",
-                    "line": 209,
-                    "end_line": 239,
+                    "line": 294,
+                    "end_line": 324,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1216,8 +1367,8 @@
                 },
                 {
                     "name": "setOrResetPassword",
-                    "line": 241,
-                    "end_line": 320,
+                    "line": 326,
+                    "end_line": 405,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1252,8 +1403,8 @@
                 },
                 {
                     "name": "verifySetupToken",
-                    "line": 322,
-                    "end_line": 342,
+                    "line": 407,
+                    "end_line": 427,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1273,8 +1424,8 @@
                 },
                 {
                     "name": "verifyEmail",
-                    "line": 345,
-                    "end_line": 365,
+                    "line": 430,
+                    "end_line": 449,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1294,8 +1445,8 @@
                 },
                 {
                     "name": "logout",
-                    "line": 367,
-                    "end_line": 372,
+                    "line": 451,
+                    "end_line": 463,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1304,16 +1455,17 @@
                     "returns": "",
                     "doc": "",
                     "calls": [
+                        "user",
+                        "log",
                         "delete",
                         "currentAccessToken",
-                        "user",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "impersonateUser",
-                    "line": 374,
-                    "end_line": 393,
+                    "line": 465,
+                    "end_line": 484,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1333,8 +1485,8 @@
                 },
                 {
                     "name": "stopImpersonation",
-                    "line": 395,
-                    "end_line": 405,
+                    "line": 486,
+                    "end_line": 496,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1355,8 +1507,8 @@
                 },
                 {
                     "name": "isTokenValid",
-                    "line": 413,
-                    "end_line": 465,
+                    "line": 504,
+                    "end_line": 556,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1366,7 +1518,7 @@
                     "doc": "Check if the current or provided token is valid.",
                     "calls": [
                         "header",
-                        "Laravel\\Sanctum\\PersonalAccessToken::findToken",
+                        "PersonalAccessToken::findToken",
                         "json",
                         "user",
                         "Auth::guard",
@@ -1375,8 +1527,8 @@
                 },
                 {
                     "name": "verifyPassword",
-                    "line": 473,
-                    "end_line": 485,
+                    "line": 563,
+                    "end_line": 577,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1394,8 +1546,8 @@
                 },
                 {
                     "name": "changePassword",
-                    "line": 493,
-                    "end_line": 520,
+                    "line": 584,
+                    "end_line": 611,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1425,8 +1577,8 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
-                    "line": 527,
-                    "end_line": 648,
+                    "line": 616,
+                    "end_line": 737,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1456,8 +1608,8 @@
                 },
                 {
                     "name": "verifyEmailByToken",
-                    "line": 655,
-                    "end_line": 710,
+                    "line": 742,
+                    "end_line": 797,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1479,8 +1631,8 @@
                 },
                 {
                     "name": "resendVerificationByToken",
-                    "line": 717,
-                    "end_line": 746,
+                    "line": 802,
+                    "end_line": 831,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1501,8 +1653,8 @@
                 },
                 {
                     "name": "resendEmailVerificationLink",
-                    "line": 748,
-                    "end_line": 774,
+                    "line": 833,
+                    "end_line": 859,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1597,8 +1749,8 @@
             "fqcn": "App\\Http\\Controllers\\CreditsController",
             "kind": "class",
             "file": "app/Http/Controllers/CreditsController.php",
-            "line": 19,
-            "end_line": 189,
+            "line": 20,
+            "end_line": 256,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1606,8 +1758,8 @@
             "methods": [
                 {
                     "name": "index",
-                    "line": 24,
-                    "end_line": 68,
+                    "line": 25,
+                    "end_line": 91,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1627,6 +1779,9 @@
                         "search",
                         "paginate",
                         "orderBy",
+                        "Credits::getGrantAllocation",
+                        "transform",
+                        "getCollection",
                         "total",
                         "toArray",
                         "ApiResponse::success"
@@ -1634,8 +1789,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 73,
-                    "end_line": 83,
+                    "line": 96,
+                    "end_line": 106,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1654,8 +1809,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 88,
-                    "end_line": 94,
+                    "line": 111,
+                    "end_line": 117,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1672,27 +1827,29 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 99,
-                    "end_line": 110,
+                    "line": 124,
+                    "end_line": 167,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "$id"
                     ],
                     "returns": "",
-                    "doc": "Remove the specified resource from storage.",
+                    "doc": "Take back credits an admin granted.",
                     "calls": [
                         "Log::info",
                         "Credits::findOrFail",
                         "authorize",
-                        "delete",
-                        "json"
+                        "Credits::revokeGrant",
+                        "ApiResponse::error",
+                        "Credits::getAvailableCredits",
+                        "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "checkDiscountCodeValidity",
-                    "line": 112,
-                    "end_line": 140,
+                    "line": 169,
+                    "end_line": 197,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1713,8 +1870,8 @@
                 },
                 {
                     "name": "revokeCredit",
-                    "line": 151,
-                    "end_line": 188,
+                    "line": 208,
+                    "end_line": 255,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1730,6 +1887,9 @@
                         "doesntContain",
                         "ApiResponse::error",
                         "DB::transaction",
+                        "Credits::traceConsumedOrigin",
+                        "all",
+                        "pluck",
                         "Credits::addCreditsToUser",
                         "each",
                         "update",
@@ -3149,7 +3309,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/PaymentController.php",
             "line": 12,
-            "end_line": 283,
+            "end_line": 301,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3292,7 +3452,7 @@
                 {
                     "name": "getCreditHistory",
                     "line": 211,
-                    "end_line": 282,
+                    "end_line": 300,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3504,6 +3664,229 @@
                 }
             ],
             "constants": [],
+            "relations": []
+        },
+        {
+            "name": "QaAutomationController",
+            "fqcn": "App\\Http\\Controllers\\Qa\\QaAutomationController",
+            "kind": "class",
+            "file": "app/Http/Controllers/Qa/QaAutomationController.php",
+            "line": 28,
+            "end_line": 384,
+            "extends": "Controller",
+            "implements": [],
+            "traits": [],
+            "doc": "Automation-testing helpers for the \"set password\" and \"verify email\" flows.",
+            "methods": [
+                {
+                    "name": "enabled",
+                    "line": 44,
+                    "end_line": 47,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "Whether these endpoints may serve traffic in the running environment.",
+                    "calls": [
+                        "environment"
+                    ]
+                },
+                {
+                    "name": "__construct",
+                    "line": 56,
+                    "end_line": 71,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "",
+                    "doc": "The route group is only registered when enabled(), but that decision is",
+                    "calls": [
+                        "self::enabled",
+                        "json"
+                    ]
+                },
+                {
+                    "name": "userState",
+                    "line": 78,
+                    "end_line": 86,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Report a QA account's current password / verification state.",
+                    "calls": [
+                        "resolveUser",
+                        "json",
+                        "stateOf"
+                    ]
+                },
+                {
+                    "name": "passwordToken",
+                    "line": 94,
+                    "end_line": 153,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Issue a password-setup or password-reset token plus the link the email",
+                    "calls": [
+                        "validate",
+                        "resolveUser",
+                        "input",
+                        "json",
+                        "stateOf",
+                        "createToken",
+                        "Password::broker",
+                        "save"
+                    ]
+                },
+                {
+                    "name": "setPassword",
+                    "line": 161,
+                    "end_line": 202,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Set a password directly, landing the account in the same state a completed",
+                    "calls": [
+                        "validate",
+                        "symbols",
+                        "numbers",
+                        "mixedCase",
+                        "PasswordRule::min",
+                        "resolveUser",
+                        "save",
+                        "forceFill",
+                        "Hash::make",
+                        "input",
+                        "Str::random",
+                        "deleteToken",
+                        "Password::broker",
+                        "boolean",
+                        "json",
+                        "stateOf",
+                        "refresh"
+                    ]
+                },
+                {
+                    "name": "emailToken",
+                    "line": 210,
+                    "end_line": 261,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Issue the email-verification token plus the link the email would have",
+                    "calls": [
+                        "validate",
+                        "resolveUser",
+                        "boolean",
+                        "json",
+                        "stateOf",
+                        "isFuture",
+                        "Str::random",
+                        "addHours",
+                        "save",
+                        "toIso8601String"
+                    ]
+                },
+                {
+                    "name": "verifyEmail",
+                    "line": 268,
+                    "end_line": 287,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Mark an email verified directly, skipping the token round trip.",
+                    "calls": [
+                        "resolveUser",
+                        "save",
+                        "forceFill",
+                        "json",
+                        "stateOf",
+                        "refresh"
+                    ]
+                },
+                {
+                    "name": "resetState",
+                    "line": 296,
+                    "end_line": 341,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "",
+                    "doc": "Wind an account back to freshly-registered so both flows can run again",
+                    "calls": [
+                        "validate",
+                        "resolveUser",
+                        "boolean",
+                        "save",
+                        "forceFill",
+                        "deleteToken",
+                        "Password::broker",
+                        "json",
+                        "stateOf",
+                        "refresh"
+                    ]
+                },
+                {
+                    "name": "resolveUser",
+                    "line": 347,
+                    "end_line": 362,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "User",
+                    "doc": "Look up the account, including soft-deleted rows — a QA run may well be",
+                    "calls": [
+                        "validate",
+                        "first",
+                        "where",
+                        "User::withTrashed",
+                        "input",
+                        "json"
+                    ]
+                },
+                {
+                    "name": "stateOf",
+                    "line": 368,
+                    "end_line": 383,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $user"
+                    ],
+                    "returns": "array",
+                    "doc": "The fields a test needs to assert on, in one shape shared by every",
+                    "calls": [
+                        "trashed",
+                        "toIso8601String"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "ENVIRONMENTS",
+                    "value": "[…]",
+                    "line": 36
+                }
+            ],
             "relations": []
         },
         {
@@ -4979,7 +5362,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
             "line": 20,
-            "end_line": 619,
+            "end_line": 626,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5135,7 +5518,7 @@
                 {
                     "name": "cancelUnregisteredInvitation",
                     "line": 383,
-                    "end_line": 419,
+                    "end_line": 426,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5155,16 +5538,17 @@
                         "DB::transaction",
                         "update",
                         "App\\Models\\TestSession::where",
-                        "Credits::addCreditsToUser",
+                        "Credits::traceConsumedOrigin",
                         "user",
+                        "Credits::addCreditsToUser",
                         "Log::info",
                         "json"
                     ]
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 427,
-                    "end_line": 430,
+                    "line": 434,
+                    "end_line": 437,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5183,8 +5567,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 435,
-                    "end_line": 549,
+                    "line": 442,
+                    "end_line": 556,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5217,8 +5601,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 554,
-                    "end_line": 617,
+                    "line": 561,
+                    "end_line": 624,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6218,6 +6602,88 @@
             "relations": []
         },
         {
+            "name": "AuditLogIndexRequest",
+            "fqcn": "App\\Http\\Requests\\AuditLogIndexRequest",
+            "kind": "class",
+            "file": "app/Http/Requests/AuditLogIndexRequest.php",
+            "line": 12,
+            "end_line": 66,
+            "extends": "FormRequest",
+            "implements": [],
+            "traits": [],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "authorize",
+                    "line": 26,
+                    "end_line": 34,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": [
+                        "user"
+                    ]
+                },
+                {
+                    "name": "failedAuthorization",
+                    "line": 36,
+                    "end_line": 41,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "ApiResponse::error"
+                    ]
+                },
+                {
+                    "name": "rules",
+                    "line": 43,
+                    "end_line": 60,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "failedValidation",
+                    "line": 62,
+                    "end_line": 65,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Validator $validator"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "CATEGORIES",
+                    "value": "[…]",
+                    "line": 15
+                },
+                {
+                    "name": "SENSITIVITY_LEVELS",
+                    "value": "[…]",
+                    "line": 21
+                },
+                {
+                    "name": "SORTABLE",
+                    "value": "[…]",
+                    "line": 24
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "ChangePasswordRequest",
             "fqcn": "App\\Http\\Requests\\ChangePasswordRequest",
             "kind": "class",
@@ -6460,7 +6926,7 @@
             "kind": "class",
             "file": "app/Http/Requests/CreditsAddRequest.php",
             "line": 8,
-            "end_line": 35,
+            "end_line": 40,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -6480,7 +6946,7 @@
                 {
                     "name": "rules",
                     "line": 15,
-                    "end_line": 27,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6493,8 +6959,8 @@
                 },
                 {
                     "name": "messages",
-                    "line": 29,
-                    "end_line": 34,
+                    "line": 34,
+                    "end_line": 39,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8032,6 +8498,77 @@
             "relations": []
         },
         {
+            "name": "AuditLog",
+            "fqcn": "App\\Models\\AuditLog",
+            "kind": "class",
+            "file": "app/Models/AuditLog.php",
+            "line": 8,
+            "end_line": 116,
+            "extends": "Model",
+            "implements": [],
+            "traits": [
+                "Searchable"
+            ],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "casts",
+                    "line": 41,
+                    "end_line": 50,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "toListArray",
+                    "line": 58,
+                    "end_line": 73,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "Present a row in the exact shape the frontend contract expects for a list row.",
+                    "calls": [
+                        "personArray",
+                        "toIso8601String"
+                    ]
+                },
+                {
+                    "name": "toDetailArray",
+                    "line": 78,
+                    "end_line": 87,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "Same as toListArray() plus the detail-only fields the drawer needs.",
+                    "calls": [
+                        "toListArray",
+                        "personArray"
+                    ]
+                },
+                {
+                    "name": "personArray",
+                    "line": 89,
+                    "end_line": 115,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $prefix",
+                        "bool $withIp = false"
+                    ],
+                    "returns": "?array",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
             "name": "Compliance",
             "fqcn": "App\\Models\\Compliance",
             "kind": "class",
@@ -8223,8 +8760,8 @@
             "fqcn": "App\\Models\\Credits",
             "kind": "class",
             "file": "app/Models/Credits.php",
-            "line": 9,
-            "end_line": 105,
+            "line": 13,
+            "end_line": 543,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -8235,8 +8772,8 @@
             "methods": [
                 {
                     "name": "user",
-                    "line": 23,
-                    "end_line": 26,
+                    "line": 40,
+                    "end_line": 43,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8247,9 +8784,26 @@
                     ]
                 },
                 {
+                    "name": "scopeActive",
+                    "line": 55,
+                    "end_line": 64,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "$query"
+                    ],
+                    "returns": "",
+                    "doc": "Scope to credits that are currently spendable: no expiry, or an expiry that",
+                    "calls": [
+                        "where",
+                        "orWhere",
+                        "toDateString"
+                    ]
+                },
+                {
                     "name": "getTotalUserCredit",
-                    "line": 31,
-                    "end_line": 63,
+                    "line": 69,
+                    "end_line": 96,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8259,17 +8813,16 @@
                     "doc": "Get total active credit for mentioned user",
                     "calls": [
                         "exists",
+                        "active",
                         "where",
                         "Credits::where",
-                        "orWhere",
-                        "toDateString",
                         "sum"
                     ]
                 },
                 {
                     "name": "addCreditsToUser",
-                    "line": 68,
-                    "end_line": 79,
+                    "line": 101,
+                    "end_line": 113,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8285,8 +8838,8 @@
                 },
                 {
                     "name": "transactions",
-                    "line": 84,
-                    "end_line": 87,
+                    "line": 118,
+                    "end_line": 121,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8298,8 +8851,8 @@
                 },
                 {
                     "name": "getAvailableCredits",
-                    "line": 93,
-                    "end_line": 104,
+                    "line": 127,
+                    "end_line": 162,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8309,7 +8862,160 @@
                     "doc": "Get available (unconsumed) credits for user.",
                     "calls": [
                         "self::getTotalUserCredit",
+                        "CreditConsume::getTotalConsumed",
+                        "Cache::add",
+                        "addHour",
+                        "Log::warning"
+                    ]
+                },
+                {
+                    "name": "getGrantAllocation",
+                    "line": 180,
+                    "end_line": 237,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "int $userId"
+                    ],
+                    "returns": "array",
+                    "doc": "Spread everything that has flowed out of the account — credits consumed by tests",
+                    "calls": [
+                        "get",
+                        "orderBy",
+                        "where",
+                        "active",
+                        "self::where",
+                        "values",
+                        "filter",
                         "CreditConsume::getTotalConsumed"
+                    ]
+                },
+                {
+                    "name": "getUnusedCreditsForGrant",
+                    "line": 242,
+                    "end_line": 245,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "self $grant"
+                    ],
+                    "returns": "int",
+                    "doc": "How many credits of this grant are still unspent.",
+                    "calls": [
+                        "self::getGrantAllocation"
+                    ]
+                },
+                {
+                    "name": "traceConsumedOrigin",
+                    "line": 266,
+                    "end_line": 363,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "User $user",
+                        "string $eventType",
+                        "array $candidateRefIds"
+                    ],
+                    "returns": "int",
+                    "doc": "Work out which underlying source (Manual or Purchase) funded a specific test, so a",
+                    "calls": [
+                        "first",
+                        "get",
+                        "orderBy",
+                        "where",
+                        "CreditConsume::where",
+                        "sum",
+                        "orWhere",
+                        "self::where",
+                        "exists",
+                        "whereDate",
+                        "toDateString",
+                        "self::resolveOriginSource"
+                    ]
+                },
+                {
+                    "name": "resolveOriginSource",
+                    "line": 371,
+                    "end_line": 378,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "self $grant"
+                    ],
+                    "returns": "int",
+                    "doc": "A grant's own origin if it is a Manual or Purchase row; if it is itself a refund",
+                    "calls": []
+                },
+                {
+                    "name": "revokeGrant",
+                    "line": 394,
+                    "end_line": 465,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "self $grant"
+                    ],
+                    "returns": "array",
+                    "doc": "Take back credits an admin granted.",
+                    "calls": [
+                        "DB::transaction",
+                        "get",
+                        "lockForUpdate",
+                        "self::where",
+                        "delete",
+                        "self::settleNegativeBalance",
+                        "countsTowardBalance",
+                        "self::getUnusedCreditsForGrant",
+                        "self::create",
+                        "id"
+                    ]
+                },
+                {
+                    "name": "hasExpired",
+                    "line": 470,
+                    "end_line": 475,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "Whether this grant's expiry date has passed.",
+                    "calls": [
+                        "lt",
+                        "Carbon::parse",
+                        "startOfDay"
+                    ]
+                },
+                {
+                    "name": "countsTowardBalance",
+                    "line": 498,
+                    "end_line": 506,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "Does this grant currently count toward the balance?",
+                    "calls": [
+                        "gte",
+                        "Carbon::parse",
+                        "startOfDay"
+                    ]
+                },
+                {
+                    "name": "settleNegativeBalance",
+                    "line": 521,
+                    "end_line": 542,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "int $userId"
+                    ],
+                    "returns": "void",
+                    "doc": "Write a balancing entry when the ledger has gone negative, so the deficit is not",
+                    "calls": [
+                        "self::getTotalUserCredit",
+                        "CreditConsume::getTotalConsumed",
+                        "self::create",
+                        "id"
                     ]
                 }
             ],
@@ -8317,17 +9023,27 @@
                 {
                     "name": "SOURCE_MANUAL",
                     "value": "0",
-                    "line": 16
+                    "line": 29
                 },
                 {
                     "name": "SOURCE_PURCHASE",
                     "value": "1",
-                    "line": 17
+                    "line": 30
                 },
                 {
                     "name": "SOURCE_REVOKED",
                     "value": "2",
-                    "line": 18
+                    "line": 31
+                },
+                {
+                    "name": "SOURCE_ADMIN_REVOKED",
+                    "value": "3",
+                    "line": 33
+                },
+                {
+                    "name": "SOURCE_ADJUSTMENT",
+                    "value": "4",
+                    "line": 35
                 }
             ],
             "relations": [
@@ -8335,13 +9051,13 @@
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 23
+                    "line": 40
                 },
                 {
                     "method": "transactions",
                     "type": "hasOne",
                     "target": "Transaction",
-                    "line": 84
+                    "line": 118
                 }
             ]
         },
@@ -11493,7 +12209,7 @@
             "kind": "class",
             "file": "app/Policies/CreditsPolicy.php",
             "line": 9,
-            "end_line": 66,
+            "end_line": 90,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -11555,8 +12271,8 @@
                 },
                 {
                     "name": "delete",
-                    "line": 46,
-                    "end_line": 49,
+                    "line": 61,
+                    "end_line": 73,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11565,12 +12281,14 @@
                     ],
                     "returns": "bool",
                     "doc": "Determine whether the user can delete the model.",
-                    "calls": []
+                    "calls": [
+                        "isSuperAdmin"
+                    ]
                 },
                 {
                     "name": "restore",
-                    "line": 54,
-                    "end_line": 57,
+                    "line": 78,
+                    "end_line": 81,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -11583,8 +12301,8 @@
                 },
                 {
                     "name": "forceDelete",
-                    "line": 62,
-                    "end_line": 65,
+                    "line": 86,
+                    "end_line": 89,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12131,6 +12849,41 @@
             "relations": []
         },
         {
+            "name": "AuditEventCatalog",
+            "fqcn": "App\\Services\\Audit\\AuditEventCatalog",
+            "kind": "class",
+            "file": "app/Services/Audit/AuditEventCatalog.php",
+            "line": 63,
+            "end_line": 397,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "One place mapping each audit event to {category, event_title, sensitivity}, so a call",
+            "methods": [
+                {
+                    "name": "get",
+                    "line": 389,
+                    "end_line": 396,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $eventKey"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "EVENTS",
+                    "value": "[…]",
+                    "line": 65
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "AuditLogger",
             "fqcn": "App\\Services\\Audit\\AuditLogger",
             "kind": "class",
@@ -12166,6 +12919,224 @@
                 }
             ],
             "constants": [],
+            "relations": []
+        },
+        {
+            "name": "AuditService",
+            "fqcn": "App\\Services\\Audit\\AuditService",
+            "kind": "class",
+            "file": "app/Services/Audit/AuditService.php",
+            "line": 23,
+            "end_line": 349,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Single write chokepoint for the audit trail (see tcv_ai_knowledge_base's",
+            "methods": [
+                {
+                    "name": "log",
+                    "line": 56,
+                    "end_line": 128,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "string $eventKey",
+                        "string $description",
+                        "?User $actor",
+                        "?User $target = null",
+                        "string $status = 'success'",
+                        "array $details = []",
+                        "array $changes = []",
+                        "?Request $request = null",
+                        "?string $sessionKeyOverride = null"
+                    ],
+                    "returns": "?AuditLog",
+                    "doc": "is fixed per event key, this is the free text that varies per call.",
+                    "calls": [
+                        "AuditEventCatalog::get",
+                        "lookupCountry",
+                        "parseBrowser",
+                        "personSnapshot",
+                        "AuditLog::create",
+                        "maskFreeText",
+                        "maskDetails",
+                        "maskChanges",
+                        "sessionKey",
+                        "Log::error",
+                        "getMessage",
+                        "getTraceAsString"
+                    ]
+                },
+                {
+                    "name": "personSnapshot",
+                    "line": 133,
+                    "end_line": 146,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?User $user"
+                    ],
+                    "returns": "?array",
+                    "doc": "",
+                    "calls": [
+                        "self::roleFor"
+                    ]
+                },
+                {
+                    "name": "roleFor",
+                    "line": 155,
+                    "end_line": 163,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "int $usertype"
+                    ],
+                    "returns": "string",
+                    "doc": "'admin' | 'user' | 'organization' — never 'super_admin'. The frontend's",
+                    "calls": []
+                },
+                {
+                    "name": "lookupCountry",
+                    "line": 165,
+                    "end_line": 187,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?string $ip"
+                    ],
+                    "returns": "?string",
+                    "doc": "",
+                    "calls": [
+                        "country"
+                    ]
+                },
+                {
+                    "name": "parseBrowser",
+                    "line": 189,
+                    "end_line": 205,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?string $userAgent"
+                    ],
+                    "returns": "?string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "sessionKeyForToken",
+                    "line": 228,
+                    "end_line": 231,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $plainTextToken"
+                    ],
+                    "returns": "string",
+                    "doc": "The same hash sessionKey() would compute for a Sanctum request bearing this exact",
+                    "calls": []
+                },
+                {
+                    "name": "sessionKey",
+                    "line": 233,
+                    "end_line": 264,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?Request $request"
+                    ],
+                    "returns": "?string",
+                    "doc": "",
+                    "calls": [
+                        "bearerToken",
+                        "check",
+                        "Auth::guard",
+                        "self::sessionKeyForToken",
+                        "FlexibleAuthMiddleware::context",
+                        "input"
+                    ]
+                },
+                {
+                    "name": "maskDetails",
+                    "line": 269,
+                    "end_line": 280,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "array $details"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "isDenylistedKey",
+                        "maskValue"
+                    ]
+                },
+                {
+                    "name": "maskChanges",
+                    "line": 285,
+                    "end_line": 296,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "array $changes"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "isDenylistedKey",
+                        "maskValue"
+                    ]
+                },
+                {
+                    "name": "isDenylistedKey",
+                    "line": 298,
+                    "end_line": 309,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "string $key"
+                    ],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "maskValue",
+                    "line": 317,
+                    "end_line": 332,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "mixed $value"
+                    ],
+                    "returns": "mixed",
+                    "doc": "Content-level safety net, independent of the key-name denylist above: a value that",
+                    "calls": [
+                        "maskValue"
+                    ]
+                },
+                {
+                    "name": "maskFreeText",
+                    "line": 341,
+                    "end_line": 348,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $text"
+                    ],
+                    "returns": "string",
+                    "doc": "Same content-level intent as maskValue(), but for a free-text sentence rather",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "DENYLIST",
+                    "value": "[…]",
+                    "line": 34
+                }
+            ],
             "relations": []
         },
         {
@@ -16734,6 +17705,115 @@
             "relations": []
         },
         {
+            "name": "AuditLogSeeder",
+            "fqcn": "Database\\Seeders\\AuditLogSeeder",
+            "kind": "class",
+            "file": "database/seeders/AuditLogSeeder.php",
+            "line": 28,
+            "end_line": 228,
+            "extends": "Seeder",
+            "implements": [],
+            "traits": [],
+            "doc": "Dev-only fixture data for the Audit Trail read API. Deliberately NOT registered in",
+            "methods": [
+                {
+                    "name": "scenarios",
+                    "line": 54,
+                    "end_line": 144,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "One entry per AuditEventCatalog key: [actor, target, status, detailsOrChanges?].",
+                    "calls": []
+                },
+                {
+                    "name": "run",
+                    "line": 146,
+                    "end_line": 179,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "scenarios",
+                        "AuditEventCatalog::get",
+                        "AuditLog::create",
+                        "row",
+                        "offsetFor"
+                    ]
+                },
+                {
+                    "name": "offsetFor",
+                    "line": 181,
+                    "end_line": 190,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "int $index"
+                    ],
+                    "returns": "Carbon",
+                    "doc": "",
+                    "calls": [
+                        "subMinutes",
+                        "Carbon::now",
+                        "subHours",
+                        "subDays"
+                    ]
+                },
+                {
+                    "name": "row",
+                    "line": 192,
+                    "end_line": 227,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $category",
+                        "string $eventTitle",
+                        "string $sensitivity",
+                        "?array $actor",
+                        "?array $target",
+                        "string $status",
+                        "Carbon $createdAt",
+                        "array $details = []",
+                        "array $changes = []"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "ADMIN",
+                    "value": "[…]",
+                    "line": 30
+                },
+                {
+                    "name": "OTHER_ADMIN",
+                    "value": "[…]",
+                    "line": 33
+                },
+                {
+                    "name": "ORG",
+                    "value": "[…]",
+                    "line": 35
+                },
+                {
+                    "name": "CUSTOMER",
+                    "value": "[…]",
+                    "line": 37
+                },
+                {
+                    "name": "DAY_OFFSET_CYCLE",
+                    "value": "[…]",
+                    "line": 44
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "BaselineTestSectionSeeder",
             "fqcn": "Database\\Seeders\\BaselineTestSectionSeeder",
             "kind": "class",
@@ -20568,6 +21648,11 @@
                     "name": "credited_by",
                     "type": "unsignedBigInteger",
                     "migration": "database/migrations/2026_02_26_110941_add_columns_to_credits_table.php"
+                },
+                {
+                    "name": "original_source",
+                    "type": "unsignedTinyInteger",
+                    "migration": "database/migrations/2026_09_03_140000_add_original_source_to_credits_table.php"
                 }
             ],
             "foreign_keys": [],
@@ -20586,6 +21671,11 @@
                     "kind": "index",
                     "column": "",
                     "migration": "database/migrations/2026_04_07_122826_add_indexes_to_credits_table.php"
+                },
+                {
+                    "kind": "dropColumn",
+                    "column": "original_source",
+                    "migration": "database/migrations/2026_09_03_140000_add_original_source_to_credits_table.php"
                 }
             ],
             "migrations": [
@@ -20618,6 +21708,16 @@
                     "file": "database/migrations/2026_04_07_122826_add_indexes_to_credits_table.php",
                     "op": "table",
                     "line": 26
+                },
+                {
+                    "file": "database/migrations/2026_09_03_140000_add_original_source_to_credits_table.php",
+                    "op": "table",
+                    "line": 14
+                },
+                {
+                    "file": "database/migrations/2026_09_03_140000_add_original_source_to_credits_table.php",
+                    "op": "table",
+                    "line": 29
                 }
             ]
         },
@@ -22155,6 +23255,178 @@
                     "line": 31
                 }
             ]
+        },
+        {
+            "name": "audit_logs",
+            "created_in": "database/migrations/2026_09_08_094214_create_audit_logs_table.php",
+            "dropped_in": "database/migrations/2026_09_08_094214_create_audit_logs_table.php",
+            "columns": [
+                {
+                    "name": "category",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "event_title",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "event_description",
+                    "type": "text",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "actor_id",
+                    "type": "unsignedBigInteger",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "actor_name",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "actor_email",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "actor_role",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "actor_company_name",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "target_id",
+                    "type": "unsignedBigInteger",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "target_name",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "target_email",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "target_role",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "target_company_name",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "status",
+                    "type": "enum",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "sensitivity",
+                    "type": "enum",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "is_admin_action",
+                    "type": "boolean",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "details",
+                    "type": "json",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "changes",
+                    "type": "json",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "session_context",
+                    "type": "json",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "ip_address",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "session_key",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                }
+            ],
+            "foreign_keys": [],
+            "indexes": [
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_08_094214_create_audit_logs_table.php"
+                },
+                {
+                    "kind": "index",
+                    "column": "",
+                    "migration": "database/migrations/2026_09_09_065442_add_target_id_index_to_audit_logs_table.php"
+                }
+            ],
+            "migrations": [
+                {
+                    "file": "database/migrations/2026_09_08_094214_create_audit_logs_table.php",
+                    "op": "create",
+                    "line": 14
+                },
+                {
+                    "file": "database/migrations/2026_09_08_094214_create_audit_logs_table.php",
+                    "op": "dropIfExists",
+                    "line": 67
+                },
+                {
+                    "file": "database/migrations/2026_09_09_065442_add_target_id_index_to_audit_logs_table.php",
+                    "op": "table",
+                    "line": 14
+                },
+                {
+                    "file": "database/migrations/2026_09_09_065442_add_target_id_index_to_audit_logs_table.php",
+                    "op": "table",
+                    "line": 28
+                }
+            ]
         }
     ],
     "routes": [
@@ -22257,6 +23529,42 @@
             "method": "GET|HEAD",
             "uri": "api/admin/lms/provider-configs/{id}/signing-key",
             "action": "App\\Http\\Controllers\\LmsAdminController@revealSigningKey",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/audit-logs",
+            "action": "App\\Http\\Controllers\\AuditLogController@index",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/audit-logs/people",
+            "action": "App\\Http\\Controllers\\AuditLogController@people",
+            "middleware": [
+                "api",
+                "auth:sanctum"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
+            "uri": "api/audit-logs/{id}",
+            "action": "App\\Http\\Controllers\\AuditLogController@show",
             "middleware": [
                 "api",
                 "auth:sanctum"
@@ -24206,21 +25514,27 @@
     "events": [
         {
             "kind": "dispatch",
-            "event": "App\\Events\\UserPasswordSet",
+            "event": "UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 282
+            "line": 367
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 297
+            "line": 382
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 358
+            "line": 443
+        },
+        {
+            "kind": "dispatch",
+            "event": "App\\Events\\UserPasswordSet",
+            "file": "app/Http/Controllers/Qa/QaAutomationController.php",
+            "line": 194
         },
         {
             "kind": "listen",
@@ -24263,6 +25577,6 @@
             "line": 172
         }
     ],
-    "migration_count": 123,
+    "migration_count": 127,
     "routes_source": "artisan route:list --json"
 }

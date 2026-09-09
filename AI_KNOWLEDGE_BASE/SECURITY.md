@@ -506,7 +506,10 @@ limiter, because that mismatch otherwise surfaces only when a live caller hits t
 
 ### S-19 — `DELETE api/credits/{id}` let any authenticated user mutate a stranger's ledger
 
-**Severity: high** — **open on `develop`.** Fixed on the unmerged `ws-402` (2026-09-07).
+**Severity: high** — ✅ **the `delete()` half is fixed on `develop`** since 2026-09-07 (`ws-402`,
+PR #213): the policy now checks `$user->isSuperAdmin()` before it looks at the source.
+⚠️ **`index()` is still unscoped** — it reads `user_id` straight from the request, so the
+read side of this finding remains open. Do not close S-19 until that is fixed too.
 
 `CreditsPolicy::delete()` decided purely on `$credits->source` and **never read its `User $user`
 parameter**. [`routes/api.php:179`](../../TCV-Backend/routes/api.php#L179) registers
@@ -537,13 +540,64 @@ counter-entry or adjustment row was written.
 `used_credits` / `revoked_credits` / `remaining_credits` — still only requires being logged in.
 Distinct from [S-04](#s-04--revokecredit-idor-abandons-any-test), which covers `revokeCredit()`.
 
+### S-20 — The QA automation endpoints are an account-takeover surface gated only by `APP_ENV`
+
+**Severity: high (by design, and currently contained)** — added to `develop` 2026-09-08 (PR #223,
+`add-apis-for-automation`). **Not a bug report**: the surface is deliberate, the gating is thought
+through, and the risk is documented in the code itself. It is here because it is the single most
+dangerous thing on `develop` if one environment variable is wrong.
+
+`api/qa/*` — six routes, **no `auth:sanctum`, no `FlexibleAuthMiddleware`, no token of any kind**:
+
+```
+POST api/qa/user-state          POST api/qa/password/token   POST api/qa/email/token
+POST api/qa/user/reset-state    POST api/qa/password/set     POST api/qa/email/verify
+```
+
+`password/token` and `email/token` hand back a **live token plus the exact URL the email would have
+contained**, for any address the caller names; `password/set` and `email/verify` jump an account
+straight to the end state. Anyone who can reach these on a host can take over **any account on it**,
+including a Super Admin, without credentials.
+
+**Two gates, and you need to understand why there are two:**
+
+1. `routes/api.php` only registers the group `if (QaAutomationController::enabled())`.
+2. `QaAutomationController::__construct()` re-checks on **every request**.
+
+The second is not redundant. `entrypoint.sh` runs `php artisan route:cache`, so a cache built in QA
+would otherwise carry these routes into whatever environment ran that image ([DEPLOYMENT.md](DEPLOYMENT.md)).
+The constructor binds the gate to the **running** `APP_ENV` rather than the build-time one. It raises a
+**404, not a 403** — outside QA these must be indistinguishable from routes that were never registered
+— and it does so via `abort(response()->json(…))` rather than `abort(404)`, because this project's
+`Handler` flattens a `NotFoundHttpException` on a JSON request into a **500** while returning an
+`HttpResponseException`'s response as-is ([ERROR_HANDLING.md](ERROR_HANDLING.md)). Both of those choices
+are load-bearing; do not "simplify" either.
+
+`ENVIRONMENTS = ['qa', 'testing']` — `testing` is present so the feature test can exercise the routes.
+**Production is safe only for as long as `APP_ENV` is right on every host**, so:
+
+- ☠️ **`APP_ENV=qa` on a production box is a full compromise**, not a config smell. Check it during any
+  deploy or environment-cloning work ([CONFIGURATION.md](CONFIGURATION.md)).
+- ☠️ **Never add an environment to `ENVIRONMENTS`**, and never widen it to `local` for convenience.
+- ⚠️ **These routes are invisible to this KB's generated indexes.** `tools/extract.php` reads
+  `artisan route:list` from a working tree whose `APP_ENV` is not `qa`, so `api/qa/*` appears in
+  **neither** [API_ENDPOINT_INDEX](INDEXES/API_ENDPOINT_INDEX.md) **nor**
+  [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md). The "15 of 161 public" headline is the count
+  **for a non-QA environment**; on a QA box it is 21, and the audit will never tell you that. This is
+  the one place where the derived views are structurally blind — do not read a clean
+  `PUBLIC_ROUTE_AUDIT` as evidence about a QA host.
+
+`tests/Feature/Qa/QaAutomationTest.php` (17 tests) is the only guard, and its most important case is
+the one asserting the group 404s outside QA. Treat that test as load-bearing.
+
 ### S-17 — Five Stripe payment endpoints were public on `develop`
 
 **Severity: medium** — ✅ **FIXED on `develop`** (2026-09-07, merged from `tcv-backend-codefix`). Found
 2026-09-04 by the first `develop` regeneration since 2026-08-19. The five routes now sit inside
 `auth:sanctum`; the regenerated [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) reports **15 of 158**
 public endpoints, down from 20, and the scanner's `R-B00` fired only in the safe direction on every run
-of that branch. The description below is kept for history.
+of that branch. (That headline is now **15 of 161** after the Audit Trail routes landed — still the
+same 15.) The description below is kept for history.
 
 ---
 
@@ -599,7 +653,8 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 | `S-03` | ✅ **fixed on `develop`** — `sendResumeEmail` now binds to the caller's credential | ~~high~~ | `TestResumeController` |
 | `S-14` | ✅ **fixed on `develop`** — ownership-scoped, and `update()` uses `validated()` | ~~high~~ | `PatientController` |
 | `S-18` | ✅ **fixed on `develop`** — both read the unforgeable `auth_context` | ~~high~~ | `TestController` |
-| `S-19` | `CreditsPolicy::delete()` ignores `$user` and the route has no role gate — any authenticated user could delete/mutate anyone's credit ledger. ⚠️ **open on `develop`**; fix sits on unmerged `ws-402`. `index()` still unscoped | **high** | `CreditsPolicy` · `routes/api.php:179` |
+| `S-19` | `CreditsPolicy::delete()` ignored `$user` — any authenticated user could delete/mutate anyone's credit ledger. ✅ **delete gated on `develop`** 2026-09-07 (`ws-402`); ⚠️ **`index()` still unscoped**, so the finding stays open on the read side | **high** | `CreditsPolicy` · `routes/api.php:179` |
+| `S-20` | `api/qa/*` — six unauthenticated account-takeover helpers, registered only when `APP_ENV` ∈ (`qa`, `testing`). Deliberate and double-gated, but invisible to the generated route indexes | **high** (contained) | `Qa/QaAutomationController` · `routes/api.php` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |

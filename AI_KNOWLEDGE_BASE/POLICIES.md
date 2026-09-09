@@ -32,7 +32,7 @@ public function delete(User $user, Credits $credits): bool
 Note it ignores `$user` entirely — **any** authenticated user may delete **any** manually-granted credit
 row. Purchased (`1`) and revoked (`2`) grants are undeletable by anyone.
 
-> ☠️ **`ws-402` (unmerged, credit revocation) both widens and finally gates this.** `delete()` also
+> ☠️ **`ws-402` (merged 2026-09-07, credit revocation) both widens and finally gates this.** `delete()` also
 > returns `true` for a `SOURCE_REVOKED` row whose new `original_source` column is `SOURCE_MANUAL` — a
 > refund is deletable when the money it's returning traces back to a manual grant, never when it traces
 > back to a purchase.
