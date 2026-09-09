@@ -336,6 +336,50 @@ falls through to the raw string rather than failing loudly.
 
 ---
 
+## Report date filters are three copies (`ws-455`)
+
+The From/To `react-datepicker` pair under **Reports** is pasted into three pages with **no shared
+component**, so the filter contract is three edits and the three copies had already drifted apart by
+the time `ws-455` was filed:
+
+| Page | File | Disabled-state styles live in |
+|---|---|---|
+| Reports → User Tests | `pages/Reports/UserTests.js` | `pages/Reports/UserTest.scss` |
+| … → patient drill-down | `pages/Reports/UserTestDetail.js` | `pages/Reports/UserTestDetail.scss` |
+| Reports → Discount Code Redemptions | `pages/Reports/DiscountCode.js` | `styles/pages/DiscountCodeReport.scss` |
+
+The contract, as of 2026-09-10 — all three now match:
+
+- **To is `disabled` until From is set**, with its placeholder switched to *"Select From date first"*.
+- **From** `maxDate` = the chosen To, else `startOfToday()`. **To** `minDate` = the chosen From,
+  `maxDate` = `startOfToday()`. Equal dates are allowed — a single-day report is a real query.
+- **Moving From past an existing To clears To** (as does clearing From), which re-locks the field.
+- `handleApply*` re-checks both rules and `showPopup`s *"Invalid Date Range"* rather than dispatching.
+  The comparison is a plain string `<` on the `yyyy-mm-dd` draft values, not `Date` objects.
+
+☠️ **Cross-linked `minDate`/`maxDate` alone does not prevent an inverted range.** `DiscountCode.js` had
+them before `ws-455` and could still submit From > To: picking From *after* an already-chosen To left
+the stale To in place, because nothing reset it. `UserTests.js` had no cross-link at all, which is how
+`From 09/09/2026 · To 09/08/2026` reached the API and returned an empty report that looked like a data
+bug. Both halves — the calendar bounds *and* the reset — are load-bearing.
+
+☠️ **Do not "disable past dates" on these pickers.** The `ws-455` report asked for it; it is wrong.
+Every row in a report was created in the past, and `maxDate` is already the start of *today*, so the
+restriction would leave exactly one selectable day and break the filter. Future dates were never
+selectable — that part was never the bug.
+
+☠️ **A `customInput` must destructure and forward `disabled`.** react-datepicker clones the element and
+passes `disabled` down, but the local `DateInput` in each of the three files takes an explicit prop
+list — drop `disabled` from it and the field still refuses to open while *looking* fully enabled, which
+reads as a dead control. It also drives the `.is-disabled` class on the wrapper.
+
+Three stylesheets rather than one because Discount Code Redemptions styles the field differently: the
+border and background sit on the `.date-picker-input` wrapper with a transparent borderless input
+inside, where the other two style `input.form-control` directly. Same tokens in all three
+(`#f3f4f6` fill, `#9ca3af` text), so the disabled state looks identical across the reports.
+
+---
+
 ## The test player
 
 Sequential URL flow under `/user-panel/start-test/:testId/`:
@@ -402,6 +446,9 @@ Regenerated every run; the current state:
 - **Renaming a page = 4** — the same three plus `Sidebar.js`'s `menuItems`. `/test` → `/tests` on
   2026-08-27 (ws-359) had to touch all four; miss `routeConfig.js` and the page 403s for every role,
   miss `Sidebar.js` and the nav entry silently stops matching.
+- **Touching a report date filter = 3 pages + 3 stylesheets.** `UserTests.js`, `UserTestDetail.js` and
+  `DiscountCode.js` each hold their own copy of the same From/To picker pair (ws-455, see above). There
+  is no shared component to change instead; fix one and you have fixed one third of the bug.
 - **A value the server fills in should not be free text in the editor.** `RichTextEditor`'s
   `lockPlaceholders` (ws-400) renders `{{token}}`s and the Start Test button as atomic Quill embeds, so
   they can be moved or deleted but never half-typed. Two things come with it: any custom `formats` list

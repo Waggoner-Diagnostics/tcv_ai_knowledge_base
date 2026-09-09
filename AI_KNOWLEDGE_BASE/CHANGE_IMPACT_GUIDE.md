@@ -125,7 +125,13 @@ frontend_app_url         SKIP_                   result_json
 Patient::GENDERS         GENDER_OPTIONS          genderLabel(
 EmailContent::linkify    EmailSignature::HTML    email_template
 hasTestLinkButton        lockPlaceholders        PLACEHOLDER_FORMATS
+draftFromDate            date-picker-input       startOfToday
 ```
+
+☠️ The last row is the **report date filter, which exists in three copies** — `UserTests.js`,
+`UserTestDetail.js`, `DiscountCode.js`, plus a disabled-state block in three separate stylesheets. Grep
+before you edit; there is no shared component (ws-455,
+[FRONTEND.md](FRONTEND.md#report-date-filters-are-three-copies-ws-455)).
 
 ---
 
