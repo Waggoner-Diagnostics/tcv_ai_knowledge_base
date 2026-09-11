@@ -192,14 +192,20 @@ npm test -- --watchAll=false               # once (CI)
 npm test -- --testPathPattern=src/App.test.js
 ```
 
-**Eight passing test files exist** on `develop` and **110 tests pass** (measured 2026-09-09 with
-`CI=true npx react-scripts test --watchAll=false`). `ws-402` is merged on the frontend too, so the two
-credits files below and its six extra `DiscountCodeModal` cases are now the baseline, not a branch
-extra.
+**Eight passing test files exist** on `develop` and **117 tests pass** (re-measured 2026-09-11 with
+`CI=true npx react-scripts test --watchAll=false`; it was 110 on 2026-09-09). `ws-402` is merged on the
+frontend too, so the two credits files below and its six extra `DiscountCodeModal` cases are now the
+baseline, not a branch extra.
 
 A ninth suite, `src/App.test.js`, still fails to run for the reason documented below — so a healthy
-local run reads **1 failed / 8 passed, 110/110 tests passing**. Read the test counts, not the suite
+local run reads **1 failed / 8 passed, 117/117 tests passing**. Read the test counts, not the suite
 counts.
+
+On `ws-407` (not yet on `develop`) that becomes **1 failed / 9 passed, 129/129** — the branch adds
+`src/utils/validation.test.js`. ⚠️ In a **full** run on that branch, `DiscountCodeModal.test.js` is
+sometimes reported as a failed *suite* with all 55 of its tests passing, on a post-teardown `act()`
+warning from Formik; it passes in isolation and imports nothing `ws-407` touches. Confirm a suspected
+failure with `--testPathPattern` before blaming a change.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -211,6 +217,7 @@ counts.
 | `src/redux/slices/userProfile/passwordChangeSlice.test.js` | 6 | password-change slice (`ws-395`) |
 | `src/utils/validationSchema/validatePricingTiers.test.js` | 5 | pricing-tier schema |
 | `src/utils/sliderUtils.test.js` | 4 | slider helpers |
+| `src/utils/validation.test.js` | **12** | `ws-407` (on the branch only) — the shared phone helpers in `src/utils/validation.js`: blank and separator-only treated as valid, the 15-digit and 20-character caps **truncating rather than rejecting** (the frozen-field regression), `phoneForSubmit` collapsing `()` to `''`, and `validateProfile` reporting a short number. The only guard on the checkout billing gate ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |
 
 Everything outside those files is still untested: auth, the test player, patients, reports.

@@ -163,19 +163,47 @@ the part to remember:
   So `billingInfo` now mixes field values with a **validation flag under the same roof**, and any new
   `*Error` key you add to that object is invisible to the gate unless you also add it here. A blank
   phone is valid; a half-typed one blocks Pay.
-- `phone` is sent as `billingInfo.phone || undefined`. Stripe rejects `billing_details.phone: ""` —
-  omit the key, don't send an empty string.
-- The digit cap is counted on **digits, not characters**: `(` `)` `-` `+` and spaces are kept in the
-  value so `+1 (234) 567-8900` doesn't eat into the 15 digits E.164 allows (`maxLength` on the input is
-  20 for the same reason). A keystroke past 15 digits returns `prev` unchanged rather than slicing, so
-  the number is never cut mid-way. Below 10 digits (and non-blank) is the error case.
+- ☠️ **Three places write `billingInfo.phone`, and every one of them must normalize *and* re-validate.**
+  The initial `useState` (from `user?.phone_no`), the pre-fill effect (which re-runs whenever `user` or
+  `countries` changes), and the change handler. The PR review of 2026-09-11 caught the first two doing
+  neither: a profile phone of `123` reached Stripe as `billing_details.phone` with `phoneError`
+  `undefined`, and since most users never touch the field, that was the *common* path, not the edge one.
+  The pre-fill also has to set `phoneError` explicitly rather than let `...prev` carry the old one
+  forward, or a stale error sits under a valid number and keeps Pay disabled.
+- The rules themselves live in **`src/utils/validation.js`**, not in the component:
+  `normalizePhone()` (clean + cap), `getPhoneError()` (`''` or the message), `phoneForSubmit()`
+  (submit/persist shape), and the `PHONE_MIN_DIGITS` / `PHONE_MAX_DIGITS` / `PHONE_MAX_LENGTH` /
+  `PHONE_ERROR_MESSAGE` constants. Settings ▸ Profile uses the same three functions —
+  **do not add a second phone rule**, in either screen.
+- Two caps, both enforced by **truncation, never by rejecting the change**: 15 **digits** (E.164) and
+  20 **characters** (`users.phone_no` is a `varchar(20)` and `UpdateProfileRequest` validates `max:20`;
+  `maxLength` on the input is `PHONE_MAX_LENGTH` so the attribute and the handler cannot disagree).
+  The digit cap counts digits so the separators in `+1 (234) 567-8900` don't eat into the allowance —
+  but heavy formatting can still hit 20 characters first, and widening the column is the only way past
+  that. ⚠️ The pre-fix handler did `if (digitCount > 15) return prev`, which **froze the field**: once
+  state held more than 15 digits (reachable only via the un-validated pre-fill above), every
+  single-character edit was rejected too, because deleting one character from 20 digits still leaves 19.
+  React then restored the DOM value, so the input looked broken with no error on screen.
+- `phone` is sent as `phoneForSubmit(billingInfo.phone) || undefined`. Stripe rejects
+  `billing_details.phone: ""` — omit the key, don't send an empty string. `phoneForSubmit` is what makes
+  the guard correct: separator-only input like `()` is zero digits, so it passes validation as "blank",
+  but it is still **truthy** and used to travel to Stripe as a phone number. It collapses to `''` at the
+  boundary only — the field keeps what was typed, because blanking state on every digit-less keystroke
+  would swallow a leading `(`.
 - ⚠️ The phone branch does its own `setBillingInfo(prev => …)` and **returns early**. Adding another
   field that needs derived state means a second early return, not an extra key on a shared `updates`
   object — the old shape, which computed `updates` outside the updater, was the impure-updater bug this
   replaced.
+- Guard rail: `src/utils/validation.test.js` (12 tests) covers both regressions above — the frozen
+  field and the separator-only value — plus the caps and the blank-is-valid rule. Run it before touching
+  any of them ([TESTING.md](../TESTING.md)).
 
 The form pre-fills from `auth.user` (`user.phone_no`, `user.state_id`, …), which is why the profile-save
 sync in trap 9 of [AUTH_CONTEXT](AUTH_CONTEXT.md#-traps) matters here.
+
+Nothing on the backend enforces a phone **format** on either path: `UpdateProfileRequest` has
+`['nullable', 'string', 'max:20']` and no format rule, and the payment path never reads `phone` at all.
+The SPA helper is the only guard, which is why it is shared rather than per-screen.
 
 ---
 

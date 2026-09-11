@@ -431,6 +431,12 @@ Regenerated every run; the current state:
 - `src/components/index.js` re-exports shared UI — import from there, not by deep path.
 - Sass (`.scss`) alongside Bootstrap utilities.
 - Formik + Yup for forms; schemas in `src/utils/validationSchema/`.
+- **Plain (non-Formik) form rules live in `src/utils/validation.js`** — `validateProfile`,
+  `validatePasswordForm`, and since `ws-407` the shared phone helpers (`normalizePhone`,
+  `getPhoneError`, `phoneForSubmit`, `PHONE_*`) used by **both** checkout billing and Settings ▸ Profile.
+  A field collected on more than one screen belongs here, not inline in each component: the phone rule
+  existed only inside `Checkout.js`'s change handler, which is how the pre-filled value reached Stripe
+  unvalidated ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) trap 8).
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
 - **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
   on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).

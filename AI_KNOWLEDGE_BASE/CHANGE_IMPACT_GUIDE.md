@@ -111,6 +111,7 @@ Read the row for the thing you are about to change **before** you change it.
 | Adding an SPA page | `protectedRoutes.js` + `routeConfig.js` + `USER_PANEL_WITH_HEADER` |
 | Login/registration payload | backend + SPA + **the website's proxy routes** |
 | The `PUT api/profile` response's `user` shape | since `ws-407` it feeds `auth.user` **and** `localStorage.auth`, not just the profile slice — dropping a key there stales out Checkout's billing pre-fill silently, and changing `usertype` there re-roles the client session ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md#-traps) trap 10) |
+| The phone format rule | one definition in the SPA's `src/utils/validation.js` (`normalizePhone` / `getPhoneError` / `phoneForSubmit`), consumed by checkout billing **and** Settings ▸ Profile, with no backend format rule behind either. Widening the digit cap past 15 also needs `users.phone_no` (`varchar(20)`) and `UpdateProfileRequest`'s `max:20` — the character cap, not the digit cap, is what bites first. `src/utils/validation.test.js` is the guard rail ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) trap 8) |
 | A patient-field format rule | there are **two** validators behind one Add Patient screen — `formUtils.js`'s `FORMAT_VALIDATORS` (org/field-rules branch) and the inline checks in `usePatientForm.js` (edit + fallback). `ws-407` added `EMAIL_PATTERN` to the first only ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-traps) trap 8) |
 
 ---

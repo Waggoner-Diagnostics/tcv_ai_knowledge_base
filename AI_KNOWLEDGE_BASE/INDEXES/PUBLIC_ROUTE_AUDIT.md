@@ -48,4 +48,4 @@ read or mutate money, credits, or another user's data.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-09. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-11. Do not hand-edit — re-run the generator._

@@ -338,3 +338,10 @@ but it is the first thing to revisit if white-label branding becomes a real requ
       degrades to the old stale-prefill behaviour **silently**, with no error anywhere.
     - `localStorage.auth` is now written from two places with the same four keys
       (`token`, `user`, `userType`, `isAuthenticated`). Adding a fifth means editing both.
+    - Because that merge is what feeds Checkout's pre-fill, **`phone_no` is now normalized on the
+      profile side too** (`ws-407`, branch only): `useProfileForm` runs it through `normalizePhone` on
+      load *and* on change, `validateProfile` rejects a short number, and `ProfilePage`'s save sends
+      `phoneForSubmit(...)` so a separator-only value is stored blank. All four come from
+      `src/utils/validation.js` — the same helpers checkout uses
+      ([BILLING_CONTEXT](BILLING_CONTEXT.md) trap 8). A value written to `users.phone_no` by any other
+      client is still unchecked: the backend has no format rule.
