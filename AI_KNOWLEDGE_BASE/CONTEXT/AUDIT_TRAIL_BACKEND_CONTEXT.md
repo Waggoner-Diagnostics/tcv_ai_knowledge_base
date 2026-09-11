@@ -77,7 +77,7 @@ The seven original keys came from the reference repo. Rederiving them from the s
 | `accounts_users` | Accounts & Users | create / edit / status / delete for **users, super admins and organisations**; self-signup; profile updates; **impersonation start/end** | 18 |
 | `billing_payment` | Billing & Payments | pricing tiers, discount codes (CRUD/toggle/expiry), checkout discount apply, payment success/failure | 13 |
 | `credits_licensing` | Credits & Licensing | credit assign / revoke / refund, insufficient-credit blocks | 8 |
-| `test_activity` | Test Activity | invitations sent / bulk / resent / cancelled; test started / completed / abandoned | 7 |
+| `test_activity` | Test Activity | invitations sent / bulk / resent / cancelled; test started / completed | 6 |
 | `patient_records` | Patient Records | patient added / edited / deleted / exported, Patients-page access | 5 |
 | `reports_exports` | Reports & Exports | report exports, report filtering, patient-test detail views | 4 |
 | `settings_config` | Settings & Configuration | application settings, email templates, test catalogue status | 3 |
@@ -112,7 +112,7 @@ Applying your bands:
 
 **High** — registration and self-signup, discount code create/edit/toggle, organisation create/edit, credit assignment, status toggles (active/inactive), password changed, password reset *completed*.
 
-**Medium** — test sent / resent / bulk, test started / completed / abandoned, patient added / edited, all exports, test catalogue status change, settings and email-template edits, profile edits, Patients-page verification.
+**Medium** — test sent / resent / bulk, test started / completed, patient added / edited, all exports, test catalogue status change, settings and email-template edits, profile edits, Patients-page verification.
 
 **Low** — successful sign-in, sign-out, email verification, OTP and verification-code issuance, password reset *requested*, Contact-Us submissions, report filtering.
 
@@ -135,10 +135,13 @@ The audit table is a **new store with a new access model**: readable in full by 
 | **Test started for patient** | "Patient details (Name, Email, DOB, Patient ID, Gender)" | Same. | `patient_ref`, `unique_test_id`, test name, credits used. |
 | **Patient details are Edited/updated** | before/after of patient fields | **Worst case** — stores *two* copies of the PHI, including values the user has since corrected or deleted. | The *names of the fields* that changed. No values. |
 | **Patient test details viewed** | Patient name, Test ID, Test Name, Status | Name is an identifier; "Status" here is test progress, not clinical, so it is fine. | `patient_ref`, `unique_test_id`, Test Name, progress Status. Drop the name. |
-| **Test abandoned** | Patient name, last section reached | Name is an identifier. | `unique_test_id`, test name, last section. |
+| **Test abandoned** *(dropped — see below)* | Patient name, last section reached | Name is an identifier. | `unique_test_id`, test name, last section. |
 | **Test invitation sent** | Recipient email(s), **Verification code** | The verification code is a **live credential** granting entry to a test session. Logging it is a security defect independent of HIPAA — anyone with audit read access could take a patient's test. | Recipient **count**, test name, credits used, expiry. Never the code, never the addresses. If a specific recipient must be traceable, store `test_invitations.id` — that row already has a primary key, so there is nothing to hash. |
 | **Contact / enquiry submitted** | Name, Email, Subject, **Message** | Free text from the public web form — it can contain anything, including the sender describing their own medical condition. | Name, email, subject, message length. Not the body. |
 | **Payment successful / failed** | "Payment Method" | Only ever brand + last four, straight from the Stripe object. Never a PAN, never a raw token. | Brand + last4, transaction ID, amount. |
+
+> [!NOTE]
+> **`test.abandoned` dropped as its own key in implementation (PR #229).** There is no *patient-initiated* abandonment signal to hang a dedicated event off — a patient closing the tab produces no request. The catalog and seeder carry no `test.abandoned` key; `test_activity` lists only `test.started` and `test.completed`. The admin-initiated case (`CreditsController::revokeCredit`, which requires the test to be `STATUS_INPROGRESS` and marks it `STATUS_ABANDONED`) is folded into `test.invitation_cancelled_credit_refund` — the same key `TestInvitationController::cancelUnregisteredInvitation` uses for a pre-start cancellation, so one key now covers both "invitation cancelled before the patient started" and "in-progress test force-abandoned via credit revoke."
 
 **Surrogate keys — log a pointer, not a copy.**
 
@@ -162,7 +165,7 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 
 **Two design consequences:**
 
-- **Patients are never an `actor` and never a `target`.** For "Test completed"/"Test abandoned" the spreadsheet names the Patient as the actor; the frontend role vocabulary has no `patient`, and `Patient` is not a `User`, so an `actor_id` would be a dangling reference. Log these with `actor = system` and the owning user/organisation as `target`, with the patient referenced only by `patient_ref` inside `details`.
+- **Patients are never an `actor` and never a `target`.** For "Test completed" (and "Test abandoned" in the original spreadsheet, dropped — see §5) the spreadsheet names the Patient as the actor; the frontend role vocabulary has no `patient`, and `Patient` is not a `User`, so an `actor_id` would be a dangling reference. Log these with `actor = system` and the owning user/organisation as `target`, with the patient referenced only by `patient_ref` inside `details`.
 - **A denylist belongs in the service, not in the call sites.** `AuditService` masks recursively before any write: the reference plan's `password / token / secret / api_key` set **plus** `dob, date_of_birth, gender, zipcode, zip_code, diagnosis, result, verification_code, message, ssn, card_number`. Call sites will drift; one chokepoint will not. Give call sites a `ref()` helper so a patient reference cannot be hand-rolled, and add a test asserting that no `test_activity` or `accounts_users` row's `details`/`changes` JSON ever matches an email- or date-shaped pattern — it catches the regression the day someone adds a new call site.
 
 ---
@@ -234,7 +237,8 @@ Grouped by the file that changes. Every method listed was confirmed to exist on 
 | `PaymentController`, `StripePaymentController` | webhook + confirm handlers | payment success / failure — **system-generated: no location or device** |
 | `TestInvitationController` | `sendInvitations`, `resendUnregisteredInvitation`, `cancelUnregisteredInvitation` | invitation sent / bulk / resent / cancelled+refunded, insufficient credits |
 | `PatientController` | `store`, `update`, `destroy` | patient added / edited / deleted — **redacted per §5** |
-| `TestExecutionService` / `TestResultService` | completion + abandonment | test started / completed / abandoned — **no result or diagnosis** |
+| `TestController` | `assignTest` | test started |
+| `TestExecutionService` | `finalizeTestIfCompleted` | test completed — **no result or diagnosis** |
 | `ReportController` | `userTestsReport`, `discountCode`, `getPatientsHavingTests` | exports |
 | `RestrictedIpController` | all mutations | IP allowlist changes |
 | `TestEmailTemplateController`, `UserEmailTemplateController` | `update` | email template edits |
