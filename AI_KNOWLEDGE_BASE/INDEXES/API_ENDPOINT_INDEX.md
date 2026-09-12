@@ -3,7 +3,7 @@
 Every `api/*` route in TCV-Backend, with the middleware that actually executes — the group stack a
 route is physically nested inside, resolved the way Laravel resolves it.
 
-**161 endpoints.** Auth column: `auth:sanctum` = Sanctum token required · `FlexibleAuthMiddleware` = **four** accepted token kinds (see [AUTH_CONTEXT](../CONTEXT/AUTH_CONTEXT.md)) · `—` = **public**.
+**162 endpoints.** Auth column: `auth:sanctum` = Sanctum token required · `FlexibleAuthMiddleware` = **four** accepted token kinds (see [AUTH_CONTEXT](../CONTEXT/AUTH_CONTEXT.md)) · `—` = **public**.
 
 > Route source: `artisan route:list --json`.
 > `RestrictIpMiddleware` is appended **globally** in `bootstrap/app.php` and therefore runs on every
@@ -40,138 +40,139 @@ route is physically nested inside, resolved the way Laravel resolves it.
 | `API-027` | GET|HEAD | `api/discount-codes/{discount_code}` | DiscountCodeController@show | `auth:sanctum` | — |
 | `API-028` | PUT|PATCH | `api/discount-codes/{discount_code}` | DiscountCodeController@update | `auth:sanctum` | — |
 | `API-029` | PATCH | `api/discount-codes/{discount_code}/toggle` | DiscountCodeController@toggle | `auth:sanctum` | — |
-| `API-030` | GET|HEAD | `api/dropdown/allowed-tests` | DropdownValuesController@activeAllowedTests | `auth:sanctum` | — |
-| `API-031` | GET|HEAD | `api/dropdown/compliances` | DropdownValuesController@activeCompliances | `auth:sanctum` | — |
-| `API-032` | GET|HEAD | `api/dropdown/organization-settings-options` | DropdownValuesController@activeOrgSettingsOptions | `auth:sanctum` | — |
-| `API-033` | GET|HEAD | `api/dropdown/organization-types` | DropdownValuesController@activeOrganizationTypes | `auth:sanctum` | — |
-| `API-034` | GET|HEAD | `api/dropdown/privileges` | DropdownValuesController@activePrivileges | `auth:sanctum` | — |
-| `API-035` | POST | `api/impersonate/{id}` | AuthController@impersonateUser | `auth:sanctum` | — |
-| `API-036` | POST | `api/login` | AuthController@login | `throttle:login` | — |
-| `API-037` | POST | `api/logout` | AuthController@logout | `auth:sanctum` | — |
-| `API-038` | POST | `api/organization/patient/default` | OrganizationPatientController@storeDefaultPatient | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:launched,identity_resolved` | — |
-| `API-039` | POST | `api/organization/patient/prolific` | OrganizationPatientController@storeProlificPatient | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:launched,identity_resolved` | — |
-| `API-040` | GET|HEAD | `api/organization/patientForm` | OrganizationController@getPatientForm | `FlexibleAuthMiddleware` | — |
-| `API-041` | GET|HEAD | `api/organization/privileges` | OrganizationController@getOrganizationPrivileges | `FlexibleAuthMiddleware` | — |
-| `API-042` | GET|HEAD | `api/organization/redirect-url` | OrganizationController@getOrganizationRedirectUrl | `FlexibleAuthMiddleware` | — |
-| `API-043` | GET|HEAD | `api/organization/test` | _(closure)_ | `auth:sanctum` · `signed` | — |
-| `API-044` | GET|HEAD | `api/organization/tests/default` | OrganizationController@getDefaultTests | `FlexibleAuthMiddleware` | — |
-| `API-045` | POST | `api/organization/verify-signature` | OrganizationController@verifySignature | `throttle:signature-verify` | — |
-| `API-046` | GET|HEAD | `api/organizations` | OrganizationController@index | `auth:sanctum` | — |
-| `API-047` | POST | `api/organizations` | OrganizationController@store | `auth:sanctum` | — |
-| `API-048` | POST | `api/organizations/{id}/upload-logo` | OrganizationController@uploadLogo | `auth:sanctum` | — |
-| `API-049` | DELETE | `api/organizations/{organization}` | OrganizationController@destroy | `auth:sanctum` | — |
-| `API-050` | GET|HEAD | `api/organizations/{organization}` | OrganizationController@show | `auth:sanctum` | — |
-| `API-051` | PUT|PATCH | `api/organizations/{organization}` | OrganizationController@update | `auth:sanctum` | — |
-| `API-052` | PUT | `api/password/change` | PasswordController@update | `auth:sanctum` | — |
-| `API-053` | POST | `api/password/forgot` | AuthController@sendResetLinkEmail | `throttle:password-reset` | — |
-| `API-054` | POST | `api/password/reset` | AuthController@setOrResetPassword | `throttle:password-reset` | — |
-| `API-055` | POST | `api/password/verify-setup-token` | AuthController@verifySetupToken | `throttle:password-reset` | — |
-| `API-056` | POST | `api/patient-tests/{identifier}/revoke-credit` | CreditsController@revokeCredit | `auth:sanctum` | — |
-| `API-057` | GET|HEAD | `api/patients` | PatientController@index | `FlexibleAuthMiddleware` | — |
-| `API-058` | POST | `api/patients` | PatientController@store | `FlexibleAuthMiddleware` | — |
-| `API-059` | GET|HEAD | `api/patients/{id}/tests` | PatientController@getPatientTests | `auth:sanctum` | — |
-| `API-060` | DELETE | `api/patients/{patient}` | PatientController@destroy | `FlexibleAuthMiddleware` | — |
-| `API-061` | GET|HEAD | `api/patients/{patient}` | PatientController@show | `FlexibleAuthMiddleware` | — |
-| `API-062` | PUT|PATCH | `api/patients/{patient}` | PatientController@update | `FlexibleAuthMiddleware` | — |
-| `API-063` | POST | `api/payment/confirm` | PaymentController@confirmPayment | `auth:sanctum` | — |
-| `API-064` | POST | `api/payment/initialize` | PaymentController@initializePayment | `auth:sanctum` | — |
-| `API-065` | GET|HEAD | `api/payment/providers` | PaymentController@getProviders | `auth:sanctum` | — |
-| `API-066` | POST | `api/payment/setup-intent` | PaymentController@createSetupIntent | `auth:sanctum` | — |
-| `API-067` | POST | `api/payment/webhook/{provider}` | PaymentController@handleWebhook | `auth:sanctum` | — |
-| `API-068` | GET|HEAD | `api/price-details` | PriceDetailController@index | `auth:sanctum` | — |
-| `API-069` | POST | `api/price-details` | PriceDetailController@store | `auth:sanctum` | — |
-| `API-070` | DELETE | `api/price-details/{price_detail}` | PriceDetailController@destroy | `auth:sanctum` | — |
-| `API-071` | PUT|PATCH | `api/price-details/{price_detail}` | PriceDetailController@update | `auth:sanctum` | — |
-| `API-072` | GET|HEAD | `api/profile` | ProfileController@show | `auth:sanctum` | — |
-| `API-073` | PUT | `api/profile` | ProfileController@update | `auth:sanctum` | — |
-| `API-074` | POST | `api/register` | AuthController@register | `throttle:register` | — |
-| `API-075` | GET|HEAD | `api/reports/discount-codes` | ReportController@discountCode | `auth:sanctum` | — |
-| `API-076` | GET|HEAD | `api/reports/list-patients-having-tests` | ReportController@getPatientsHavingTests | `auth:sanctum` | — |
-| `API-077` | GET|HEAD | `api/reports/user-tests` | ReportController@userTestsReport | `auth:sanctum` | — |
-| `API-078` | POST | `api/resend-test-link` | PatientController@resendTestLink | `auth:sanctum` | — |
-| `API-079` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken | — | — |
-| `API-080` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink | — | — |
-| `API-081` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ | — | — |
-| `API-082` | GET|HEAD | `api/restricted-ips` | RestrictedIpController@index | `auth:sanctum` | — |
-| `API-083` | POST | `api/restricted-ips` | RestrictedIpController@store | `auth:sanctum` | — |
-| `API-084` | DELETE | `api/restricted-ips/{restricted_ip}` | RestrictedIpController@destroy | `auth:sanctum` | — |
-| `API-085` | PUT|PATCH | `api/restricted-ips/{restricted_ip}` | RestrictedIpController@update | `auth:sanctum` | — |
-| `API-086` | POST | `api/stop-impersonate/{id}` | AuthController@stopImpersonation | `auth:sanctum` | — |
-| `API-087` | POST | `api/stripe/confirm-payment` | StripePaymentController@confirmPayment | `auth:sanctum` | — |
-| `API-088` | POST | `api/stripe/create-payment-intent` | StripePaymentController@createPaymentIntent | `auth:sanctum` | — |
-| `API-089` | GET|HEAD | `api/stripe/payment-methods` | StripePaymentController@getPaymentMethods | `auth:sanctum` | — |
-| `API-090` | POST | `api/stripe/payment-methods/set-default` | StripePaymentController@setDefaultPaymentMethod | `auth:sanctum` | — |
-| `API-091` | DELETE | `api/stripe/payment-methods/{payment_method_id}` | StripePaymentController@removePaymentMethod | `auth:sanctum` | — |
-| `API-092` | GET|HEAD | `api/stripe/transactions` | PaymentController@getTransactions | `auth:sanctum` | — |
-| `API-093` | GET|HEAD | `api/super-admin/dashboard` | SuperAdminDashboardController@index | `auth:sanctum` | — |
-| `API-094` | GET|HEAD | `api/test-email-templates` | TestEmailTemplateController@index | `auth:sanctum` | — |
-| `API-095` | GET|HEAD | `api/test-email-templates/placeholders/{type}` | TestEmailTemplateController@getPlaceholders | `auth:sanctum` | — |
-| `API-096` | PUT | `api/test-email-templates/{id}` | TestEmailTemplateController@update | `auth:sanctum` | — |
-| `API-097` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus | — | — |
-| `API-098` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode | — | — |
-| `API-099` | POST | `api/test-invitations/send` | TestInvitationController@sendInvitations | `auth:sanctum` · `throttle:bulk-invitations` | — |
-| `API-100` | GET|HEAD | `api/test-invitations/unregistered` | TestInvitationController@getUnregisteredInvitations | `auth:sanctum` | — |
-| `API-101` | POST | `api/test-invitations/{id}/cancel` | TestInvitationController@cancelUnregisteredInvitation | `auth:sanctum` | — |
-| `API-102` | POST | `api/test-invitations/{id}/resend` | TestInvitationController@resendUnregisteredInvitation | `auth:sanctum` | — |
-| `API-103` | GET|HEAD | `api/test-result/{unique_test_id}` | TestController@getTestResult | `FlexibleAuthMiddleware` | — |
-| `API-104` | GET|HEAD | `api/test-result/{unique_test_id}/download-pdf` | TestController@downloadTestResultPDF | `FlexibleAuthMiddleware` | — |
-| `API-105` | GET|HEAD | `api/test-session/{unique_test_id}` | TestController@getTestSession | `FlexibleAuthMiddleware` | — |
-| `API-106` | GET|HEAD | `api/test-session/{unique_test_id}/plate/{test_answer_id}/url` | TestController@getPlateUrl | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` · `throttle:plate-url` | — |
-| `API-107` | GET|HEAD | `api/test-session/{unique_test_id}/section/{section_id}/plates` | TestController@getSectionPlates | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` | — |
-| `API-108` | POST | `api/test/resume` | TestResumeController@resume | — | — |
-| `API-109` | POST | `api/test/send-resume-email` | TestResumeController@sendResumeEmail | `FlexibleAuthMiddleware` · `throttle:send-resume-email` | — |
-| `API-110` | GET|HEAD | `api/tests` | TestController@index | `auth:sanctum` | — |
-| `API-111` | POST | `api/tests` | TestController@store | `auth:sanctum` | — |
-| `API-112` | POST | `api/tests/assign` | TestController@assignTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:form_submitted` | — |
-| `API-113` | POST | `api/tests/check-active` | TestController@getActiveTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:form_submitted,test_assigned` | — |
-| `API-114` | POST | `api/tests/perform` | TestController@performTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` | — |
-| `API-115` | POST | `api/tests/result-pdf` | TestController@generateTestResultPDF | `FlexibleAuthMiddleware` | — |
-| `API-116` | GET|HEAD | `api/tests/{testID}/answers` | TestAnswerController@index | `auth:sanctum` | — |
-| `API-117` | POST | `api/tests/{testID}/answers` | TestAnswerController@store | `auth:sanctum` | — |
-| `API-118` | DELETE | `api/tests/{testID}/answers/{answer}` | TestAnswerController@destroy | `auth:sanctum` | — |
-| `API-119` | GET|HEAD | `api/tests/{testID}/answers/{answer}` | TestAnswerController@show | `auth:sanctum` | — |
-| `API-120` | PUT|PATCH | `api/tests/{testID}/answers/{answer}` | TestAnswerController@update | `auth:sanctum` | — |
-| `API-121` | POST | `api/tests/{testID}/clone` | TestController@cloneTest | `auth:sanctum` | — |
-| `API-122` | GET|HEAD | `api/tests/{testID}/conditions` | TestConditionController@index | `auth:sanctum` | — |
-| `API-123` | POST | `api/tests/{testID}/conditions` | TestConditionController@store | `auth:sanctum` | — |
-| `API-124` | DELETE | `api/tests/{testID}/conditions/{condition}` | TestConditionController@destroy | `auth:sanctum` | — |
-| `API-125` | GET|HEAD | `api/tests/{testID}/conditions/{condition}` | TestConditionController@show | `auth:sanctum` | — |
-| `API-126` | PUT|PATCH | `api/tests/{testID}/conditions/{condition}` | TestConditionController@update | `auth:sanctum` | — |
-| `API-127` | GET|HEAD | `api/tests/{testID}/section/plates` | TestSectionPlateController@index | `auth:sanctum` | — |
-| `API-128` | POST | `api/tests/{testID}/section/plates` | TestSectionPlateController@store | `auth:sanctum` | — |
-| `API-129` | DELETE | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@destroy | `auth:sanctum` | — |
-| `API-130` | GET|HEAD | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@show | `auth:sanctum` | — |
-| `API-131` | PUT|PATCH | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@update | `auth:sanctum` | — |
-| `API-132` | GET|HEAD | `api/tests/{testID}/sections` | TestSectionController@index | `auth:sanctum` | — |
-| `API-133` | POST | `api/tests/{testID}/sections` | TestSectionController@store | `auth:sanctum` | — |
-| `API-134` | DELETE | `api/tests/{testID}/sections/{section}` | TestSectionController@destroy | `auth:sanctum` | — |
-| `API-135` | GET|HEAD | `api/tests/{testID}/sections/{section}` | TestSectionController@show | `auth:sanctum` | — |
-| `API-136` | PUT|PATCH | `api/tests/{testID}/sections/{section}` | TestSectionController@update | `auth:sanctum` | — |
-| `API-137` | DELETE | `api/tests/{test}` | TestController@destroy | `auth:sanctum` | — |
-| `API-138` | GET|HEAD | `api/tests/{test}` | TestController@show | `auth:sanctum` | — |
-| `API-139` | PUT|PATCH | `api/tests/{test}` | TestController@update | `auth:sanctum` | — |
-| `API-140` | DELETE | `api/user-email-template` | UserEmailTemplateController@destroy | `auth:sanctum` | — |
-| `API-141` | GET|HEAD | `api/user-email-template` | UserEmailTemplateController@show | `auth:sanctum` | — |
-| `API-142` | PUT | `api/user-email-template` | UserEmailTemplateController@update | `auth:sanctum` | — |
-| `API-143` | GET|HEAD | `api/user/credit-history` | PaymentController@getCreditHistory | `auth:sanctum` | — |
-| `API-144` | GET|HEAD | `api/user/credits` | UserController@getUserCredits | `auth:sanctum` | — |
-| `API-145` | GET|HEAD | `api/user/tests` | TestController@userIndex | `auth:sanctum` | — |
-| `API-146` | GET|HEAD | `api/user/tests/all` | TestController@getActiveTestsWithAssignmentFlag | `auth:sanctum` | — |
-| `API-147` | POST | `api/user/tests/bulk-update-assignment` | TestController@bulkUpdateAssignment | `auth:sanctum` | — |
-| `API-148` | GET|HEAD | `api/user/tests/{id}` | TestController@show | `auth:sanctum` | — |
-| `API-149` | DELETE | `api/user/tests/{id}/assign` | TestController@unassignUserTest | `auth:sanctum` | — |
-| `API-150` | POST | `api/user/tests/{id}/assign` | TestController@assignUserTest | `auth:sanctum` | — |
-| `API-151` | GET|HEAD | `api/users` | UserController@index | `auth:sanctum` | — |
-| `API-152` | POST | `api/users` | UserController@store | `auth:sanctum` | — |
-| `API-153` | PUT | `api/users/change-password` | AuthController@changePassword | `auth:sanctum` | — |
-| `API-154` | GET|HEAD | `api/users/type/{usertype}` | UserController@userWithType | `auth:sanctum` | — |
-| `API-155` | GET|HEAD | `api/users/{id}` | UserController@edit | `auth:sanctum` | — |
-| `API-156` | DELETE | `api/users/{user}` | UserController@destroy | `auth:sanctum` | — |
-| `API-157` | PUT|PATCH | `api/users/{user}` | UserController@update | `auth:sanctum` | — |
-| `API-158` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid | — | — |
-| `API-159` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken | — | — |
-| `API-160` | GET|HEAD | `api/verify-email/{id}/{hash}` | AuthController@verifyEmail | `signed` | — |
-| `API-161` | POST | `api/verify-password` | AuthController@verifyPassword | `auth:sanctum` | — |
+| `API-030` | POST | `api/distributor-enquiry` | DistributorController@submit | `throttle:10,1` | — |
+| `API-031` | GET|HEAD | `api/dropdown/allowed-tests` | DropdownValuesController@activeAllowedTests | `auth:sanctum` | — |
+| `API-032` | GET|HEAD | `api/dropdown/compliances` | DropdownValuesController@activeCompliances | `auth:sanctum` | — |
+| `API-033` | GET|HEAD | `api/dropdown/organization-settings-options` | DropdownValuesController@activeOrgSettingsOptions | `auth:sanctum` | — |
+| `API-034` | GET|HEAD | `api/dropdown/organization-types` | DropdownValuesController@activeOrganizationTypes | `auth:sanctum` | — |
+| `API-035` | GET|HEAD | `api/dropdown/privileges` | DropdownValuesController@activePrivileges | `auth:sanctum` | — |
+| `API-036` | POST | `api/impersonate/{id}` | AuthController@impersonateUser | `auth:sanctum` | — |
+| `API-037` | POST | `api/login` | AuthController@login | `throttle:login` | — |
+| `API-038` | POST | `api/logout` | AuthController@logout | `auth:sanctum` | — |
+| `API-039` | POST | `api/organization/patient/default` | OrganizationPatientController@storeDefaultPatient | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:launched,identity_resolved` | — |
+| `API-040` | POST | `api/organization/patient/prolific` | OrganizationPatientController@storeProlificPatient | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:launched,identity_resolved` | — |
+| `API-041` | GET|HEAD | `api/organization/patientForm` | OrganizationController@getPatientForm | `FlexibleAuthMiddleware` | — |
+| `API-042` | GET|HEAD | `api/organization/privileges` | OrganizationController@getOrganizationPrivileges | `FlexibleAuthMiddleware` | — |
+| `API-043` | GET|HEAD | `api/organization/redirect-url` | OrganizationController@getOrganizationRedirectUrl | `FlexibleAuthMiddleware` | — |
+| `API-044` | GET|HEAD | `api/organization/test` | _(closure)_ | `auth:sanctum` · `signed` | — |
+| `API-045` | GET|HEAD | `api/organization/tests/default` | OrganizationController@getDefaultTests | `FlexibleAuthMiddleware` | — |
+| `API-046` | POST | `api/organization/verify-signature` | OrganizationController@verifySignature | `throttle:signature-verify` | — |
+| `API-047` | GET|HEAD | `api/organizations` | OrganizationController@index | `auth:sanctum` | — |
+| `API-048` | POST | `api/organizations` | OrganizationController@store | `auth:sanctum` | — |
+| `API-049` | POST | `api/organizations/{id}/upload-logo` | OrganizationController@uploadLogo | `auth:sanctum` | — |
+| `API-050` | DELETE | `api/organizations/{organization}` | OrganizationController@destroy | `auth:sanctum` | — |
+| `API-051` | GET|HEAD | `api/organizations/{organization}` | OrganizationController@show | `auth:sanctum` | — |
+| `API-052` | PUT|PATCH | `api/organizations/{organization}` | OrganizationController@update | `auth:sanctum` | — |
+| `API-053` | PUT | `api/password/change` | PasswordController@update | `auth:sanctum` | — |
+| `API-054` | POST | `api/password/forgot` | AuthController@sendResetLinkEmail | `throttle:password-reset` | — |
+| `API-055` | POST | `api/password/reset` | AuthController@setOrResetPassword | `throttle:password-reset` | — |
+| `API-056` | POST | `api/password/verify-setup-token` | AuthController@verifySetupToken | `throttle:password-reset` | — |
+| `API-057` | POST | `api/patient-tests/{identifier}/revoke-credit` | CreditsController@revokeCredit | `auth:sanctum` | — |
+| `API-058` | GET|HEAD | `api/patients` | PatientController@index | `FlexibleAuthMiddleware` | — |
+| `API-059` | POST | `api/patients` | PatientController@store | `FlexibleAuthMiddleware` | — |
+| `API-060` | GET|HEAD | `api/patients/{id}/tests` | PatientController@getPatientTests | `auth:sanctum` | — |
+| `API-061` | DELETE | `api/patients/{patient}` | PatientController@destroy | `FlexibleAuthMiddleware` | — |
+| `API-062` | GET|HEAD | `api/patients/{patient}` | PatientController@show | `FlexibleAuthMiddleware` | — |
+| `API-063` | PUT|PATCH | `api/patients/{patient}` | PatientController@update | `FlexibleAuthMiddleware` | — |
+| `API-064` | POST | `api/payment/confirm` | PaymentController@confirmPayment | `auth:sanctum` | — |
+| `API-065` | POST | `api/payment/initialize` | PaymentController@initializePayment | `auth:sanctum` | — |
+| `API-066` | GET|HEAD | `api/payment/providers` | PaymentController@getProviders | `auth:sanctum` | — |
+| `API-067` | POST | `api/payment/setup-intent` | PaymentController@createSetupIntent | `auth:sanctum` | — |
+| `API-068` | POST | `api/payment/webhook/{provider}` | PaymentController@handleWebhook | `auth:sanctum` | — |
+| `API-069` | GET|HEAD | `api/price-details` | PriceDetailController@index | `auth:sanctum` | — |
+| `API-070` | POST | `api/price-details` | PriceDetailController@store | `auth:sanctum` | — |
+| `API-071` | DELETE | `api/price-details/{price_detail}` | PriceDetailController@destroy | `auth:sanctum` | — |
+| `API-072` | PUT|PATCH | `api/price-details/{price_detail}` | PriceDetailController@update | `auth:sanctum` | — |
+| `API-073` | GET|HEAD | `api/profile` | ProfileController@show | `auth:sanctum` | — |
+| `API-074` | PUT | `api/profile` | ProfileController@update | `auth:sanctum` | — |
+| `API-075` | POST | `api/register` | AuthController@register | `throttle:register` | — |
+| `API-076` | GET|HEAD | `api/reports/discount-codes` | ReportController@discountCode | `auth:sanctum` | — |
+| `API-077` | GET|HEAD | `api/reports/list-patients-having-tests` | ReportController@getPatientsHavingTests | `auth:sanctum` | — |
+| `API-078` | GET|HEAD | `api/reports/user-tests` | ReportController@userTestsReport | `auth:sanctum` | — |
+| `API-079` | POST | `api/resend-test-link` | PatientController@resendTestLink | `auth:sanctum` | — |
+| `API-080` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken | — | — |
+| `API-081` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink | — | — |
+| `API-082` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ | — | — |
+| `API-083` | GET|HEAD | `api/restricted-ips` | RestrictedIpController@index | `auth:sanctum` | — |
+| `API-084` | POST | `api/restricted-ips` | RestrictedIpController@store | `auth:sanctum` | — |
+| `API-085` | DELETE | `api/restricted-ips/{restricted_ip}` | RestrictedIpController@destroy | `auth:sanctum` | — |
+| `API-086` | PUT|PATCH | `api/restricted-ips/{restricted_ip}` | RestrictedIpController@update | `auth:sanctum` | — |
+| `API-087` | POST | `api/stop-impersonate/{id}` | AuthController@stopImpersonation | `auth:sanctum` | — |
+| `API-088` | POST | `api/stripe/confirm-payment` | StripePaymentController@confirmPayment | `auth:sanctum` | — |
+| `API-089` | POST | `api/stripe/create-payment-intent` | StripePaymentController@createPaymentIntent | `auth:sanctum` | — |
+| `API-090` | GET|HEAD | `api/stripe/payment-methods` | StripePaymentController@getPaymentMethods | `auth:sanctum` | — |
+| `API-091` | POST | `api/stripe/payment-methods/set-default` | StripePaymentController@setDefaultPaymentMethod | `auth:sanctum` | — |
+| `API-092` | DELETE | `api/stripe/payment-methods/{payment_method_id}` | StripePaymentController@removePaymentMethod | `auth:sanctum` | — |
+| `API-093` | GET|HEAD | `api/stripe/transactions` | PaymentController@getTransactions | `auth:sanctum` | — |
+| `API-094` | GET|HEAD | `api/super-admin/dashboard` | SuperAdminDashboardController@index | `auth:sanctum` | — |
+| `API-095` | GET|HEAD | `api/test-email-templates` | TestEmailTemplateController@index | `auth:sanctum` | — |
+| `API-096` | GET|HEAD | `api/test-email-templates/placeholders/{type}` | TestEmailTemplateController@getPlaceholders | `auth:sanctum` | — |
+| `API-097` | PUT | `api/test-email-templates/{id}` | TestEmailTemplateController@update | `auth:sanctum` | — |
+| `API-098` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus | — | — |
+| `API-099` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode | — | — |
+| `API-100` | POST | `api/test-invitations/send` | TestInvitationController@sendInvitations | `auth:sanctum` · `throttle:bulk-invitations` | — |
+| `API-101` | GET|HEAD | `api/test-invitations/unregistered` | TestInvitationController@getUnregisteredInvitations | `auth:sanctum` | — |
+| `API-102` | POST | `api/test-invitations/{id}/cancel` | TestInvitationController@cancelUnregisteredInvitation | `auth:sanctum` | — |
+| `API-103` | POST | `api/test-invitations/{id}/resend` | TestInvitationController@resendUnregisteredInvitation | `auth:sanctum` | — |
+| `API-104` | GET|HEAD | `api/test-result/{unique_test_id}` | TestController@getTestResult | `FlexibleAuthMiddleware` | — |
+| `API-105` | GET|HEAD | `api/test-result/{unique_test_id}/download-pdf` | TestController@downloadTestResultPDF | `FlexibleAuthMiddleware` | — |
+| `API-106` | GET|HEAD | `api/test-session/{unique_test_id}` | TestController@getTestSession | `FlexibleAuthMiddleware` | — |
+| `API-107` | GET|HEAD | `api/test-session/{unique_test_id}/plate/{test_answer_id}/url` | TestController@getPlateUrl | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` · `throttle:plate-url` | — |
+| `API-108` | GET|HEAD | `api/test-session/{unique_test_id}/section/{section_id}/plates` | TestController@getSectionPlates | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` | — |
+| `API-109` | POST | `api/test/resume` | TestResumeController@resume | — | — |
+| `API-110` | POST | `api/test/send-resume-email` | TestResumeController@sendResumeEmail | `FlexibleAuthMiddleware` · `throttle:send-resume-email` | — |
+| `API-111` | GET|HEAD | `api/tests` | TestController@index | `auth:sanctum` | — |
+| `API-112` | POST | `api/tests` | TestController@store | `auth:sanctum` | — |
+| `API-113` | POST | `api/tests/assign` | TestController@assignTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:form_submitted` | — |
+| `API-114` | POST | `api/tests/check-active` | TestController@getActiveTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:form_submitted,test_assigned` | — |
+| `API-115` | POST | `api/tests/perform` | TestController@performTest | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware:test_assigned` | — |
+| `API-116` | POST | `api/tests/result-pdf` | TestController@generateTestResultPDF | `FlexibleAuthMiddleware` | — |
+| `API-117` | GET|HEAD | `api/tests/{testID}/answers` | TestAnswerController@index | `auth:sanctum` | — |
+| `API-118` | POST | `api/tests/{testID}/answers` | TestAnswerController@store | `auth:sanctum` | — |
+| `API-119` | DELETE | `api/tests/{testID}/answers/{answer}` | TestAnswerController@destroy | `auth:sanctum` | — |
+| `API-120` | GET|HEAD | `api/tests/{testID}/answers/{answer}` | TestAnswerController@show | `auth:sanctum` | — |
+| `API-121` | PUT|PATCH | `api/tests/{testID}/answers/{answer}` | TestAnswerController@update | `auth:sanctum` | — |
+| `API-122` | POST | `api/tests/{testID}/clone` | TestController@cloneTest | `auth:sanctum` | — |
+| `API-123` | GET|HEAD | `api/tests/{testID}/conditions` | TestConditionController@index | `auth:sanctum` | — |
+| `API-124` | POST | `api/tests/{testID}/conditions` | TestConditionController@store | `auth:sanctum` | — |
+| `API-125` | DELETE | `api/tests/{testID}/conditions/{condition}` | TestConditionController@destroy | `auth:sanctum` | — |
+| `API-126` | GET|HEAD | `api/tests/{testID}/conditions/{condition}` | TestConditionController@show | `auth:sanctum` | — |
+| `API-127` | PUT|PATCH | `api/tests/{testID}/conditions/{condition}` | TestConditionController@update | `auth:sanctum` | — |
+| `API-128` | GET|HEAD | `api/tests/{testID}/section/plates` | TestSectionPlateController@index | `auth:sanctum` | — |
+| `API-129` | POST | `api/tests/{testID}/section/plates` | TestSectionPlateController@store | `auth:sanctum` | — |
+| `API-130` | DELETE | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@destroy | `auth:sanctum` | — |
+| `API-131` | GET|HEAD | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@show | `auth:sanctum` | — |
+| `API-132` | PUT|PATCH | `api/tests/{testID}/section/plates/{plate}` | TestSectionPlateController@update | `auth:sanctum` | — |
+| `API-133` | GET|HEAD | `api/tests/{testID}/sections` | TestSectionController@index | `auth:sanctum` | — |
+| `API-134` | POST | `api/tests/{testID}/sections` | TestSectionController@store | `auth:sanctum` | — |
+| `API-135` | DELETE | `api/tests/{testID}/sections/{section}` | TestSectionController@destroy | `auth:sanctum` | — |
+| `API-136` | GET|HEAD | `api/tests/{testID}/sections/{section}` | TestSectionController@show | `auth:sanctum` | — |
+| `API-137` | PUT|PATCH | `api/tests/{testID}/sections/{section}` | TestSectionController@update | `auth:sanctum` | — |
+| `API-138` | DELETE | `api/tests/{test}` | TestController@destroy | `auth:sanctum` | — |
+| `API-139` | GET|HEAD | `api/tests/{test}` | TestController@show | `auth:sanctum` | — |
+| `API-140` | PUT|PATCH | `api/tests/{test}` | TestController@update | `auth:sanctum` | — |
+| `API-141` | DELETE | `api/user-email-template` | UserEmailTemplateController@destroy | `auth:sanctum` | — |
+| `API-142` | GET|HEAD | `api/user-email-template` | UserEmailTemplateController@show | `auth:sanctum` | — |
+| `API-143` | PUT | `api/user-email-template` | UserEmailTemplateController@update | `auth:sanctum` | — |
+| `API-144` | GET|HEAD | `api/user/credit-history` | PaymentController@getCreditHistory | `auth:sanctum` | — |
+| `API-145` | GET|HEAD | `api/user/credits` | UserController@getUserCredits | `auth:sanctum` | — |
+| `API-146` | GET|HEAD | `api/user/tests` | TestController@userIndex | `auth:sanctum` | — |
+| `API-147` | GET|HEAD | `api/user/tests/all` | TestController@getActiveTestsWithAssignmentFlag | `auth:sanctum` | — |
+| `API-148` | POST | `api/user/tests/bulk-update-assignment` | TestController@bulkUpdateAssignment | `auth:sanctum` | — |
+| `API-149` | GET|HEAD | `api/user/tests/{id}` | TestController@show | `auth:sanctum` | — |
+| `API-150` | DELETE | `api/user/tests/{id}/assign` | TestController@unassignUserTest | `auth:sanctum` | — |
+| `API-151` | POST | `api/user/tests/{id}/assign` | TestController@assignUserTest | `auth:sanctum` | — |
+| `API-152` | GET|HEAD | `api/users` | UserController@index | `auth:sanctum` | — |
+| `API-153` | POST | `api/users` | UserController@store | `auth:sanctum` | — |
+| `API-154` | PUT | `api/users/change-password` | AuthController@changePassword | `auth:sanctum` | — |
+| `API-155` | GET|HEAD | `api/users/type/{usertype}` | UserController@userWithType | `auth:sanctum` | — |
+| `API-156` | GET|HEAD | `api/users/{id}` | UserController@edit | `auth:sanctum` | — |
+| `API-157` | DELETE | `api/users/{user}` | UserController@destroy | `auth:sanctum` | — |
+| `API-158` | PUT|PATCH | `api/users/{user}` | UserController@update | `auth:sanctum` | — |
+| `API-159` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid | — | — |
+| `API-160` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken | — | — |
+| `API-161` | GET|HEAD | `api/verify-email/{id}/{hash}` | AuthController@verifyEmail | `signed` | — |
+| `API-162` | POST | `api/verify-password` | AuthController@verifyPassword | `auth:sanctum` | — |
 
 ## Non-`api/` routes (`routes/web.php`)
 
@@ -193,4 +194,4 @@ route is physically nested inside, resolved the way Laravel resolves it.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-11. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._

@@ -5,6 +5,12 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 
+### `MailPreflight` — `app/Console/Commands/MailPreflight.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `APP_SEND_RATE` | — | [36](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L36) |
+
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 
 | Constant | Value | Line |
@@ -20,17 +26,62 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
 
+### `AuthController` — `app/Http/Controllers/AuthController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `SELF_SIGNUP_AUDIT_FIELDS` | `[…]` | [44](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L44) |
+
+### `DiscountCodeController` — `app/Http/Controllers/DiscountCodeController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `AUDIT_FIELDS` | `[…]` | [26](../../../TCV-Backend/app/Http/Controllers/DiscountCodeController.php#L26) |
+
+### `OrganizationController` — `app/Http/Controllers/OrganizationController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `USER_AUDIT_FIELDS` | `[…]` | [41](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L41) |
+| `ORG_AUDIT_FIELDS` | `[…]` | [52](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L52) |
+| `DISPLAY_BRANDING_OPTIONS` | `[…]` | [83](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L83) |
+| `HIDDEN_SETTINGS_OPTIONS` | `[…]` | [86](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L86) |
+
+### `PatientController` — `app/Http/Controllers/PatientController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `AUDIT_FIELDS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L36) |
+
+### `ProfileController` — `app/Http/Controllers/ProfileController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `AUDIT_FIELDS` | `[…]` | [25](../../../TCV-Backend/app/Http/Controllers/ProfileController.php#L25) |
+
 ### `QaAutomationController` — `app/Http/Controllers/Qa/QaAutomationController.php`
 
 | Constant | Value | Line |
 |---|---|---|
 | `ENVIRONMENTS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L36) |
 
+### `TestInvitationController` — `app/Http/Controllers/TestInvitationController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `DISPATCH_QUEUE` | `'queue'` | [30](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L30) |
+
 ### `TestResumeController` — `app/Http/Controllers/TestResumeController.php`
 
 | Constant | Value | Line |
 |---|---|---|
 | `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
+
+### `UserController` — `app/Http/Controllers/UserController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `AUDIT_FIELDS` | `[…]` | [37](../../../TCV-Backend/app/Http/Controllers/UserController.php#L37) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
@@ -81,8 +132,19 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `BATCH_SIZE` | `25` | [40](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L40) |
-| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [43](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L43) |
+| `BATCH_SIZE` | `25` | [54](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L54) |
+| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [57](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L57) |
+| `MAX_CONSECUTIVE_CONNECTION_FAILURES` | `3` | [65](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L65) |
+| `HOST_STANDDOWN_SECONDS` | `60` | [75](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L75) |
+| `RESULT_SENT` | `'sent'` | [78](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L78) |
+| `RESULT_FAILED` | `'failed'` | [79](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L79) |
+| `RESULT_DEFERRED` | `'deferred'` | [80](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L80) |
+
+### `SweepPendingInvitationsJob` — `app/Jobs/SweepPendingInvitationsJob.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `LOCK_KEY` | `'invitations:sweep'` | [61](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L61) |
 
 ### `PrefixEmailSubject` — `app/Listeners/PrefixEmailSubject.php`
 
@@ -215,13 +277,16 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `EVENTS` | `[…]` | [65](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L65) |
+| `EVENTS` | `[…]` | [67](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L67) |
 
 ### `AuditService` — `app/Services/Audit/AuditService.php`
 
 | Constant | Value | Line |
 |---|---|---|
-| `DENYLIST` | `[…]` | [34](../../../TCV-Backend/app/Services/Audit/AuditService.php#L34) |
+| `SECRET_DENYLIST` | `[…]` | [31](../../../TCV-Backend/app/Services/Audit/AuditService.php#L31) |
+| `PHI_DENYLIST` | `[…]` | [41](../../../TCV-Backend/app/Services/Audit/AuditService.php#L41) |
+| `DENYLIST` | `[…]` | [50](../../../TCV-Backend/app/Services/Audit/AuditService.php#L50) |
+| `DATE_ALLOWLIST` | `[…]` | [63](../../../TCV-Backend/app/Services/Audit/AuditService.php#L63) |
 
 ### `PricingAuditService` — `app/Services/Audit/PricingAuditService.php`
 
@@ -308,4 +373,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-11. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._

@@ -1,6 +1,6 @@
 # FormRequests
 
-**25 classes in `app/Http/Requests/`.** This is the one convention the codebase applies consistently —
+**26 classes in `app/Http/Requests/`.** This is the one convention the codebase applies consistently —
 follow it. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`REQ-nnn`).
 
 | Domain | Classes |

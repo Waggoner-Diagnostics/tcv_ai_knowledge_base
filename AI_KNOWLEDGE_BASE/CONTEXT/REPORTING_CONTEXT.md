@@ -1,6 +1,6 @@
 # Context: Reports, Exports & the Admin Dashboard
 
-> Load this **instead of** reading the reporting subsystem. ~700 tokens.
+> Load this **instead of** reading the reporting subsystem. ~850 tokens.
 > Depth note: this pack is **shallower than the others** — the report SQL and the Excel column mappings
 > were read, the aggregation edge cases were not. Marked `[not deeply traced]` where that applies.
 
@@ -48,12 +48,23 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
    belonging to soft-deleted patients ([PATIENT_CONTEXT](PATIENT_CONTEXT.md) trap 3).
 3. **Excel exports stream the same query a second time.** The `*Export` classes re-run the report rather
    than receiving the already-fetched collection, so a filter change must be applied in **both** the
-   service and the export or the screen and the download disagree.
+   service and the export or the screen and the download disagree. `DiscountCodeReportService` makes it
+   three: the range is pasted into `getSummary()` *and* `buildQuery()`, so a filter that misses one
+   leaves the summary tiles disagreeing with the table beneath them.
 4. **`getAvailableCredits()` can return the string `'Unlimited'`** — any report column that sums or
    averages credits must handle it ([CREDITS_CONTEXT](CREDITS_CONTEXT.md)).
 5. **Discount usage counts come from `transaction_details`**, so payments that never reached
    `POST api/payment/confirm` are invisible to the discount report
    ([BILLING_CONTEXT](BILLING_CONTEXT.md)).
+6. **The date range is enforced in the SPA only** (`ws-455`, 2026-09-10). All three report endpoints
+   read `from_date`/`to_date` off a bare `Illuminate\Http\Request` — no FormRequest covers them
+   (`GenerateTestReportRequest` belongs to the PDF endpoints, not these) and nothing checks the shape
+   or the ordering of the two values. Each bound is applied independently as
+   `where('…created_at', '>=', $from . ' 00:00:00')` / `'<=', $to . ' 23:59:59'`, so an inverted range
+   is a satisfiable query that matches nothing: **200 with zero rows and no error**, which reads as a
+   data bug rather than a bad request. The three report screens now block it before dispatching
+   ([FRONTEND.md](../FRONTEND.md)) — that is a UI affordance, not validation, and the same distinction
+   as the `usertype` note above. A saved link, an export re-run or any non-SPA caller still gets there.
 
 _[not deeply traced]: `SuperAdminDashboardController::index()`'s aggregation queries, the exact column
 sets of the three Export classes, and the dompdf Blade templates._

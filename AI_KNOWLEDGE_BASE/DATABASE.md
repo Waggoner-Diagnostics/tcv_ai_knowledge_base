@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **53 tables**, reconstructed from 127 migrations — the indexed snapshot, taken from
+MySQL, **53 tables**, reconstructed from 128 migrations — the indexed snapshot, taken from
 `TCV-Backend@develop` at `940238fd` (2026-09-09, with the Audit Trail merged). Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 

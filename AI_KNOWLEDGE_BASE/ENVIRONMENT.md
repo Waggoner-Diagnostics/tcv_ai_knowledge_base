@@ -39,13 +39,32 @@ same warning at boot.
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
 | Deploy | `IMAGE_TAG_BACKEND` |
 
-⚠️ **There is no trusted-proxy configuration, and `$request->ip()` is therefore not the client.**
+⚠️ **`$request->ip()` is still not the client, even though the code to fix it has landed.**
 php-fpm sits behind the `backend-nginx` container, so `REMOTE_ADDR` is always the proxy: the five
 IP-keyed rate limiters share one platform-wide bucket and `RestrictIpMiddleware` can never match a
-real client. A `TRUSTED_PROXIES` variable was written for this on 2026-09-02 but **held back** — it is
-unsafe without the matching `nginx.conf` change, which was not deployed. Do not add the variable on
-its own; read [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)
-first.
+real client.
+
+`bootstrap/app.php` now reads **`TRUSTED_PROXIES`** (`develop`, 2026-09-12) and calls `trustProxies()`
+— but **only when it is non-empty**, and the default is empty, so nothing has changed in effect.
+
+☠️ **Do not set `TRUSTED_PROXIES` yet.** `TCV-Frontend/nginx.conf:41` still carries
+`set_real_ip_from 0.0.0.0/0`, so nginx rebuilds `X-Forwarded-For` from a client-supplied value; trusting
+the hop today lets a caller choose their own IP and bypass every limiter. Narrow the nginx CIDR first,
+then set this to the same CIDR — never `*`. Read
+[S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert) first.
+
+⚠️ **It must be a real OS/container env var, not a `.env` line.** The value is read with `env()` inside
+the `withMiddleware` closure — which runs before the config provider, so `config()` is unavailable there
+— and `entrypoint.sh` runs `config:cache` on every boot, after which `.env` is no longer parsed.
+
+**Invitation delivery tuning** (all optional, `ws-404`; defaults are the deployed behaviour):
+
+| Variable | Default | Controls |
+|---|---|---|
+| `MAIL_INVITATION_SEND_BUDGET` | `240` | Seconds for a whole bulk send, computed once across all batches |
+| `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
+| `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | How old a `pending` row must be before the sweep touches it |
+| `MAIL_INVITATION_SWEEP_BUDGET` | `60` | Seconds for one sweep batch |
 
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
 **`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,

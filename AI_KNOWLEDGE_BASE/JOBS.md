@@ -1,11 +1,12 @@
 # Jobs & Console Commands
 
-## Jobs — two
+## Jobs — three
 
 | Job | ID | Dispatched from |
 |---|---|---|
 | `ProcessLmsDeliveryJob` | `JOB-001` | `LmsDeliveryService` (3 sites) and itself (`self::dispatch()` on retry) |
 | `SendTestInvitationEmailsJob` | `JOB-002` | `TestInvitationController::sendInvitations()` and `invitations:send-pending` (`ws-404`) |
+| `SweepPendingInvitationsJob` | `JOB-003` | `TestInvitationController::sendInvitations()` **and** `getUnregisteredInvitations()`, both `->afterResponse()` (`ws-404`) |
 
 Their retry models, dead-letter handling and the fact that **no worker is configured** are covered in
 [QUEUES.md](QUEUES.md). Read that before touching either.
@@ -13,6 +14,31 @@ Their retry models, dead-letter handling and the fact that **no worker is config
 ⭐ `SendTestInvitationEmailsJob` implements `ShouldQueue` but is **never queued**: it is dispatched with
 `->afterResponse()` and runs in the web process. `$tries`, `$backoff` and `failed()` on it are inert
 until a worker exists. See [QUEUES.md](QUEUES.md#after-response-dispatch-ws-404).
+
+### `SweepPendingInvitationsJob` — recovery that rides on web traffic (`ws-404`)
+
+`SendTestInvitationEmailsJob` leaves a row at `email_status='pending'` when it cannot reach the SMTP
+host, assuming something comes back for it. `invitations:send-pending` is that something, but it needs a
+scheduler this deployment does not have ([DEPLOYMENT.md](DEPLOYMENT.md)). The sweep job closes the gap
+by using **ordinary requests as the clock** instead.
+
+Dispatched `->afterResponse()` from the two endpoints where a stranded invitation is most likely to
+exist and to matter: sending invitations, and opening the list that displays delivery status. Three
+properties keep that from being reckless:
+
+| Property | Mechanism |
+|---|---|
+| Throttled | Atomic cache lock `invitations:sweep`, **taken and never released**, so it expires on its own — at most one sweep per `mail.invitation_sweep_interval` (default 600s, floor 60s) across all replicas |
+| Bounded | One batch (`SendTestInvitationEmailsJob::BATCH_SIZE`), own deadline `mail.invitation_sweep_budget` (default 60s) — it can never hold an FPM child the way a 500-address send can |
+| Cheap when broken | If the mail host is refusing connections, the mailer's stand-down makes it return almost immediately rather than retry into a dead server on every request |
+
+It only considers rows older than `mail.invitation_sweep_age_minutes` (default 15), so it cannot race a
+send still working through its batches in another web process.
+
+☠️ **It needs traffic — an idle deployment sweeps nothing.** That is the deliberate trade against a
+cron entry, and it is why the scheduled `invitations:send-pending` is registered *as well*. Registering
+both is safe: they select the same rows via `TestInvitation::awaitingDelivery()` and the batch job
+claims each row atomically, so whichever reaches an address first sends it exactly once.
 
 ## Console commands — three
 
@@ -37,8 +63,11 @@ repair migration exists for, and why that migration logs what it could not conve
 token valid for the *other* template type is reported as unrecognised — so a `FAILURE` here can mean a
 row was written by something that ignored the type scoping, not that a human mistyped it.
 
-☠️ **Neither command is scheduled.** `invitations:send-pending` is the only thing that recovers a
-stranded send, and nothing runs it — recovery depends on someone noticing. See the section below.
+⚠️ **`invitations:send-pending` is now registered in `->withSchedule(...)`** (`ws-404`, every ten
+minutes) **but nothing executes the schedule** — there is no cron and no `schedule:work` container, so
+the registration is inert. `templates:check-placeholders` is not scheduled at all. What actually
+recovers a stranded send today is `SweepPendingInvitationsJob` riding on web traffic (above). See the
+section below.
 
 Uploads test plate images to the S3 bucket. This is an **operator tool**, not part of any flow —
 `SecureImageService::uploadPlateToS3()` exists for the same purpose and carries a comment saying it is
@@ -46,10 +75,16 @@ Uploads test plate images to the S3 bucket. This is an **operator tool**, not pa
 
 `routes/console.php` additionally defines Laravel's stock `inspire` closure. That is all.
 
-## ☠️ Nothing is scheduled
+## ☠️ One task is scheduled; nothing runs the scheduler
 
-`bootstrap/app.php` has no `->withSchedule(...)`, and `routes/console.php` registers no schedule. There
-is therefore **no periodic cleanup of anything**:
+`bootstrap/app.php` gained a `->withSchedule(...)` on `ws-404` registering exactly one task
+(`invitations:send-pending`, every ten minutes). `routes/console.php` still registers no schedule.
+
+**Registered is not running.** The deployment has php-fpm and nginx only — no cron entry, no
+`schedule:work` container ([DEPLOYMENT.md](DEPLOYMENT.md)) — so `schedule:run` is never invoked and the
+task never fires. Treat the block as documentation of intent until a scheduler process exists.
+
+There is therefore still **no periodic cleanup of anything**:
 
 | Table | Grows unbounded | Expiry is checked… |
 |---|---|---|
@@ -63,7 +98,8 @@ is therefore **no periodic cleanup of anything**:
 
 If you add a scheduled task, you also need to add a **scheduler process** to the deployment — there is
 no `php artisan schedule:work` container today, only php-fpm and nginx
-([DEPLOYMENT.md](DEPLOYMENT.md)).
+([DEPLOYMENT.md](DEPLOYMENT.md)). Adding it next to the existing `invitations:send-pending` entry
+changes nothing on its own; wiring the scheduler is what switches **both** on at once.
 
 ## Work that should be a job but isn't
 

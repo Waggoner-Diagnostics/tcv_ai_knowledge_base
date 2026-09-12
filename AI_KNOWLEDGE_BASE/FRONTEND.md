@@ -336,11 +336,18 @@ falls through to the raw string rather than failing loudly.
 
 ---
 
-## Report date filters are three copies (`ws-455`)
+## Report date filters (`ws-455`)
 
-The From/To `react-datepicker` pair under **Reports** is pasted into three pages with **no shared
-component**, so the filter contract is three edits and the three copies had already drifted apart by
-the time `ws-455` was filed:
+The From/To `react-datepicker` pair under **Reports** appears on three pages. It **was** pasted into
+each of them with no shared component — four copies of the helpers, in fact, since `DiscountCode.js`
+redefined `toYyyyMmDd`/`toDateObject` *inside* the component on every render — and the copies had
+already drifted apart by the time `ws-455` was filed. Review of `ws-455` collapsed them
+(2026-09-11, −320 lines across the three pages):
+
+| Shared piece | Lives in |
+|---|---|
+| Draft range, cross-linked bounds, apply-time re-check | `hooks/useDateRangeFilter.js` |
+| The text field react-datepicker renders | `components/DateRangeInput.js` |
 
 | Page | File | Disabled-state styles live in |
 |---|---|---|
@@ -348,14 +355,22 @@ the time `ws-455` was filed:
 | … → patient drill-down | `pages/Reports/UserTestDetail.js` | `pages/Reports/UserTestDetail.scss` |
 | Reports → Discount Code Redemptions | `pages/Reports/DiscountCode.js` | `styles/pages/DiscountCodeReport.scss` |
 
-The contract, as of 2026-09-10 — all three now match:
+Each page now renders `<DatePicker {...fromPickerProps} customInput={<DateRangeInput />} />` and calls
+`apply()`, which returns `false` and pops the error rather than dispatching. **The styles are still
+three files** — Discount Code Redemptions borders the wrapper where the other two border the input —
+so a visual change is still three edits even though the behaviour is one.
+
+The contract — all three match:
 
 - **To is `disabled` until From is set**, with its placeholder switched to *"Select From date first"*.
 - **From** `maxDate` = the chosen To, else `startOfToday()`. **To** `minDate` = the chosen From,
   `maxDate` = `startOfToday()`. Equal dates are allowed — a single-day report is a real query.
+- **Both** `minDate` floor at `EARLIEST_SELECTABLE_DATE` (2015-01-01). Not a business rule — it sits
+  before the oldest record the system can hold, so it hides no data; it exists to stop the year
+  dropdown wandering back to 1970.
 - **Moving From past an existing To clears To** (as does clearing From), which re-locks the field.
-- `handleApply*` re-checks both rules and `showPopup`s *"Invalid Date Range"* rather than dispatching.
-  The comparison is a plain string `<` on the `yyyy-mm-dd` draft values, not `Date` objects.
+- `apply()` re-checks both rules, pops *"Invalid Date Range"* and returns `false` rather than
+  dispatching. The comparison is a plain string `<` on the `yyyy-mm-dd` values, not `Date` objects.
 
 ☠️ **Cross-linked `minDate`/`maxDate` alone does not prevent an inverted range.** `DiscountCode.js` had
 them before `ws-455` and could still submit From > To: picking From *after* an already-chosen To left
@@ -363,15 +378,31 @@ the stale To in place, because nothing reset it. `UserTests.js` had no cross-lin
 `From 09/09/2026 · To 09/08/2026` reached the API and returned an empty report that looked like a data
 bug. Both halves — the calendar bounds *and* the reset — are load-bearing.
 
+☠️ **These three pages are the only thing enforcing the range.** The report endpoints apply the two
+bounds independently with no validation of either, so an inverted range still answers 200-with-no-rows
+to anything that reaches them outside the SPA ([REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) trap
+6). Loosening a guard here removes the only check there is.
+
 ☠️ **Do not "disable past dates" on these pickers.** The `ws-455` report asked for it; it is wrong.
 Every row in a report was created in the past, and `maxDate` is already the start of *today*, so the
 restriction would leave exactly one selectable day and break the filter. Future dates were never
 selectable — that part was never the bug.
 
+☠️ **Everything is a LOCAL calendar date, and must stay that way.** `toYyyyMmDd`, `toDateObject` and
+`startOfToday` all read local parts, and the API filters on a plain `yyyy-mm-dd` string. Converting one
+step to UTC splits the pipeline: a UTC `startOfToday()` against a local `toYyyyMmDd()` lets a user west
+of Greenwich pick a "today" that is tomorrow elsewhere — reopening the future-date hole. For the same
+reason these strings are never passed to `new Date(string)`: ES parses a bare `yyyy-mm-dd` as **UTC
+midnight**, which reads back as the previous day at any negative offset. The string `<` comparison is
+correct precisely because the format is fixed-width, big-endian and zero-padded.
+
 ☠️ **A `customInput` must destructure and forward `disabled`.** react-datepicker clones the element and
-passes `disabled` down, but the local `DateInput` in each of the three files takes an explicit prop
-list — drop `disabled` from it and the field still refuses to open while *looking* fully enabled, which
-reads as a dead control. It also drives the `.is-disabled` class on the wrapper.
+passes `disabled` down, but `DateRangeInput` takes an explicit prop list — drop `disabled` from it and
+the field still refuses to open while *looking* fully enabled, which reads as a dead control. It also
+drives the `.is-disabled` class on the wrapper and the `aria-disabled` a screen reader announces.
+react-datepicker does **not** forward unknown props to `customInput`, so an extra prop passed through
+`fromPickerProps`/`toPickerProps` reaches `DatePicker` and not the input — put it on the element
+(`customInput={<DateRangeInput foo="bar" />}`) instead.
 
 Three stylesheets rather than one because Discount Code Redemptions styles the field differently: the
 border and background sit on the `.date-picker-input` wrapper with a transparent borderless input

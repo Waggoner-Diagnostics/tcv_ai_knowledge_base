@@ -13,7 +13,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-004` | `Country` | [app/Models/Country.php:8](../../../TCV-Backend/app/Models/Country.php#L8) | `HasFactory` | `states`→State | 1 |
 | `MODEL-005` | `Credit` | [app/Models/Credit.php:8](../../../TCV-Backend/app/Models/Credit.php#L8) | `HasFactory` | `user`→User | 1 |
 | `MODEL-006` | `CreditConsume` | [app/Models/CreditConsume.php:8](../../../TCV-Backend/app/Models/CreditConsume.php#L8) | — | `user`→User | 4 |
-| `MODEL-007` | `Credits` | [app/Models/Credits.php:13](../../../TCV-Backend/app/Models/Credits.php#L13) | `HasFactory`, `Searchable` | `user`→User, `transactions`→Transaction | 14 |
+| `MODEL-007` | `Credits` | [app/Models/Credits.php:13](../../../TCV-Backend/app/Models/Credits.php#L13) | `HasFactory`, `Searchable` | `user`→User, `transactions`→Transaction | 15 |
 | `MODEL-008` | `DiscountCode` | [app/Models/DiscountCode.php:11](../../../TCV-Backend/app/Models/DiscountCode.php#L11) | `HasFactory`, `SoftDeletes` | `users`→User, `priceTiers`→PriceDetail, `creator`→User | 12 |
 | `MODEL-009` | `DiscountCodePriceTier` | [app/Models/DiscountCodePriceTier.php:7](../../../TCV-Backend/app/Models/DiscountCodePriceTier.php#L7) | — | `discountCode`→DiscountCode, `priceTier`→PriceDetail | 2 |
 | `MODEL-010` | `DiscountCodeUser` | [app/Models/DiscountCodeUser.php:7](../../../TCV-Backend/app/Models/DiscountCodeUser.php#L7) | — | `discountCode`→DiscountCode, `user`→User | 2 |
@@ -38,7 +38,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-029` | `TestAnswer` | [app/Models/TestAnswer.php:8](../../../TCV-Backend/app/Models/TestAnswer.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection, `testSectionPlate`→TestSectionPlate, `patient`→Patient | 7 |
 | `MODEL-030` | `TestCondition` | [app/Models/TestCondition.php:8](../../../TCV-Backend/app/Models/TestCondition.php#L8) | `HasFactory` | `test`→Test | 1 |
 | `MODEL-031` | `TestEmailTemplates` | [app/Models/TestEmailTemplates.php:8](../../../TCV-Backend/app/Models/TestEmailTemplates.php#L8) | `HasFactory` | — | 0 |
-| `MODEL-032` | `TestInvitation` | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | `HasFactory` | `test`→Test, `user`→User | 4 |
+| `MODEL-032` | `TestInvitation` | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | `HasFactory` | `test`→Test, `user`→User | 5 |
 | `MODEL-033` | `TestResumeToken` | [app/Models/TestResumeToken.php:7](../../../TCV-Backend/app/Models/TestResumeToken.php#L7) | — | `patientTest`→PatientTest | 2 |
 | `MODEL-034` | `TestSection` | [app/Models/TestSection.php:8](../../../TCV-Backend/app/Models/TestSection.php#L8) | `HasFactory` | `test`→Test, `testSectionPlates`→TestSectionPlate | 3 |
 | `MODEL-035` | `TestSectionPlate` | [app/Models/TestSectionPlate.php:8](../../../TCV-Backend/app/Models/TestSectionPlate.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection | 2 |
@@ -51,4 +51,4 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-11. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._

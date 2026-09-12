@@ -23,7 +23,7 @@
 | `ApiResponse::success(int, string, $data)` → `{success,status_code,message,data}` | `app/Helpers/ApiResponse.php` |
 | Zone 3 = `Route::middleware('auth:sanctum')->group(...)` | `routes/api.php:118` |
 | Middleware registration is Laravel 12 `bootstrap/app.php` style | `bootstrap/app.php:20-29` |
-| **No `TrustProxies` middleware, no trusted-proxy config** | `app/Http/Middleware/` has 4 files, none of them |
+| **Trusted-proxy config exists but is inert** — `trustProxies()` is called in `bootstrap/app.php`, gated on a non-empty `TRUSTED_PROXIES`, which defaults to empty (no `TrustProxies` class in `app/Http/Middleware/`; it is framework-level) | `bootstrap/app.php` · see B1 below |
 | Nginx forwards `X-Forwarded-For` | `TCV-Frontend/nginx.conf:42,54,63` |
 | No account-lockout mechanism anywhere | no `RateLimiter`/`lockout`/attempt counter in `AuthController` |
 | No geo-IP or user-agent parsing dependency | `composer.json` require block |
@@ -172,7 +172,11 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 
 ## 6. Two blockers found in the current backend
 
-**B1 — `$request->ip()` will return the reverse proxy, not the user.** There is no `TrustProxies` middleware and no trusted-proxy configuration, while Nginx sets `X-Forwarded-For` (`TCV-Frontend/nginx.conf:42`). Every `actor_ip` in production would be the load balancer, and every geo lookup would resolve to the datacentre. Fix first: register `Illuminate\Http\Middleware\TrustProxies` in `bootstrap/app.php` with the actual proxy CIDR (not `*`). This also fixes `RestrictIpMiddleware`, which has the same latent bug today.
+**B1 — `$request->ip()` will return the reverse proxy, not the user.** ⚠️ **PARTIALLY ADDRESSED on `develop` 2026-09-12 — still true in effect.** `bootstrap/app.php` now calls `$middleware->trustProxies(...)`, but it is gated on a non-empty `TRUSTED_PROXIES` env var and the default is empty, so the call is skipped and nothing has changed yet: every `actor_ip` is still the load balancer and every geo lookup still resolves to the datacentre.
+
+☠️ **Setting `TRUSTED_PROXIES` right now would make it worse, not better.** `TCV-Frontend/nginx.conf:41` still has `set_real_ip_from 0.0.0.0/0`, so nginx rebuilds `X-Forwarded-For` from a client-supplied value — trust the hop today and `actor_ip` becomes attacker-chosen, which is worse for an audit trail than a uniformly wrong datacentre IP. Narrow the nginx CIDR first, then set the var to the same CIDR (never `*`). Full analysis in [SECURITY.md](../SECURITY.md) `S-16`; the same fix also un-breaks `RestrictIpMiddleware`.
+
+⭐ If you need a usable client IP for audit rows before that lands, `X-Real-IP` is populated from nginx's `$realip_remote_addr` (the pre-rewrite peer) and is the one header on this path a client cannot forge — but `trustProxies()` is configured for `X_FORWARDED_*` and does not read it.
 
 **B2 — "Account locked (too many failed attempts)" has nothing to log.** No lockout, throttle, or failed-attempt counter exists on the login path (`routes/api.php` throttles only `/contact`). The spreadsheet also asks for a "Failed attempt count" on every failed login, which likewise does not exist. Either build lockout as a prerequisite, or cut both rows from Phase 1. Recommend cutting — it is a separate feature, not an audit feature.
 

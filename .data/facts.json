@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-09-11T09:04:42+02:00",
+    "generated_at": "2026-09-12T12:59:02+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "940238fd",
-            "branch": "ws-407",
-            "date": "2026-09-09"
+            "sha": "3abe5aef",
+            "branch": "ws-404",
+            "date": "2026-09-12"
         },
         "frontend": {
-            "sha": "cd3dcba",
-            "branch": "ws-407",
-            "date": "2026-09-11"
+            "sha": "29ef344",
+            "branch": "QA",
+            "date": "2026-09-12"
         },
         "website": {
             "sha": "c54f160",
@@ -129,12 +129,256 @@
             "relations": []
         },
         {
+            "name": "MailPreflight",
+            "fqcn": "App\\Console\\Commands\\MailPreflight",
+            "kind": "class",
+            "file": "app/Console/Commands/MailPreflight.php",
+            "line": 28,
+            "end_line": 360,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "Answers \"is invitation email actually going to work here?\" before a send does.",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 40,
+                    "end_line": 58,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "info",
+                        "checkTransport",
+                        "checkPipeline",
+                        "newLine",
+                        "error"
+                    ]
+                },
+                {
+                    "name": "checkTransport",
+                    "line": 62,
+                    "end_line": 83,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "line",
+                        "bad",
+                        "checkSes",
+                        "checkSmtp",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "checkSmtp",
+                    "line": 89,
+                    "end_line": 110,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Confirm the SMTP host is reachable, and say plainly that it is the wrong",
+                    "calls": [
+                        "bad",
+                        "good",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "checkSes",
+                    "line": 112,
+                    "end_line": 122,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "sesClient",
+                        "checkSesAccount",
+                        "checkSesIdentity"
+                    ]
+                },
+                {
+                    "name": "sesClient",
+                    "line": 124,
+                    "end_line": 142,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "?SesV2Client",
+                    "doc": "",
+                    "calls": [
+                        "bad"
+                    ]
+                },
+                {
+                    "name": "checkSesAccount",
+                    "line": 144,
+                    "end_line": 201,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "SesV2Client $client"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "getAccount",
+                        "bad",
+                        "getAwsErrorMessage",
+                        "good",
+                        "line",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "checkSesIdentity",
+                    "line": 210,
+                    "end_line": 243,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "SesV2Client $client"
+                    ],
+                    "returns": "void",
+                    "doc": "The From address has to be an identity SES will actually send as.",
+                    "calls": [
+                        "option",
+                        "bad",
+                        "identityIsVerified",
+                        "good",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "identityIsVerified",
+                    "line": 248,
+                    "end_line": 265,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "SesV2Client $client",
+                        "string $identity"
+                    ],
+                    "returns": "?bool",
+                    "doc": "",
+                    "calls": [
+                        "getEmailIdentity",
+                        "getAwsErrorCode",
+                        "warn",
+                        "getAwsErrorMessage"
+                    ]
+                },
+                {
+                    "name": "checkPipeline",
+                    "line": 269,
+                    "end_line": 284,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "newLine",
+                        "line",
+                        "checkQueueBacklog",
+                        "warn",
+                        "checkStuckInvitations"
+                    ]
+                },
+                {
+                    "name": "checkQueueBacklog",
+                    "line": 290,
+                    "end_line": 320,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "A backlog in `jobs` with nothing draining it is the silent failure this",
+                    "calls": [
+                        "Schema::hasTable",
+                        "bad",
+                        "count",
+                        "DB::table",
+                        "min",
+                        "good",
+                        "line",
+                        "warn"
+                    ]
+                },
+                {
+                    "name": "checkStuckInvitations",
+                    "line": 322,
+                    "end_line": 345,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "count",
+                        "TestInvitation::awaitingDelivery",
+                        "where",
+                        "TestInvitation::where",
+                        "subMinutes",
+                        "warn",
+                        "line",
+                        "good"
+                    ]
+                },
+                {
+                    "name": "good",
+                    "line": 349,
+                    "end_line": 352,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $message"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "line"
+                    ]
+                },
+                {
+                    "name": "bad",
+                    "line": 355,
+                    "end_line": 359,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $message"
+                    ],
+                    "returns": "void",
+                    "doc": "Records a blocking problem and drives the exit code.",
+                    "calls": [
+                        "line"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "APP_SEND_RATE",
+                    "value": "",
+                    "line": 36
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "SendPendingInvitations",
             "fqcn": "App\\Console\\Commands\\SendPendingInvitations",
             "kind": "class",
             "file": "app/Console/Commands/SendPendingInvitations.php",
             "line": 17,
-            "end_line": 144,
+            "end_line": 138,
             "extends": "Command",
             "implements": [],
             "traits": [],
@@ -143,7 +387,7 @@
                 {
                     "name": "handle",
                     "line": 25,
-                    "end_line": 124,
+                    "end_line": 118,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -153,14 +397,13 @@
                     "doc": "",
                     "calls": [
                         "option",
+                        "SendTestInvitationEmailsJob::resetHostStandDown",
                         "reclaimAbandonedClaims",
                         "warn",
                         "get",
                         "limit",
                         "orderBy",
-                        "where",
-                        "TestInvitation::where",
-                        "subMinutes",
+                        "TestInvitation::awaitingDelivery",
                         "isEmpty",
                         "info",
                         "partition",
@@ -171,14 +414,15 @@
                         "groupBy",
                         "all",
                         "handle",
+                        "where",
                         "TestInvitation::whereIn",
                         "whereIn"
                     ]
                 },
                 {
                     "name": "reclaimAbandonedClaims",
-                    "line": 138,
-                    "end_line": 143,
+                    "line": 132,
+                    "end_line": 137,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1239,17 +1483,19 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 34,
-            "end_line": 860,
+            "line": 35,
+            "end_line": 1040,
             "extends": "Controller",
             "implements": [],
-            "traits": [],
+            "traits": [
+                "BuildsAuditDiffs"
+            ],
             "doc": "",
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 40,
-                    "end_line": 44,
+                    "line": 53,
+                    "end_line": 57,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1262,8 +1508,8 @@
                 },
                 {
                     "name": "login",
-                    "line": 46,
-                    "end_line": 222,
+                    "line": 59,
+                    "end_line": 235,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1293,8 +1539,8 @@
                 },
                 {
                     "name": "createStripeCustomer",
-                    "line": 224,
-                    "end_line": 231,
+                    "line": 237,
+                    "end_line": 244,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1310,8 +1556,8 @@
                 },
                 {
                     "name": "register",
-                    "line": 233,
-                    "end_line": 292,
+                    "line": 246,
+                    "end_line": 316,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1335,14 +1581,16 @@
                         "sendVerificationEmailForUser",
                         "Log::error",
                         "getMessage",
+                        "log",
+                        "auditDetails",
                         "ApiResponse::success",
                         "ApiResponse::error"
                     ]
                 },
                 {
                     "name": "sendResetLinkEmail",
-                    "line": 294,
-                    "end_line": 324,
+                    "line": 318,
+                    "end_line": 359,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1360,6 +1608,7 @@
                         "Password::broker",
                         "notify",
                         "Log::info",
+                        "log",
                         "ApiResponse::success",
                         "Log::error",
                         "getMessage"
@@ -1367,8 +1616,8 @@
                 },
                 {
                     "name": "setOrResetPassword",
-                    "line": 326,
-                    "end_line": 405,
+                    "line": 361,
+                    "end_line": 464,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1392,6 +1641,7 @@
                         "Hash::make",
                         "Str::random",
                         "deleteToken",
+                        "log",
                         "ApiResponse::success",
                         "Hash::check",
                         "Password::reset",
@@ -1403,8 +1653,8 @@
                 },
                 {
                     "name": "verifySetupToken",
-                    "line": 407,
-                    "end_line": 427,
+                    "line": 466,
+                    "end_line": 486,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1424,8 +1674,8 @@
                 },
                 {
                     "name": "verifyEmail",
-                    "line": 430,
-                    "end_line": 449,
+                    "line": 489,
+                    "end_line": 522,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1440,13 +1690,15 @@
                         "hasVerifiedEmail",
                         "ApiResponse::success",
                         "markEmailAsVerified",
+                        "log",
+                        "toDateTimeString",
                         "json"
                     ]
                 },
                 {
                     "name": "logout",
-                    "line": 451,
-                    "end_line": 463,
+                    "line": 524,
+                    "end_line": 546,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1463,9 +1715,22 @@
                     ]
                 },
                 {
+                    "name": "impersonationTargetLabel",
+                    "line": 553,
+                    "end_line": 560,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $target"
+                    ],
+                    "returns": "string",
+                    "doc": "Human-readable label for the impersonation target, used in the audit description",
+                    "calls": []
+                },
+                {
                     "name": "impersonateUser",
-                    "line": 465,
-                    "end_line": 484,
+                    "line": 562,
+                    "end_line": 599,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1480,13 +1745,16 @@
                         "canImpersonateUser",
                         "ApiResponse::error",
                         "createToken",
+                        "impersonationTargetLabel",
+                        "log",
+                        "AuditService::sessionKeyForToken",
                         "json"
                     ]
                 },
                 {
                     "name": "stopImpersonation",
-                    "line": 486,
-                    "end_line": 496,
+                    "line": 601,
+                    "end_line": 637,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1499,6 +1767,9 @@
                         "user",
                         "currentAccessToken",
                         "first",
+                        "log",
+                        "impersonationTargetLabel",
+                        "User::find",
                         "delete",
                         "whereJsonContains",
                         "PersonalAccessToken::where",
@@ -1507,8 +1778,8 @@
                 },
                 {
                     "name": "isTokenValid",
-                    "line": 504,
-                    "end_line": 556,
+                    "line": 645,
+                    "end_line": 697,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1527,8 +1798,8 @@
                 },
                 {
                     "name": "verifyPassword",
-                    "line": 563,
-                    "end_line": 577,
+                    "line": 704,
+                    "end_line": 737,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1541,13 +1812,14 @@
                         "user",
                         "Hash::check",
                         "ApiResponse::error",
+                        "log",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "changePassword",
-                    "line": 584,
-                    "end_line": 611,
+                    "line": 744,
+                    "end_line": 777,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1570,6 +1842,7 @@
                         "Str::random",
                         "Log::info",
                         "ip",
+                        "log",
                         "delete",
                         "tokens",
                         "ApiResponse::success"
@@ -1577,8 +1850,8 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
-                    "line": 616,
-                    "end_line": 737,
+                    "line": 782,
+                    "end_line": 903,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1608,8 +1881,8 @@
                 },
                 {
                     "name": "verifyEmailByToken",
-                    "line": 742,
-                    "end_line": 797,
+                    "line": 908,
+                    "end_line": 977,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1626,13 +1899,15 @@
                         "whereNull",
                         "Log::info",
                         "json",
-                        "save"
+                        "save",
+                        "log",
+                        "toDateTimeString"
                     ]
                 },
                 {
                     "name": "resendVerificationByToken",
-                    "line": 802,
-                    "end_line": 831,
+                    "line": 982,
+                    "end_line": 1011,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1653,8 +1928,8 @@
                 },
                 {
                     "name": "resendEmailVerificationLink",
-                    "line": 833,
-                    "end_line": 859,
+                    "line": 1013,
+                    "end_line": 1039,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1673,6 +1948,73 @@
                     ]
                 }
             ],
+            "constants": [
+                {
+                    "name": "SELF_SIGNUP_AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 44
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "BuildsAuditDiffs",
+            "fqcn": "App\\Http\\Controllers\\Concerns\\BuildsAuditDiffs",
+            "kind": "trait",
+            "file": "app/Http/Controllers/Concerns/BuildsAuditDiffs.php",
+            "line": 20,
+            "end_line": 76,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Shared before/after diff building for audit instrumentation, used by UserController and",
+            "methods": [
+                {
+                    "name": "auditSnapshot",
+                    "line": 26,
+                    "end_line": 34,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [
+                        "$model",
+                        "array $fields"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "auditChanges",
+                    "line": 43,
+                    "end_line": 58,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [
+                        "array $before",
+                        "array $changes",
+                        "array $fields"
+                    ],
+                    "returns": "array",
+                    "doc": "$changes (timestamps, unrelated columns) is ignored",
+                    "calls": []
+                },
+                {
+                    "name": "auditDetails",
+                    "line": 64,
+                    "end_line": 75,
+                    "visibility": "protected",
+                    "static": false,
+                    "params": [
+                        "$model",
+                        "array $fields"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "Str::headline"
+                    ]
+                }
+            ],
             "constants": [],
             "relations": []
         },
@@ -1681,8 +2023,8 @@
             "fqcn": "App\\Http\\Controllers\\ContactController",
             "kind": "class",
             "file": "app/Http/Controllers/ContactController.php",
-            "line": 13,
-            "end_line": 56,
+            "line": 14,
+            "end_line": 73,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1690,12 +2032,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 17,
-                    "end_line": 20,
+                    "line": 20,
+                    "end_line": 24,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "HubSpotService $hubSpotService"
+                        "HubSpotService $hubSpotService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -1703,8 +2046,8 @@
                 },
                 {
                     "name": "submit",
-                    "line": 22,
-                    "end_line": 55,
+                    "line": 26,
+                    "end_line": 72,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1720,6 +2063,8 @@
                         "ApiResponse::success",
                         "Log::error",
                         "getMessage",
+                        "log",
+                        "user",
                         "ApiResponse::error"
                     ]
                 }
@@ -1749,17 +2094,30 @@
             "fqcn": "App\\Http\\Controllers\\CreditsController",
             "kind": "class",
             "file": "app/Http/Controllers/CreditsController.php",
-            "line": 20,
-            "end_line": 256,
+            "line": 22,
+            "end_line": 335,
             "extends": "Controller",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 26,
+                    "end_line": 29,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
                     "name": "index",
-                    "line": 25,
-                    "end_line": 91,
+                    "line": 34,
+                    "end_line": 100,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1789,8 +2147,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 96,
-                    "end_line": 106,
+                    "line": 105,
+                    "end_line": 138,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1804,13 +2162,18 @@
                         "validated",
                         "id",
                         "Credits::create",
+                        "User::find",
+                        "log",
+                        "AuditEventCatalog::creditEventKey",
+                        "user",
+                        "toDateTimeString",
                         "json"
                     ]
                 },
                 {
                     "name": "show",
-                    "line": 111,
-                    "end_line": 117,
+                    "line": 143,
+                    "end_line": 150,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1827,29 +2190,35 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 124,
-                    "end_line": 167,
+                    "line": 157,
+                    "end_line": 220,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
                     "doc": "Take back credits an admin granted.",
                     "calls": [
                         "Log::info",
-                        "Credits::findOrFail",
+                        "findOrFail",
+                        "Credits::with",
                         "authorize",
                         "Credits::revokeGrant",
                         "ApiResponse::error",
+                        "log",
+                        "AuditEventCatalog::creditEventKey",
+                        "user",
+                        "toDateTimeString",
                         "Credits::getAvailableCredits",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "checkDiscountCodeValidity",
-                    "line": 169,
-                    "end_line": 197,
+                    "line": 222,
+                    "end_line": 252,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1870,14 +2239,14 @@
                 },
                 {
                     "name": "revokeCredit",
-                    "line": 208,
-                    "end_line": 255,
+                    "line": 263,
+                    "end_line": 334,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "string $identifier"
                     ],
-                    "returns": "Illuminate\\Http\\JsonResponse",
+                    "returns": "JsonResponse",
                     "doc": "Revoke a credit back to the authenticated user.",
                     "calls": [
                         "first",
@@ -1886,6 +2255,7 @@
                         "getGroupedTests",
                         "doesntContain",
                         "ApiResponse::error",
+                        "Credits::getAvailableCredits",
                         "DB::transaction",
                         "Credits::traceConsumedOrigin",
                         "all",
@@ -1896,6 +2266,8 @@
                         "TestInvitation::where",
                         "Log::info",
                         "id",
+                        "log",
+                        "user",
                         "ApiResponse::success",
                         "Log::error",
                         "getMessage"
@@ -1910,30 +2282,84 @@
             "fqcn": "App\\Http\\Controllers\\DiscountCodeController",
             "kind": "class",
             "file": "app/Http/Controllers/DiscountCodeController.php",
-            "line": 18,
-            "end_line": 253,
+            "line": 17,
+            "end_line": 403,
             "extends": "Controller",
             "implements": [],
-            "traits": [],
+            "traits": [
+                "BuildsAuditDiffs"
+            ],
             "doc": "",
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 20,
-                    "end_line": 20,
+                    "line": 31,
+                    "end_line": 31,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "DiscountCodeService $service"
+                        "DiscountCodeService $service",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
                     "calls": []
                 },
                 {
+                    "name": "discountRelationDetails",
+                    "line": 38,
+                    "end_line": 44,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "DiscountCode $discount"
+                    ],
+                    "returns": "array",
+                    "doc": "Fresh relation queries, not the (possibly stale, possibly not-yet-loaded)",
+                    "calls": [
+                        "discountRestrictedUsers",
+                        "discountPackageList"
+                    ]
+                },
+                {
+                    "name": "discountRestrictedUsers",
+                    "line": 50,
+                    "end_line": 56,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "DiscountCode $discount"
+                    ],
+                    "returns": "array",
+                    "doc": "order-independent",
+                    "calls": [
+                        "all",
+                        "pluck",
+                        "users"
+                    ]
+                },
+                {
+                    "name": "discountPackageList",
+                    "line": 61,
+                    "end_line": 69,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "DiscountCode $discount"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "all",
+                        "map",
+                        "get",
+                        "priceTiers"
+                    ]
+                },
+                {
                     "name": "index",
-                    "line": 24,
-                    "end_line": 67,
+                    "line": 73,
+                    "end_line": 116,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1962,8 +2388,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 69,
-                    "end_line": 88,
+                    "line": 118,
+                    "end_line": 167,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1977,14 +2403,19 @@
                         "id",
                         "syncRestrictions",
                         "load",
+                        "log",
+                        "getMessage",
+                        "user",
+                        "auditDetails",
+                        "discountRelationDetails",
                         "json",
                         "formatDiscount"
                     ]
                 },
                 {
                     "name": "show",
-                    "line": 90,
-                    "end_line": 96,
+                    "line": 169,
+                    "end_line": 175,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2001,8 +2432,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 98,
-                    "end_line": 117,
+                    "line": 177,
+                    "end_line": 237,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2014,8 +2445,15 @@
                     "calls": [
                         "DiscountCode::findOrFail",
                         "validated",
+                        "auditSnapshot",
+                        "discountRestrictedUsers",
+                        "discountPackageList",
                         "update",
                         "syncRestrictions",
+                        "auditChanges",
+                        "getChanges",
+                        "log",
+                        "user",
                         "load",
                         "refresh",
                         "json",
@@ -2024,11 +2462,12 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 119,
-                    "end_line": 127,
+                    "line": 239,
+                    "end_line": 264,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "int $id"
                     ],
                     "returns": "JsonResponse",
@@ -2039,16 +2478,19 @@
                         "users",
                         "priceTiers",
                         "delete",
+                        "log",
+                        "user",
                         "json"
                     ]
                 },
                 {
                     "name": "toggle",
-                    "line": 131,
-                    "end_line": 142,
+                    "line": 268,
+                    "end_line": 292,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "int $id"
                     ],
                     "returns": "JsonResponse",
@@ -2056,6 +2498,8 @@
                     "calls": [
                         "DiscountCode::findOrFail",
                         "update",
+                        "log",
+                        "user",
                         "load",
                         "refresh",
                         "json",
@@ -2064,8 +2508,8 @@
                 },
                 {
                     "name": "validateCode",
-                    "line": 146,
-                    "end_line": 167,
+                    "line": 296,
+                    "end_line": 317,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2081,8 +2525,8 @@
                 },
                 {
                     "name": "formOptions",
-                    "line": 171,
-                    "end_line": 188,
+                    "line": 321,
+                    "end_line": 338,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -2100,8 +2544,8 @@
                 },
                 {
                     "name": "stats",
-                    "line": 192,
-                    "end_line": 200,
+                    "line": 342,
+                    "end_line": 350,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -2118,8 +2562,8 @@
                 },
                 {
                     "name": "codeAvailable",
-                    "line": 204,
-                    "end_line": 219,
+                    "line": 354,
+                    "end_line": 369,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2138,8 +2582,8 @@
                 },
                 {
                     "name": "formatDiscount",
-                    "line": 223,
-                    "end_line": 252,
+                    "line": 373,
+                    "end_line": 402,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2151,6 +2595,64 @@
                         "values",
                         "map",
                         "toDateTimeString"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 26
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "DistributorController",
+            "fqcn": "App\\Http\\Controllers\\DistributorController",
+            "kind": "class",
+            "file": "app/Http/Controllers/DistributorController.php",
+            "line": 12,
+            "end_line": 57,
+            "extends": "Controller",
+            "implements": [],
+            "traits": [],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "__construct",
+                    "line": 14,
+                    "end_line": 17,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "HubSpotService $hubSpotService",
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "submit",
+                    "line": 19,
+                    "end_line": 56,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "DistributorEnquiryFormRequest $request"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": [
+                        "validated",
+                        "submitEnquiry",
+                        "ApiResponse::success",
+                        "Log::error",
+                        "getMessage",
+                        "log",
+                        "user",
+                        "ApiResponse::error"
                     ]
                 }
             ],
@@ -2476,31 +2978,112 @@
             "fqcn": "App\\Http\\Controllers\\OrganizationController",
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
-            "line": 31,
-            "end_line": 852,
+            "line": 36,
+            "end_line": 1092,
             "extends": "Controller",
             "implements": [],
-            "traits": [],
+            "traits": [
+                "BuildsAuditDiffs"
+            ],
             "doc": "",
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 33,
-                    "end_line": 37,
+                    "line": 59,
+                    "end_line": 63,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "LmsLaunchService $launchService",
-                        "App\\Services\\Lms\\LmsProviderRegistry $providerRegistry"
+                        "LmsProviderRegistry $providerRegistry",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
                     "calls": []
                 },
                 {
+                    "name": "organizationExtraDetails",
+                    "line": 72,
+                    "end_line": 79,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Organization $organization"
+                    ],
+                    "returns": "array",
+                    "doc": "`organization_type_id` is a real belongsTo (OrganizationType); `privileges`",
+                    "calls": [
+                        "all",
+                        "pluck",
+                        "Privilege::whereIn",
+                        "Test::whereIn"
+                    ]
+                },
+                {
+                    "name": "orgConfigOptionGroups",
+                    "line": 94,
+                    "end_line": 117,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Organization $organization"
+                    ],
+                    "returns": "array",
+                    "doc": "The organization's checked config options, split into the two groups the settings UI",
+                    "calls": [
+                        "all",
+                        "pluck",
+                        "OrganizationSettingsOption::whereIn"
+                    ]
+                },
+                {
+                    "name": "organizationCreateDetails",
+                    "line": 125,
+                    "end_line": 151,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Organization $organization",
+                        "User $user"
+                    ],
+                    "returns": "array",
+                    "doc": "Ordered detail rows for an organization-created audit event, following the audit-trail",
+                    "calls": [
+                        "orgConfigOptionGroups",
+                        "all",
+                        "pluck",
+                        "Privilege::whereIn",
+                        "Country::find",
+                        "State::find",
+                        "Test::whereIn"
+                    ]
+                },
+                {
+                    "name": "orgRelationSnapshot",
+                    "line": 159,
+                    "end_line": 171,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Organization $organization"
+                    ],
+                    "returns": "array",
+                    "doc": "Relation/config values that belong in an organization update's before/after diff rather",
+                    "calls": [
+                        "orgConfigOptionGroups",
+                        "all",
+                        "values",
+                        "sort",
+                        "pluck",
+                        "Privilege::whereIn",
+                        "Test::whereIn"
+                    ]
+                },
+                {
                     "name": "index",
-                    "line": 39,
-                    "end_line": 165,
+                    "line": 173,
+                    "end_line": 300,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2542,8 +3125,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 167,
-                    "end_line": 229,
+                    "line": 302,
+                    "end_line": 384,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2575,13 +3158,18 @@
                         "value",
                         "OrganizationSettingsOption::where",
                         "saveQuietly",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
+                        "organizationCreateDetails",
+                        "load",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "show",
-                    "line": 231,
-                    "end_line": 242,
+                    "line": 386,
+                    "end_line": 398,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2600,8 +3188,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 244,
-                    "end_line": 339,
+                    "line": 400,
+                    "end_line": 555,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2614,6 +3202,9 @@
                         "DB::beginTransaction",
                         "authorize",
                         "Organization::findOrFail",
+                        "auditSnapshot",
+                        "orgRelationSnapshot",
+                        "load",
                         "validated",
                         "has",
                         "input",
@@ -2622,6 +3213,8 @@
                         "rules",
                         "generateTestUrl",
                         "update",
+                        "auditChanges",
+                        "getChanges",
                         "value",
                         "OrganizationSettingsOption::where",
                         "all",
@@ -2632,6 +3225,9 @@
                         "boolean",
                         "OrganizationConfig::updateOrCreate",
                         "DB::commit",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
                         "User::find",
                         "ApiResponse::success",
                         "DB::rollBack",
@@ -2642,8 +3238,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 341,
-                    "end_line": 365,
+                    "line": 557,
+                    "end_line": 582,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2667,11 +3263,12 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 367,
-                    "end_line": 394,
+                    "line": 584,
+                    "end_line": 632,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
@@ -2684,6 +3281,9 @@
                         "forceDelete",
                         "delete",
                         "DB::commit",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
                         "ApiResponse::success",
                         "DB::rollBack",
                         "Log::error",
@@ -2693,8 +3293,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 400,
-                    "end_line": 453,
+                    "line": 638,
+                    "end_line": 692,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2721,8 +3321,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 459,
-                    "end_line": 583,
+                    "line": 698,
+                    "end_line": 822,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2754,8 +3354,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 588,
-                    "end_line": 657,
+                    "line": 827,
+                    "end_line": 896,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2773,8 +3373,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 664,
-                    "end_line": 704,
+                    "line": 903,
+                    "end_line": 944,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2791,15 +3391,15 @@
                         "values",
                         "map",
                         "get",
-                        "App\\Models\\Test::whereIn",
+                        "Test::whereIn",
                         "Log::error",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 711,
-                    "end_line": 743,
+                    "line": 951,
+                    "end_line": 983,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2817,8 +3417,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 750,
-                    "end_line": 771,
+                    "line": 990,
+                    "end_line": 1011,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2838,14 +3438,14 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 784,
-                    "end_line": 825,
+                    "line": 1024,
+                    "end_line": 1065,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "$orgCollection"
                     ],
-                    "returns": "Illuminate\\Support\\Collection",
+                    "returns": "Collection",
                     "doc": "Enrich an organization collection with computed credits for each org's associated user.",
                     "calls": [
                         "toArray",
@@ -2868,8 +3468,8 @@
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 830,
-                    "end_line": 851,
+                    "line": 1070,
+                    "end_line": 1091,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -2887,7 +3487,28 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "USER_AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 41
+                },
+                {
+                    "name": "ORG_AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 52
+                },
+                {
+                    "name": "DISPLAY_BRANDING_OPTIONS",
+                    "value": "[…]",
+                    "line": 83
+                },
+                {
+                    "name": "HIDDEN_SETTINGS_OPTIONS",
+                    "value": "[…]",
+                    "line": 86
+                }
+            ],
             "relations": []
         },
         {
@@ -3007,17 +3628,30 @@
             "fqcn": "App\\Http\\Controllers\\PasswordController",
             "kind": "class",
             "file": "app/Http/Controllers/PasswordController.php",
-            "line": 12,
-            "end_line": 88,
+            "line": 14,
+            "end_line": 115,
             "extends": "Controller",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 18,
+                    "end_line": 21,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
                     "name": "update",
-                    "line": 25,
-                    "end_line": 87,
+                    "line": 33,
+                    "end_line": 114,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3031,6 +3665,7 @@
                         "Hash::check",
                         "Log::warning",
                         "ip",
+                        "log",
                         "ApiResponse::error",
                         "Hash::make",
                         "save",
@@ -3055,8 +3690,8 @@
             "fqcn": "App\\Http\\Controllers\\PatientController",
             "kind": "class",
             "file": "app/Http/Controllers/PatientController.php",
-            "line": 23,
-            "end_line": 526,
+            "line": 26,
+            "end_line": 603,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3064,13 +3699,14 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 27,
-                    "end_line": 31,
+                    "line": 46,
+                    "end_line": 51,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "TestService $testService",
-                        "PatientTestTransformer $testTransformer"
+                        "PatientTestTransformer $testTransformer",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -3078,8 +3714,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 35,
-                    "end_line": 62,
+                    "line": 56,
+                    "end_line": 83,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3103,8 +3739,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 67,
-                    "end_line": 104,
+                    "line": 88,
+                    "end_line": 141,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3122,13 +3758,15 @@
                         "Log::error",
                         "json",
                         "Patient::create",
+                        "log",
+                        "user",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "show",
-                    "line": 109,
-                    "end_line": 124,
+                    "line": 146,
+                    "end_line": 162,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3147,8 +3785,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 129,
-                    "end_line": 148,
+                    "line": 167,
+                    "end_line": 211,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3164,13 +3802,16 @@
                         "ApiResponse::error",
                         "validated",
                         "update",
+                        "getChanges",
+                        "log",
+                        "user",
                         "json"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 153,
-                    "end_line": 170,
+                    "line": 216,
+                    "end_line": 247,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3186,13 +3827,14 @@
                         "isSuperAdmin",
                         "ApiResponse::error",
                         "delete",
+                        "log",
                         "json"
                     ]
                 },
                 {
                     "name": "callerOwnsPatient",
-                    "line": 178,
-                    "end_line": 212,
+                    "line": 255,
+                    "end_line": 289,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3202,16 +3844,16 @@
                     "returns": "bool",
                     "doc": "Whether the caller (any of FlexibleAuthMiddleware's four credential tiers) may",
                     "calls": [
-                        "App\\Http\\Middleware\\FlexibleAuthMiddleware::context",
+                        "FlexibleAuthMiddleware::context",
                         "user",
                         "isSuperAdmin",
-                        "App\\Models\\TestInvitation::find"
+                        "TestInvitation::find"
                     ]
                 },
                 {
                     "name": "resendTestLink",
-                    "line": 214,
-                    "end_line": 265,
+                    "line": 291,
+                    "end_line": 342,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3238,14 +3880,14 @@
                 },
                 {
                     "name": "getPatientTests",
-                    "line": 276,
-                    "end_line": 325,
+                    "line": 352,
+                    "end_line": 401,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "$id"
                     ],
-                    "returns": "Illuminate\\Http\\JsonResponse",
+                    "returns": "JsonResponse",
                     "doc": "Get all tests assigned to a specific patient, with monocular paired tests grouped.",
                     "calls": [
                         "user",
@@ -3267,8 +3909,8 @@
                 },
                 {
                     "name": "storeOrganizationPatient",
-                    "line": 331,
-                    "end_line": 525,
+                    "line": 407,
+                    "end_line": 602,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3292,7 +3934,7 @@
                         "Patient::create",
                         "update",
                         "Str::random",
-                        "App\\Models\\TestSession::create",
+                        "TestSession::create",
                         "addHours",
                         "toArray",
                         "Log::error",
@@ -3300,7 +3942,13 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 36
+                }
+            ],
             "relations": []
         },
         {
@@ -3308,8 +3956,8 @@
             "fqcn": "App\\Http\\Controllers\\PaymentController",
             "kind": "class",
             "file": "app/Http/Controllers/PaymentController.php",
-            "line": 12,
-            "end_line": 301,
+            "line": 14,
+            "end_line": 349,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3317,12 +3965,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 14,
+                    "line": 16,
                     "end_line": 16,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "DiscountCodeService $discountCodeService"
+                        "DiscountCodeService $discountCodeService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -3331,7 +3980,7 @@
                 {
                     "name": "getProviders",
                     "line": 18,
-                    "end_line": 31,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3345,8 +3994,8 @@
                 },
                 {
                     "name": "createSetupIntent",
-                    "line": 33,
-                    "end_line": 54,
+                    "line": 34,
+                    "end_line": 55,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3364,8 +4013,8 @@
                 },
                 {
                     "name": "initializePayment",
-                    "line": 56,
-                    "end_line": 92,
+                    "line": 57,
+                    "end_line": 93,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3386,8 +4035,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 94,
-                    "end_line": 151,
+                    "line": 95,
+                    "end_line": 197,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3398,6 +4047,7 @@
                     "calls": [
                         "validate",
                         "Auth::user",
+                        "log",
                         "json",
                         "PaymentManager::getProvider",
                         "confirmPayment",
@@ -3407,8 +4057,8 @@
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 153,
-                    "end_line": 169,
+                    "line": 199,
+                    "end_line": 215,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3427,8 +4077,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 174,
-                    "end_line": 202,
+                    "line": 220,
+                    "end_line": 250,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3451,12 +4101,12 @@
                 },
                 {
                     "name": "getCreditHistory",
-                    "line": 211,
-                    "end_line": 300,
+                    "line": 259,
+                    "end_line": 348,
                     "visibility": "public",
                     "static": false,
                     "params": [],
-                    "returns": "Illuminate\\Http\\JsonResponse",
+                    "returns": "JsonResponse",
                     "doc": "Get unified credit history for the authenticated user.",
                     "calls": [
                         "Auth::user",
@@ -3482,17 +4132,30 @@
             "fqcn": "App\\Http\\Controllers\\PriceDetailController",
             "kind": "class",
             "file": "app/Http/Controllers/PriceDetailController.php",
-            "line": 14,
-            "end_line": 99,
+            "line": 15,
+            "end_line": 232,
             "extends": "Controller",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 19,
+                    "end_line": 22,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
                     "name": "validateData",
-                    "line": 16,
-                    "end_line": 23,
+                    "line": 24,
+                    "end_line": 31,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3506,8 +4169,8 @@
                 },
                 {
                     "name": "getAllDetails",
-                    "line": 25,
-                    "end_line": 36,
+                    "line": 33,
+                    "end_line": 45,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3519,8 +4182,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 38,
-                    "end_line": 43,
+                    "line": 47,
+                    "end_line": 53,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3533,8 +4196,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 45,
-                    "end_line": 55,
+                    "line": 55,
+                    "end_line": 102,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3546,18 +4209,22 @@
                         "validateData",
                         "all",
                         "fails",
+                        "log",
+                        "user",
                         "ApiResponse::error",
                         "errors",
                         "PriceDetail::create",
                         "validated",
+                        "auditDetails",
+                        "getMessage",
                         "ApiResponse::success",
                         "getAllDetails"
                     ]
                 },
                 {
                     "name": "update",
-                    "line": 57,
-                    "end_line": 90,
+                    "line": 104,
+                    "end_line": 184,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3570,6 +4237,8 @@
                         "validateData",
                         "all",
                         "fails",
+                        "log",
+                        "user",
                         "ApiResponse::error",
                         "errors",
                         "DB::transaction",
@@ -3579,27 +4248,46 @@
                         "update",
                         "PricingAuditService::createLog",
                         "id",
+                        "getMessage",
                         "ApiResponse::success",
                         "getAllDetails"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 92,
-                    "end_line": 98,
+                    "line": 186,
+                    "end_line": 219,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "JsonResponse",
                     "doc": "",
                     "calls": [
                         "PriceDetail::findOrFail",
+                        "auditDetails",
                         "delete",
+                        "log",
+                        "user",
+                        "getMessage",
                         "ApiResponse::success",
                         "getAllDetails"
                     ]
+                },
+                {
+                    "name": "auditDetails",
+                    "line": 224,
+                    "end_line": 231,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "PriceDetail $detail"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
                 }
             ],
             "constants": [],
@@ -3610,17 +4298,32 @@
             "fqcn": "App\\Http\\Controllers\\ProfileController",
             "kind": "class",
             "file": "app/Http/Controllers/ProfileController.php",
-            "line": 12,
-            "end_line": 105,
+            "line": 15,
+            "end_line": 145,
             "extends": "Controller",
             "implements": [],
-            "traits": [],
+            "traits": [
+                "BuildsAuditDiffs"
+            ],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 32,
+                    "end_line": 35,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
                     "name": "show",
-                    "line": 19,
-                    "end_line": 39,
+                    "line": 42,
+                    "end_line": 63,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3637,8 +4340,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 52,
-                    "end_line": 104,
+                    "line": 75,
+                    "end_line": 144,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3650,8 +4353,12 @@
                         "Auth::user",
                         "validated",
                         "DB::beginTransaction",
+                        "auditSnapshot",
                         "update",
                         "DB::commit",
+                        "auditChanges",
+                        "getChanges",
+                        "log",
                         "fresh",
                         "ApiResponse::success",
                         "DB::rollBack",
@@ -3663,7 +4370,13 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 25
+                }
+            ],
             "relations": []
         },
         {
@@ -3894,8 +4607,8 @@
             "fqcn": "App\\Http\\Controllers\\ReportController",
             "kind": "class",
             "file": "app/Http/Controllers/ReportController.php",
-            "line": 20,
-            "end_line": 245,
+            "line": 19,
+            "end_line": 330,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -3903,13 +4616,14 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 26,
-                    "end_line": 30,
+                    "line": 27,
+                    "end_line": 32,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "UserTestsReportService $userReportService",
-                        "DiscountCodeReportService $discountCodeReportService"
+                        "DiscountCodeReportService $discountCodeReportService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -3917,8 +4631,8 @@
                 },
                 {
                     "name": "getPatientsHavingTests",
-                    "line": 32,
-                    "end_line": 49,
+                    "line": 34,
+                    "end_line": 51,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3937,8 +4651,8 @@
                 },
                 {
                     "name": "userTestsReport",
-                    "line": 54,
-                    "end_line": 117,
+                    "line": 56,
+                    "end_line": 146,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3950,12 +4664,16 @@
                         "get",
                         "input",
                         "getPatientTestsForReport",
+                        "log",
+                        "user",
                         "ApiResponse::success",
                         "getPatientTestsForExport",
+                        "logUserTestsExported",
                         "downloadDetailExcel",
                         "Patient::find",
                         "downloadDetailPdf",
                         "query",
+                        "count",
                         "downloadExcel",
                         "downloadPdf",
                         "paginate",
@@ -3963,9 +4681,45 @@
                     ]
                 },
                 {
+                    "name": "logUserTestsExported",
+                    "line": 153,
+                    "end_line": 171,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "array $filters",
+                        "string $format",
+                        "string $scope",
+                        "?int $patientId",
+                        "int $recordCount"
+                    ],
+                    "returns": "void",
+                    "doc": "search is deliberately never logged by value -- a caller could type a",
+                    "calls": [
+                        "appliedDateFilter",
+                        "log",
+                        "user"
+                    ]
+                },
+                {
+                    "name": "appliedDateFilter",
+                    "line": 176,
+                    "end_line": 183,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?string $from",
+                        "?string $to"
+                    ],
+                    "returns": "string",
+                    "doc": "Collapses a from/to date range into a single \"Applied Date Filter\" detail value.",
+                    "calls": []
+                },
+                {
                     "name": "downloadDetailExcel",
-                    "line": 119,
-                    "end_line": 123,
+                    "line": 185,
+                    "end_line": 190,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3979,8 +4733,8 @@
                 },
                 {
                     "name": "downloadDetailPdf",
-                    "line": 125,
-                    "end_line": 136,
+                    "line": 192,
+                    "end_line": 203,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3990,14 +4744,14 @@
                     "returns": "",
                     "doc": "",
                     "calls": [
-                        "PDF::loadView",
+                        "Pdf::loadView",
                         "download"
                     ]
                 },
                 {
                     "name": "downloadExcel",
-                    "line": 138,
-                    "end_line": 144,
+                    "line": 205,
+                    "end_line": 211,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4011,8 +4765,8 @@
                 },
                 {
                     "name": "downloadPdf",
-                    "line": 146,
-                    "end_line": 168,
+                    "line": 213,
+                    "end_line": 235,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4023,14 +4777,14 @@
                     "calls": [
                         "chunk",
                         "push",
-                        "PDF::loadView",
+                        "Pdf::loadView",
                         "download"
                     ]
                 },
                 {
                     "name": "discountCode",
-                    "line": 173,
-                    "end_line": 219,
+                    "line": 240,
+                    "end_line": 287,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4057,11 +4811,12 @@
                 },
                 {
                     "name": "downloadDiscountCodeExcel",
-                    "line": 221,
-                    "end_line": 244,
+                    "line": 289,
+                    "end_line": 329,
                     "visibility": "private",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "array $params"
                     ],
                     "returns": "",
@@ -4069,6 +4824,10 @@
                     "calls": [
                         "buildQuery",
                         "getSummary",
+                        "log",
+                        "user",
+                        "appliedDateFilter",
+                        "count",
                         "stream"
                     ]
                 }
@@ -4081,17 +4840,30 @@
             "fqcn": "App\\Http\\Controllers\\RestrictedIpController",
             "kind": "class",
             "file": "app/Http/Controllers/RestrictedIpController.php",
-            "line": 13,
-            "end_line": 91,
+            "line": 14,
+            "end_line": 135,
             "extends": "Controller",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
-                    "name": "index",
+                    "name": "__construct",
                     "line": 18,
-                    "end_line": 25,
+                    "end_line": 21,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "index",
+                    "line": 26,
+                    "end_line": 33,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4105,8 +4877,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 30,
-                    "end_line": 47,
+                    "line": 38,
+                    "end_line": 66,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4123,13 +4895,15 @@
                         "RestrictedIp::create",
                         "validated",
                         "getMessage",
+                        "log",
+                        "user",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "update",
-                    "line": 52,
-                    "end_line": 74,
+                    "line": 71,
+                    "end_line": 107,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4149,16 +4923,19 @@
                         "RestrictedIp::findOrFail",
                         "validated",
                         "save",
+                        "log",
+                        "user",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 79,
-                    "end_line": 90,
+                    "line": 112,
+                    "end_line": 134,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "JsonResponse",
@@ -4167,6 +4944,8 @@
                         "RestrictedIp::find",
                         "ApiResponse::error",
                         "delete",
+                        "log",
+                        "user",
                         "ApiResponse::success"
                     ]
                 }
@@ -4179,8 +4958,8 @@
             "fqcn": "App\\Http\\Controllers\\StripePaymentController",
             "kind": "class",
             "file": "app/Http/Controllers/StripePaymentController.php",
-            "line": 19,
-            "end_line": 416,
+            "line": 17,
+            "end_line": 521,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4189,11 +4968,12 @@
                 {
                     "name": "__construct",
                     "line": 23,
-                    "end_line": 26,
+                    "end_line": 27,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "StripeService $stripeService"
+                        "StripeService $stripeService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -4201,8 +4981,8 @@
                 },
                 {
                     "name": "getPaymentMethods",
-                    "line": 31,
-                    "end_line": 46,
+                    "line": 32,
+                    "end_line": 47,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4217,8 +4997,8 @@
                 },
                 {
                     "name": "createPaymentIntent",
-                    "line": 51,
-                    "end_line": 124,
+                    "line": 52,
+                    "end_line": 125,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4239,8 +5019,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 129,
-                    "end_line": 180,
+                    "line": 130,
+                    "end_line": 231,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4253,6 +5033,8 @@
                         "Auth::user",
                         "retrieve",
                         "getStripeClient",
+                        "log",
+                        "StripeService::describePaymentMethod",
                         "json",
                         "Credits::addCreditsToUser",
                         "Transaction::saveUserTransaction",
@@ -4262,8 +5044,8 @@
                 },
                 {
                     "name": "confirmACHPayment",
-                    "line": 185,
-                    "end_line": 237,
+                    "line": 236,
+                    "end_line": 339,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4276,6 +5058,8 @@
                         "Auth::user",
                         "retrieve",
                         "getStripeClient",
+                        "log",
+                        "StripeService::describePaymentMethod",
                         "json",
                         "Credits::addCreditsToUser",
                         "Transaction::saveUserTransaction",
@@ -4285,8 +5069,8 @@
                 },
                 {
                     "name": "savePaymentMethod",
-                    "line": 242,
-                    "end_line": 289,
+                    "line": 344,
+                    "end_line": 391,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4308,8 +5092,8 @@
                 },
                 {
                     "name": "removePaymentMethod",
-                    "line": 294,
-                    "end_line": 309,
+                    "line": 396,
+                    "end_line": 411,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4327,8 +5111,8 @@
                 },
                 {
                     "name": "partialRefund",
-                    "line": 314,
-                    "end_line": 346,
+                    "line": 416,
+                    "end_line": 448,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4348,8 +5132,8 @@
                 },
                 {
                     "name": "refund",
-                    "line": 351,
-                    "end_line": 378,
+                    "line": 453,
+                    "end_line": 480,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4369,8 +5153,8 @@
                 },
                 {
                     "name": "paymentCallback",
-                    "line": 380,
-                    "end_line": 391,
+                    "line": 482,
+                    "end_line": 493,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4385,8 +5169,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 396,
-                    "end_line": 415,
+                    "line": 498,
+                    "end_line": 520,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -4726,8 +5510,8 @@
             "fqcn": "App\\Http\\Controllers\\TestController",
             "kind": "class",
             "file": "app/Http/Controllers/TestController.php",
-            "line": 32,
-            "end_line": 847,
+            "line": 35,
+            "end_line": 906,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -4735,8 +5519,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 40,
-                    "end_line": 52,
+                    "line": 49,
+                    "end_line": 63,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4744,7 +5528,8 @@
                         "TestAssignmentService $assignmentService",
                         "TestExecutionService $executionService",
                         "TestResultService $resultService",
-                        "LmsLaunchService $launchService"
+                        "LmsLaunchService $launchService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -4752,8 +5537,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 53,
-                    "end_line": 60,
+                    "line": 65,
+                    "end_line": 73,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4773,8 +5558,8 @@
                 },
                 {
                     "name": "userIndex",
-                    "line": 62,
-                    "end_line": 89,
+                    "line": 75,
+                    "end_line": 102,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4795,8 +5580,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 91,
-                    "end_line": 98,
+                    "line": 104,
+                    "end_line": 111,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4814,8 +5599,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 100,
-                    "end_line": 105,
+                    "line": 113,
+                    "end_line": 119,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4832,8 +5617,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 107,
-                    "end_line": 117,
+                    "line": 121,
+                    "end_line": 153,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4848,13 +5633,16 @@
                         "update",
                         "validated",
                         "Log::info",
+                        "getChanges",
+                        "log",
+                        "user",
                         "json"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 126,
-                    "end_line": 135,
+                    "line": 161,
+                    "end_line": 170,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4873,8 +5661,8 @@
                 },
                 {
                     "name": "assignTest",
-                    "line": 143,
-                    "end_line": 224,
+                    "line": 178,
+                    "end_line": 278,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4900,6 +5688,9 @@
                         "update",
                         "advanceStatus",
                         "DB::commit",
+                        "log",
+                        "user",
+                        "Test::find",
                         "Log::info",
                         "ApiResponse::success",
                         "Log::error",
@@ -4908,8 +5699,8 @@
                 },
                 {
                     "name": "performTest",
-                    "line": 232,
-                    "end_line": 261,
+                    "line": 286,
+                    "end_line": 316,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4934,8 +5725,8 @@
                 },
                 {
                     "name": "getTestSession",
-                    "line": 269,
-                    "end_line": 288,
+                    "line": 324,
+                    "end_line": 344,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4953,8 +5744,8 @@
                 },
                 {
                     "name": "getSectionPlates",
-                    "line": 297,
-                    "end_line": 316,
+                    "line": 353,
+                    "end_line": 373,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4973,8 +5764,8 @@
                 },
                 {
                     "name": "getPlateUrl",
-                    "line": 322,
-                    "end_line": 340,
+                    "line": 379,
+                    "end_line": 398,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -4993,8 +5784,8 @@
                 },
                 {
                     "name": "getTestResult",
-                    "line": 348,
-                    "end_line": 383,
+                    "line": 406,
+                    "end_line": 442,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5016,8 +5807,8 @@
                 },
                 {
                     "name": "downloadTestResultPDF",
-                    "line": 391,
-                    "end_line": 506,
+                    "line": 450,
+                    "end_line": 565,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5042,7 +5833,7 @@
                         "find",
                         "TestInvitation::with",
                         "User::find",
-                        "PDF::loadView",
+                        "Pdf::loadView",
                         "ip",
                         "setPaper",
                         "format",
@@ -5055,8 +5846,8 @@
                 },
                 {
                     "name": "organizationAllowsDownload",
-                    "line": 514,
-                    "end_line": 554,
+                    "line": 573,
+                    "end_line": 613,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5075,8 +5866,8 @@
                 },
                 {
                     "name": "callerOwnsPatientTest",
-                    "line": 562,
-                    "end_line": 593,
+                    "line": 621,
+                    "end_line": 652,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5093,8 +5884,8 @@
                 },
                 {
                     "name": "callerOwnsPatient",
-                    "line": 602,
-                    "end_line": 645,
+                    "line": 661,
+                    "end_line": 704,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5112,8 +5903,8 @@
                 },
                 {
                     "name": "getActiveTest",
-                    "line": 656,
-                    "end_line": 726,
+                    "line": 714,
+                    "end_line": 784,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5140,8 +5931,8 @@
                 },
                 {
                     "name": "getActiveTestsWithAssignmentFlag",
-                    "line": 728,
-                    "end_line": 751,
+                    "line": 786,
+                    "end_line": 809,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5163,8 +5954,8 @@
                 },
                 {
                     "name": "assignUserTest",
-                    "line": 753,
-                    "end_line": 759,
+                    "line": 811,
+                    "end_line": 817,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5181,8 +5972,8 @@
                 },
                 {
                     "name": "unassignUserTest",
-                    "line": 761,
-                    "end_line": 772,
+                    "line": 819,
+                    "end_line": 830,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5201,8 +5992,8 @@
                 },
                 {
                     "name": "bulkUpdateAssignment",
-                    "line": 774,
-                    "end_line": 846,
+                    "line": 832,
+                    "end_line": 905,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5239,17 +6030,30 @@
             "fqcn": "App\\Http\\Controllers\\TestEmailTemplateController",
             "kind": "class",
             "file": "app/Http/Controllers/TestEmailTemplateController.php",
-            "line": 15,
-            "end_line": 270,
+            "line": 16,
+            "end_line": 299,
             "extends": "Controller",
             "implements": [],
             "traits": [],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 20,
+                    "end_line": 23,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
                     "name": "index",
-                    "line": 24,
-                    "end_line": 70,
+                    "line": 30,
+                    "end_line": 76,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -5268,8 +6072,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 79,
-                    "end_line": 175,
+                    "line": 81,
+                    "end_line": 208,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5292,6 +6096,9 @@
                         "EmailContent::anchorPlaceholders",
                         "Cache::forget",
                         "DB::commit",
+                        "EmailContent::cleanForAudit",
+                        "log",
+                        "user",
                         "Log::info",
                         "id",
                         "DB::rollBack",
@@ -5302,8 +6109,8 @@
                 },
                 {
                     "name": "validateTemplateData",
-                    "line": 184,
-                    "end_line": 198,
+                    "line": 213,
+                    "end_line": 227,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5318,8 +6125,8 @@
                 },
                 {
                     "name": "validateRequiredPlaceholders",
-                    "line": 208,
-                    "end_line": 259,
+                    "line": 237,
+                    "end_line": 288,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5338,8 +6145,8 @@
                 },
                 {
                     "name": "getPlaceholders",
-                    "line": 261,
-                    "end_line": 269,
+                    "line": 290,
+                    "end_line": 298,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5361,8 +6168,8 @@
             "fqcn": "App\\Http\\Controllers\\TestInvitationController",
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
-            "line": 20,
-            "end_line": 626,
+            "line": 22,
+            "end_line": 732,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5370,12 +6177,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 22,
-                    "end_line": 25,
+                    "line": 32,
+                    "end_line": 35,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "TestInvitationMailer $invitationMailer"
+                        "TestInvitationMailer $invitationMailer",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -5383,8 +6191,8 @@
                 },
                 {
                     "name": "sendInvitations",
-                    "line": 27,
-                    "end_line": 182,
+                    "line": 37,
+                    "end_line": 242,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5396,6 +6204,7 @@
                         "validate",
                         "user",
                         "Credits::getAvailableCredits",
+                        "log",
                         "json",
                         "Log::info",
                         "Test::findOrFail",
@@ -5405,14 +6214,16 @@
                         "increment",
                         "PatientTest::where",
                         "dispatchEmailBatch",
+                        "afterResponse",
+                        "SweepPendingInvitationsJob::dispatch",
                         "Log::error",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "createPendingInvitations",
-                    "line": 193,
-                    "end_line": 224,
+                    "line": 253,
+                    "end_line": 284,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5436,8 +6247,8 @@
                 },
                 {
                     "name": "dispatchEmailBatch",
-                    "line": 240,
-                    "end_line": 243,
+                    "line": 300,
+                    "end_line": 315,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5448,14 +6259,14 @@
                     "returns": "void",
                     "doc": "Schedule one batch of invitation emails to send after the response.",
                     "calls": [
-                        "afterResponse",
-                        "SendTestInvitationEmailsJob::dispatch"
+                        "SendTestInvitationEmailsJob::dispatch",
+                        "afterResponse"
                     ]
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 249,
-                    "end_line": 318,
+                    "line": 321,
+                    "end_line": 396,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5464,6 +6275,8 @@
                     "returns": "",
                     "doc": "Return test invitations that belong to the authenticated user",
                     "calls": [
+                        "afterResponse",
+                        "SweepPendingInvitationsJob::dispatch",
                         "id",
                         "get",
                         "orderBy",
@@ -5487,8 +6300,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 324,
-                    "end_line": 378,
+                    "line": 402,
+                    "end_line": 468,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5512,13 +6325,15 @@
                         "addDays",
                         "Carbon::now",
                         "sendInvitationEmail",
-                        "fresh"
+                        "fresh",
+                        "log",
+                        "user"
                     ]
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 383,
-                    "end_line": 426,
+                    "line": 473,
+                    "end_line": 533,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5535,20 +6350,22 @@
                         "whereColumn",
                         "from",
                         "select",
+                        "Credits::getAvailableCredits",
                         "DB::transaction",
                         "update",
-                        "App\\Models\\TestSession::where",
+                        "TestSession::where",
                         "Credits::traceConsumedOrigin",
                         "user",
                         "Credits::addCreditsToUser",
                         "Log::info",
+                        "log",
                         "json"
                     ]
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 434,
-                    "end_line": 437,
+                    "line": 541,
+                    "end_line": 544,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5567,8 +6384,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 442,
-                    "end_line": 556,
+                    "line": 549,
+                    "end_line": 663,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5588,9 +6405,9 @@
                         "lockForUpdate",
                         "TestInvitation::where",
                         "update",
-                        "App\\Models\\TestSession::where",
+                        "TestSession::where",
                         "Str::random",
-                        "App\\Models\\TestSession::create",
+                        "TestSession::create",
                         "addHours",
                         "Log::info",
                         "orderBy",
@@ -5601,8 +6418,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 561,
-                    "end_line": 624,
+                    "line": 668,
+                    "end_line": 731,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5621,7 +6438,13 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "DISPATCH_QUEUE",
+                    "value": "'queue'",
+                    "line": 30
+                }
+            ],
             "relations": []
         },
         {
@@ -6000,17 +6823,51 @@
             "fqcn": "App\\Http\\Controllers\\UserController",
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
-            "line": 25,
-            "end_line": 386,
+            "line": 27,
+            "end_line": 522,
             "extends": "Controller",
             "implements": [],
-            "traits": [],
+            "traits": [
+                "BuildsAuditDiffs"
+            ],
             "doc": "",
             "methods": [
                 {
+                    "name": "__construct",
+                    "line": 45,
+                    "end_line": 48,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "AuditService $auditService"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "accountCreateDetails",
+                    "line": 58,
+                    "end_line": 78,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $user"
+                    ],
+                    "returns": "array",
+                    "doc": "Ordered account detail rows for a create/registration audit event, following the",
+                    "calls": [
+                        "Country::find",
+                        "State::find",
+                        "all",
+                        "pluck",
+                        "assignedTests"
+                    ]
+                },
+                {
                     "name": "index",
-                    "line": 31,
-                    "end_line": 45,
+                    "line": 83,
+                    "end_line": 98,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6032,8 +6889,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 50,
-                    "end_line": 124,
+                    "line": 103,
+                    "end_line": 190,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6060,6 +6917,10 @@
                         "Log::info",
                         "Log::error",
                         "getMessage",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
+                        "accountCreateDetails",
                         "ApiResponse::success",
                         "Log::warning",
                         "ApiResponse::error"
@@ -6067,8 +6928,8 @@
                 },
                 {
                     "name": "edit",
-                    "line": 129,
-                    "end_line": 134,
+                    "line": 195,
+                    "end_line": 201,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6085,8 +6946,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 137,
-                    "end_line": 171,
+                    "line": 204,
+                    "end_line": 285,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6097,9 +6958,18 @@
                     "doc": "",
                     "calls": [
                         "User::findOrFail",
+                        "auditSnapshot",
                         "validated",
                         "input",
                         "update",
+                        "auditChanges",
+                        "getChanges",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
+                        "all",
+                        "pluck",
+                        "assignedTests",
                         "Log::info",
                         "json",
                         "Log::warning",
@@ -6109,8 +6979,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 174,
-                    "end_line": 184,
+                    "line": 288,
+                    "end_line": 300,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6127,11 +6997,12 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 189,
-                    "end_line": 204,
+                    "line": 305,
+                    "end_line": 337,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "string $id"
                     ],
                     "returns": "",
@@ -6141,6 +7012,9 @@
                         "ApiResponse::error",
                         "User::findOrFail",
                         "delete",
+                        "log",
+                        "AuditEventCatalog::accountEventKey",
+                        "user",
                         "Log::info",
                         "json",
                         "Log::error",
@@ -6149,8 +7023,8 @@
                 },
                 {
                     "name": "userWithType",
-                    "line": 212,
-                    "end_line": 328,
+                    "line": 345,
+                    "end_line": 463,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6192,8 +7066,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 330,
-                    "end_line": 342,
+                    "line": 465,
+                    "end_line": 478,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6209,8 +7083,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 347,
-                    "end_line": 385,
+                    "line": 483,
+                    "end_line": 521,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6234,7 +7108,13 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "AUDIT_FIELDS",
+                    "value": "[…]",
+                    "line": 37
+                }
+            ],
             "relations": []
         },
         {
@@ -6242,8 +7122,8 @@
             "fqcn": "App\\Http\\Controllers\\UserEmailTemplateController",
             "kind": "class",
             "file": "app/Http/Controllers/UserEmailTemplateController.php",
-            "line": 12,
-            "end_line": 99,
+            "line": 15,
+            "end_line": 146,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -6251,12 +7131,13 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 14,
-                    "end_line": 17,
+                    "line": 17,
+                    "end_line": 21,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "EmailTemplateService $emailTemplateService"
+                        "EmailTemplateService $emailTemplateService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -6264,8 +7145,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 24,
-                    "end_line": 43,
+                    "line": 28,
+                    "end_line": 50,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6274,6 +7155,8 @@
                     "calls": [
                         "Auth::id",
                         "getTemplateForUser",
+                        "EmailTemplateService::typeForUser",
+                        "Auth::user",
                         "APIResponse::success",
                         "APIResponse::error",
                         "getMessage"
@@ -6281,8 +7164,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 50,
-                    "end_line": 73,
+                    "line": 57,
+                    "end_line": 117,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6292,8 +7175,13 @@
                     "doc": "Save or update user's custom email template.",
                     "calls": [
                         "Auth::id",
-                        "saveUserTemplate",
                         "input",
+                        "getTemplateForUser",
+                        "saveUserTemplate",
+                        "EmailTemplateService::typeForUser",
+                        "Auth::user",
+                        "EmailContent::cleanForAudit",
+                        "log",
                         "APIResponse::success",
                         "APIResponse::error",
                         "getMessage"
@@ -6301,8 +7189,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 80,
-                    "end_line": 98,
+                    "line": 124,
+                    "end_line": 145,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6311,6 +7199,8 @@
                     "calls": [
                         "Auth::id",
                         "resetToDefault",
+                        "EmailTemplateService::typeForUser",
+                        "Auth::user",
                         "APIResponse::success",
                         "APIResponse::error",
                         "getMessage"
@@ -6961,6 +7851,55 @@
                     "name": "messages",
                     "line": 34,
                     "end_line": 39,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
+            "name": "DistributorEnquiryFormRequest",
+            "fqcn": "App\\Http\\Requests\\DistributorEnquiryFormRequest",
+            "kind": "class",
+            "file": "app/Http/Requests/DistributorEnquiryFormRequest.php",
+            "line": 7,
+            "end_line": 37,
+            "extends": "FormRequest",
+            "implements": [],
+            "traits": [],
+            "doc": "",
+            "methods": [
+                {
+                    "name": "authorize",
+                    "line": 9,
+                    "end_line": 12,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "rules",
+                    "line": 14,
+                    "end_line": 29,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "messages",
+                    "line": 31,
+                    "end_line": 36,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7713,8 +8652,8 @@
             "fqcn": "App\\Http\\Requests\\UpdateUserEmailTemplateRequest",
             "kind": "class",
             "file": "app/Http/Requests/UpdateUserEmailTemplateRequest.php",
-            "line": 10,
-            "end_line": 120,
+            "line": 11,
+            "end_line": 129,
             "extends": "FormRequest",
             "implements": [],
             "traits": [],
@@ -7722,8 +8661,8 @@
             "methods": [
                 {
                     "name": "authorize",
-                    "line": 15,
-                    "end_line": 18,
+                    "line": 16,
+                    "end_line": 19,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7733,8 +8672,8 @@
                 },
                 {
                     "name": "rules",
-                    "line": 23,
-                    "end_line": 42,
+                    "line": 24,
+                    "end_line": 46,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7746,8 +8685,8 @@
                 },
                 {
                     "name": "messages",
-                    "line": 47,
-                    "end_line": 55,
+                    "line": 51,
+                    "end_line": 59,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -7757,8 +8696,8 @@
                 },
                 {
                     "name": "withValidator",
-                    "line": 60,
-                    "end_line": 103,
+                    "line": 64,
+                    "end_line": 107,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -7779,16 +8718,17 @@
                 },
                 {
                     "name": "prepareForValidation",
-                    "line": 108,
-                    "end_line": 119,
+                    "line": 112,
+                    "end_line": 128,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
                     "returns": "void",
                     "doc": "Prepare data for validation.",
                     "calls": [
-                        "input",
-                        "merge"
+                        "merge",
+                        "EmailTemplateService::typeForUser",
+                        "user"
                     ]
                 }
             ],
@@ -7981,8 +8921,8 @@
             "fqcn": "App\\Jobs\\SendTestInvitationEmailsJob",
             "kind": "class",
             "file": "app/Jobs/SendTestInvitationEmailsJob.php",
-            "line": 35,
-            "end_line": 457,
+            "line": 49,
+            "end_line": 719,
             "extends": "",
             "implements": [
                 "ShouldQueue"
@@ -7997,8 +8937,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 63,
-                    "end_line": 68,
+                    "line": 113,
+                    "end_line": 118,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8012,8 +8952,8 @@
                 },
                 {
                     "name": "handle",
-                    "line": 70,
-                    "end_line": 97,
+                    "line": 120,
+                    "end_line": 147,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8029,8 +8969,8 @@
                 },
                 {
                     "name": "sendBatch",
-                    "line": 99,
-                    "end_line": 203,
+                    "line": 149,
+                    "end_line": 316,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8040,6 +8980,8 @@
                     "doc": "",
                     "calls": [
                         "pastDeadline",
+                        "hostIsUnreachable",
+                        "Log::warning",
                         "capMessagesPerConnection",
                         "get",
                         "where",
@@ -8051,15 +8993,16 @@
                         "release",
                         "markFailed",
                         "sendOne",
-                        "Log::warning",
+                        "standDown",
+                        "Log::error",
                         "count",
                         "Log::info"
                     ]
                 },
                 {
                     "name": "pastDeadline",
-                    "line": 208,
-                    "end_line": 211,
+                    "line": 321,
+                    "end_line": 324,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -8069,8 +9012,8 @@
                 },
                 {
                     "name": "claim",
-                    "line": 224,
-                    "end_line": 234,
+                    "line": 337,
+                    "end_line": 347,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8087,8 +9030,8 @@
                 },
                 {
                     "name": "release",
-                    "line": 244,
-                    "end_line": 249,
+                    "line": 357,
+                    "end_line": 362,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8105,31 +9048,94 @@
                 },
                 {
                     "name": "sendOne",
-                    "line": 256,
-                    "end_line": 309,
+                    "line": 372,
+                    "end_line": 456,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "TestInvitationMailer $mailer",
                         "TestInvitation $invitation"
                     ],
-                    "returns": "bool",
+                    "returns": "string",
                     "doc": "Send one invitation, retrying transient SMTP failures.",
                     "calls": [
                         "send",
+                        "isConnectionFailure",
                         "isTransient",
                         "Log::warning",
                         "getMessage",
                         "resetConnection",
+                        "pause",
                         "Log::error",
                         "markFailed",
                         "recordSent"
                     ]
                 },
                 {
+                    "name": "isConnectionFailure",
+                    "line": 479,
+                    "end_line": 504,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Throwable $e"
+                    ],
+                    "returns": "bool",
+                    "doc": "Did this failure happen to the connection rather than to the address?",
+                    "calls": [
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "pause",
+                    "line": 512,
+                    "end_line": 527,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "int $seconds"
+                    ],
+                    "returns": "void",
+                    "doc": "Sleep, but never past the request's time budget.",
+                    "calls": []
+                },
+                {
+                    "name": "standDown",
+                    "line": 530,
+                    "end_line": 533,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Declare the SMTP host out of service for the next stand-down window.",
+                    "calls": []
+                },
+                {
+                    "name": "hostIsUnreachable",
+                    "line": 535,
+                    "end_line": 548,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "resetHostStandDown",
+                    "line": 558,
+                    "end_line": 561,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Cancel the stand-down.",
+                    "calls": []
+                },
+                {
                     "name": "recordSent",
-                    "line": 319,
-                    "end_line": 344,
+                    "line": 571,
+                    "end_line": 596,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8145,8 +9151,8 @@
                 },
                 {
                     "name": "isTransient",
-                    "line": 355,
-                    "end_line": 364,
+                    "line": 607,
+                    "end_line": 616,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8160,8 +9166,8 @@
                 },
                 {
                     "name": "capMessagesPerConnection",
-                    "line": 372,
-                    "end_line": 382,
+                    "line": 624,
+                    "end_line": 634,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -8175,8 +9181,8 @@
                 },
                 {
                     "name": "resetConnection",
-                    "line": 384,
-                    "end_line": 395,
+                    "line": 636,
+                    "end_line": 647,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -8190,8 +9196,8 @@
                 },
                 {
                     "name": "markFailed",
-                    "line": 414,
-                    "end_line": 433,
+                    "line": 666,
+                    "end_line": 685,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8209,23 +9215,21 @@
                 },
                 {
                     "name": "failed",
-                    "line": 439,
-                    "end_line": 456,
+                    "line": 704,
+                    "end_line": 718,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "Throwable $e"
                     ],
                     "returns": "void",
-                    "doc": "Every retry is exhausted — leave the batch's remaining rows failed and",
+                    "doc": "The queue gave up on this batch: hand every row back, do not write it off.",
                     "calls": [
                         "Log::error",
                         "getMessage",
-                        "each",
-                        "get",
-                        "whereIn",
-                        "TestInvitation::whereIn",
-                        "markFailed"
+                        "update",
+                        "where",
+                        "TestInvitation::whereIn"
                     ]
                 }
             ],
@@ -8233,12 +9237,124 @@
                 {
                     "name": "BATCH_SIZE",
                     "value": "25",
-                    "line": 40
+                    "line": 54
                 },
                 {
                     "name": "MAX_ATTEMPTS_PER_EMAIL",
                     "value": "3",
-                    "line": 43
+                    "line": 57
+                },
+                {
+                    "name": "MAX_CONSECUTIVE_CONNECTION_FAILURES",
+                    "value": "3",
+                    "line": 65
+                },
+                {
+                    "name": "HOST_STANDDOWN_SECONDS",
+                    "value": "60",
+                    "line": 75
+                },
+                {
+                    "name": "RESULT_SENT",
+                    "value": "'sent'",
+                    "line": 78
+                },
+                {
+                    "name": "RESULT_FAILED",
+                    "value": "'failed'",
+                    "line": 79
+                },
+                {
+                    "name": "RESULT_DEFERRED",
+                    "value": "'deferred'",
+                    "line": 80
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "SweepPendingInvitationsJob",
+            "fqcn": "App\\Jobs\\SweepPendingInvitationsJob",
+            "kind": "class",
+            "file": "app/Jobs/SweepPendingInvitationsJob.php",
+            "line": 50,
+            "end_line": 144,
+            "extends": "",
+            "implements": [
+                "ShouldQueue"
+            ],
+            "traits": [
+                "Dispatchable",
+                "InteractsWithQueue",
+                "Queueable",
+                "SerializesModels"
+            ],
+            "doc": "Delivers invitations that an earlier send left behind, using ordinary web",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 63,
+                    "end_line": 78,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "sweep",
+                        "Log::error",
+                        "getMessage"
+                    ]
+                },
+                {
+                    "name": "sweep",
+                    "line": 80,
+                    "end_line": 129,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "TestInvitationMailer $mailer"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "get",
+                        "Cache::lock",
+                        "limit",
+                        "orderBy",
+                        "TestInvitation::awaitingDelivery",
+                        "isEmpty",
+                        "filter",
+                        "groupBy",
+                        "handle",
+                        "all",
+                        "pluck",
+                        "Log::info",
+                        "count"
+                    ]
+                },
+                {
+                    "name": "clearThrottle",
+                    "line": 137,
+                    "end_line": 143,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Drop the throttle so the next request sweeps.",
+                    "calls": [
+                        "forceRelease",
+                        "Cache::lock"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "LOCK_KEY",
+                    "value": "'invitations:sweep'",
+                    "line": 61
                 }
             ],
             "relations": []
@@ -8503,7 +9619,7 @@
             "kind": "class",
             "file": "app/Models/AuditLog.php",
             "line": 8,
-            "end_line": 116,
+            "end_line": 122,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -8539,7 +9655,7 @@
                 {
                     "name": "toDetailArray",
                     "line": 78,
-                    "end_line": 87,
+                    "end_line": 93,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8547,13 +9663,14 @@
                     "doc": "Same as toListArray() plus the detail-only fields the drawer needs.",
                     "calls": [
                         "toListArray",
-                        "personArray"
+                        "personArray",
+                        "getAttribute"
                     ]
                 },
                 {
                     "name": "personArray",
-                    "line": 89,
-                    "end_line": 115,
+                    "line": 95,
+                    "end_line": 121,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8761,7 +9878,7 @@
             "kind": "class",
             "file": "app/Models/Credits.php",
             "line": 13,
-            "end_line": 543,
+            "end_line": 561,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -8771,9 +9888,22 @@
             "doc": "",
             "methods": [
                 {
+                    "name": "sourceLabel",
+                    "line": 44,
+                    "end_line": 53,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?int $source"
+                    ],
+                    "returns": "string",
+                    "doc": "Human-readable label for the audit trail's \"Type\" field -- there is no",
+                    "calls": []
+                },
+                {
                     "name": "user",
-                    "line": 40,
-                    "end_line": 43,
+                    "line": 58,
+                    "end_line": 61,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8785,8 +9915,8 @@
                 },
                 {
                     "name": "scopeActive",
-                    "line": 55,
-                    "end_line": 64,
+                    "line": 73,
+                    "end_line": 82,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8802,8 +9932,8 @@
                 },
                 {
                     "name": "getTotalUserCredit",
-                    "line": 69,
-                    "end_line": 96,
+                    "line": 87,
+                    "end_line": 114,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8821,8 +9951,8 @@
                 },
                 {
                     "name": "addCreditsToUser",
-                    "line": 101,
-                    "end_line": 113,
+                    "line": 119,
+                    "end_line": 131,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8838,8 +9968,8 @@
                 },
                 {
                     "name": "transactions",
-                    "line": 118,
-                    "end_line": 121,
+                    "line": 136,
+                    "end_line": 139,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8851,8 +9981,8 @@
                 },
                 {
                     "name": "getAvailableCredits",
-                    "line": 127,
-                    "end_line": 162,
+                    "line": 145,
+                    "end_line": 180,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8870,8 +10000,8 @@
                 },
                 {
                     "name": "getGrantAllocation",
-                    "line": 180,
-                    "end_line": 237,
+                    "line": 198,
+                    "end_line": 255,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8892,8 +10022,8 @@
                 },
                 {
                     "name": "getUnusedCreditsForGrant",
-                    "line": 242,
-                    "end_line": 245,
+                    "line": 260,
+                    "end_line": 263,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8907,8 +10037,8 @@
                 },
                 {
                     "name": "traceConsumedOrigin",
-                    "line": 266,
-                    "end_line": 363,
+                    "line": 284,
+                    "end_line": 381,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8935,8 +10065,8 @@
                 },
                 {
                     "name": "resolveOriginSource",
-                    "line": 371,
-                    "end_line": 378,
+                    "line": 389,
+                    "end_line": 396,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -8948,8 +10078,8 @@
                 },
                 {
                     "name": "revokeGrant",
-                    "line": 394,
-                    "end_line": 465,
+                    "line": 412,
+                    "end_line": 483,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -8972,8 +10102,8 @@
                 },
                 {
                     "name": "hasExpired",
-                    "line": 470,
-                    "end_line": 475,
+                    "line": 488,
+                    "end_line": 493,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8987,8 +10117,8 @@
                 },
                 {
                     "name": "countsTowardBalance",
-                    "line": 498,
-                    "end_line": 506,
+                    "line": 516,
+                    "end_line": 524,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9002,8 +10132,8 @@
                 },
                 {
                     "name": "settleNegativeBalance",
-                    "line": 521,
-                    "end_line": 542,
+                    "line": 539,
+                    "end_line": 560,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -9051,13 +10181,13 @@
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 40
+                    "line": 58
                 },
                 {
                     "method": "transactions",
                     "type": "hasOne",
                     "target": "Transaction",
-                    "line": 118
+                    "line": 136
                 }
             ]
         },
@@ -11175,7 +12305,7 @@
             "kind": "class",
             "file": "app/Models/TestInvitation.php",
             "line": 8,
-            "end_line": 83,
+            "end_line": 108,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -11210,9 +12340,26 @@
                     ]
                 },
                 {
+                    "name": "scopeAwaitingDelivery",
+                    "line": 85,
+                    "end_line": 91,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "$query",
+                        "int $olderThanMinutes"
+                    ],
+                    "returns": "",
+                    "doc": "Rows that were saved and charged for but never delivered.",
+                    "calls": [
+                        "where",
+                        "subMinutes"
+                    ]
+                },
+                {
                     "name": "isExpired",
-                    "line": 71,
-                    "end_line": 74,
+                    "line": 96,
+                    "end_line": 99,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -11224,8 +12371,8 @@
                 },
                 {
                     "name": "isValid",
-                    "line": 79,
-                    "end_line": 82,
+                    "line": 104,
+                    "end_line": 107,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12853,8 +14000,8 @@
             "fqcn": "App\\Services\\Audit\\AuditEventCatalog",
             "kind": "class",
             "file": "app/Services/Audit/AuditEventCatalog.php",
-            "line": 63,
-            "end_line": 397,
+            "line": 65,
+            "end_line": 467,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -12862,8 +14009,8 @@
             "methods": [
                 {
                     "name": "get",
-                    "line": 389,
-                    "end_line": 396,
+                    "line": 416,
+                    "end_line": 423,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -12872,13 +14019,41 @@
                     "returns": "array",
                     "doc": "",
                     "calls": []
+                },
+                {
+                    "name": "accountEventKey",
+                    "line": 435,
+                    "end_line": 444,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "int $usertype",
+                        "string $action"
+                    ],
+                    "returns": "string",
+                    "doc": "accounts_users has a separate key per target type (user/super_admin/organization) for",
+                    "calls": []
+                },
+                {
+                    "name": "creditEventKey",
+                    "line": 455,
+                    "end_line": 466,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "int $usertype",
+                        "string $action"
+                    ],
+                    "returns": "string",
+                    "doc": "credits_licensing has the same per-target-type key shape as accounts_users, but the",
+                    "calls": []
                 }
             ],
             "constants": [
                 {
                     "name": "EVENTS",
                     "value": "[…]",
-                    "line": 65
+                    "line": 67
                 }
             ],
             "relations": []
@@ -12927,7 +14102,7 @@
             "kind": "class",
             "file": "app/Services/Audit/AuditService.php",
             "line": 23,
-            "end_line": 349,
+            "end_line": 453,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -12935,8 +14110,8 @@
             "methods": [
                 {
                     "name": "log",
-                    "line": 56,
-                    "end_line": 128,
+                    "line": 84,
+                    "end_line": 162,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12969,8 +14144,8 @@
                 },
                 {
                     "name": "personSnapshot",
-                    "line": 133,
-                    "end_line": 146,
+                    "line": 167,
+                    "end_line": 180,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12984,8 +14159,8 @@
                 },
                 {
                     "name": "roleFor",
-                    "line": 155,
-                    "end_line": 163,
+                    "line": 189,
+                    "end_line": 197,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -12997,8 +14172,8 @@
                 },
                 {
                     "name": "lookupCountry",
-                    "line": 165,
-                    "end_line": 187,
+                    "line": 199,
+                    "end_line": 221,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13012,8 +14187,8 @@
                 },
                 {
                     "name": "parseBrowser",
-                    "line": 189,
-                    "end_line": 205,
+                    "line": 223,
+                    "end_line": 239,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13025,8 +14200,8 @@
                 },
                 {
                     "name": "sessionKeyForToken",
-                    "line": 228,
-                    "end_line": 231,
+                    "line": 262,
+                    "end_line": 265,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13038,8 +14213,8 @@
                 },
                 {
                     "name": "sessionKey",
-                    "line": 233,
-                    "end_line": 264,
+                    "line": 267,
+                    "end_line": 298,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13058,40 +14233,46 @@
                 },
                 {
                     "name": "maskDetails",
-                    "line": 269,
-                    "end_line": 280,
+                    "line": 306,
+                    "end_line": 319,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "array $details"
+                        "array $details",
+                        "bool $maskPatientData = true"
                     ],
                     "returns": "array",
-                    "doc": "",
+                    "doc": "PHI/email/date content is shown in full. Defaults to true",
                     "calls": [
-                        "isDenylistedKey",
-                        "maskValue"
+                        "isSecretKey",
+                        "isPhiKey",
+                        "maskValue",
+                        "isDateAllowlistedKey"
                     ]
                 },
                 {
                     "name": "maskChanges",
-                    "line": 285,
-                    "end_line": 296,
+                    "line": 325,
+                    "end_line": 337,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "array $changes"
+                        "array $changes",
+                        "bool $maskPatientData = true"
                     ],
                     "returns": "array",
                     "doc": "",
                     "calls": [
-                        "isDenylistedKey",
+                        "isSecretKey",
+                        "isPhiKey",
+                        "isDateAllowlistedKey",
                         "maskValue"
                     ]
                 },
                 {
                     "name": "isDenylistedKey",
-                    "line": 298,
-                    "end_line": 309,
+                    "line": 339,
+                    "end_line": 342,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13099,31 +14280,94 @@
                     ],
                     "returns": "bool",
                     "doc": "",
+                    "calls": [
+                        "keyMatches"
+                    ]
+                },
+                {
+                    "name": "isSecretKey",
+                    "line": 347,
+                    "end_line": 350,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $key"
+                    ],
+                    "returns": "bool",
+                    "doc": "Credentials — redacted for every event, patient or not.",
+                    "calls": [
+                        "keyMatches"
+                    ]
+                },
+                {
+                    "name": "isPhiKey",
+                    "line": 355,
+                    "end_line": 358,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $key"
+                    ],
+                    "returns": "bool",
+                    "doc": "Patient PHI/PII — redacted only on patient-context rows (see log()).",
+                    "calls": [
+                        "keyMatches"
+                    ]
+                },
+                {
+                    "name": "keyMatches",
+                    "line": 363,
+                    "end_line": 374,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $key",
+                        "array $terms"
+                    ],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "isDateAllowlistedKey",
+                    "line": 380,
+                    "end_line": 385,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $key"
+                    ],
+                    "returns": "bool",
+                    "doc": "Exact (not substring) match against DATE_ALLOWLIST — a new date-shaped field",
                     "calls": []
                 },
                 {
                     "name": "maskValue",
-                    "line": 317,
-                    "end_line": 332,
+                    "line": 396,
+                    "end_line": 432,
                     "visibility": "private",
                     "static": false,
                     "params": [
-                        "mixed $value"
+                        "mixed $value",
+                        "bool $isDateAllowlisted = false",
+                        "bool $maskPatientData = true"
                     ],
                     "returns": "mixed",
                     "doc": "Content-level safety net, independent of the key-name denylist above: a value that",
                     "calls": [
-                        "maskValue"
+                        "maskValue",
+                        "maskFreeText"
                     ]
                 },
                 {
                     "name": "maskFreeText",
-                    "line": 341,
-                    "end_line": 348,
+                    "line": 441,
+                    "end_line": 452,
                     "visibility": "private",
                     "static": false,
                     "params": [
-                        "string $text"
+                        "string $text",
+                        "bool $maskPatientData = true"
                     ],
                     "returns": "string",
                     "doc": "Same content-level intent as maskValue(), but for a free-text sentence rather",
@@ -13132,9 +14376,24 @@
             ],
             "constants": [
                 {
+                    "name": "SECRET_DENYLIST",
+                    "value": "[…]",
+                    "line": 31
+                },
+                {
+                    "name": "PHI_DENYLIST",
+                    "value": "[…]",
+                    "line": 41
+                },
+                {
                     "name": "DENYLIST",
                     "value": "[…]",
-                    "line": 34
+                    "line": 50
+                },
+                {
+                    "name": "DATE_ALLOWLIST",
+                    "value": "[…]",
+                    "line": 63
                 }
             ],
             "relations": []
@@ -13571,8 +14830,8 @@
             "fqcn": "App\\Services\\EmailTemplateService",
             "kind": "class",
             "file": "app/Services/EmailTemplateService.php",
-            "line": 10,
-            "end_line": 145,
+            "line": 11,
+            "end_line": 169,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13580,8 +14839,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 12,
-                    "end_line": 15,
+                    "line": 13,
+                    "end_line": 16,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13592,9 +14851,22 @@
                     "calls": []
                 },
                 {
+                    "name": "typeForUser",
+                    "line": 34,
+                    "end_line": 39,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?User $user"
+                    ],
+                    "returns": "string",
+                    "doc": "Which template type belongs to this account.",
+                    "calls": []
+                },
+                {
                     "name": "getTemplateForUser",
-                    "line": 22,
-                    "end_line": 69,
+                    "line": 46,
+                    "end_line": 93,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13612,8 +14884,8 @@
                 },
                 {
                     "name": "saveUserTemplate",
-                    "line": 74,
-                    "end_line": 109,
+                    "line": 98,
+                    "end_line": 133,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13631,8 +14903,8 @@
                 },
                 {
                     "name": "resetToDefault",
-                    "line": 114,
-                    "end_line": 136,
+                    "line": 138,
+                    "end_line": 160,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13651,8 +14923,8 @@
                 },
                 {
                     "name": "validatePlaceholder",
-                    "line": 141,
-                    "end_line": 144,
+                    "line": 165,
+                    "end_line": 168,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13673,7 +14945,7 @@
             "kind": "class",
             "file": "app/Services/HubSpotService.php",
             "line": 12,
-            "end_line": 317,
+            "end_line": 350,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13692,15 +14964,17 @@
                 },
                 {
                     "name": "submitEnquiry",
-                    "line": 53,
-                    "end_line": 57,
+                    "line": 61,
+                    "end_line": 65,
                     "visibility": "public",
                     "static": false,
                     "params": [
-                        "array $data"
+                        "array $data",
+                        "string $subjectPrefix = 'Enquiry'",
+                        "bool $allowUpdatingExistingContact = true"
                     ],
                     "returns": "void",
-                    "doc": "",
+                    "doc": "$allowUpdatingExistingContact must be false for any caller that cannot prove the",
                     "calls": [
                         "upsertContact",
                         "createTicket"
@@ -13708,8 +14982,8 @@
                 },
                 {
                     "name": "http",
-                    "line": 66,
-                    "end_line": 72,
+                    "line": 74,
+                    "end_line": 80,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -13721,12 +14995,13 @@
                 },
                 {
                     "name": "upsertContact",
-                    "line": 78,
-                    "end_line": 148,
+                    "line": 86,
+                    "end_line": 163,
                     "visibility": "private",
                     "static": false,
                     "params": [
-                        "array $data"
+                        "array $data",
+                        "bool $allowUpdatingExistingContact"
                     ],
                     "returns": "string",
                     "doc": "Find contact by email and update, or create a new one.",
@@ -13743,13 +15018,14 @@
                 },
                 {
                     "name": "createTicket",
-                    "line": 154,
-                    "end_line": 208,
+                    "line": 169,
+                    "end_line": 241,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "array $data",
-                        "string $contactId"
+                        "string $contactId",
+                        "string $subjectPrefix"
                     ],
                     "returns": "void",
                     "doc": "Create a ticket with the enquiry and associate it to the contact inline.",
@@ -13768,8 +15044,8 @@
                 },
                 {
                     "name": "postTicket",
-                    "line": 213,
-                    "end_line": 225,
+                    "line": 246,
+                    "end_line": 258,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13785,8 +15061,8 @@
                 },
                 {
                     "name": "sourceUnsupportedKey",
-                    "line": 232,
-                    "end_line": 235,
+                    "line": 265,
+                    "end_line": 268,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -13796,8 +15072,8 @@
                 },
                 {
                     "name": "isSourcePropertyRejection",
-                    "line": 243,
-                    "end_line": 250,
+                    "line": 276,
+                    "end_line": 283,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13812,8 +15088,8 @@
                 },
                 {
                     "name": "rejectedPropertyNames",
-                    "line": 263,
-                    "end_line": 281,
+                    "line": 296,
+                    "end_line": 314,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13829,8 +15105,8 @@
                 },
                 {
                     "name": "propertyNamesIn",
-                    "line": 289,
-                    "end_line": 302,
+                    "line": 322,
+                    "end_line": 335,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13842,8 +15118,8 @@
                 },
                 {
                     "name": "embeddedJsonArray",
-                    "line": 308,
-                    "end_line": 316,
+                    "line": 341,
+                    "end_line": 349,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -15304,8 +16580,8 @@
             "fqcn": "App\\Services\\PaymentProviders\\StripeProvider",
             "kind": "class",
             "file": "app/Services/PaymentProviders/StripeProvider.php",
-            "line": 14,
-            "end_line": 309,
+            "line": 17,
+            "end_line": 347,
             "extends": "BasePaymentProvider",
             "implements": [],
             "traits": [],
@@ -15313,8 +16589,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 20,
-                    "end_line": 33,
+                    "line": 25,
+                    "end_line": 38,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15329,8 +16605,8 @@
                 },
                 {
                     "name": "getSupportedMethods",
-                    "line": 35,
-                    "end_line": 48,
+                    "line": 40,
+                    "end_line": 53,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -15340,8 +16616,8 @@
                 },
                 {
                     "name": "createSetupIntent",
-                    "line": 50,
-                    "end_line": 76,
+                    "line": 55,
+                    "end_line": 81,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15359,8 +16635,8 @@
                 },
                 {
                     "name": "initializePayment",
-                    "line": 78,
-                    "end_line": 152,
+                    "line": 83,
+                    "end_line": 157,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15380,8 +16656,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 154,
-                    "end_line": 225,
+                    "line": 159,
+                    "end_line": 263,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15400,13 +16676,15 @@
                         "attachAndPersistPaymentMethod",
                         "createTransactionRecord",
                         "logPaymentActivity",
+                        "log",
+                        "StripeService::describePaymentMethod",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "handleWebhook",
-                    "line": 227,
-                    "end_line": 254,
+                    "line": 265,
+                    "end_line": 293,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15415,7 +16693,7 @@
                     "returns": "array",
                     "doc": "",
                     "calls": [
-                        "Stripe\\Webhook::constructEvent",
+                        "Webhook::constructEvent",
                         "header",
                         "logPaymentActivity",
                         "getMessage"
@@ -15423,8 +16701,8 @@
                 },
                 {
                     "name": "getOrCreateCustomer",
-                    "line": 256,
-                    "end_line": 259,
+                    "line": 295,
+                    "end_line": 298,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -15438,14 +16716,14 @@
                 },
                 {
                     "name": "attachAndPersistPaymentMethod",
-                    "line": 261,
-                    "end_line": 308,
+                    "line": 300,
+                    "end_line": 346,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "User $user",
                         "string $customerId",
-                        "Stripe\\PaymentMethod $paymentMethod"
+                        "PaymentMethod $paymentMethod"
                     ],
                     "returns": "void",
                     "doc": "",
@@ -15837,7 +17115,7 @@
             "kind": "class",
             "file": "app/Services/StripeService.php",
             "line": 14,
-            "end_line": 430,
+            "end_line": 452,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -15870,9 +17148,22 @@
                     "calls": []
                 },
                 {
+                    "name": "describePaymentMethod",
+                    "line": 70,
+                    "end_line": 85,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?PaymentMethod $paymentMethod"
+                    ],
+                    "returns": "?string",
+                    "doc": "Human-readable \"Brand •••• last4\" for the audit trail (AUDIT_TRAIL_BACKEND_CONTEXT.md",
+                    "calls": []
+                },
+                {
                     "name": "getStripeClient",
-                    "line": 69,
-                    "end_line": 72,
+                    "line": 91,
+                    "end_line": 94,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -15882,8 +17173,8 @@
                 },
                 {
                     "name": "createOrGetCustomer",
-                    "line": 77,
-                    "end_line": 175,
+                    "line": 99,
+                    "end_line": 197,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15905,8 +17196,8 @@
                 },
                 {
                     "name": "getCustomerPaymentMethods",
-                    "line": 181,
-                    "end_line": 212,
+                    "line": 203,
+                    "end_line": 234,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15923,8 +17214,8 @@
                 },
                 {
                     "name": "paymentMethodExists",
-                    "line": 218,
-                    "end_line": 241,
+                    "line": 240,
+                    "end_line": 263,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15942,8 +17233,8 @@
                 },
                 {
                     "name": "createStripePaymentIntent",
-                    "line": 246,
-                    "end_line": 284,
+                    "line": 268,
+                    "end_line": 306,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15964,8 +17255,8 @@
                 },
                 {
                     "name": "createACHPaymentIntent",
-                    "line": 289,
-                    "end_line": 312,
+                    "line": 311,
+                    "end_line": 334,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -15985,8 +17276,8 @@
                 },
                 {
                     "name": "createBankTransferTransaction",
-                    "line": 317,
-                    "end_line": 358,
+                    "line": 339,
+                    "end_line": 380,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16006,8 +17297,8 @@
                 },
                 {
                     "name": "getPaymentMethods",
-                    "line": 363,
-                    "end_line": 366,
+                    "line": 385,
+                    "end_line": 388,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16021,8 +17312,8 @@
                 },
                 {
                     "name": "setDefaultPaymentMethod",
-                    "line": 371,
-                    "end_line": 396,
+                    "line": 393,
+                    "end_line": 418,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16041,8 +17332,8 @@
                 },
                 {
                     "name": "removePaymentMethod",
-                    "line": 401,
-                    "end_line": 421,
+                    "line": 423,
+                    "end_line": 443,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16064,8 +17355,8 @@
                 },
                 {
                     "name": "attachPaymentMethod",
-                    "line": 423,
-                    "end_line": 429,
+                    "line": 445,
+                    "end_line": 451,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16298,7 +17589,7 @@
             "kind": "class",
             "file": "app/Services/TestExecutionService.php",
             "line": 16,
-            "end_line": 443,
+            "end_line": 466,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -16306,15 +17597,16 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 23,
-                    "end_line": 33,
+                    "line": 28,
+                    "end_line": 40,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "TestSectionTerminationService $terminationService",
                         "TestSectionProgressionService $progressionService",
                         "TestResultService $resultService",
-                        "SecureImageService $secureImageService"
+                        "SecureImageService $secureImageService",
+                        "AuditService $auditService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -16322,8 +17614,8 @@
                 },
                 {
                     "name": "submitAnswer",
-                    "line": 43,
-                    "end_line": 109,
+                    "line": 49,
+                    "end_line": 115,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16348,8 +17640,8 @@
                 },
                 {
                     "name": "finalizeTestIfCompleted",
-                    "line": 114,
-                    "end_line": 174,
+                    "line": 120,
+                    "end_line": 197,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16371,13 +17663,15 @@
                         "generateTestResult",
                         "markTestInvitationAsUsed",
                         "first",
-                        "fresh"
+                        "fresh",
+                        "log",
+                        "user"
                     ]
                 },
                 {
                     "name": "getSessionDetails",
-                    "line": 179,
-                    "end_line": 298,
+                    "line": 202,
+                    "end_line": 321,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16418,8 +17712,8 @@
                 },
                 {
                     "name": "getSectionPlatesWithProgress",
-                    "line": 304,
-                    "end_line": 376,
+                    "line": 327,
+                    "end_line": 399,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16449,8 +17743,8 @@
                 },
                 {
                     "name": "getPlateUrl",
-                    "line": 382,
-                    "end_line": 399,
+                    "line": 405,
+                    "end_line": 422,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -16468,8 +17762,8 @@
                 },
                 {
                     "name": "resolveCanonicalTestId",
-                    "line": 406,
-                    "end_line": 417,
+                    "line": 429,
+                    "end_line": 440,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -16485,8 +17779,8 @@
                 },
                 {
                     "name": "markTestInvitationAsUsed",
-                    "line": 419,
-                    "end_line": 442,
+                    "line": 442,
+                    "end_line": 465,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -16512,7 +17806,7 @@
             "kind": "class",
             "file": "app/Services/TestInvitationMailer.php",
             "line": 19,
-            "end_line": 99,
+            "end_line": 111,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -16534,7 +17828,7 @@
                 {
                     "name": "send",
                     "line": 29,
-                    "end_line": 98,
+                    "end_line": 110,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -17086,7 +18380,7 @@
             "kind": "class",
             "file": "app/Support/EmailContent.php",
             "line": 5,
-            "end_line": 231,
+            "end_line": 253,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -17138,9 +18432,22 @@
                     ]
                 },
                 {
+                    "name": "cleanForAudit",
+                    "line": 148,
+                    "end_line": 160,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "?string $html"
+                    ],
+                    "returns": "string",
+                    "doc": "Normalise an email-body HTML string for audit before/after comparison: decode",
+                    "calls": []
+                },
+                {
                     "name": "mapTextNodes",
-                    "line": 144,
-                    "end_line": 188,
+                    "line": 166,
+                    "end_line": 210,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -17153,8 +18460,8 @@
                 },
                 {
                     "name": "linkifyTextNode",
-                    "line": 190,
-                    "end_line": 221,
+                    "line": 212,
+                    "end_line": 243,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -17168,8 +18475,8 @@
                 },
                 {
                     "name": "escapeHref",
-                    "line": 227,
-                    "end_line": 230,
+                    "line": 249,
+                    "end_line": 252,
                     "visibility": "private",
                     "static": true,
                     "params": [
@@ -17710,7 +19017,7 @@
             "kind": "class",
             "file": "database/seeders/AuditLogSeeder.php",
             "line": 28,
-            "end_line": 228,
+            "end_line": 231,
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -17719,7 +19026,7 @@
                 {
                     "name": "scenarios",
                     "line": 54,
-                    "end_line": 144,
+                    "end_line": 147,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -17729,8 +19036,8 @@
                 },
                 {
                     "name": "run",
-                    "line": 146,
-                    "end_line": 179,
+                    "line": 149,
+                    "end_line": 182,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -17746,8 +19053,8 @@
                 },
                 {
                     "name": "offsetFor",
-                    "line": 181,
-                    "end_line": 190,
+                    "line": 184,
+                    "end_line": 193,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -17764,8 +19071,8 @@
                 },
                 {
                     "name": "row",
-                    "line": 192,
-                    "end_line": 227,
+                    "line": 195,
+                    "end_line": 230,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -18282,7 +19589,7 @@
             "kind": "class",
             "file": "database/seeders/OrganizationsSeeder.php",
             "line": 11,
-            "end_line": 382,
+            "end_line": 383,
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -18291,7 +19598,7 @@
                 {
                     "name": "run",
                     "line": 20,
-                    "end_line": 96,
+                    "end_line": 97,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18308,8 +19615,8 @@
                 },
                 {
                     "name": "getOrganizationData",
-                    "line": 103,
-                    "end_line": 381,
+                    "line": 104,
+                    "end_line": 382,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -23790,6 +25097,18 @@
             "source": "artisan"
         },
         {
+            "method": "POST",
+            "uri": "api/distributor-enquiry",
+            "action": "App\\Http\\Controllers\\DistributorController@submit",
+            "middleware": [
+                "api",
+                "throttle:10,1"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
             "method": "GET|HEAD",
             "uri": "api/dropdown/allowed-tests",
             "action": "App\\Http\\Controllers\\DropdownValuesController@activeAllowedTests",
@@ -25516,19 +26835,19 @@
             "kind": "dispatch",
             "event": "UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 367
+            "line": 402
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 382
+            "line": 428
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 443
+            "line": 502
         },
         {
             "kind": "dispatch",
@@ -25568,15 +26887,15 @@
             "kind": "dispatch",
             "event": "TestSectionCompleted",
             "file": "app/Services/TestExecutionService.php",
-            "line": 97
+            "line": 103
         },
         {
             "kind": "dispatch",
             "event": "TestCompleted",
             "file": "app/Services/TestExecutionService.php",
-            "line": 172
+            "line": 178
         }
     ],
-    "migration_count": 127,
+    "migration_count": 128,
     "routes_source": "artisan route:list --json"
 }

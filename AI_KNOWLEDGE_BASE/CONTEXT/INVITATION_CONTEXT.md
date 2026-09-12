@@ -13,6 +13,7 @@
 | `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
 | `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email — owns all three assembly passes (`ws-404`, extracted from the controller) |
 | `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response (`ws-404`) |
+| `app/Jobs/SweepPendingInvitationsJob.php` | ⭐ Re-sends rows stranded at `pending`, using web traffic as the clock (`ws-404`) |
 | `app/Support/EmailTemplatePlaceholders.php` | ⭐ The one placeholder vocabulary; both save paths validate against it (`ws-404`) |
 | `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'` (`ws-404`) |
 | `app/Console/Commands/CheckEmailTemplatePlaceholders.php` | Scans stored templates for placeholders that will not render (`ws-404`) |
@@ -49,9 +50,25 @@ POST api/test-invitations/send   ← auth:sanctum + throttle:bulk-invitations (5
   │    ├─ bulk insert rows: token, code, expires_at = now+7d, email_status='pending'
   │    ├─ CreditConsume::consume(user, n, 'test_invitation', [ids])
   │    └─ PatientTest::increment('resend_count')  when unique_test_id given
+  ├─ audit: test.invitation_sent | _sent_bulk | _resent   ← develop, only when created > 0
   ├─ 202 Accepted  ← returns here, in well under a second
   └─ AFTER the response: SendTestInvitationEmailsJob × ceil(n/25) mails the batches
+                         then SweepPendingInvitationsJob (throttled, one batch)
 ```
+
+⚠️ **The three audit keys do not mean what the catalog says.** `AuditEventCatalog` titles
+`test.invitation_sent_bulk` "Test invitation sent via CSV (bulk)", but the controller picks it purely on
+`$createdCount > 1` — typing three addresses by hand emits the "via CSV" event. `test.invitation_resent`
+wins over both whenever `unique_test_id` is present, whatever the count. Do not read CSV usage out of
+these rows.
+
+⭐ **Dispatch order in `sendInvitations()` is deliberate and load-bearing.** All dispatching happens
+*last*, after every write. `afterResponse()` callbacks run once the response is sent whatever its
+status, so anything that threw after the first dispatch would return a 500 while the mail still went
+out — inviting a retry that sends the whole list twice and charges twice. The single `$deadline`
+(`mail.invitation_send_budget`, default 240s) is computed once for the **whole** send, not per chunk:
+the 20 batches a 500-address list produces all run back to back in the same FPM child, so a per-chunk
+budget would multiply by 20.
 
 **The response is now `202`, not `200`, and the payload changed** (`ws-404`). Delivery no longer happens
 inside the request, so it cannot be reported per address:
@@ -128,6 +145,22 @@ fallback, and `2026_08_29_000001_update_default_test_email_subject` for rows alr
 migration is match-on-old-value and scoped to `type = 'test_link'`, so an admin who retitled the subject
 keeps their wording; `down()` reverses on the new value only. Same shape as `ws-373`'s three
 ([AUTH_CONTEXT](AUTH_CONTEXT.md)) — copy it for any future copy change.
+
+☠️ **`test_email_templates` holds *two* admin-default rows, so a type-scoped data migration only ever
+fixes one of them.** `ws-400`'s migration was scoped to `type = 'test_link'`, which left the
+`org_test_link` row on the old `Welcome to Testing Color Vision` wording for six weeks — the two
+templates a Super Admin edits side by side under Settings > Default Test Email Templates had visibly
+different subjects. `ws-456` (2026-09-11) realigns it with
+`2026_09_11_000001_update_org_default_test_email_subject`, an exact copy of the `ws-400` migration with
+the type swapped, plus the matching `AdminSettingsSeeder` row. **Both defaults now carry
+`You have been invited to take a color vision test`.** When you change this copy again, decide
+explicitly whether the change is per-type or for both, and write one migration per row you mean to move.
+
+⚠️ **The `EmailTemplateService` fallback ignores `$type` for both subject and body.** It needed no edit
+on `ws-456` only because it already returned the `test_link` subject for every caller — so if the two
+defaults are ever given different wording again, an organization that falls through to the fallback (its
+admin default row missing) silently sends the *generic* subject. The fallback is a real send path, not
+dead code.
 
 ☠️ **`ws-373` and `ws-400` edit the same `return` block and will conflict on merge.** `ws-373` replaces
 the fallback **body** (bare token → button + copy-and-paste line); `ws-400` replaces the **subject** on the
@@ -211,8 +244,21 @@ pending ──────► sent      mail accepted by the SMTP server
 are handled in `InvitedPatientsTab.js`; a `failed` row shows "Send Failed — Credit Refunded" and offers
 no buttons, because both remediation endpoints 404 on a revoked row.
 
-A row stuck at `pending` means a send was interrupted. `php artisan invitations:send-pending` finishes
-it; nothing does so automatically.
+A row stuck at `pending` means a send was interrupted — the batch job leaves it there when it cannot
+reach the SMTP host.
+
+`SweepPendingInvitationsJob` (`ws-404`) now clears these without an operator. It is dispatched
+`->afterResponse()` from **`sendInvitations()` and `getUnregisteredInvitations()`** — opening the list
+that shows a stranded row is what clears it — and is throttled by an atomic cache lock
+(`invitations:sweep`, one run per `mail.invitation_sweep_interval`, default 600s), bounded to one batch
+with its own `mail.invitation_sweep_budget` (default 60s), and ignores rows younger than
+`mail.invitation_sweep_age_minutes` (default 15) so it cannot race a send still in progress.
+
+☠️ **It needs traffic — an idle deployment sweeps nothing.** `php artisan invitations:send-pending`
+remains the manual route. Its scheduled entry in `bootstrap/app.php` (`ws-404`, every ten minutes) does
+**not** fire: there is no cron and no `schedule:work` container. Both paths are safe to have at once —
+they select the same rows via `TestInvitation::awaitingDelivery()` and each row is claimed atomically,
+so an address is sent once. See [../JOBS.md](../JOBS.md).
 
 ### SMTP connection recycling (`ws-404`)
 
@@ -256,7 +302,33 @@ Body **and subject** are checked on both paths — the mailer substitutes into b
 
 ⭐ `known()` is deliberately wider than the editor's catalogue: `{{email}}` and `{{token}}` render but
 are not advertised, so a template already using one keeps saving. A test asserts `known()` stays in
-sync with the `$variables` map in `TestInvitationMailer::send()`.
+sync with the `$variables` map in `TestInvitationMailer::send()` — **for `test_link` only**
+(`EmailTemplatePlaceholderValidationTest::test_known_covers_everything_the_mailer_substitutes` passes
+that type explicitly). Nothing has ever checked the org vocabulary against a renderer, which is how the
+gap below went unnoticed.
+
+☠️☠️ **`org_test_link` has no renderer at all. Do not wire it into the send path.** Its four required
+placeholders — `{{patient_firstname}}`, `{{patient_lastname}}`, `{{organization_name}}`,
+`{{organization_email}}` — are substituted by **nothing**, in any of the four `Mail::` sites
+(`TestInvitationMailer`, `AuthController`, `TestResumeController`, `TestService`). `send()` therefore
+pins `TYPE_TEST_LINK` rather than calling `typeForUser()`, and that pin is load-bearing: swapping it for
+the derived type mails the literal text `{{patient_firstname}}` to the patient, and does so even for an
+organization with **no** custom template, because the seeded org admin default carries all four tokens.
+`send()` is not given patient context, so closing this means changing its signature and all three call
+sites (`TestInvitationController`, `SendTestInvitationEmailsJob`, `SendPendingInvitations`).
+
+Confirmed 2026-09-11 during `ws-456` review: there is **no product requirement for organizations to
+have their own template**, so the gap is not scheduled to close.
+`OrganizationEmailTemplateTypeTest::test_the_mailer_still_cannot_render_the_org_vocabulary` is a
+tripwire that fails if the org variables are ever added, pointing at the pin that is then safe to
+remove.
+
+⚠️ **Consequence worth knowing:** `ws-456` routes an organization's *editor* to `org_test_link` while
+the *send* path stays on `test_link`. An organization can therefore save a template under Settings >
+Email Configuration that no email will ever use — a silent no-op, not a crash. Any future fix is a
+product decision (drop the type, or give the mailer patient context), not a one-line type swap. **The
+data migration to move pre-`ws-456` misfiled rows into `org_test_link` was deliberately not written for
+this reason** — it would move data into a type nothing renders.
 
 ☠️ **The vocabulary is scoped by `type`, and anything that writes stored rows has to respect that** —
 a data migration bypasses both save paths and answers to neither. `{{email}}` / `{{token}}` are

@@ -43,7 +43,10 @@ What that buys and what it costs:
 `sendInvitations()` therefore does the dispatch as its **last statement**, after every fallible step.
 Keep it there.
 
-Anything left pending is recovered with `php artisan invitations:send-pending` ([JOBS.md](JOBS.md)).
+Anything left pending is recovered by `SweepPendingInvitationsJob`, dispatched `->afterResponse()` from
+the send and list endpoints and throttled to one run per interval — or by hand with
+`php artisan invitations:send-pending` ([JOBS.md](JOBS.md)). The scheduled entry for that command
+exists but does not fire; nothing runs the scheduler.
 Nothing runs that automatically.
 
 ## The LMS job
@@ -97,7 +100,9 @@ inside the password-set request.
 
 ## What is missing
 
-No `Schedule` — `routes/console.php` defines only the stock `inspire` command and `bootstrap/app.php`
-has no `->withSchedule(...)`. So there is **no** cleanup of expired sessions, invitations, resume
-tokens, or stale `personal_access_tokens`. Those tables grow without bound; the only expiry is checked
-at read time.
+`routes/console.php` defines only the stock `inspire` command. `bootstrap/app.php` does now have a
+`->withSchedule(...)` (`ws-404`), but it registers a single task — `invitations:send-pending` — and
+**nothing runs the scheduler**: no cron, no `schedule:work` container ([JOBS.md](JOBS.md)).
+
+So there is still **no** cleanup of expired sessions, invitations, resume tokens, or stale
+`personal_access_tokens`. Those tables grow without bound; the only expiry is checked at read time.

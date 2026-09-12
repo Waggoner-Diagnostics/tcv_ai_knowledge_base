@@ -473,6 +473,37 @@ address) but nginx does not rewrite the header, a client-sent `X-Forwarded-For` 
 `restricted_ips` blocklist. That is a *worse* position than today's single shared bucket. The written
 fix was held back on 2026-09-02 for exactly this reason: the nginx side was not being deployed.
 
+### Status 2026-09-12 — the Laravel half has landed, fail-closed
+
+`bootstrap/app.php` on `develop` now calls `trustProxies()`, but **only when `TRUSTED_PROXIES` is a
+non-empty comma-separated CIDR list**; the default is empty and the call is skipped entirely. So the
+half-shipped state above is *not* what got deployed — with the var unset, behaviour is byte-for-byte
+what it was, and `S-16` is unchanged in effect. The gate is what made it safe to merge ahead of nginx.
+
+☠️ **Do not set `TRUSTED_PROXIES` yet.** The nginx side does not currently satisfy the fix shape.
+`TCV-Frontend/nginx.conf:41-42` has:
+
+```nginx
+set_real_ip_from 0.0.0.0/0;      # ← trusts EVERY peer
+real_ip_header   X-Forwarded-For;
+```
+
+so nginx overwrites `$remote_addr` from a **client-supplied** `X-Forwarded-For`, and
+`proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for` (`:54`, `:63`) then appends that already
+forged value. A client sending `X-Forwarded-For: 1.2.3.4` reaches Laravel as `1.2.3.4, 1.2.3.4`. Trust
+the hop today and the attacker picks their own IP — precisely the "worse than neither" case.
+
+Two things must change before the var is set: narrow `set_real_ip_from` to the real upstream CIDR, and
+set `TRUSTED_PROXIES` to that same CIDR (never `*`).
+
+⭐ Note `proxy_set_header X-Real-IP $realip_remote_addr` — `$realip_remote_addr` is the peer address
+*before* the `real_ip` rewrite, so `X-Real-IP` is the one genuinely trustworthy header on this path
+today. Laravel's `trustProxies()` is configured for the `X_FORWARDED_*` set and does **not** read it.
+
+Also note: `TRUSTED_PROXIES` must be a real OS/container env var, not a `.env` line — `entrypoint.sh`
+runs `config:cache` on boot and the code reads `env()` (it must; `config()` is unavailable that early).
+See [CONFIGURATION.md](CONFIGURATION.md).
+
 If a `TRUSTED_PROXIES` env override is added, parse it as `trim(...) ?: <default>` rather than
 `env('TRUSTED_PROXIES', <default>)` — docker-compose substitutes an *empty string* for an unset
 variable, and `env()` returns that empty string instead of the default, leaving an empty proxy list
@@ -596,8 +627,17 @@ the one asserting the group 404s outside QA. Treat that test as load-bearing.
 2026-09-04 by the first `develop` regeneration since 2026-08-19. The five routes now sit inside
 `auth:sanctum`; the regenerated [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) reports **15 of 158**
 public endpoints, down from 20, and the scanner's `R-B00` fired only in the safe direction on every run
-of that branch. (That headline is now **15 of 161** after the Audit Trail routes landed — still the
-same 15.) The description below is kept for history.
+of that branch. (That headline is now **16 of 162** after the Audit Trail routes landed — see the note
+below for the one addition.) The description below is kept for history.
+
+⭐ **2026-09-12 — one new public endpoint, reviewed and accepted.** The `develop` merge added
+`POST api/distributor-enquiry` (`API-030`, `DistributorController@submit`), taking the public count
+15 → 16. It is public by intent — a marketing enquiry form on the unauthenticated site — and it is
+built defensively: `throttle:10,1`, a `DistributorEnquiryFormRequest` for validation, and it forwards
+to HubSpot with `allowUpdatingExistingContact: false`, so a caller cannot PATCH a stranger's contact
+record by claiming their email. Nothing persists locally (HubSpot is the system of record), so only a
+*failed* forward writes an audit row. No action needed; listed here so the count change is not read as
+a regression. Compare `ContactController`, which follows the same pattern.
 
 ---
 
@@ -665,7 +705,7 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 | `S-10` | Global IP middleware, uncached DB hit per request | low | `RestrictIpMiddleware` |
 | `S-11` | `revokeAccess()` leaves the S3 URL live | low | `SecureImageService` |
 | `S-12` | Trace/message leak outside production | low | `Exceptions\Handler` |
-| `S-16` | Proxy IP makes all rate limits one global bucket and `RestrictIpMiddleware` inert (fix written, **held back** — both halves must ship together) | **high** | `nginx.conf` · `bootstrap/app.php` |
+| `S-16` | Proxy IP makes all rate limits one global bucket and `RestrictIpMiddleware` inert. Laravel half **landed on `develop` 2026-09-12, fail-closed** (`trustProxies()` gated on `TRUSTED_PROXIES`, default empty ⇒ still inert). ☠️ Do not set the var until `nginx.conf`'s `set_real_ip_from 0.0.0.0/0` is narrowed | **high** | `nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 
 ---

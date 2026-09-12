@@ -10,7 +10,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | **Branches indexed** | `develop` · `develop` · `website-integration` — the two code repos are back on `develop`; `feat/ui-audit-trail` merged into both, so the audit-trail counts below are `develop` counts now. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)) |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `940238fd` (develop) · `TCV-Frontend` `6b6c5ae` (develop) · `TCV-Website` `208eed6` (website-integration) — generated **2026-09-09** |
-| **Backend scale** | 204 classes/interfaces/traits · 823 methods · 161 API endpoints · 53 tables · 127 migrations |
+| **Backend scale** | 209 classes/interfaces/traits · 882 methods · 162 API endpoints · 53 tables · 128 migrations |
 | **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -354,7 +354,7 @@ before writing code.
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 36 |
 | [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 25 FormRequest classes |
+| [REQUESTS.md](REQUESTS.md) | ✅ 26 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
@@ -378,7 +378,7 @@ before writing code.
 | Index | Rows |
 |---|---|
 | [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 161 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **15 public** (non-QA environment) |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **16 public** (non-QA environment) |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 204 |
 | [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 823 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |

@@ -1,6 +1,6 @@
 # Controllers
 
-**36 classes under `app/Http/Controllers/`** (including the base `Controller` and the 6 unused
+**38 classes under `app/Http/Controllers/`** (including the base `Controller` and the 6 unused
 `Auth/` scaffolding classes). Full list with line numbers:
 [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`CTRL-nnn`).
 

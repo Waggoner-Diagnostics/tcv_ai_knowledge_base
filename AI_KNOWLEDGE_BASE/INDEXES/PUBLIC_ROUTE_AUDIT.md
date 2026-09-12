@@ -4,7 +4,7 @@ Derived view: every `api/*` route reachable **with no token of any kind**. Auth 
 opt-in per route — a route added outside the `auth:sanctum` or `FlexibleAuthMiddleware` group is
 public by default. This list is the blast radius of that design; re-read it every release.
 
-**15 of 161 endpoints are public.**
+**16 of 162 endpoints are public.**
 
 Several are legitimately public (login and registration precede a token; the invitation and resume
 flows authenticate by emailed token *inside* the controller). The ones to scrutinise are those that
@@ -13,20 +13,21 @@ read or mutate money, credits, or another user's data.
 | ID | Method | URI | Action |
 |---|---|---|---|
 | `API-013` | GET|HEAD | `api/countries-with-states` | DropdownValuesController@getCountriesWithStates |
-| `API-036` | POST | `api/login` | AuthController@login |
-| `API-045` | POST | `api/organization/verify-signature` | OrganizationController@verifySignature |
-| `API-053` | POST | `api/password/forgot` | AuthController@sendResetLinkEmail |
-| `API-054` | POST | `api/password/reset` | AuthController@setOrResetPassword |
-| `API-055` | POST | `api/password/verify-setup-token` | AuthController@verifySetupToken |
-| `API-074` | POST | `api/register` | AuthController@register |
-| `API-079` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken |
-| `API-080` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink |
-| `API-081` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ |
-| `API-097` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus |
-| `API-098` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode |
-| `API-108` | POST | `api/test/resume` | TestResumeController@resume |
-| `API-158` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid |
-| `API-159` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken |
+| `API-030` | POST | `api/distributor-enquiry` | DistributorController@submit |
+| `API-037` | POST | `api/login` | AuthController@login |
+| `API-046` | POST | `api/organization/verify-signature` | OrganizationController@verifySignature |
+| `API-054` | POST | `api/password/forgot` | AuthController@sendResetLinkEmail |
+| `API-055` | POST | `api/password/reset` | AuthController@setOrResetPassword |
+| `API-056` | POST | `api/password/verify-setup-token` | AuthController@verifySetupToken |
+| `API-075` | POST | `api/register` | AuthController@register |
+| `API-080` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken |
+| `API-081` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink |
+| `API-082` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ |
+| `API-098` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus |
+| `API-099` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode |
+| `API-109` | POST | `api/test/resume` | TestResumeController@resume |
+| `API-159` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid |
+| `API-160` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken |
 
 ## Also public: `routes/web.php`
 
@@ -48,4 +49,4 @@ read or mutate money, credits, or another user's data.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-11. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._

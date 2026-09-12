@@ -121,12 +121,19 @@ inside `<style>`/`<script>`, and URLs sitting in an attribute. Adding a fifth se
 calling it too — see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) and
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
 
-### 5. Nothing is scheduled
+### 5. A schedule exists, but nothing runs it
 
-`routes/console.php` registers only the stock `inspire` command, and there is no
-`->withSchedule(...)` in `bootstrap/app.php`. `ProcessLmsDeliveryJob` is queued on the `database`
-driver and **no queue worker service exists in either compose file** — so unless a worker runs
-elsewhere, LMS deliveries sit in `jobs` unprocessed. See [QUEUES.md](QUEUES.md).
+`routes/console.php` registers only the stock `inspire` command. `bootstrap/app.php` does now carry a
+`->withSchedule(...)` (`ws-404`) with one task, `invitations:send-pending` every ten minutes — but the
+deployment has no cron and no `schedule:work` container, so `schedule:run` is never called and the task
+never fires. Registered ≠ running.
+
+`ProcessLmsDeliveryJob` is queued on the `database` driver and **no queue worker service exists in
+either compose file** — so unless a worker runs elsewhere, LMS deliveries sit in `jobs` unprocessed.
+
+The one recovery path that does work unattended is `SweepPendingInvitationsJob`, which is dispatched
+`->afterResponse()` from web requests and therefore needs no scheduler — at the cost of needing
+traffic. See [QUEUES.md](QUEUES.md) and [JOBS.md](JOBS.md).
 
 ---
 
