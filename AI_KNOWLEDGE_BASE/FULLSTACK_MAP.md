@@ -131,7 +131,7 @@ browser with a Bearer token.
 
 | Change | Backend | SPA | Website |
 |---|---|---|---|
-| Add / modify an endpoint | route in `routes/api.php` + controller/service | the slice or `apis/*` fn + consuming component | only if it is one of the four proxied routes |
+| Add / modify an endpoint | route in `routes/api.php` + controller/service | the slice or `apis/*` fn + consuming component | only if it is one of the five proxied routes |
 | Change a request/response shape | controller + `ApiResponse` | the thunk's payload + selectors | the proxy passes through — check the modal's field names |
 | Roles / `usertype` | `User` constants + policies | `constants/dataObjects.js` + `routeConfig.js` | — |
 | Auth / token lifetime | `config/sanctum.php` | nothing to change — but expect logouts | — |

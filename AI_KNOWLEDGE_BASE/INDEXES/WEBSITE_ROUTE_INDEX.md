@@ -1,6 +1,6 @@
 # Website Route Index (TCV-Website)
 
-**32 pages · 3 layouts · 4 server API routes** — Next.js App Router.
+**32 pages · 3 layouts · 5 server API routes** — Next.js App Router.
 
 Every page is a **Server Component** that imports one `*Client.jsx` from `/views` for the
 interactive half. `use_client` should be `false` for every row in `/app`; a `true` there means
@@ -55,6 +55,7 @@ someone broke the split.
 |---|---|---|
 | `/api/auth` | POST | `/api/login` |
 | `/api/countries` | GET | `/api/countries-with-states` |
+| `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` |
 | `/api/logout` | POST | `/api/logout` |
 | `/api/register` | POST | `/api/register` |
 

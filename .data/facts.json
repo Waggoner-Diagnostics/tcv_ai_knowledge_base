@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-12T13:05:34+02:00",
+    "generated_at": "2026-09-12T13:20:27+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
@@ -13,8 +13,8 @@
             "date": "2026-09-12"
         },
         "website": {
-            "sha": "c54f160",
-            "branch": "ws-website-373",
+            "sha": "deb667a",
+            "branch": "website-integration",
             "date": "2026-09-11"
         }
     },

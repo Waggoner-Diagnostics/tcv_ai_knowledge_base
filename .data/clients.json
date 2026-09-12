@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-12T13:05:38+02:00",
+    "generated_at": "2026-09-12T13:20:31+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -1804,6 +1804,16 @@
                 "file": "app/api/countries/route.js"
             },
             {
+                "route": "/api/distributor-enquiry",
+                "methods": [
+                    "POST"
+                ],
+                "proxies": [
+                    "/api/distributor-enquiry"
+                ],
+                "file": "app/api/distributor-enquiry/route.js"
+            },
+            {
                 "route": "/api/logout",
                 "methods": [
                     "POST"
@@ -1885,13 +1895,13 @@
             "NODE_ENV"
         ],
         "counts": {
-            "source_files": 94,
+            "source_files": 95,
             "pages": 32,
             "layouts": 3,
-            "api_routes": 4,
+            "api_routes": 5,
             "views": 26,
             "components": 26,
-            "loc": 10586
+            "loc": 10705
         }
     }
 }

@@ -21,7 +21,8 @@ form and error-status contracts, so a change often spans more than one (see the 
 repo; **all prose/architecture documentation belongs in the KB**. `TCV-Frontend` and `TCV-Website` each
 already contain a legacy `CLAUDE.md` that predates the KB — leave those files alone, do not extend them,
 and treat the KB as the authority. (The website's `CLAUDE.md` claimed the site had no API routes; that
-was corrected upstream on 2026-08-26 and it now describes the four proxies. It still points at the
+was corrected upstream on 2026-08-26 and it now describes the proxies (four of the five — it predates
+`/api/distributor-enquiry`). It still points at the
 legacy `docs/` folder outside the KB — that folder is not maintained here.)
 
 **How to apply:**
@@ -30,6 +31,8 @@ legacy `docs/` folder outside the KB — that folder is not maintained here.)
   change. Keep it terse, KB gotcha-style.
 - If you fixed something recorded in `SECURITY.md`, **mark the `S-nn` finding fixed with the date** —
   don't delete it. Same for a trap listed in a context pack.
+- ⚠️ **Check the checked-out branch before regenerating**: `TCV-Backend` and `TCV-Frontend` index from
+  `develop`, `TCV-Website` from `website-integration` (the one exception — see `GUIDES/HOW_TO_REGENERATE.md`).
 - The GENERATED indexes (`INDEXES/*`) come from
   `php tools/extract.php && php tools/extract-clients.php && php tools/render.php`.
   **No Docker and no database needed** — `nikic/php-parser` is vendored inside the KB itself

@@ -9,7 +9,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
 | **Branches indexed** | `develop` · `develop` · `website-integration` — the two code repos are back on `develop`; `feat/ui-audit-trail` merged into both, so the audit-trail counts below are `develop` counts now. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)) |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `940238fd` (develop) · `TCV-Frontend` `6b6c5ae` (develop) · `TCV-Website` `208eed6` (website-integration) — generated **2026-09-09** |
+| **Code state at sync** | `TCV-Backend` `fe989d4a` (develop) · `TCV-Frontend` `8574b0f` (develop) · `TCV-Website` `deb667a` (website-integration) — generated **2026-09-12** |
 | **Backend scale** | 207 classes/interfaces/traits · 860 methods · 162 API endpoints · 53 tables · 128 migrations |
 | **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
@@ -58,21 +58,29 @@ On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `
 `ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
 backend halves of the same ticket number are not in the same state, so check per repo.
 
-### TCV-Website has moved well past its indexed SHA — read [WEBSITE.md](WEBSITE.md) before its indexes
+### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
 
-The website indexes are still generated from `develop` at `3ec94ec`. **The website prose is now ahead of
-them on purpose**, because the gap is not a detail: since that SHA the repo has gained a `Dockerfile`,
-`docker-compose.yml`, its **own `nginx.conf`** — which now fronts the SPA and the API, not the other way
-round — and **two** deploy workflows, one with a manual approval gate for uat/prod. None of that exists
-at `3ec94ec`, so no generated view mentions it. `website-integration` (`208eed6`) is a strict superset
-of `develop` (`feabac8`) and is the integration truth for anything infrastructural.
+**Resolved 2026-09-12.** The website indexes used to lag at `develop` `3ec94ec` while the prose ran
+ahead; they are now generated from `website-integration` (`deb667a`), the same branch
+[WEBSITE.md](WEBSITE.md) describes, so the two no longer contradict each other.
 
-**This does not license syncing from `website-integration`.** The rule above still holds; the deltas are
-written as prose, flagged by branch, exactly so the indexes can stay on `develop`.
+**Why this is not a breach of the feature-branch rule above.** That rule exists because a *feature*
+branch describes code that may never ship. `website-integration` is not one: `git log
+website-integration..develop` is empty — it is a strict superset of `develop` (which sits **19 commits
+behind** with nothing of its own), and it is the branch the deploy workflows are actually shaped
+around. Indexing `develop` here meant indexing the *less* deployable of the two. What the rule forbids
+— generating views of code that does not ship — is what the old `3ec94ec` sync was doing: no
+`Dockerfile`, no `docker-compose.yml`, no `nginx.conf` fronting the SPA and API, neither deploy
+workflow.
 
-**`ws-website-373` (TCV-Website, 2026-09-09) is unmerged** — an `AuthModal` corner-clipping fix,
-written up in [WEBSITE.md](WEBSITE.md#the-auth-modals-rounded-clip--ws-website-373-unmerged). It is
-**not** in the `website-integration` line either.
+☠️ **This exception is scoped to `TCV-Website` and does not generalise.** `TCV-Backend` and
+`TCV-Frontend` are still indexed from `develop`, and `ws-404` is still prose-only. Before indexing any
+other repo off a non-`develop` branch, establish the same two facts: the branch is a strict superset of
+`develop`, and it is what actually deploys.
+
+⭐ **`ws-website-373` has merged** into `website-integration` (PR #7, `05e66ce`) — the `AuthModal`
+corner-clipping fix, written up in
+[WEBSITE.md](WEBSITE.md#the-auth-modals-rounded-clip--ws-website-373-merged-into-website-integration-pr-7).
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.

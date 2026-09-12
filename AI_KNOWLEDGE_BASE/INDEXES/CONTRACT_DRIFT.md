@@ -38,6 +38,7 @@ the backend, so the browser only ever talks to the website's own origin.
 |---|---|---|---|
 | `/api/auth` | POST | `/api/login` | ✅ `API-037` |
 | `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-013` |
+| `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` | ✅ `API-030` |
 | `/api/logout` | POST | `/api/logout` | ✅ `API-038` |
 | `/api/register` | POST | `/api/register` | ✅ `API-075` |
 

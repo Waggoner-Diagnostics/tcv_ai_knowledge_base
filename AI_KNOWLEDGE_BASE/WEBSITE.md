@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | Stack | Next.js 15 (App Router) · React 19 · Tailwind CSS 4 (`@tailwindcss/postcss`) · GSAP 3 (ScrollTrigger + ScrollSmoother) |
-| Scale | 94 source files · ~10k lines · 32 marketing pages · 3 layouts · 4 server API routes · 26 client views |
+| Scale | 95 source files · ~10k lines · 32 marketing pages · 3 layouts · 5 server API routes · 26 client views |
 | Package manager | **yarn** — `package-lock.json` was deleted on 2026-08-26, so `yarn.lock` is now the only lockfile |
 | Ports | dev `3001`, start `3001` (the SPA runs on `3000`) — ⚠️ **but the deployed container listens on `3000`**, see [Deployment](#deployment--docker-nginx-and-two-github-workflows) |
 | Build | `output: 'standalone'`, Turbopack root pinned to the repo |
@@ -14,26 +14,33 @@
 
 Generated view: [INDEXES/WEBSITE_ROUTE_INDEX.md](INDEXES/WEBSITE_ROUTE_INDEX.md)
 
-### Branch state — this page now describes `website-integration` (2026-09-09)
+### Branch state — indexes and prose both describe `website-integration` (2026-09-12)
 
-The generated indexes are still synced from `develop` at `3ec94ec`. **This prose is ahead of them**, and
-deliberately so: the deployment story below does not exist at that SHA. Read the three tiers apart.
+⭐ **The three-tier split is gone.** The generated indexes are now synced from `website-integration`
+at `deb667a`, the same branch this prose describes, so index and prose no longer disagree. The old
+`3ec94ec` tier — no Docker, no nginx, no workflows — is history; every generated view now includes the
+deployment story below.
 
-| Tier | Contains |
+| Branch | State at 2026-09-12 |
 |---|---|
-| `3ec94ec` — what the generated indexes describe | no Docker, no nginx, no workflows |
-| `develop` (`feabac8`) | ⭐ the whole container/CI stack, plus the copy and distributor-form work |
-| `website-integration` (`208eed6`) | `develop`, **plus** `uat-prod.yml` with its approval gate, a slimmed `non-prod.yml`, and **three app commits not yet on `develop`** — `c308caf` (signup success view), `41c0383` (comparison table removed), `edc69f8` (plate counts) |
+| `develop` (`feabac8`) | the container/CI stack plus the copy and distributor-form work |
+| `website-integration` (`deb667a`) | ⭐ **indexed.** `develop`, **plus** `uat-prod.yml` with its approval gate, a slimmed `non-prod.yml`, and app commits not on `develop` — `c308caf` (signup success view), `41c0383` (comparison table removed), `edc69f8` (plate counts), the merged `ws-website-373`, and the distributor→HubSpot work |
 
-`website-integration` is a strict superset of `develop` — `git log website-integration..develop` is empty.
+`website-integration` is a strict superset of `develop` — `git log website-integration..develop` is empty
+(verified 2026-09-12: `develop` is **19 commits behind** and has nothing of its own).
 **It is the branch the deployment workflows are shaped around, so treat it, not `develop`, as the
 integration truth for anything infrastructural.**
 
-☠️ **`ws-website-373` is *not* in this line** — the `AuthModal` corner fix below is still unmerged, and
-the strip is still a child element on `website-integration`.
+⭐ **`ws-website-373` has merged** into this line (PR #7, `05e66ce`) — the `AuthModal` corner fix below
+is shipped, and the strip is painted on the panel itself on `website-integration`.
+
+⚠️ **This is the one repo of the three indexed off `develop`.** The backend and frontend indexes come
+from their `develop`; the website's come from `website-integration`, because that is where its
+deployable truth lives. See the README's branch rule before extending this to any other repo.
 
 The repo ships its own `CLAUDE.md`. **The "no API routes, static content only" claim was corrected on
-2026-08-26** — it now describes the four proxy routes accurately. Two caveats remain: it points at
+2026-08-26** — it describes the proxy routes accurately, though it predates the fifth
+(`/api/distributor-enquiry`). Two caveats remain: it points at
 `../docs/07-website.md`, a **legacy doc set outside this KB** that nothing here maintains, and it is
 still not the authority. Trust this page.
 
@@ -57,13 +64,14 @@ the repo root (`jsconfig.json`) — always import via `@/`, never with relative 
 
 ---
 
-## The four API routes — a server-side proxy, not a backend
+## The five API routes — a server-side proxy, not a backend
 
 ```
-POST /api/auth       → {API_URL}/api/login
-POST /api/register   → {API_URL}/api/register
-GET  /api/countries  → {API_URL}/api/countries-with-states
-POST /api/logout     → {API_URL}/api/logout
+POST /api/auth                 → {API_URL}/api/login
+POST /api/register             → {API_URL}/api/register
+GET  /api/countries            → {API_URL}/api/countries-with-states
+POST /api/logout               → {API_URL}/api/logout
+POST /api/distributor-enquiry  → {API_URL}/api/distributor-enquiry   ← added on website-integration
 ```
 
 They exist to solve **CORS**: the browser only ever talks to the website's own origin, and Next.js
@@ -79,8 +87,17 @@ forwards server-side. Consequences worth knowing:
   ⚠️ **`/api/register` alone also puts the upstream status and body into the 502 *response* — but only
   when `NODE_ENV === 'development'`** (added 2026-08-26). Production keeps the generic message. Do not
   copy that branch into the other three proxies without the same `isDev` guard.
-- All four backend targets exist today — verified in
-  [INDEXES/CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md#tcv-website-proxy-routes).
+- All five backend targets exist today — verified in
+  [INDEXES/CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md#tcv-website-proxy-routes);
+  `/api/distributor-enquiry` resolves to `API-030`.
+
+⭐ **`/api/distributor-enquiry` (2026-09-12) follows the pattern exactly** — same `API_URL` guard, same
+`content-type` check returning 502 with the first 400 characters logged, and a generic 500 on throw. It
+correctly does **not** copy `/api/register`'s dev-only body echo. It replaced a `mailto:` link in
+`views/DistributorSignupClient.jsx`, so the enquiry now reaches HubSpot through the backend
+(`DistributorController@submit`, rate-limited `10/min`) instead of opening the visitor's mail client.
+Nothing is stored on the website side. `components/Header.jsx` gained the Distributors entry in the same
+line of work.
 
 ☠️ **`console.log`/`console.error` in these routes echo the target URL and response fragments** into the
 server log. Fine for diagnosis, but they run in production too.
@@ -330,7 +347,7 @@ proxy's 502 path, not the component.
 
 ---
 
-## The auth modal's rounded clip — `ws-website-373` (unmerged)
+## The auth modal's rounded clip — `ws-website-373` (merged into `website-integration`, PR #7)
 
 ⚠️ **This is the *website* branch `ws-website-373`, not the backend `ws-373`** that
 [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) and [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) flag for

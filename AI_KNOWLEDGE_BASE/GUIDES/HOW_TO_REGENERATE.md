@@ -26,13 +26,27 @@ a feature branch silently indexes that branch **and** labels the KB with it. Bef
 ```bash
 git -C ../TCV-Backend  rev-parse --abbrev-ref HEAD    # expect develop
 git -C ../TCV-Frontend rev-parse --abbrev-ref HEAD    # expect develop
-git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect develop
+git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect website-integration  ← not develop
 ```
 
-All three are indexed from **`develop`**. The website used to be tracked on `website-integration`;
-`develop` has since absorbed it and moved two commits past (`ce410d5` → `3ec94ec`, 2026-09-03), so
-`develop` is now the branch to index there too. Put each repo back on its own working branch
-afterwards, and remember that the *next* regeneration will pick up wherever you left it.
+⚠️ **The website is the one exception, and it is deliberate** (changed 2026-09-12). `TCV-Backend` and
+`TCV-Frontend` index from **`develop`**; `TCV-Website` indexes from **`website-integration`**, because
+that is the branch its deploy workflows are shaped around and it is a strict superset of `develop` —
+`git log website-integration..develop` is empty. Indexing the website from `develop` meant indexing the
+*less* deployable tree and left the generated views with no `Dockerfile`, no `nginx.conf` and neither
+deploy workflow. (The earlier note here said `develop` had absorbed `website-integration` at `3ec94ec`;
+that stopped being true as the integration line moved on.)
+
+Put each repo back on its own working branch afterwards, and remember that the *next* regeneration will
+pick up wherever you left it.
+
+**Before extending that exception to any other repo, prove both facts** — the branch is a strict
+superset of `develop`, and it is what actually deploys:
+
+```bash
+git -C ../<repo> log --oneline <branch>..develop     # must be EMPTY (superset)
+git -C ../<repo> merge-base --is-ancestor develop <branch> && echo superset
+```
 
 ☠️ **Never index a feature branch — not even a fix branch.** The 2026-09-02 sync was generated from
 `tcv-backend-codefix` (backend) and `QA` (frontend). That branch carries the ownership-scoping fixes
