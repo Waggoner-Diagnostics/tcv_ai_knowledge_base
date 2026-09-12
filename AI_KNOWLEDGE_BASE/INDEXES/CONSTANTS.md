@@ -5,12 +5,6 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 
-### `MailPreflight` — `app/Console/Commands/MailPreflight.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `APP_SEND_RATE` | — | [36](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L36) |
-
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 
 | Constant | Value | Line |
@@ -64,12 +58,6 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `ENVIRONMENTS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L36) |
-
-### `TestInvitationController` — `app/Http/Controllers/TestInvitationController.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `DISPATCH_QUEUE` | `'queue'` | [30](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L30) |
 
 ### `TestResumeController` — `app/Http/Controllers/TestResumeController.php`
 
@@ -132,19 +120,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `BATCH_SIZE` | `25` | [54](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L54) |
-| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [57](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L57) |
-| `MAX_CONSECUTIVE_CONNECTION_FAILURES` | `3` | [65](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L65) |
-| `HOST_STANDDOWN_SECONDS` | `60` | [75](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L75) |
-| `RESULT_SENT` | `'sent'` | [78](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L78) |
-| `RESULT_FAILED` | `'failed'` | [79](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L79) |
-| `RESULT_DEFERRED` | `'deferred'` | [80](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L80) |
-
-### `SweepPendingInvitationsJob` — `app/Jobs/SweepPendingInvitationsJob.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `LOCK_KEY` | `'invitations:sweep'` | [61](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L61) |
+| `BATCH_SIZE` | `25` | [40](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L40) |
+| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [43](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L43) |
 
 ### `PrefixEmailSubject` — `app/Listeners/PrefixEmailSubject.php`
 

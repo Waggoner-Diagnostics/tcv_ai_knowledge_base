@@ -38,7 +38,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-029` | `TestAnswer` | [app/Models/TestAnswer.php:8](../../../TCV-Backend/app/Models/TestAnswer.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection, `testSectionPlate`→TestSectionPlate, `patient`→Patient | 7 |
 | `MODEL-030` | `TestCondition` | [app/Models/TestCondition.php:8](../../../TCV-Backend/app/Models/TestCondition.php#L8) | `HasFactory` | `test`→Test | 1 |
 | `MODEL-031` | `TestEmailTemplates` | [app/Models/TestEmailTemplates.php:8](../../../TCV-Backend/app/Models/TestEmailTemplates.php#L8) | `HasFactory` | — | 0 |
-| `MODEL-032` | `TestInvitation` | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | `HasFactory` | `test`→Test, `user`→User | 5 |
+| `MODEL-032` | `TestInvitation` | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | `HasFactory` | `test`→Test, `user`→User | 4 |
 | `MODEL-033` | `TestResumeToken` | [app/Models/TestResumeToken.php:7](../../../TCV-Backend/app/Models/TestResumeToken.php#L7) | — | `patientTest`→PatientTest | 2 |
 | `MODEL-034` | `TestSection` | [app/Models/TestSection.php:8](../../../TCV-Backend/app/Models/TestSection.php#L8) | `HasFactory` | `test`→Test, `testSectionPlates`→TestSectionPlate | 3 |
 | `MODEL-035` | `TestSectionPlate` | [app/Models/TestSectionPlate.php:8](../../../TCV-Backend/app/Models/TestSectionPlate.php#L8) | `HasFactory` | `test`→Test, `testSection`→TestSection | 2 |

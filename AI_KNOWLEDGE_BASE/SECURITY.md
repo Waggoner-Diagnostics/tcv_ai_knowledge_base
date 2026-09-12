@@ -500,9 +500,18 @@ set `TRUSTED_PROXIES` to that same CIDR (never `*`).
 *before* the `real_ip` rewrite, so `X-Real-IP` is the one genuinely trustworthy header on this path
 today. Laravel's `trustProxies()` is configured for the `X_FORWARDED_*` set and does **not** read it.
 
-Also note: `TRUSTED_PROXIES` must be a real OS/container env var, not a `.env` line — `entrypoint.sh`
-runs `config:cache` on boot and the code reads `env()` (it must; `config()` is unavailable that early).
-See [CONFIGURATION.md](CONFIGURATION.md).
+⭐ **There is a third precondition nobody has hit yet, because the variable has no plumbing.**
+`TRUSTED_PROXIES` appears in exactly one place in the backend repo — the `env()` call in
+`bootstrap/app.php` — and is **not** in the `environment:` allowlist of `docker-compose.yml` or
+`docker-compose-dev.yml`. Compose injects only the keys listed there, so the variable cannot currently
+reach the container at all; an env-file edit alone is a no-op. Adding the compose entry is a code
+change in `TCV-Backend` and has to land before any value takes effect. It must also arrive as a real
+container env var rather than a `.env` line — `entrypoint.sh:34` runs `config:cache` on boot and the
+code reads `env()` (it must; `config()` is unavailable that early). See
+[CONFIGURATION.md](CONFIGURATION.md) and [ENVIRONMENT.md](ENVIRONMENT.md).
+
+⚠️ **This is good news for the ordering, not bad.** It means `S-16` cannot be half-fixed by accident:
+until someone deliberately adds the compose entry, the fail-closed default holds on its own.
 
 If a `TRUSTED_PROXIES` env override is added, parse it as `trim(...) ?: <default>` rather than
 `env('TRUSTED_PROXIES', <default>)` — docker-compose substitutes an *empty string* for an unset

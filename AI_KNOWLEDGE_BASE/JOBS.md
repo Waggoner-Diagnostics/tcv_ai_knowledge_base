@@ -1,12 +1,15 @@
 # Jobs & Console Commands
 
-## Jobs — three
+## Jobs — two on `develop`, three on `ws-404`
 
 | Job | ID | Dispatched from |
 |---|---|---|
 | `ProcessLmsDeliveryJob` | `JOB-001` | `LmsDeliveryService` (3 sites) and itself (`self::dispatch()` on retry) |
 | `SendTestInvitationEmailsJob` | `JOB-002` | `TestInvitationController::sendInvitations()` and `invitations:send-pending` (`ws-404`) |
-| `SweepPendingInvitationsJob` | `JOB-003` | `TestInvitationController::sendInvitations()` **and** `getUnregisteredInvitations()`, both `->afterResponse()` (`ws-404`) |
+| `SweepPendingInvitationsJob` | `JOB-003` | ⚠️ **`ws-404` only, not on `develop`** — `sendInvitations()` **and** `getUnregisteredInvitations()`, both `->afterResponse()` |
+
+The indexes are generated from `develop` and therefore list **two**. `JOB-003` is prose-only until
+`ws-404` merges; see the README's branch rule.
 
 Their retry models, dead-letter handling and the fact that **no worker is configured** are covered in
 [QUEUES.md](QUEUES.md). Read that before touching either.
@@ -15,7 +18,7 @@ Their retry models, dead-letter handling and the fact that **no worker is config
 `->afterResponse()` and runs in the web process. `$tries`, `$backoff` and `failed()` on it are inert
 until a worker exists. See [QUEUES.md](QUEUES.md#after-response-dispatch-ws-404).
 
-### `SweepPendingInvitationsJob` — recovery that rides on web traffic (`ws-404`)
+### `SweepPendingInvitationsJob` — recovery that rides on web traffic (`ws-404`, **unmerged**)
 
 `SendTestInvitationEmailsJob` leaves a row at `email_status='pending'` when it cannot reach the SMTP
 host, assuming something comes back for it. `invitations:send-pending` is that something, but it needs a
@@ -40,13 +43,20 @@ cron entry, and it is why the scheduled `invitations:send-pending` is registered
 both is safe: they select the same rows via `TestInvitation::awaitingDelivery()` and the batch job
 claims each row atomically, so whichever reaches an address first sends it exactly once.
 
-## Console commands — three
+## Console commands — five on `develop`, six on `ws-404`
 
-| Command | Class |
-|---|---|
-| `UploadTestPlates` | `app/Console/Commands/UploadTestPlates.php` |
-| `invitations:send-pending` | `app/Console/Commands/SendPendingInvitations.php` (`ws-404`) |
-| `templates:check-placeholders` | `app/Console/Commands/CheckEmailTemplatePlaceholders.php` (`ws-404`) |
+| Command | Class | Notes |
+|---|---|---|
+| `upload:test-plates` | `UploadTestPlates.php` | Operator tool, see below |
+| `invitations:send-pending` | `SendPendingInvitations.php` | `--minutes=15` · `--limit=500` |
+| `templates:check-placeholders` | `CheckEmailTemplatePlaceholders.php` | `--show-body` |
+| `stripe:backfill-source-app` | `BackfillStripeSourceApp.php` | Dry run unless `--apply` |
+| `credits:settle-negative-balances` | `SettleNegativeCreditBalances.php` | One-time repair, dry run unless `--apply`; see [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) |
+| `mail:preflight` | `MailPreflight.php` | ⚠️ **`ws-404` only** — `--from=`, checks sender identity verification |
+
+⭐ **None of them is destructive by default.** The two repair commands (`stripe:backfill-source-app`,
+`credits:settle-negative-balances`) dry-run unless given `--apply`, so reading their output first costs
+nothing.
 
 `invitations:send-pending` mails invitations left at `email_status = 'pending'` — the rows a container
 restart stranded mid-send. It skips anything newer than `--minutes=15` so it cannot race a send still
@@ -63,11 +73,14 @@ repair migration exists for, and why that migration logs what it could not conve
 token valid for the *other* template type is reported as unrecognised — so a `FAILURE` here can mean a
 row was written by something that ignored the type scoping, not that a human mistyped it.
 
-⚠️ **`invitations:send-pending` is now registered in `->withSchedule(...)`** (`ws-404`, every ten
-minutes) **but nothing executes the schedule** — there is no cron and no `schedule:work` container, so
-the registration is inert. `templates:check-placeholders` is not scheduled at all. What actually
-recovers a stranded send today is `SweepPendingInvitationsJob` riding on web traffic (above). See the
-section below.
+☠️ **On `develop`, neither command is scheduled** — `invitations:send-pending` is the only thing that
+recovers a stranded send, and nothing runs it, so recovery depends on someone noticing.
+
+⚠️ Unmerged `ws-404` changes that only on paper: it registers `invitations:send-pending` in
+`->withSchedule(...)` (every ten minutes), but **nothing executes the schedule** — no cron, no
+`schedule:work` container — so the registration is inert there too. What actually recovers a stranded
+send on that branch is `SweepPendingInvitationsJob` riding on web traffic (above).
+`templates:check-placeholders` is not scheduled on either branch. See the section below.
 
 Uploads test plate images to the S3 bucket. This is an **operator tool**, not part of any flow —
 `SecureImageService::uploadPlateToS3()` exists for the same purpose and carries a comment saying it is
@@ -75,16 +88,17 @@ Uploads test plate images to the S3 bucket. This is an **operator tool**, not pa
 
 `routes/console.php` additionally defines Laravel's stock `inspire` closure. That is all.
 
-## ☠️ One task is scheduled; nothing runs the scheduler
+## ☠️ Nothing is scheduled
 
-`bootstrap/app.php` gained a `->withSchedule(...)` on `ws-404` registering exactly one task
-(`invitations:send-pending`, every ten minutes). `routes/console.php` still registers no schedule.
+`bootstrap/app.php` on `develop` has no `->withSchedule(...)`, and `routes/console.php` registers no
+schedule.
 
-**Registered is not running.** The deployment has php-fpm and nginx only — no cron entry, no
-`schedule:work` container ([DEPLOYMENT.md](DEPLOYMENT.md)) — so `schedule:run` is never invoked and the
-task never fires. Treat the block as documentation of intent until a scheduler process exists.
+⚠️ Unmerged `ws-404` adds a `->withSchedule(...)` with one task, but **registered is not running**: the
+deployment is php-fpm and nginx only — no cron entry, no `schedule:work` container
+([DEPLOYMENT.md](DEPLOYMENT.md)) — so `schedule:run` is never invoked and the task never fires. Treat
+that block as documentation of intent until a scheduler process exists.
 
-There is therefore still **no periodic cleanup of anything**:
+Either way there is **no periodic cleanup of anything**:
 
 | Table | Grows unbounded | Expiry is checked… |
 |---|---|---|
@@ -98,8 +112,8 @@ There is therefore still **no periodic cleanup of anything**:
 
 If you add a scheduled task, you also need to add a **scheduler process** to the deployment — there is
 no `php artisan schedule:work` container today, only php-fpm and nginx
-([DEPLOYMENT.md](DEPLOYMENT.md)). Adding it next to the existing `invitations:send-pending` entry
-changes nothing on its own; wiring the scheduler is what switches **both** on at once.
+([DEPLOYMENT.md](DEPLOYMENT.md)). Note that once `ws-404` merges there is already one task registered,
+so wiring a scheduler switches **both** on at once — check what is in the block before you add to it.
 
 ## Work that should be a job but isn't
 

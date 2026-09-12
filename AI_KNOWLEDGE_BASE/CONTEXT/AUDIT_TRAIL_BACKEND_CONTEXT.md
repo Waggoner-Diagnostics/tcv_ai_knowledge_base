@@ -176,6 +176,8 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 
 ☠️ **Setting `TRUSTED_PROXIES` right now would make it worse, not better.** `TCV-Frontend/nginx.conf:41` still has `set_real_ip_from 0.0.0.0/0`, so nginx rebuilds `X-Forwarded-For` from a client-supplied value — trust the hop today and `actor_ip` becomes attacker-chosen, which is worse for an audit trail than a uniformly wrong datacentre IP. Narrow the nginx CIDR first, then set the var to the same CIDR (never `*`). Full analysis in [SECURITY.md](../SECURITY.md) `S-16`; the same fix also un-breaks `RestrictIpMiddleware`.
 
+⭐ **In practice you cannot set it accidentally.** `TRUSTED_PROXIES` is absent from the `environment:` allowlist of both compose files, so it never reaches the container today — wiring it is a deliberate code change in `TCV-Backend`, not an env-file edit. Plan `actor_ip` work on the assumption that `$request->ip()` is the proxy until that lands. See [ENVIRONMENT.md](../ENVIRONMENT.md).
+
 ⭐ If you need a usable client IP for audit rows before that lands, `X-Real-IP` is populated from nginx's `$realip_remote_addr` (the pre-rewrite peer) and is the one header on this path a client cannot forge — but `trustProxies()` is configured for `X_FORWARDED_*` and does not read it.
 
 **B2 — "Account locked (too many failed attempts)" has nothing to log.** No lockout, throttle, or failed-attempt counter exists on the login path (`routes/api.php` throttles only `/contact`). The spreadsheet also asks for a "Failed attempt count" on every failed login, which likewise does not exist. Either build lockout as a prerequisite, or cut both rows from Phase 1. Recommend cutting — it is a separate feature, not an audit feature.

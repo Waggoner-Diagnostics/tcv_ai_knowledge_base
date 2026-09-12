@@ -1,12 +1,11 @@
 # File Index
 
-**209 PHP files** containing classes, under `app/` + `database/`.
+**207 PHP files** containing classes, under `app/` + `database/`.
 
 | File | Classes | Methods |
 |---|---|---|
 | [`app/Console/Commands/BackfillStripeSourceApp.php`](../../../TCV-Backend/app/Console/Commands/BackfillStripeSourceApp.php) | BackfillStripeSourceApp | 1 |
 | [`app/Console/Commands/CheckEmailTemplatePlaceholders.php`](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php) | CheckEmailTemplatePlaceholders | 2 |
-| [`app/Console/Commands/MailPreflight.php`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php) | MailPreflight | 13 |
 | [`app/Console/Commands/SendPendingInvitations.php`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php) | SendPendingInvitations | 2 |
 | [`app/Console/Commands/SettleNegativeCreditBalances.php`](../../../TCV-Backend/app/Console/Commands/SettleNegativeCreditBalances.php) | SettleNegativeCreditBalances | 1 |
 | [`app/Console/Commands/UploadTestPlates.php`](../../../TCV-Backend/app/Console/Commands/UploadTestPlates.php) | UploadTestPlates | 1 |
@@ -88,8 +87,7 @@
 | [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 2 |
 | [`app/Http/Requests/ValidateDiscountCodeRequest.php`](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php) | ValidateDiscountCodeRequest | 2 |
 | [`app/Jobs/ProcessLmsDeliveryJob.php`](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php) | ProcessLmsDeliveryJob | 3 |
-| [`app/Jobs/SendTestInvitationEmailsJob.php`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php) | SendTestInvitationEmailsJob | 18 |
-| [`app/Jobs/SweepPendingInvitationsJob.php`](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php) | SweepPendingInvitationsJob | 3 |
+| [`app/Jobs/SendTestInvitationEmailsJob.php`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php) | SendTestInvitationEmailsJob | 13 |
 | [`app/Listeners/HandleLmsNotificationOnCompletion.php`](../../../TCV-Backend/app/Listeners/HandleLmsNotificationOnCompletion.php) | HandleLmsNotificationOnCompletion | 2 |
 | [`app/Listeners/HandleLmsSectionProgressOnCompletion.php`](../../../TCV-Backend/app/Listeners/HandleLmsSectionProgressOnCompletion.php) | HandleLmsSectionProgressOnCompletion | 2 |
 | [`app/Listeners/PrefixEmailSubject.php`](../../../TCV-Backend/app/Listeners/PrefixEmailSubject.php) | PrefixEmailSubject | 2 |
@@ -126,7 +124,7 @@
 | [`app/Models/TestAnswer.php`](../../../TCV-Backend/app/Models/TestAnswer.php) | TestAnswer | 7 |
 | [`app/Models/TestCondition.php`](../../../TCV-Backend/app/Models/TestCondition.php) | TestCondition | 1 |
 | [`app/Models/TestEmailTemplates.php`](../../../TCV-Backend/app/Models/TestEmailTemplates.php) | TestEmailTemplates | 0 |
-| [`app/Models/TestInvitation.php`](../../../TCV-Backend/app/Models/TestInvitation.php) | TestInvitation | 5 |
+| [`app/Models/TestInvitation.php`](../../../TCV-Backend/app/Models/TestInvitation.php) | TestInvitation | 4 |
 | [`app/Models/TestResumeToken.php`](../../../TCV-Backend/app/Models/TestResumeToken.php) | TestResumeToken | 2 |
 | [`app/Models/TestSection.php`](../../../TCV-Backend/app/Models/TestSection.php) | TestSection | 3 |
 | [`app/Models/TestSectionPlate.php`](../../../TCV-Backend/app/Models/TestSectionPlate.php) | TestSectionPlate | 2 |

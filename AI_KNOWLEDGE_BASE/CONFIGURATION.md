@@ -20,38 +20,45 @@ return Application::configure(basePath: dirname(__DIR__))
             'FlexibleAuthMiddleware' => FlexibleAuthMiddleware::class,
             'lms.status'             => LmsSessionStatusMiddleware::class,
         ]);
-        // `develop` — only when TRUSTED_PROXIES is a non-empty CIDR list
+        // only when TRUSTED_PROXIES is a non-empty CIDR list
         $middleware->trustProxies(at: $trustedProxies, headers: ...X_FORWARDED_*);
-    })
-    ->withSchedule(function (Schedule $schedule): void {          // `ws-404`
-        $schedule->command('invitations:send-pending')
-            ->everyTenMinutes()->withoutOverlapping(20);
     })
     ->withExceptions(function (Exceptions $exceptions): void { /* empty */ })
     ->withBindings([ExceptionHandler::class => Handler::class])   // ← custom handler
     ->create();
 ```
 
-Six things to remember:
+Five things to remember:
 - **`GET /up` exists** as a health endpoint (nginx also suppresses `/health` and `/api/health` from the
   access log).
 - `withExceptions` is **empty** — all exception behaviour is in the bound `Handler`
   ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
 - New middleware aliases go here. There is nowhere else.
-- **`->withSchedule(...)` now exists** (`ws-404`) and registers exactly one task —
-  `invitations:send-pending`, every ten minutes, `withoutOverlapping(20)`. ☠️ **It is still inert:**
-  the deployment has no cron entry and no `schedule:work` container, so nothing ever calls
-  `schedule:run`. Registering a task here does not make it run — see [JOBS.md](JOBS.md) and
-  [DEPLOYMENT.md](DEPLOYMENT.md).
-- **`trustProxies()` is called here** (`develop`), but only when `TRUSTED_PROXIES` is non-empty
+- **No `->withSchedule(...)` on `develop`.** Nothing is scheduled. ⚠️ Unmerged `ws-404` adds one, and
+  only one — `invitations:send-pending`, every ten minutes, `withoutOverlapping(20)`:
+
+  ```php
+  ->withSchedule(function (Schedule $schedule): void {        // ws-404 only
+      $schedule->command('invitations:send-pending')->everyTenMinutes()->withoutOverlapping(20);
+  })
+  ```
+
+  ☠️ **Even on that branch it never fires.** The deployment has no cron entry and no `schedule:work`
+  container, so nothing calls `schedule:run`. Registering a task here does not make it run — see
+  [JOBS.md](JOBS.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
+- **`trustProxies()` is called here**, but only when `TRUSTED_PROXIES` is non-empty
   (comma-separated CIDRs). Deliberately not `*`. Empty default = trust nothing, so the Laravel half is
   inert until the var is set — that is what makes it safe to ship ahead of the nginx half
-  ([SECURITY.md](SECURITY.md) `S-16`).
+  ([SECURITY.md](SECURITY.md) `S-16`). On `develop` since 2026-09-12.
 - ⚠️ **That block reads `env()`, not `config()`, and must.** The `withMiddleware` closure runs before
   the config provider registers, so `config()` there throws `BindingResolutionException`. Consequence:
-  `TRUSTED_PROXIES` has to be a real OS/container env var — `entrypoint.sh` runs `config:cache` on every
-  boot, and once config is cached Laravel stops re-parsing `.env`, so a `.env`-only entry would be
+  `TRUSTED_PROXIES` has to arrive as a real container env var — `entrypoint.sh:34` runs `config:cache`
+  on every boot, and once config is cached Laravel stops re-parsing `.env`, so a `.env`-only entry is
   invisible here.
+- ☠️ **`TRUSTED_PROXIES` has no plumbing at all yet.** It appears nowhere in the repo except that one
+  `env()` call — in particular it is **not** in the `environment:` allowlist of either compose file, so
+  it cannot reach the container no matter who sets it. Adding it there is a code change; only then does
+  supplying a value do anything. See [ENVIRONMENT.md](ENVIRONMENT.md).
 
 ## `bootstrap/providers.php` — the list people forget
 

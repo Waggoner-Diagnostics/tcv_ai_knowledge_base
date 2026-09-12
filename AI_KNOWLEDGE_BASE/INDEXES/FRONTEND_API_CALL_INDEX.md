@@ -1,6 +1,6 @@
 # Frontend → Backend API Call Index
 
-**88 distinct calls** found across 273 TCV-Frontend source files, matched against the 162 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
+**88 distinct calls** found across 276 TCV-Frontend source files, matched against the 162 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
 
 > **Lower bound, not a census.** These come from a lexical scan for literal `axios*.<verb>('…')`
 > URLs. A URL built at runtime from variables is invisible to it, so *absent from this table*

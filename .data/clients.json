@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-12T12:59:08+02:00",
+    "generated_at": "2026-09-12T13:05:38+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -1495,6 +1495,8 @@
             "src/hooks/useClickOutside.js",
             "src/hooks/useCreditsSync.js",
             "src/hooks/useCurrentTest.js",
+            "src/hooks/useDateRangeFilter.js",
+            "src/hooks/useDateRangeFilter.test.js",
             "src/hooks/useEnterToSubmit.js",
             "src/hooks/useErrorHandler.js",
             "src/hooks/useLogOut.js",
@@ -1514,14 +1516,14 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 273,
+            "source_files": 276,
             "spa_routes": 75,
             "api_calls": 93,
             "slices": 43,
-            "hooks": 16,
+            "hooks": 18,
             "pages": 91,
-            "components": 48,
-            "loc": 39041
+            "components": 49,
+            "loc": 39373
         }
     },
     "website": {

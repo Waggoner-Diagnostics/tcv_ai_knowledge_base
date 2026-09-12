@@ -23,7 +23,7 @@
 | Notifications | 3 | `ResetPasswordNotification`, `VerifyEmailNotification`, `OrganizationTestUrlNotification`. |
 | Mail | 1 | `VerifyEmail` mailable. Most mail is sent as raw HTML instead — see below. |
 | Exports | 3 | `maatwebsite/excel`. |
-| Console commands | **4** | `UploadTestPlates` · `BackfillStripeSourceApp` · `CheckEmailTemplatePlaceholders` · `SendPendingInvitations` (`ws-404` — recovers stranded invitation sends). **Still nothing scheduled** — `routes/console.php` registers only the stock `inspire` command; run these manually or wire a scheduler. |
+| Console commands | **5** | `UploadTestPlates` · `BackfillStripeSourceApp` · `CheckEmailTemplatePlaceholders` · `SendPendingInvitations` (recovers stranded invitation sends) · `SettleNegativeCreditBalances`. Unmerged `ws-404` adds a sixth, `MailPreflight`. **Still nothing scheduled** — `routes/console.php` registers only the stock `inspire` command; run these manually or wire a scheduler. |
 | Rules | 1 | `TurnstileToken`. |
 | Traits | 1 | `Searchable` — the shared query-search scope. |
 
@@ -121,19 +121,17 @@ inside `<style>`/`<script>`, and URLs sitting in an attribute. Adding a fifth se
 calling it too — see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) and
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
 
-### 5. A schedule exists, but nothing runs it
+### 5. Nothing is scheduled
 
-`routes/console.php` registers only the stock `inspire` command. `bootstrap/app.php` does now carry a
-`->withSchedule(...)` (`ws-404`) with one task, `invitations:send-pending` every ten minutes — but the
-deployment has no cron and no `schedule:work` container, so `schedule:run` is never called and the task
-never fires. Registered ≠ running.
+`routes/console.php` registers only the stock `inspire` command, and there is no
+`->withSchedule(...)` in `bootstrap/app.php` on `develop`. `ProcessLmsDeliveryJob` is queued on the
+`database` driver and **no queue worker service exists in either compose file** — so unless a worker
+runs elsewhere, LMS deliveries sit in `jobs` unprocessed. See [QUEUES.md](QUEUES.md).
 
-`ProcessLmsDeliveryJob` is queued on the `database` driver and **no queue worker service exists in
-either compose file** — so unless a worker runs elsewhere, LMS deliveries sit in `jobs` unprocessed.
-
-The one recovery path that does work unattended is `SweepPendingInvitationsJob`, which is dispatched
-`->afterResponse()` from web requests and therefore needs no scheduler — at the cost of needing
-traffic. See [QUEUES.md](QUEUES.md) and [JOBS.md](JOBS.md).
+⚠️ Unmerged `ws-404` adds both a one-task `->withSchedule(...)` and `SweepPendingInvitationsJob`. Only
+the second actually runs unattended: it is dispatched `->afterResponse()` from web requests and needs no
+scheduler, at the cost of needing traffic. The scheduled entry stays inert until a scheduler process
+exists. See [JOBS.md](JOBS.md).
 
 ---
 

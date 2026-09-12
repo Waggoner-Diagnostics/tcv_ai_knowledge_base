@@ -100,10 +100,10 @@ request, so the whole batch is billed inside the insert transaction and each add
 delivered is refunded individually by the job. Consequences worth knowing:
 
 - A send that is interrupted (container restart) leaves rows at `email_status = 'pending'` **already
-  charged**. `SweepPendingInvitationsJob` now finishes them automatically (`ws-404`) — dispatched
-  after the response from the send and invitation-list endpoints, so recovery needs web traffic rather
-  than a scheduler. `php artisan invitations:send-pending` still does the same job by hand; its
-  scheduled entry exists but never fires (no scheduler process). See [../JOBS.md](../JOBS.md).
+  charged**. On `develop`, `php artisan invitations:send-pending` finishes them and nothing runs it
+  automatically. ⚠️ Unmerged `ws-404` adds `SweepPendingInvitationsJob`, which clears them without an
+  operator — dispatched after the response from the send and invitation-list endpoints, so recovery
+  needs web traffic rather than a scheduler. See [../JOBS.md](../JOBS.md).
 - A refunded row is also `is_revoked = true`, which deliberately blocks both resend and cancel — a
   resend would be free and a cancel would refund the same charge twice.
 - The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller. This

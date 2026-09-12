@@ -13,7 +13,7 @@
 | `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
 | `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email — owns all three assembly passes (`ws-404`, extracted from the controller) |
 | `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response (`ws-404`) |
-| `app/Jobs/SweepPendingInvitationsJob.php` | ⭐ Re-sends rows stranded at `pending`, using web traffic as the clock (`ws-404`) |
+| `app/Jobs/SweepPendingInvitationsJob.php` | ⭐ Re-sends rows stranded at `pending`, using web traffic as the clock (`ws-404`, **unmerged**) |
 | `app/Support/EmailTemplatePlaceholders.php` | ⭐ The one placeholder vocabulary; both save paths validate against it (`ws-404`) |
 | `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'` (`ws-404`) |
 | `app/Console/Commands/CheckEmailTemplatePlaceholders.php` | Scans stored templates for placeholders that will not render (`ws-404`) |
@@ -50,10 +50,10 @@ POST api/test-invitations/send   ← auth:sanctum + throttle:bulk-invitations (5
   │    ├─ bulk insert rows: token, code, expires_at = now+7d, email_status='pending'
   │    ├─ CreditConsume::consume(user, n, 'test_invitation', [ids])
   │    └─ PatientTest::increment('resend_count')  when unique_test_id given
-  ├─ audit: test.invitation_sent | _sent_bulk | _resent   ← develop, only when created > 0
+  ├─ audit: test.invitation_sent | _sent_bulk | _resent   ← only when created > 0
   ├─ 202 Accepted  ← returns here, in well under a second
   └─ AFTER the response: SendTestInvitationEmailsJob × ceil(n/25) mails the batches
-                         then SweepPendingInvitationsJob (throttled, one batch)
+                         then SweepPendingInvitationsJob (ws-404 only, throttled)
 ```
 
 ⚠️ **The three audit keys do not mean what the catalog says.** `AuditEventCatalog` titles
@@ -247,7 +247,7 @@ no buttons, because both remediation endpoints 404 on a revoked row.
 A row stuck at `pending` means a send was interrupted — the batch job leaves it there when it cannot
 reach the SMTP host.
 
-`SweepPendingInvitationsJob` (`ws-404`) now clears these without an operator. It is dispatched
+⚠️ **`SweepPendingInvitationsJob` (`ws-404`, not on `develop`)** clears these without an operator. It is dispatched
 `->afterResponse()` from **`sendInvitations()` and `getUnregisteredInvitations()`** — opening the list
 that shows a stranded row is what clears it — and is throttled by an atomic cache lock
 (`invitations:sweep`, one run per `mail.invitation_sweep_interval`, default 600s), bounded to one batch
@@ -255,8 +255,8 @@ with its own `mail.invitation_sweep_budget` (default 60s), and ignores rows youn
 `mail.invitation_sweep_age_minutes` (default 15) so it cannot race a send still in progress.
 
 ☠️ **It needs traffic — an idle deployment sweeps nothing.** `php artisan invitations:send-pending`
-remains the manual route. Its scheduled entry in `bootstrap/app.php` (`ws-404`, every ten minutes) does
-**not** fire: there is no cron and no `schedule:work` container. Both paths are safe to have at once —
+remains the manual route, and on `develop` it is the *only* route. The scheduled entry `ws-404` adds for
+it does **not** fire: there is no cron and no `schedule:work` container. Both paths are safe to have at once —
 they select the same rows via `TestInvitation::awaitingDelivery()` and each row is claimed atomically,
 so an address is sent once. See [../JOBS.md](../JOBS.md).
 

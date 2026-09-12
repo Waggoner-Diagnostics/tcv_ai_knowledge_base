@@ -10,7 +10,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | **Branches indexed** | `develop` · `develop` · `website-integration` — the two code repos are back on `develop`; `feat/ui-audit-trail` merged into both, so the audit-trail counts below are `develop` counts now. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)) |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `940238fd` (develop) · `TCV-Frontend` `6b6c5ae` (develop) · `TCV-Website` `208eed6` (website-integration) — generated **2026-09-09** |
-| **Backend scale** | 209 classes/interfaces/traits · 882 methods · 162 API endpoints · 53 tables · 128 migrations |
+| **Backend scale** | 207 classes/interfaces/traits · 860 methods · 162 API endpoints · 53 tables · 128 migrations |
 | **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -41,9 +41,20 @@ tracks separately: the **QA automation helpers** (PR #223, 2026-09-08 — see
 and the **Audit Trail** read API (PR #227, 2026-09-09 — `AuditLogController`, `Services/Audit/`,
 `audit_logs`; the context packs for it are written but still sit on the KB branch `ws-422`).
 
-⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — a single commit
-(`b69a2c37`, 2026-09-09, "email not send some patient issue"); everything else the KB flags `ws-404`
-is merged. On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
+⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — three commits as of 2026-09-12
+(`b69a2c37`, `07a1c9b2`, and `3abe5aef` merging `develop` in). Most of what the KB flags `ws-404` is
+merged; what is **not** on `develop` is the delivery-recovery work, and passages describing it say so:
+
+| `ws-404` only | Where |
+|---|---|
+| `SweepPendingInvitationsJob` (`JOB-003`) — sweeps stranded `pending` rows using web traffic as the clock | [JOBS.md](JOBS.md) · [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) |
+| `->withSchedule(...)` with one task, `invitations:send-pending` — inert, nothing runs the scheduler | [CONFIGURATION.md](CONFIGURATION.md) · [JOBS.md](JOBS.md) |
+| `MailPreflight` console command, `config/mail.php` sweep keys, `TestInvitation::awaitingDelivery()` | [ENVIRONMENT.md](ENVIRONMENT.md) |
+
+Indexes are generated from `develop`, so they list **two** jobs and no schedule. That is correct, not
+drift — the branch rule above is why.
+
+On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
 `ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
 backend halves of the same ticket number are not in the same state, so check per repo.
 

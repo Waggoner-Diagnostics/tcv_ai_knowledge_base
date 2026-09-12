@@ -44,7 +44,7 @@ php-fpm sits behind the `backend-nginx` container, so `REMOTE_ADDR` is always th
 IP-keyed rate limiters share one platform-wide bucket and `RestrictIpMiddleware` can never match a
 real client.
 
-`bootstrap/app.php` now reads **`TRUSTED_PROXIES`** (`develop`, 2026-09-12) and calls `trustProxies()`
+`bootstrap/app.php` reads **`TRUSTED_PROXIES`** (on `develop` since 2026-09-12) and calls `trustProxies()`
 — but **only when it is non-empty**, and the default is empty, so nothing has changed in effect.
 
 ☠️ **Do not set `TRUSTED_PROXIES` yet.** `TCV-Frontend/nginx.conf:41` still carries
@@ -53,18 +53,47 @@ the hop today lets a caller choose their own IP and bypass every limiter. Narrow
 then set this to the same CIDR — never `*`. Read
 [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert) first.
 
-⚠️ **It must be a real OS/container env var, not a `.env` line.** The value is read with `env()` inside
-the `withMiddleware` closure — which runs before the config provider, so `config()` is unavailable there
-— and `entrypoint.sh` runs `config:cache` on every boot, after which `.env` is no longer parsed.
+☠️ **`TRUSTED_PROXIES` is not wired up yet — setting it changes nothing today.** It appears in exactly
+one place in the whole backend repo: the `env()` call in `bootstrap/app.php:51`. It is **not** in the
+`environment:` block of `docker-compose.yml` or `docker-compose-dev.yml`, not in `.env.example`, and not
+in `entrypoint.sh`.
 
-**Invitation delivery tuning** (all optional, `ws-404`; defaults are the deployed behaviour):
+That matters because of how env reaches this app. Compose passes an **explicit allowlist** —
+`KEY: ${KEY}`, 57 entries on `develop` — so a variable absent from that block never reaches the
+container whatever an env file says. Two separate steps are therefore needed, and they belong to
+different people:
 
-| Variable | Default | Controls |
-|---|---|---|
-| `MAIL_INVITATION_SEND_BUDGET` | `240` | Seconds for a whole bulk send, computed once across all batches |
-| `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
-| `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | How old a `pending` row must be before the sweep touches it |
-| `MAIL_INVITATION_SWEEP_BUDGET` | `60` | Seconds for one sweep batch |
+| Step | Owner |
+|---|---|
+| Add `TRUSTED_PROXIES: ${TRUSTED_PROXIES}` to the `environment:` block of both compose files | **code change in `TCV-Backend`** |
+| Supply the value for each environment | **DevOps** — env values are applied directly by them |
+
+⚠️ **And it must end up as a real container env var, not only a `.env` line.** The value is read with
+`env()` inside the `withMiddleware` closure — which runs before the config provider, so `config()` is
+unavailable there — and `entrypoint.sh:34` runs `config:cache` on every boot, after which Laravel stops
+parsing `.env` at runtime. The compose `environment:` route satisfies this; a bare `.env` entry does
+not. (Compose's own `${...}` interpolation reads a host-side `.env` next to the compose file — that is
+a different file from the Laravel `.env` inside the container, and only the compose one feeds the
+allowlist.)
+
+**Invitation delivery tuning** (all optional; defaults are the deployed behaviour):
+
+| Variable | Default | Branch | Controls |
+|---|---|---|---|
+| `MAIL_INVITATION_SEND_BUDGET` | `240` | `develop` | Seconds for a whole bulk send, computed once across all batches |
+| `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | ⚠️ `ws-404` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
+| `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | ⚠️ `ws-404` | How old a `pending` row must be before the sweep touches it |
+| `MAIL_INVITATION_SWEEP_BUDGET` | `60` | ⚠️ `ws-404` | Seconds for one sweep batch |
+
+Two gaps, both of which make these inert today:
+
+- The three `SWEEP` config keys do not exist on `develop` at all — they arrive with `ws-404`.
+- ⚠️ **None of the four is in the compose `environment:` block**, on either branch, so none can be
+  injected into the container even where the config key exists. `MAIL_INVITATION_SEND_BUDGET` is a live
+  config key on `develop` yet always resolves to its `240` default for exactly this reason. (`ws-404`
+  adds one invitation variable to compose — `MAIL_INVITATION_DISPATCH` — but not these.)
+
+Wiring any of them is a compose change in `TCV-Backend`, not something an env-file edit can deliver.
 
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
 **`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,

@@ -1,6 +1,6 @@
 # Method Index
 
-**882 methods across 209 classes.**
+**860 methods across 207 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -19,30 +19,12 @@ method — several controllers here run 400–900 lines.
 | CheckEmailTemplatePlaceholders | [`handle()`](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php#L24) | 24 | public | — | int |
 | CheckEmailTemplatePlaceholders | [`report()`](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php#L64) | 64 | private | `string $table`, `int $id`, `string $type`, `string $subject`, `string $body`, `string $context` | int |
 
-### `app/Console/Commands/MailPreflight.php`
-
-| Class | Method | Line | Vis | Params | Returns |
-|---|---|---|---|---|---|
-| MailPreflight | [`handle()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L40) | 40 | public | — | int |
-| MailPreflight | [`checkTransport()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L62) | 62 | private | — | void |
-| MailPreflight | [`checkSmtp()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L89) | 89 | private | — | void |
-| MailPreflight | [`checkSes()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L112) | 112 | private | — | void |
-| MailPreflight | [`sesClient()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L124) | 124 | private | — | ?SesV2Client |
-| MailPreflight | [`checkSesAccount()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L144) | 144 | private | `SesV2Client $client` | void |
-| MailPreflight | [`checkSesIdentity()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L210) | 210 | private | `SesV2Client $client` | void |
-| MailPreflight | [`identityIsVerified()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L248) | 248 | private | `SesV2Client $client`, `string $identity` | ?bool |
-| MailPreflight | [`checkPipeline()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L269) | 269 | private | — | void |
-| MailPreflight | [`checkQueueBacklog()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L290) | 290 | private | — | void |
-| MailPreflight | [`checkStuckInvitations()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L322) | 322 | private | — | void |
-| MailPreflight | [`good()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L349) | 349 | private | `string $message` | void |
-| MailPreflight | [`bad()`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L355) | 355 | private | `string $message` | void |
-
 ### `app/Console/Commands/SendPendingInvitations.php`
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
 | SendPendingInvitations | [`handle()`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php#L25) | 25 | public | `TestInvitationMailer $mailer` | int |
-| SendPendingInvitations | [`reclaimAbandonedClaims()`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php#L132) | 132 | private | `int $minutes` | int |
+| SendPendingInvitations | [`reclaimAbandonedClaims()`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php#L138) | 138 | private | `int $minutes` | int |
 
 ### `app/Console/Commands/SettleNegativeCreditBalances.php`
 
@@ -497,16 +479,16 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| TestInvitationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L32) | 32 | public | `TestInvitationMailer $invitationMailer`, `AuditService $auditService` | — |
-| TestInvitationController | [`sendInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L37) | 37 | public | `Request $request` | — |
-| TestInvitationController | [`createPendingInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L253) | 253 | private | `array $emails`, `int $testId`, `int $userId` | array |
-| TestInvitationController | [`dispatchEmailBatch()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L300) | 300 | private | `array $invitationIds`, `int $userId`, `?float $deadline = null` | void |
-| TestInvitationController | [`getUnregisteredInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L321) | 321 | public | `Request $request` | — |
-| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L402) | 402 | public | `int $invitationId` | — |
-| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L473) | 473 | public | `int $invitationId` | — |
-| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L541) | 541 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
-| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L549) | 549 | public | `Request $request` | — |
-| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L668) | 668 | public | `Request $request` | — |
+| TestInvitationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L23) | 23 | public | `TestInvitationMailer $invitationMailer`, `AuditService $auditService` | — |
+| TestInvitationController | [`sendInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L28) | 28 | public | `Request $request` | — |
+| TestInvitationController | [`createPendingInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L231) | 231 | private | `array $emails`, `int $testId`, `int $userId` | array |
+| TestInvitationController | [`dispatchEmailBatch()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L278) | 278 | private | `array $invitationIds`, `int $userId`, `?float $deadline = null` | void |
+| TestInvitationController | [`getUnregisteredInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L287) | 287 | public | `Request $request` | — |
+| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L362) | 362 | public | `int $invitationId` | — |
+| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L433) | 433 | public | `int $invitationId` | — |
+| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L501) | 501 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
+| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L509) | 509 | public | `Request $request` | — |
+| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L628) | 628 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/TestResumeController.php`
 
@@ -806,32 +788,19 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| SendTestInvitationEmailsJob | [`__construct()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L113) | 113 | public | `array $invitationIds`, `int $userId`, `?float $deadline = null` | — |
-| SendTestInvitationEmailsJob | [`handle()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L120) | 120 | public | `TestInvitationMailer $mailer` | void |
-| SendTestInvitationEmailsJob | [`sendBatch()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L149) | 149 | private | `TestInvitationMailer $mailer` | void |
-| SendTestInvitationEmailsJob | [`pastDeadline()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L321) | 321 | private | — | bool |
-| SendTestInvitationEmailsJob | [`claim()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L337) | 337 | private | `TestInvitation $invitation` | bool |
-| SendTestInvitationEmailsJob | [`release()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L357) | 357 | private | `TestInvitation $invitation` | void |
-| SendTestInvitationEmailsJob | [`sendOne()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L372) | 372 | private | `TestInvitationMailer $mailer`, `TestInvitation $invitation` | string |
-| SendTestInvitationEmailsJob | [`isConnectionFailure()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L479) | 479 | private | `Throwable $e` | bool |
-| SendTestInvitationEmailsJob | [`pause()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L512) | 512 | private | `int $seconds` | void |
-| SendTestInvitationEmailsJob | [`standDown()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L530) | 530 | private | — | void |
-| SendTestInvitationEmailsJob | [`hostIsUnreachable()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L535) | 535 | private | — | bool |
-| SendTestInvitationEmailsJob | [`resetHostStandDown()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L558) | 558 | public static | — | void |
-| SendTestInvitationEmailsJob | [`recordSent()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L571) | 571 | private | `TestInvitation $invitation` | void |
-| SendTestInvitationEmailsJob | [`isTransient()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L607) | 607 | private | `Throwable $e` | bool |
-| SendTestInvitationEmailsJob | [`capMessagesPerConnection()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L624) | 624 | private | — | void |
-| SendTestInvitationEmailsJob | [`resetConnection()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L636) | 636 | private | — | void |
-| SendTestInvitationEmailsJob | [`markFailed()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L666) | 666 | private | `TestInvitation $invitation`, `string $error` | void |
-| SendTestInvitationEmailsJob | [`failed()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L704) | 704 | public | `Throwable $e` | void |
-
-### `app/Jobs/SweepPendingInvitationsJob.php`
-
-| Class | Method | Line | Vis | Params | Returns |
-|---|---|---|---|---|---|
-| SweepPendingInvitationsJob | [`handle()`](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L63) | 63 | public | `TestInvitationMailer $mailer` | void |
-| SweepPendingInvitationsJob | [`sweep()`](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L80) | 80 | private | `TestInvitationMailer $mailer` | void |
-| SweepPendingInvitationsJob | [`clearThrottle()`](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L137) | 137 | public static | — | void |
+| SendTestInvitationEmailsJob | [`__construct()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L63) | 63 | public | `array $invitationIds`, `int $userId`, `?float $deadline = null` | — |
+| SendTestInvitationEmailsJob | [`handle()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L70) | 70 | public | `TestInvitationMailer $mailer` | void |
+| SendTestInvitationEmailsJob | [`sendBatch()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L99) | 99 | private | `TestInvitationMailer $mailer` | void |
+| SendTestInvitationEmailsJob | [`pastDeadline()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L208) | 208 | private | — | bool |
+| SendTestInvitationEmailsJob | [`claim()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L224) | 224 | private | `TestInvitation $invitation` | bool |
+| SendTestInvitationEmailsJob | [`release()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L244) | 244 | private | `TestInvitation $invitation` | void |
+| SendTestInvitationEmailsJob | [`sendOne()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L256) | 256 | private | `TestInvitationMailer $mailer`, `TestInvitation $invitation` | bool |
+| SendTestInvitationEmailsJob | [`recordSent()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L319) | 319 | private | `TestInvitation $invitation` | void |
+| SendTestInvitationEmailsJob | [`isTransient()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L355) | 355 | private | `Throwable $e` | bool |
+| SendTestInvitationEmailsJob | [`capMessagesPerConnection()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L372) | 372 | private | — | void |
+| SendTestInvitationEmailsJob | [`resetConnection()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L384) | 384 | private | — | void |
+| SendTestInvitationEmailsJob | [`markFailed()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L414) | 414 | private | `TestInvitation $invitation`, `string $error` | void |
+| SendTestInvitationEmailsJob | [`failed()`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L439) | 439 | public | `Throwable $e` | void |
 
 ### `app/Listeners/HandleLmsNotificationOnCompletion.php`
 
@@ -1143,9 +1112,8 @@ method — several controllers here run 400–900 lines.
 |---|---|---|---|---|---|
 | TestInvitation | [`test()`](../../../TCV-Backend/app/Models/TestInvitation.php#L55) | 55 | public | — | — |
 | TestInvitation | [`user()`](../../../TCV-Backend/app/Models/TestInvitation.php#L63) | 63 | public | — | — |
-| TestInvitation | [`scopeAwaitingDelivery()`](../../../TCV-Backend/app/Models/TestInvitation.php#L85) | 85 | public | `$query`, `int $olderThanMinutes` | — |
-| TestInvitation | [`isExpired()`](../../../TCV-Backend/app/Models/TestInvitation.php#L96) | 96 | public | — | bool |
-| TestInvitation | [`isValid()`](../../../TCV-Backend/app/Models/TestInvitation.php#L104) | 104 | public | — | bool |
+| TestInvitation | [`isExpired()`](../../../TCV-Backend/app/Models/TestInvitation.php#L71) | 71 | public | — | bool |
+| TestInvitation | [`isValid()`](../../../TCV-Backend/app/Models/TestInvitation.php#L79) | 79 | public | — | bool |
 
 ### `app/Models/TestResumeToken.php`
 

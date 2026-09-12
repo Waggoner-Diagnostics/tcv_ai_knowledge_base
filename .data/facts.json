@@ -1,15 +1,15 @@
 {
-    "generated_at": "2026-09-12T12:59:02+02:00",
+    "generated_at": "2026-09-12T13:05:34+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "3abe5aef",
-            "branch": "ws-404",
+            "sha": "fe989d4a",
+            "branch": "develop",
             "date": "2026-09-12"
         },
         "frontend": {
-            "sha": "29ef344",
-            "branch": "QA",
+            "sha": "8574b0f",
+            "branch": "develop",
             "date": "2026-09-12"
         },
         "website": {
@@ -129,256 +129,12 @@
             "relations": []
         },
         {
-            "name": "MailPreflight",
-            "fqcn": "App\\Console\\Commands\\MailPreflight",
-            "kind": "class",
-            "file": "app/Console/Commands/MailPreflight.php",
-            "line": 28,
-            "end_line": 360,
-            "extends": "Command",
-            "implements": [],
-            "traits": [],
-            "doc": "Answers \"is invitation email actually going to work here?\" before a send does.",
-            "methods": [
-                {
-                    "name": "handle",
-                    "line": 40,
-                    "end_line": 58,
-                    "visibility": "public",
-                    "static": false,
-                    "params": [],
-                    "returns": "int",
-                    "doc": "",
-                    "calls": [
-                        "info",
-                        "checkTransport",
-                        "checkPipeline",
-                        "newLine",
-                        "error"
-                    ]
-                },
-                {
-                    "name": "checkTransport",
-                    "line": 62,
-                    "end_line": 83,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "line",
-                        "bad",
-                        "checkSes",
-                        "checkSmtp",
-                        "warn"
-                    ]
-                },
-                {
-                    "name": "checkSmtp",
-                    "line": 89,
-                    "end_line": 110,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "Confirm the SMTP host is reachable, and say plainly that it is the wrong",
-                    "calls": [
-                        "bad",
-                        "good",
-                        "warn"
-                    ]
-                },
-                {
-                    "name": "checkSes",
-                    "line": 112,
-                    "end_line": 122,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "sesClient",
-                        "checkSesAccount",
-                        "checkSesIdentity"
-                    ]
-                },
-                {
-                    "name": "sesClient",
-                    "line": 124,
-                    "end_line": 142,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "?SesV2Client",
-                    "doc": "",
-                    "calls": [
-                        "bad"
-                    ]
-                },
-                {
-                    "name": "checkSesAccount",
-                    "line": 144,
-                    "end_line": 201,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "SesV2Client $client"
-                    ],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "getAccount",
-                        "bad",
-                        "getAwsErrorMessage",
-                        "good",
-                        "line",
-                        "warn"
-                    ]
-                },
-                {
-                    "name": "checkSesIdentity",
-                    "line": 210,
-                    "end_line": 243,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "SesV2Client $client"
-                    ],
-                    "returns": "void",
-                    "doc": "The From address has to be an identity SES will actually send as.",
-                    "calls": [
-                        "option",
-                        "bad",
-                        "identityIsVerified",
-                        "good",
-                        "warn"
-                    ]
-                },
-                {
-                    "name": "identityIsVerified",
-                    "line": 248,
-                    "end_line": 265,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "SesV2Client $client",
-                        "string $identity"
-                    ],
-                    "returns": "?bool",
-                    "doc": "",
-                    "calls": [
-                        "getEmailIdentity",
-                        "getAwsErrorCode",
-                        "warn",
-                        "getAwsErrorMessage"
-                    ]
-                },
-                {
-                    "name": "checkPipeline",
-                    "line": 269,
-                    "end_line": 284,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "newLine",
-                        "line",
-                        "checkQueueBacklog",
-                        "warn",
-                        "checkStuckInvitations"
-                    ]
-                },
-                {
-                    "name": "checkQueueBacklog",
-                    "line": 290,
-                    "end_line": 320,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "A backlog in `jobs` with nothing draining it is the silent failure this",
-                    "calls": [
-                        "Schema::hasTable",
-                        "bad",
-                        "count",
-                        "DB::table",
-                        "min",
-                        "good",
-                        "line",
-                        "warn"
-                    ]
-                },
-                {
-                    "name": "checkStuckInvitations",
-                    "line": 322,
-                    "end_line": 345,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "count",
-                        "TestInvitation::awaitingDelivery",
-                        "where",
-                        "TestInvitation::where",
-                        "subMinutes",
-                        "warn",
-                        "line",
-                        "good"
-                    ]
-                },
-                {
-                    "name": "good",
-                    "line": 349,
-                    "end_line": 352,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "string $message"
-                    ],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "line"
-                    ]
-                },
-                {
-                    "name": "bad",
-                    "line": 355,
-                    "end_line": 359,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "string $message"
-                    ],
-                    "returns": "void",
-                    "doc": "Records a blocking problem and drives the exit code.",
-                    "calls": [
-                        "line"
-                    ]
-                }
-            ],
-            "constants": [
-                {
-                    "name": "APP_SEND_RATE",
-                    "value": "",
-                    "line": 36
-                }
-            ],
-            "relations": []
-        },
-        {
             "name": "SendPendingInvitations",
             "fqcn": "App\\Console\\Commands\\SendPendingInvitations",
             "kind": "class",
             "file": "app/Console/Commands/SendPendingInvitations.php",
             "line": 17,
-            "end_line": 138,
+            "end_line": 144,
             "extends": "Command",
             "implements": [],
             "traits": [],
@@ -387,7 +143,7 @@
                 {
                     "name": "handle",
                     "line": 25,
-                    "end_line": 118,
+                    "end_line": 124,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -397,13 +153,14 @@
                     "doc": "",
                     "calls": [
                         "option",
-                        "SendTestInvitationEmailsJob::resetHostStandDown",
                         "reclaimAbandonedClaims",
                         "warn",
                         "get",
                         "limit",
                         "orderBy",
-                        "TestInvitation::awaitingDelivery",
+                        "where",
+                        "TestInvitation::where",
+                        "subMinutes",
                         "isEmpty",
                         "info",
                         "partition",
@@ -414,15 +171,14 @@
                         "groupBy",
                         "all",
                         "handle",
-                        "where",
                         "TestInvitation::whereIn",
                         "whereIn"
                     ]
                 },
                 {
                     "name": "reclaimAbandonedClaims",
-                    "line": 132,
-                    "end_line": 137,
+                    "line": 138,
+                    "end_line": 143,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6168,8 +5924,8 @@
             "fqcn": "App\\Http\\Controllers\\TestInvitationController",
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
-            "line": 22,
-            "end_line": 732,
+            "line": 21,
+            "end_line": 692,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -6177,8 +5933,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 32,
-                    "end_line": 35,
+                    "line": 23,
+                    "end_line": 26,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6191,8 +5947,8 @@
                 },
                 {
                     "name": "sendInvitations",
-                    "line": 37,
-                    "end_line": 242,
+                    "line": 28,
+                    "end_line": 220,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6214,16 +5970,14 @@
                         "increment",
                         "PatientTest::where",
                         "dispatchEmailBatch",
-                        "afterResponse",
-                        "SweepPendingInvitationsJob::dispatch",
                         "Log::error",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "createPendingInvitations",
-                    "line": 253,
-                    "end_line": 284,
+                    "line": 231,
+                    "end_line": 262,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6247,8 +6001,8 @@
                 },
                 {
                     "name": "dispatchEmailBatch",
-                    "line": 300,
-                    "end_line": 315,
+                    "line": 278,
+                    "end_line": 281,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6259,14 +6013,14 @@
                     "returns": "void",
                     "doc": "Schedule one batch of invitation emails to send after the response.",
                     "calls": [
-                        "SendTestInvitationEmailsJob::dispatch",
-                        "afterResponse"
+                        "afterResponse",
+                        "SendTestInvitationEmailsJob::dispatch"
                     ]
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 321,
-                    "end_line": 396,
+                    "line": 287,
+                    "end_line": 356,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6275,8 +6029,6 @@
                     "returns": "",
                     "doc": "Return test invitations that belong to the authenticated user",
                     "calls": [
-                        "afterResponse",
-                        "SweepPendingInvitationsJob::dispatch",
                         "id",
                         "get",
                         "orderBy",
@@ -6300,8 +6052,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 402,
-                    "end_line": 468,
+                    "line": 362,
+                    "end_line": 428,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6332,8 +6084,8 @@
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 473,
-                    "end_line": 533,
+                    "line": 433,
+                    "end_line": 493,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6364,8 +6116,8 @@
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 541,
-                    "end_line": 544,
+                    "line": 501,
+                    "end_line": 504,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6384,8 +6136,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 549,
-                    "end_line": 663,
+                    "line": 509,
+                    "end_line": 623,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6418,8 +6170,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 668,
-                    "end_line": 731,
+                    "line": 628,
+                    "end_line": 691,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6438,13 +6190,7 @@
                     ]
                 }
             ],
-            "constants": [
-                {
-                    "name": "DISPATCH_QUEUE",
-                    "value": "'queue'",
-                    "line": 30
-                }
-            ],
+            "constants": [],
             "relations": []
         },
         {
@@ -8921,8 +8667,8 @@
             "fqcn": "App\\Jobs\\SendTestInvitationEmailsJob",
             "kind": "class",
             "file": "app/Jobs/SendTestInvitationEmailsJob.php",
-            "line": 49,
-            "end_line": 719,
+            "line": 35,
+            "end_line": 457,
             "extends": "",
             "implements": [
                 "ShouldQueue"
@@ -8937,8 +8683,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 113,
-                    "end_line": 118,
+                    "line": 63,
+                    "end_line": 68,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8952,8 +8698,8 @@
                 },
                 {
                     "name": "handle",
-                    "line": 120,
-                    "end_line": 147,
+                    "line": 70,
+                    "end_line": 97,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8969,8 +8715,8 @@
                 },
                 {
                     "name": "sendBatch",
-                    "line": 149,
-                    "end_line": 316,
+                    "line": 99,
+                    "end_line": 203,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8980,8 +8726,6 @@
                     "doc": "",
                     "calls": [
                         "pastDeadline",
-                        "hostIsUnreachable",
-                        "Log::warning",
                         "capMessagesPerConnection",
                         "get",
                         "where",
@@ -8993,16 +8737,15 @@
                         "release",
                         "markFailed",
                         "sendOne",
-                        "standDown",
-                        "Log::error",
+                        "Log::warning",
                         "count",
                         "Log::info"
                     ]
                 },
                 {
                     "name": "pastDeadline",
-                    "line": 321,
-                    "end_line": 324,
+                    "line": 208,
+                    "end_line": 211,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -9012,8 +8755,8 @@
                 },
                 {
                     "name": "claim",
-                    "line": 337,
-                    "end_line": 347,
+                    "line": 224,
+                    "end_line": 234,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9030,8 +8773,8 @@
                 },
                 {
                     "name": "release",
-                    "line": 357,
-                    "end_line": 362,
+                    "line": 244,
+                    "end_line": 249,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9048,94 +8791,31 @@
                 },
                 {
                     "name": "sendOne",
-                    "line": 372,
-                    "end_line": 456,
+                    "line": 256,
+                    "end_line": 309,
                     "visibility": "private",
                     "static": false,
                     "params": [
                         "TestInvitationMailer $mailer",
                         "TestInvitation $invitation"
                     ],
-                    "returns": "string",
+                    "returns": "bool",
                     "doc": "Send one invitation, retrying transient SMTP failures.",
                     "calls": [
                         "send",
-                        "isConnectionFailure",
                         "isTransient",
                         "Log::warning",
                         "getMessage",
                         "resetConnection",
-                        "pause",
                         "Log::error",
                         "markFailed",
                         "recordSent"
                     ]
                 },
                 {
-                    "name": "isConnectionFailure",
-                    "line": 479,
-                    "end_line": 504,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "Throwable $e"
-                    ],
-                    "returns": "bool",
-                    "doc": "Did this failure happen to the connection rather than to the address?",
-                    "calls": [
-                        "getMessage"
-                    ]
-                },
-                {
-                    "name": "pause",
-                    "line": 512,
-                    "end_line": 527,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "int $seconds"
-                    ],
-                    "returns": "void",
-                    "doc": "Sleep, but never past the request's time budget.",
-                    "calls": []
-                },
-                {
-                    "name": "standDown",
-                    "line": 530,
-                    "end_line": 533,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "Declare the SMTP host out of service for the next stand-down window.",
-                    "calls": []
-                },
-                {
-                    "name": "hostIsUnreachable",
-                    "line": 535,
-                    "end_line": 548,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [],
-                    "returns": "bool",
-                    "doc": "",
-                    "calls": []
-                },
-                {
-                    "name": "resetHostStandDown",
-                    "line": 558,
-                    "end_line": 561,
-                    "visibility": "public",
-                    "static": true,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "Cancel the stand-down.",
-                    "calls": []
-                },
-                {
                     "name": "recordSent",
-                    "line": 571,
-                    "end_line": 596,
+                    "line": 319,
+                    "end_line": 344,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9151,8 +8831,8 @@
                 },
                 {
                     "name": "isTransient",
-                    "line": 607,
-                    "end_line": 616,
+                    "line": 355,
+                    "end_line": 364,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9166,8 +8846,8 @@
                 },
                 {
                     "name": "capMessagesPerConnection",
-                    "line": 624,
-                    "end_line": 634,
+                    "line": 372,
+                    "end_line": 382,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -9181,8 +8861,8 @@
                 },
                 {
                     "name": "resetConnection",
-                    "line": 636,
-                    "end_line": 647,
+                    "line": 384,
+                    "end_line": 395,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -9196,8 +8876,8 @@
                 },
                 {
                     "name": "markFailed",
-                    "line": 666,
-                    "end_line": 685,
+                    "line": 414,
+                    "end_line": 433,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9215,21 +8895,23 @@
                 },
                 {
                     "name": "failed",
-                    "line": 704,
-                    "end_line": 718,
+                    "line": 439,
+                    "end_line": 456,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "Throwable $e"
                     ],
                     "returns": "void",
-                    "doc": "The queue gave up on this batch: hand every row back, do not write it off.",
+                    "doc": "Every retry is exhausted — leave the batch's remaining rows failed and",
                     "calls": [
                         "Log::error",
                         "getMessage",
-                        "update",
-                        "where",
-                        "TestInvitation::whereIn"
+                        "each",
+                        "get",
+                        "whereIn",
+                        "TestInvitation::whereIn",
+                        "markFailed"
                     ]
                 }
             ],
@@ -9237,124 +8919,12 @@
                 {
                     "name": "BATCH_SIZE",
                     "value": "25",
-                    "line": 54
+                    "line": 40
                 },
                 {
                     "name": "MAX_ATTEMPTS_PER_EMAIL",
                     "value": "3",
-                    "line": 57
-                },
-                {
-                    "name": "MAX_CONSECUTIVE_CONNECTION_FAILURES",
-                    "value": "3",
-                    "line": 65
-                },
-                {
-                    "name": "HOST_STANDDOWN_SECONDS",
-                    "value": "60",
-                    "line": 75
-                },
-                {
-                    "name": "RESULT_SENT",
-                    "value": "'sent'",
-                    "line": 78
-                },
-                {
-                    "name": "RESULT_FAILED",
-                    "value": "'failed'",
-                    "line": 79
-                },
-                {
-                    "name": "RESULT_DEFERRED",
-                    "value": "'deferred'",
-                    "line": 80
-                }
-            ],
-            "relations": []
-        },
-        {
-            "name": "SweepPendingInvitationsJob",
-            "fqcn": "App\\Jobs\\SweepPendingInvitationsJob",
-            "kind": "class",
-            "file": "app/Jobs/SweepPendingInvitationsJob.php",
-            "line": 50,
-            "end_line": 144,
-            "extends": "",
-            "implements": [
-                "ShouldQueue"
-            ],
-            "traits": [
-                "Dispatchable",
-                "InteractsWithQueue",
-                "Queueable",
-                "SerializesModels"
-            ],
-            "doc": "Delivers invitations that an earlier send left behind, using ordinary web",
-            "methods": [
-                {
-                    "name": "handle",
-                    "line": 63,
-                    "end_line": 78,
-                    "visibility": "public",
-                    "static": false,
-                    "params": [
-                        "TestInvitationMailer $mailer"
-                    ],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "sweep",
-                        "Log::error",
-                        "getMessage"
-                    ]
-                },
-                {
-                    "name": "sweep",
-                    "line": 80,
-                    "end_line": 129,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "TestInvitationMailer $mailer"
-                    ],
-                    "returns": "void",
-                    "doc": "",
-                    "calls": [
-                        "get",
-                        "Cache::lock",
-                        "limit",
-                        "orderBy",
-                        "TestInvitation::awaitingDelivery",
-                        "isEmpty",
-                        "filter",
-                        "groupBy",
-                        "handle",
-                        "all",
-                        "pluck",
-                        "Log::info",
-                        "count"
-                    ]
-                },
-                {
-                    "name": "clearThrottle",
-                    "line": 137,
-                    "end_line": 143,
-                    "visibility": "public",
-                    "static": true,
-                    "params": [],
-                    "returns": "void",
-                    "doc": "Drop the throttle so the next request sweeps.",
-                    "calls": [
-                        "forceRelease",
-                        "Cache::lock"
-                    ]
-                }
-            ],
-            "constants": [
-                {
-                    "name": "LOCK_KEY",
-                    "value": "'invitations:sweep'",
-                    "line": 61
+                    "line": 43
                 }
             ],
             "relations": []
@@ -12305,7 +11875,7 @@
             "kind": "class",
             "file": "app/Models/TestInvitation.php",
             "line": 8,
-            "end_line": 108,
+            "end_line": 83,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -12340,26 +11910,9 @@
                     ]
                 },
                 {
-                    "name": "scopeAwaitingDelivery",
-                    "line": 85,
-                    "end_line": 91,
-                    "visibility": "public",
-                    "static": false,
-                    "params": [
-                        "$query",
-                        "int $olderThanMinutes"
-                    ],
-                    "returns": "",
-                    "doc": "Rows that were saved and charged for but never delivered.",
-                    "calls": [
-                        "where",
-                        "subMinutes"
-                    ]
-                },
-                {
                     "name": "isExpired",
-                    "line": 96,
-                    "end_line": 99,
+                    "line": 71,
+                    "end_line": 74,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12371,8 +11924,8 @@
                 },
                 {
                     "name": "isValid",
-                    "line": 104,
-                    "end_line": 107,
+                    "line": 79,
+                    "end_line": 82,
                     "visibility": "public",
                     "static": false,
                     "params": [],
