@@ -43,8 +43,10 @@ Five things to remember:
   })
   ```
 
-  ☠️ **Even on that branch it never fires.** The deployment has no cron entry and no `schedule:work`
-  container, so nothing calls `schedule:run`. Registering a task here does not make it run — see
+  📌 **Corrected 2026-09-14.** This said the task never fires even on `ws-404`. True of `b69a2c37`,
+  whose own comment calls the block "documentation of the intended shape" — but `07a1c9b2` then added a
+  `backend-scheduler` (`schedule:work`) service to both compose files, so **it does fire there**, every
+  ten minutes. On `develop` the trap stands: no block, no scheduler, nothing calls `schedule:run`. See
   [JOBS.md](JOBS.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
 - **`trustProxies()` is called here**, but only when `TRUSTED_PROXIES` is non-empty
   (comma-separated CIDRs). Deliberately not `*`. Empty default = trust nothing, so the Laravel half is
@@ -84,7 +86,19 @@ here simply never runs — with no error.
 | `config/filesystems.php` | `local` / `public` / `s3`; default is `local` |
 | `config/logging.php` | default `stack` → `single` ([LOGGING.md](LOGGING.md)) |
 | `config/app.php` | `frontend_url` and the derived **`frontend_app_url`** |
-| `config/mail.php` | `messages_per_connection` — **20** (`ws-404`); how many messages one SMTP connection may carry before it is recycled |
+| `config/mail.php` | `messages_per_connection` — **20** (`ws-404`); how many messages one SMTP connection may carry before it is recycled. ⚠️ `'default' => env('MAIL_MAILER', 'log')` — the fallback **discards mail** |
+
+⭐ **`ws-404` reworks the transport list** (unmerged):
+
+- Adds a **`ses-v2`** mailer. It talks to SES over HTTPS instead of opening an SMTP socket, which
+  removes the entire failure class the rest of that file works around — nothing to refuse on `:587`, no
+  per-connection message ceiling, no shared-mailbox connection limit, nothing for a firewall or fail2ban
+  to rate-limit. Credentials come from `services.ses`, which already reads the same `AWS_*` variables the
+  S3 disk uses, so switching is `MAIL_MAILER=ses-v2` and nothing else. v2 rather than legacy v1 because
+  SES exposes its rate and reputation controls only on v2.
+- ☠️ **Removes `log` from the `failover` chain**, which now reads `['ses-v2', 'smtp']`. `log` was never
+  a fallback: it discards the message and reports success, so a broken primary read as a clean send
+  while no patient received anything. A fallback has to be something that actually delivers.
 
 ☠️ **`MAIL_MESSAGES_PER_CONNECTION` cannot be set from the environment in a deployed container.**
 `.dockerignore` excludes `.env`, so the container has no env file, and the compose `environment:`

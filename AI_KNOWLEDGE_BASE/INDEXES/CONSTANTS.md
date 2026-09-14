@@ -20,12 +20,6 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
 
-### `AuthController` — `app/Http/Controllers/AuthController.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `SELF_SIGNUP_AUDIT_FIELDS` | `[…]` | [44](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L44) |
-
 ### `DiscountCodeController` — `app/Http/Controllers/DiscountCodeController.php`
 
 | Constant | Value | Line |
@@ -254,7 +248,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `EVENTS` | `[…]` | [67](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L67) |
+| `EVENTS` | `[…]` | [73](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L73) |
 
 ### `AuditService` — `app/Services/Audit/AuditService.php`
 
@@ -350,4 +344,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._

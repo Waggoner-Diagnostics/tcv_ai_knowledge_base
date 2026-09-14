@@ -51,6 +51,35 @@ Volumes: `/var/www/html/storage/logs` bind-mounted from the host, and `./public`
 ☠️ **No database service and no queue worker.** MySQL is external. Nothing consumes the `database`
 queue — LMS deliveries accumulate ([QUEUES.md](QUEUES.md)).
 
+### ⭐ `ws-404` adds two more services (unmerged)
+
+Both compose files gain a worker and a scheduler, which is what turns several standing ☠️ traps in this
+KB into `develop`-only ones:
+
+| Service | Command | Notes |
+|---|---|---|
+| `backend-queue` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384` | Drains the LMS backlog; also runs invitation batches when `MAIL_INVITATION_DISPATCH=queue` |
+| `backend-scheduler` | `schedule:work` | Runs the one scheduled task. Foreground, so the image needs no cron daemon. **Single replica by design** — the schedule is not written to run concurrently |
+
+Four details that are easy to "tidy" into a bug:
+
+- **`environment: &backend_env` / `*backend_env`.** The web service's env block is anchored and reused
+  verbatim. Splitting them lets a worker resolve a different database or mail host than the web process
+  and silently do the wrong work rather than fail.
+- **Both drop to `www-data`** via `su`, while the entrypoint still starts as root so its `chown` of
+  `storage/` works. Left as root, every file the worker wrote into the shared `storage/logs` volume
+  would be root-owned and php-fpm (uid 33) could not append to the day's log — logging breaks for the
+  whole web app until the next restart.
+- **`init: true`** puts tini at PID 1 so `SIGTERM` reaches php instead of stopping at the shell;
+  `queue:work` uses it to finish the job in hand. `stop_grace_period: 200s` covers one invitation batch
+  (`$timeout` is 180).
+- **`--max-time=3600`** recycles the worker hourly so a leaked connection or stale config cache cannot
+  accumulate in a long-lived process.
+
+⚠️ **Merging this starts real background work on first boot.** The LMS deliveries that have been
+accumulating in `lms_delivery_queue` begin draining, and `invitations:send-pending` starts running every
+ten minutes. Neither has ever executed in a deployed environment — expect a burst, not a quiet start.
+
 ## Boot (`entrypoint.sh`)
 
 ```
@@ -149,9 +178,13 @@ check the migration list before choosing a rolling deploy.
 7. Lookup tables populated (`compliances`, `privileges`, `organization_types`,
    `organization_settings_options`, `price_details`, `email_template`) — the app is unusable without them.
 8. **A queue worker**, if LMS delivery is expected to work: `php artisan queue:work` against the same
-   image and env.
-9. The SPA and website are **separate deployments** with their own nginx configs
-   (`TCV-Frontend/nginx.conf`, `nginx.integration.conf`).
+   image and env. (⭐ `ws-404` ships `backend-queue` for this — once it merges, this step is satisfied
+   by the compose file rather than by hand.)
+9. **`MAIL_MAILER`** — the config default is **`log`**, which accepts every message and delivers
+   nothing. It is in the compose allowlist, so this is a DevOps env value, not a code change. On
+   `ws-404`, `php artisan mail:preflight` fails the environment for exactly this ([JOBS.md](JOBS.md)).
+10. The SPA and website are **separate deployments** with their own nginx configs
+    (`TCV-Frontend/nginx.conf`, `nginx.integration.conf`).
 
 ## Rollback notes
 

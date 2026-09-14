@@ -128,10 +128,12 @@ calling it too — see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) and
 `database` driver and **no queue worker service exists in either compose file** — so unless a worker
 runs elsewhere, LMS deliveries sit in `jobs` unprocessed. See [QUEUES.md](QUEUES.md).
 
-⚠️ Unmerged `ws-404` adds both a one-task `->withSchedule(...)` and `SweepPendingInvitationsJob`. Only
-the second actually runs unattended: it is dispatched `->afterResponse()` from web requests and needs no
-scheduler, at the cost of needing traffic. The scheduled entry stays inert until a scheduler process
-exists. See [JOBS.md](JOBS.md).
+📌 **Corrected 2026-09-14.** This said only `SweepPendingInvitationsJob` runs unattended on `ws-404`,
+the scheduled entry staying inert for want of a scheduler process. That held for `b69a2c37`; the
+branch's second work commit (`07a1c9b2`) adds **`backend-queue`** and **`backend-scheduler`** services to
+both compose files. On `ws-404`, therefore, the schedule fires, the `database` queue is consumed, and
+this heading's two claims — nothing scheduled, no worker in either compose file — are **`develop`-only**.
+See [JOBS.md](JOBS.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 

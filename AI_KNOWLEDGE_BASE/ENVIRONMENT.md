@@ -84,16 +84,26 @@ allowlist.)
 | `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | ⚠️ `ws-404` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
 | `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | ⚠️ `ws-404` | How old a `pending` row must be before the sweep touches it |
 | `MAIL_INVITATION_SWEEP_BUDGET` | `60` | ⚠️ `ws-404` | Seconds for one sweep batch |
+| `MAIL_CONNECTION_RETRY_DELAY` | `2` | ⚠️ `ws-404` | Base seconds before retrying an address whose **connection** failed, multiplied by attempt number (≈2s then 4s). Longer than the 4xx retry on purpose: a 421 is the server talking and relents in about a second, whereas nothing answering on the port means a restarting daemon or a rate limiter. `phpunit.xml` sets it to **0** so the failure-path tests do not sleep through the suite |
+| `MAIL_INVITATION_DISPATCH` | `after_response` | ⚠️ `ws-404` | `queue` hands batches to `backend-queue`; anything else (or unset) runs them in the web process after the response |
 
-Two gaps, both of which make these inert today:
+Two gaps, and `ws-404` closes one of them for exactly one variable:
 
-- The three `SWEEP` config keys do not exist on `develop` at all — they arrive with `ws-404`.
-- ⚠️ **None of the four is in the compose `environment:` block**, on either branch, so none can be
-  injected into the container even where the config key exists. `MAIL_INVITATION_SEND_BUDGET` is a live
-  config key on `develop` yet always resolves to its `240` default for exactly this reason. (`ws-404`
-  adds one invitation variable to compose — `MAIL_INVITATION_DISPATCH` — but not these.)
+- The `SWEEP` keys, `connection_retry_delay` and `invitation_dispatch` do not exist on `develop` at
+  all — they arrive with `ws-404`.
+- ⚠️ **None of the budget/sweep/retry variables is in the compose `environment:` block**, on either
+  branch, so none can be injected into the container even where the config key exists.
+  `MAIL_INVITATION_SEND_BUDGET` is a live config key on `develop` yet always resolves to its `240`
+  default for exactly this reason.
+- ⭐ **`MAIL_INVITATION_DISPATCH` is the exception**: `ws-404` adds it to the allowlist in both compose
+  files, so it is the one invitation variable DevOps can actually set. That is deliberate — it is the
+  switch that needs turning per environment, and the others are tuning knobs.
 
-Wiring any of them is a compose change in `TCV-Backend`, not something an env-file edit can deliver.
+Wiring any of the rest is a compose change in `TCV-Backend`, not something an env-file edit can deliver.
+
+☠️ **Setting `MAIL_INVITATION_DISPATCH=queue` without `backend-queue` running is the dangerous
+combination** — batches accept into `jobs` and nothing sends them, with no error anywhere. The two
+arrive in the same commit, so this only bites if someone sets the variable against an older image.
 
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
 **`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,

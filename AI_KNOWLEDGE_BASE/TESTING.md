@@ -97,6 +97,19 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 lines have all landed, so `develop` is now the number that matters. Still untested: the test execution
 loop, resume, payments, reports, organisations.
 
+### ⚠️ `ws-404` adds 21 tests that are not on `develop` (unmerged)
+
+Counted from the branch, not measured — the suite was not run for this sync.
+
+| File | Δ | Covers |
+|---|---|---|
+| `TestInvitations/BatchedInvitationSendTest.php` | 13 → **28** | The connection-failure taxonomy and the dispatch modes: a refused connection leaves the row `pending` rather than `failed`, the recovery command then delivers it, three consecutive connection failures stop the batch, later batches skip a host already known down, **a rejected address does not trip the connection breaker**, `queue` mode dispatches to a worker and drops the FPM deadline while the default still sends after the response, the sweep's throttle/age/cancelled-row rules, and that a job the queue gives up on leaves rows recoverable without ever reopening an address already `sent` |
+| `TestInvitations/MailPreflightTest.php` | **+6** | `mail:preflight` — new file |
+
+⭐ **`phpunit.xml` sets `MAIL_CONNECTION_RETRY_DELAY=0`.** The connection-failure tests exhaust every
+retry on purpose; without it they would spend about a minute of the suite asleep. Keep it when adding to
+that file — a real backoff there is not extra realism, it is just a slower suite.
+
 ☠️ **`ws-417` is the first auth coverage that has ever existed**, but it is narrow: registration,
 login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
 `verify-password` remain untested.

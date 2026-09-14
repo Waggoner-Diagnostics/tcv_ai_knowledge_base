@@ -5,7 +5,7 @@
 | ID | Class | Kind | Extends | File:Line | Methods |
 |---|---|---|---|---|---|
 | `CTRL-001` | `AuditLogController` | class | Controller | [app/Http/Controllers/AuditLogController.php:12](../../../TCV-Backend/app/Http/Controllers/AuditLogController.php#L12) | 3 |
-| `CTRL-002` | `AuthController` | class | Controller | [app/Http/Controllers/AuthController.php:35](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L35) | 19 |
+| `CTRL-002` | `AuthController` | class | Controller | [app/Http/Controllers/AuthController.php:37](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L37) | 19 |
 | `CTRL-003` | `BuildsAuditDiffs` | trait | — | [app/Http/Controllers/Concerns/BuildsAuditDiffs.php:20](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L20) | 3 |
 | `CTRL-004` | `ConfirmPasswordController` | class | Controller | [app/Http/Controllers/Auth/ConfirmPasswordController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/ConfirmPasswordController.php#L8) | 1 |
 | `CTRL-005` | `ContactController` | class | Controller | [app/Http/Controllers/ContactController.php:14](../../../TCV-Backend/app/Http/Controllers/ContactController.php#L14) | 2 |
@@ -33,9 +33,9 @@
 | `CTRL-027` | `SuperAdminDashboardController` | class | Controller | [app/Http/Controllers/SuperAdminDashboardController.php:14](../../../TCV-Backend/app/Http/Controllers/SuperAdminDashboardController.php#L14) | 2 |
 | `CTRL-028` | `TestAnswerController` | class | Controller | [app/Http/Controllers/TestAnswerController.php:10](../../../TCV-Backend/app/Http/Controllers/TestAnswerController.php#L10) | 5 |
 | `CTRL-029` | `TestConditionController` | class | Controller | [app/Http/Controllers/TestConditionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestConditionController.php#L11) | 5 |
-| `CTRL-030` | `TestController` | class | Controller | [app/Http/Controllers/TestController.php:35](../../../TCV-Backend/app/Http/Controllers/TestController.php#L35) | 22 |
+| `CTRL-030` | `TestController` | class | Controller | [app/Http/Controllers/TestController.php:37](../../../TCV-Backend/app/Http/Controllers/TestController.php#L37) | 23 |
 | `CTRL-031` | `TestEmailTemplateController` | class | Controller | [app/Http/Controllers/TestEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php#L16) | 6 |
-| `CTRL-032` | `TestInvitationController` | class | Controller | [app/Http/Controllers/TestInvitationController.php:21](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L21) | 10 |
+| `CTRL-032` | `TestInvitationController` | class | Controller | [app/Http/Controllers/TestInvitationController.php:22](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L22) | 10 |
 | `CTRL-033` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:15](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L15) | 4 |
 | `CTRL-034` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-035` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
@@ -83,7 +83,7 @@
 | `MODEL-039` | `User` | class | Authenticatable | [app/Models/User.php:15](../../../TCV-Backend/app/Models/User.php#L15) | 12 |
 | `MODEL-040` | `UserEmailTemplate` | class | Model | [app/Models/UserEmailTemplate.php:9](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L9) | 2 |
 | `MODEL-041` | `UserStripeDetail` | class | Model | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | 1 |
-| `SVC-001` | `AuditEventCatalog` | class | — | [app/Services/Audit/AuditEventCatalog.php:65](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L65) | 3 |
+| `SVC-001` | `AuditEventCatalog` | class | — | [app/Services/Audit/AuditEventCatalog.php:71](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L71) | 5 |
 | `SVC-002` | `AuditLogger` | class | — | [app/Services/Audit/AuditLogger.php:7](../../../TCV-Backend/app/Services/Audit/AuditLogger.php#L7) | 1 |
 | `SVC-003` | `AuditService` | class | — | [app/Services/Audit/AuditService.php:23](../../../TCV-Backend/app/Services/Audit/AuditService.php#L23) | 16 |
 | `SVC-004` | `BasePaymentProvider` | class | — | [app/Services/PaymentProviders/BasePaymentProvider.php:10](../../../TCV-Backend/app/Services/PaymentProviders/BasePaymentProvider.php#L10) | 10 |
@@ -219,4 +219,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._

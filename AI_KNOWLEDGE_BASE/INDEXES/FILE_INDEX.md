@@ -48,7 +48,7 @@
 | [`app/Http/Controllers/SuperAdminDashboardController.php`](../../../TCV-Backend/app/Http/Controllers/SuperAdminDashboardController.php) | SuperAdminDashboardController | 2 |
 | [`app/Http/Controllers/TestAnswerController.php`](../../../TCV-Backend/app/Http/Controllers/TestAnswerController.php) | TestAnswerController | 5 |
 | [`app/Http/Controllers/TestConditionController.php`](../../../TCV-Backend/app/Http/Controllers/TestConditionController.php) | TestConditionController | 5 |
-| [`app/Http/Controllers/TestController.php`](../../../TCV-Backend/app/Http/Controllers/TestController.php) | TestController | 22 |
+| [`app/Http/Controllers/TestController.php`](../../../TCV-Backend/app/Http/Controllers/TestController.php) | TestController | 23 |
 | [`app/Http/Controllers/TestEmailTemplateController.php`](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php) | TestEmailTemplateController | 6 |
 | [`app/Http/Controllers/TestInvitationController.php`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php) | TestInvitationController | 10 |
 | [`app/Http/Controllers/TestResumeController.php`](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php) | TestResumeController | 4 |
@@ -146,7 +146,7 @@
 | [`app/Providers/LmsServiceProvider.php`](../../../TCV-Backend/app/Providers/LmsServiceProvider.php) | LmsServiceProvider | 2 |
 | [`app/Repositories/EmailTemplateRepository.php`](../../../TCV-Backend/app/Repositories/EmailTemplateRepository.php) | EmailTemplateRepository | 5 |
 | [`app/Rules/TurnstileToken.php`](../../../TCV-Backend/app/Rules/TurnstileToken.php) | TurnstileToken | 2 |
-| [`app/Services/Audit/AuditEventCatalog.php`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php) | AuditEventCatalog | 3 |
+| [`app/Services/Audit/AuditEventCatalog.php`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php) | AuditEventCatalog | 5 |
 | [`app/Services/Audit/AuditLogger.php`](../../../TCV-Backend/app/Services/Audit/AuditLogger.php) | AuditLogger | 1 |
 | [`app/Services/Audit/AuditService.php`](../../../TCV-Backend/app/Services/Audit/AuditService.php) | AuditService | 16 |
 | [`app/Services/Audit/PricingAuditService.php`](../../../TCV-Backend/app/Services/Audit/PricingAuditService.php) | PricingAuditService | 1 |
@@ -214,4 +214,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._

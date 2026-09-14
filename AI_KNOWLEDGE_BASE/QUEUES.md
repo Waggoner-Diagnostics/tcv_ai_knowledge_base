@@ -2,7 +2,7 @@
 
 `QUEUE_CONNECTION=database`. Tables: `jobs`, `job_batches`, `failed_jobs`.
 
-## ☠️ Nothing consumes the queue
+## ☠️ Nothing consumes the queue (on `develop`)
 
 Neither `docker-compose.yml` nor `docker-compose-dev.yml` defines a worker service, and
 `entrypoint.sh` ends with `exec php-fpm`. **Unless a worker runs somewhere outside these files,
@@ -15,6 +15,26 @@ synchronous), so `GET api/admin/lms/delivery-status` shows entries stuck at `pen
 diagnostic.
 
 To run one: `php artisan queue:work` in a container from the same image with the same environment.
+
+### ⭐ `ws-404` ships that worker (unmerged)
+
+`07a1c9b2` adds two long-running services to **both** compose files, so the statement above is scoped to
+`develop` and no longer describes that branch:
+
+| Service | Command | Exists for |
+|---|---|---|
+| `backend-queue` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384` | `ProcessLmsDeliveryJob` (the LMS backlog above) and invitation batches once `MAIL_INVITATION_DISPATCH=queue` |
+| `backend-scheduler` | `schedule:work` | The one scheduled task, `invitations:send-pending` — the foreground equivalent of a crontab entry, so the image still needs no cron daemon |
+
+Both reuse the web service's `environment:` block through a YAML anchor (`&backend_env` / `*backend_env`)
+so a worker cannot drift onto a different database or mail host than the web process, and both drop to
+`www-data` — a root-owned file in the shared `storage/logs` volume would stop php-fpm (uid 33) appending
+to the day's log and break logging for the whole app.
+
+⚠️ **`--queue=lms,default` is priority-ordered, and `--tries=1` is a floor, not a rule.** A job's own
+`$tries` overrides the flag, so `SendTestInvitationEmailsJob` still gets its 3 attempts while
+`ProcessLmsDeliveryJob` keeps the single attempt its manual retry state machine expects. Same for
+`--timeout`. Change the flags and you change neither job's behaviour — change the job.
 
 ## After-response dispatch (`ws-404`)
 
@@ -44,10 +64,36 @@ What that buys and what it costs:
 Keep it there.
 
 Anything left pending is recovered with `php artisan invitations:send-pending` ([JOBS.md](JOBS.md)) —
-on `develop` that is the only route, and nothing runs it automatically. ⚠️ Unmerged `ws-404` adds
-`SweepPendingInvitationsJob`, dispatched `->afterResponse()` from the send and list endpoints and
-throttled to one run per interval, which recovers them without an operator.
-Nothing runs that automatically.
+on `develop` that is the only route, and nothing runs it automatically. ⚠️ Unmerged `ws-404` adds two
+recovery paths that need no operator: `SweepPendingInvitationsJob`, dispatched `->afterResponse()` from
+the send and list endpoints and throttled to one run per interval, **and** the scheduled command now
+that the branch also ships a `backend-scheduler` service to run it.
+
+### ⭐ `ws-404` makes the dispatch mode configurable
+
+`dispatchEmailBatch()` gains a fork on `config('mail.invitation_dispatch')`:
+
+```php
+if (config('mail.invitation_dispatch') === 'queue') {
+    SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, null);   // no deadline
+    return;
+}
+SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, $deadline)->afterResponse();
+```
+
+| Mode | Default? | What changes |
+|---|---|---|
+| `after_response` | ✅ `MAIL_INVITATION_DISPATCH` unset ⇒ this | Today's behaviour, exactly as described above. `$tries`/`$backoff`/`failed()` stay inert |
+| `queue` | | Runs on `backend-queue`. Real retries, a `failed_jobs` dead-letter and no competition with web traffic for the FPM pool. **The deadline is passed as `null`** — it exists only to stop a send holding an FPM child, and on the queue path nothing is holding a request |
+
+☠️ **Setting `queue` without a running worker is worse than leaving it alone** — batches accept into
+`jobs` and nothing sends them, with no error anywhere, the same silent failure `ProcessLmsDeliveryJob`
+already suffers. The sweep is what keeps that recoverable rather than permanent: rows stay `pending`
+until something delivers them, so a dead worker degrades to *late* mail, not *lost* mail.
+
+⭐ **The sweep stays on `->afterResponse()` even in queue mode, deliberately.** Its job is to catch what
+nothing else delivered, and the case most needing catching is a dead worker — exactly when dispatching
+the sweep itself to the queue would achieve nothing.
 
 ## The LMS job
 
@@ -101,8 +147,9 @@ inside the password-set request.
 ## What is missing
 
 No `Schedule` — `routes/console.php` defines only the stock `inspire` command and `bootstrap/app.php`
-on `develop` has no `->withSchedule(...)`. (⚠️ Unmerged `ws-404` adds one task, but **nothing runs the
-scheduler** there either: no cron, no `schedule:work` container — see [JOBS.md](JOBS.md).)
+on `develop` has no `->withSchedule(...)`. (⚠️ Unmerged `ws-404` adds one task **and** the
+`backend-scheduler` service that runs it, so on that branch it does fire every ten minutes — see
+[JOBS.md](JOBS.md).)
 
 So there is **no** cleanup of expired sessions, invitations, resume tokens, or stale
 `personal_access_tokens`. Those tables grow without bound; the only expiry is checked at read time.

@@ -88,6 +88,19 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
+## Invitation delivery (⚠️ mostly `ws-404`, unmerged)
+
+| Change | Also check |
+|---|---|
+| `SendTestInvitationEmailsJob::isConnectionFailure()` — the needle list | ☠️ **This decides whether a customer is refunded and a patient un-invited.** A message that stops matching falls through to `failed`, which revokes the invitation and refunds the credit; one that matches too broadly defers a genuine rejection forever. The needles are the literal Symfony `Smtp\Stream\*` / `EsmtpTransport` formats, matched by string because Symfony gives them all exception code 0. Pin any edit with the connection tests in `BatchedInvitationSendTest` ([TESTING.md](TESTING.md)) |
+| `MAX_CONSECUTIVE_CONNECTION_FAILURES` / `HOST_STANDDOWN_SECONDS` | The stand-down is a **static**, shared by every batch in the FPM child and surviving across requests — which is why it expires on a timestamp and why `resetHostStandDown()` exists for `invitations:send-pending`. A per-instance rewrite silently makes each of a 500-address send's 20 batches rediscover the same outage |
+| Anything that resets `$consecutiveConnectionFailures` | A `failed` result **must** reset it alongside `sent`: a rejection aimed at one address is not evidence about the host, and counting it trips the breaker on a healthy server |
+| `mail.invitation_dispatch` | Setting `queue` requires `backend-queue` running, or batches pile up in `jobs` silently. It also makes `$tries`/`$backoff`/`failed()` live for the first time — check `failed()` still only *releases* claims and never reopens a `sent` row ([JOBS.md](JOBS.md)) |
+| `TestInvitation::scopeAwaitingDelivery()` | Three readers — `invitations:send-pending`, `SweepPendingInvitationsJob`, and the job's own re-query. It exists so they cannot drift; the `is_revoked` / `expires_at` clauses are what stop a cancelled-and-refunded invitation being mailed ([CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md)) |
+| The `failover` mailer chain | ☠️ Never put `log` or `array` in it. Both accept every message and report success while delivering nothing, so a broken primary reads as a clean send ([THIRD_PARTY.md](THIRD_PARTY.md)) |
+
+---
+
 ## Routes
 
 | Change | Also check |

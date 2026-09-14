@@ -1,6 +1,6 @@
 # Method Index
 
-**860 methods across 207 classes.**
+**863 methods across 207 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -159,25 +159,25 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuthController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L53) | 53 | public | `StripeService $stripeService`, `AuditService $auditService` | — |
-| AuthController | [`login()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L59) | 59 | public | `Request $request` | — |
-| AuthController | [`createStripeCustomer()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L237) | 237 | private | `User $user` | — |
-| AuthController | [`register()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L246) | 246 | public | `UserRequest $request` | — |
-| AuthController | [`sendResetLinkEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L318) | 318 | public | `Request $request` | — |
-| AuthController | [`setOrResetPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L361) | 361 | public | `Request $request` | — |
-| AuthController | [`verifySetupToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L466) | 466 | public | `Request $request` | — |
-| AuthController | [`verifyEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L489) | 489 | public | `Request $request` | — |
-| AuthController | [`logout()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L524) | 524 | public | `Request $request` | — |
-| AuthController | [`impersonationTargetLabel()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L553) | 553 | private | `User $target` | string |
-| AuthController | [`impersonateUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L562) | 562 | public | `Request $request`, `$id` | — |
-| AuthController | [`stopImpersonation()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L601) | 601 | public | `Request $request`, `$id` | — |
-| AuthController | [`isTokenValid()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L645) | 645 | public static | `Request $request` | — |
-| AuthController | [`verifyPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L704) | 704 | public | `Request $request` | — |
-| AuthController | [`changePassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L744) | 744 | public | `Request $request` | — |
-| AuthController | [`sendVerificationEmailForUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L782) | 782 | private | `User $user` | — |
-| AuthController | [`verifyEmailByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L908) | 908 | public | `Request $request` | — |
-| AuthController | [`resendVerificationByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L982) | 982 | public | `Request $request` | — |
-| AuthController | [`resendEmailVerificationLink()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1013) | 1013 | public | `Request $request` | — |
+| AuthController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L45) | 45 | public | `StripeService $stripeService`, `AuditService $auditService` | — |
+| AuthController | [`login()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L51) | 51 | public | `Request $request` | — |
+| AuthController | [`createStripeCustomer()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L229) | 229 | private | `User $user` | — |
+| AuthController | [`register()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L238) | 238 | public | `UserRequest $request` | — |
+| AuthController | [`sendResetLinkEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L323) | 323 | public | `Request $request` | — |
+| AuthController | [`setOrResetPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L366) | 366 | public | `Request $request` | — |
+| AuthController | [`verifySetupToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L471) | 471 | public | `Request $request` | — |
+| AuthController | [`verifyEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L494) | 494 | public | `Request $request` | — |
+| AuthController | [`logout()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L529) | 529 | public | `Request $request` | — |
+| AuthController | [`impersonationTargetLabel()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L558) | 558 | private | `User $target` | string |
+| AuthController | [`impersonateUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L567) | 567 | public | `Request $request`, `$id` | — |
+| AuthController | [`stopImpersonation()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L606) | 606 | public | `Request $request`, `$id` | — |
+| AuthController | [`isTokenValid()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L650) | 650 | public static | `Request $request` | — |
+| AuthController | [`verifyPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L709) | 709 | public | `Request $request` | — |
+| AuthController | [`changePassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L749) | 749 | public | `Request $request` | — |
+| AuthController | [`sendVerificationEmailForUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L787) | 787 | private | `User $user` | — |
+| AuthController | [`verifyEmailByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L913) | 913 | public | `Request $request` | — |
+| AuthController | [`resendVerificationByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L987) | 987 | public | `Request $request` | — |
+| AuthController | [`resendEmailVerificationLink()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1018) | 1018 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/Concerns/BuildsAuditDiffs.php`
 
@@ -277,16 +277,16 @@ method — several controllers here run 400–900 lines.
 | OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L302) | 302 | public | `OrganizationRequest $request` | — |
 | OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L386) | 386 | public | `$id` | — |
 | OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L400) | 400 | public | `OrganizationRequest $request`, `$id` | — |
-| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L557) | 557 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L584) | 584 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L638) | 638 | public | `Request $request` | — |
-| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L698) | 698 | public | `Request $request` | — |
-| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L827) | 827 | private | `$organizationId` | — |
-| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L903) | 903 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L951) | 951 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L990) | 990 | public | `Request $request` | — |
-| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1024) | 1024 | private | `$orgCollection` | Collection |
-| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1070) | 1070 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
+| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L580) | 580 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L607) | 607 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L661) | 661 | public | `Request $request` | — |
+| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L721) | 721 | public | `Request $request` | — |
+| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L850) | 850 | private | `$organizationId` | — |
+| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L926) | 926 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L974) | 974 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1013) | 1013 | public | `Request $request` | — |
+| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1047) | 1047 | private | `$orgCollection` | Collection |
+| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1093) | 1093 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
 
 ### `app/Http/Controllers/OrganizationPatientController.php`
 
@@ -441,28 +441,29 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| TestController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L49) | 49 | public | `TestService $testService`, `TestAssignmentService $assignmentService`, `TestExecutionService $executionService`, `TestResultService $resultService`, `LmsLaunchService $launchService`, `AuditService $auditService` | — |
-| TestController | [`index()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L65) | 65 | public | `Request $request` | — |
-| TestController | [`userIndex()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L75) | 75 | public | `Request $request` | — |
-| TestController | [`store()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L104) | 104 | public | `TestRequest $request` | — |
-| TestController | [`show()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L113) | 113 | public | `Request $request`, `$id` | — |
-| TestController | [`update()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L121) | 121 | public | `TestRequest $request`, `$id` | — |
-| TestController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L161) | 161 | public | `Request $request`, `$id` | — |
-| TestController | [`assignTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L178) | 178 | public | `CreateTestRequest $request` | — |
-| TestController | [`performTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L286) | 286 | public | `PerformTestRequest $request` | — |
-| TestController | [`getTestSession()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L324) | 324 | public | `$unique_test_id` | — |
-| TestController | [`getSectionPlates()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L353) | 353 | public | `$unique_test_id`, `$section_id` | — |
-| TestController | [`getPlateUrl()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L379) | 379 | public | `string $unique_test_id`, `int $test_answer_id` | — |
-| TestController | [`getTestResult()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L406) | 406 | public | `$unique_test_id` | — |
-| TestController | [`downloadTestResultPDF()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L450) | 450 | public | `Request $request`, `$unique_test_id` | — |
-| TestController | [`organizationAllowsDownload()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L573) | 573 | private | `Request $request`, `PatientTest $patientTest` | bool |
-| TestController | [`callerOwnsPatientTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L621) | 621 | private | `Request $request`, `PatientTest $patientTest` | bool |
-| TestController | [`callerOwnsPatient()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L661) | 661 | private | `Request $request`, `Patient $patient` | bool |
-| TestController | [`getActiveTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L714) | 714 | public | `Request $request` | — |
-| TestController | [`getActiveTestsWithAssignmentFlag()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L786) | 786 | public | `Request $request` | — |
-| TestController | [`assignUserTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L811) | 811 | public | `$id` | — |
-| TestController | [`unassignUserTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L819) | 819 | public | `$id` | — |
-| TestController | [`bulkUpdateAssignment()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L832) | 832 | public | `Request $request` | — |
+| TestController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L51) | 51 | public | `TestService $testService`, `TestAssignmentService $assignmentService`, `TestExecutionService $executionService`, `TestResultService $resultService`, `LmsLaunchService $launchService`, `AuditService $auditService` | — |
+| TestController | [`index()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L67) | 67 | public | `Request $request` | — |
+| TestController | [`userIndex()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L77) | 77 | public | `Request $request` | — |
+| TestController | [`store()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L106) | 106 | public | `TestRequest $request` | — |
+| TestController | [`show()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L115) | 115 | public | `Request $request`, `$id` | — |
+| TestController | [`update()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L123) | 123 | public | `TestRequest $request`, `$id` | — |
+| TestController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L168) | 168 | public | `Request $request`, `$id` | — |
+| TestController | [`assignTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L185) | 185 | public | `CreateTestRequest $request` | — |
+| TestController | [`performTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L296) | 296 | public | `PerformTestRequest $request` | — |
+| TestController | [`getTestSession()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L334) | 334 | public | `$unique_test_id` | — |
+| TestController | [`getSectionPlates()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L363) | 363 | public | `$unique_test_id`, `$section_id` | — |
+| TestController | [`getPlateUrl()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L389) | 389 | public | `string $unique_test_id`, `int $test_answer_id` | — |
+| TestController | [`getTestResult()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L416) | 416 | public | `$unique_test_id` | — |
+| TestController | [`downloadTestResultPDF()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L460) | 460 | public | `Request $request`, `$unique_test_id` | — |
+| TestController | [`organizationAllowsDownload()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L583) | 583 | private | `Request $request`, `PatientTest $patientTest` | bool |
+| TestController | [`callerOwnsPatientTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L631) | 631 | private | `Request $request`, `PatientTest $patientTest` | bool |
+| TestController | [`callerOwnsPatient()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L671) | 671 | private | `Request $request`, `Patient $patient` | bool |
+| TestController | [`getActiveTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L724) | 724 | public | `Request $request` | — |
+| TestController | [`getActiveTestsWithAssignmentFlag()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L796) | 796 | public | `Request $request` | — |
+| TestController | [`assignUserTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L821) | 821 | public | `Request $request`, `$id` | — |
+| TestController | [`unassignUserTest()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L834) | 834 | public | `Request $request`, `$id` | — |
+| TestController | [`logAssignedTestsChange()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L859) | 859 | private | `Request $request`, `User $user`, `array $before`, `array $after` | void |
+| TestController | [`bulkUpdateAssignment()`](../../../TCV-Backend/app/Http/Controllers/TestController.php#L877) | 877 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/TestEmailTemplateController.php`
 
@@ -479,16 +480,16 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| TestInvitationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L23) | 23 | public | `TestInvitationMailer $invitationMailer`, `AuditService $auditService` | — |
-| TestInvitationController | [`sendInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L28) | 28 | public | `Request $request` | — |
-| TestInvitationController | [`createPendingInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L231) | 231 | private | `array $emails`, `int $testId`, `int $userId` | array |
-| TestInvitationController | [`dispatchEmailBatch()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L278) | 278 | private | `array $invitationIds`, `int $userId`, `?float $deadline = null` | void |
-| TestInvitationController | [`getUnregisteredInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L287) | 287 | public | `Request $request` | — |
-| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L362) | 362 | public | `int $invitationId` | — |
-| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L433) | 433 | public | `int $invitationId` | — |
-| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L501) | 501 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
-| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L509) | 509 | public | `Request $request` | — |
-| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L628) | 628 | public | `Request $request` | — |
+| TestInvitationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L24) | 24 | public | `TestInvitationMailer $invitationMailer`, `AuditService $auditService` | — |
+| TestInvitationController | [`sendInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L29) | 29 | public | `Request $request` | — |
+| TestInvitationController | [`createPendingInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L248) | 248 | private | `array $emails`, `int $testId`, `int $userId` | array |
+| TestInvitationController | [`dispatchEmailBatch()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L295) | 295 | private | `array $invitationIds`, `int $userId`, `?float $deadline = null` | void |
+| TestInvitationController | [`getUnregisteredInvitations()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L304) | 304 | public | `Request $request` | — |
+| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L379) | 379 | public | `int $invitationId` | — |
+| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L450) | 450 | public | `int $invitationId` | — |
+| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L518) | 518 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
+| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L526) | 526 | public | `Request $request` | — |
+| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L645) | 645 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/TestResumeController.php`
 
@@ -529,11 +530,11 @@ method — several controllers here run 400–900 lines.
 | UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L103) | 103 | public | `UserRequest $request` | — |
 | UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L195) | 195 | public | `string $id` | — |
 | UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L204) | 204 | public | `UserRequest $request`, `$id` | — |
-| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L288) | 288 | public | — | — |
-| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L305) | 305 | public | `Request $request`, `string $id` | — |
-| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L345) | 345 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L465) | 465 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L483) | 483 | private | `$userCollection` | — |
+| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L318) | 318 | public | — | — |
+| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L335) | 335 | public | `Request $request`, `string $id` | — |
+| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L375) | 375 | public | `Request $request`, `$usertype` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L495) | 495 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L513) | 513 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -1298,9 +1299,11 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuditEventCatalog | [`get()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L416) | 416 | public static | `string $eventKey` | array |
-| AuditEventCatalog | [`accountEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L435) | 435 | public static | `int $usertype`, `string $action` | string |
-| AuditEventCatalog | [`creditEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L455) | 455 | public static | `int $usertype`, `string $action` | string |
+| AuditEventCatalog | [`get()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L448) | 448 | public static | `string $eventKey` | array |
+| AuditEventCatalog | [`accountEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L467) | 467 | public static | `int $usertype`, `string $action` | string |
+| AuditEventCatalog | [`creditEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L487) | 487 | public static | `int $usertype`, `string $action` | string |
+| AuditEventCatalog | [`statusChangeTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L506) | 506 | public static | `string $eventKey`, `string $afterStatus` | string |
+| AuditEventCatalog | [`invitationSentTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L517) | 517 | public static | `int $recipientCount` | string |
 
 ### `app/Services/Audit/AuditLogger.php`
 
@@ -1312,22 +1315,22 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuditService | [`log()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L84) | 84 | public | `string $eventKey`, `string $description`, `?User $actor`, `?User $target = null`, `string $status = 'success'`, `array $details = []`, `array $changes = []`, `?Request $request = null`, `?string $sessionKeyOverride = null` | ?AuditLog |
-| AuditService | [`personSnapshot()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L167) | 167 | private | `?User $user` | ?array |
-| AuditService | [`roleFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L189) | 189 | public static | `int $usertype` | string |
-| AuditService | [`lookupCountry()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L199) | 199 | private | `?string $ip` | ?string |
-| AuditService | [`parseBrowser()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L223) | 223 | private | `?string $userAgent` | ?string |
-| AuditService | [`sessionKeyForToken()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L262) | 262 | public static | `string $plainTextToken` | string |
-| AuditService | [`sessionKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L267) | 267 | private | `?Request $request` | ?string |
-| AuditService | [`maskDetails()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L306) | 306 | public | `array $details`, `bool $maskPatientData = true` | array |
-| AuditService | [`maskChanges()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L325) | 325 | public | `array $changes`, `bool $maskPatientData = true` | array |
-| AuditService | [`isDenylistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L339) | 339 | public | `string $key` | bool |
-| AuditService | [`isSecretKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L347) | 347 | private | `string $key` | bool |
-| AuditService | [`isPhiKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L355) | 355 | private | `string $key` | bool |
-| AuditService | [`keyMatches()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L363) | 363 | private | `string $key`, `array $terms` | bool |
-| AuditService | [`isDateAllowlistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L380) | 380 | private | `string $key` | bool |
-| AuditService | [`maskValue()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L396) | 396 | private | `mixed $value`, `bool $isDateAllowlisted = false`, `bool $maskPatientData = true` | mixed |
-| AuditService | [`maskFreeText()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L441) | 441 | private | `string $text`, `bool $maskPatientData = true` | string |
+| AuditService | [`log()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L91) | 91 | public | `string $eventKey`, `string $description`, `?User $actor`, `?User $target = null`, `string $status = 'success'`, `array $details = []`, `array $changes = []`, `?Request $request = null`, `?string $sessionKeyOverride = null`, `?string $eventTitleOverride = null` | ?AuditLog |
+| AuditService | [`personSnapshot()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L175) | 175 | private | `?User $user` | ?array |
+| AuditService | [`roleFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L197) | 197 | public static | `int $usertype` | string |
+| AuditService | [`lookupCountry()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L207) | 207 | private | `?string $ip` | ?string |
+| AuditService | [`parseBrowser()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L231) | 231 | private | `?string $userAgent` | ?string |
+| AuditService | [`sessionKeyForToken()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L270) | 270 | public static | `string $plainTextToken` | string |
+| AuditService | [`sessionKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L275) | 275 | private | `?Request $request` | ?string |
+| AuditService | [`maskDetails()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L314) | 314 | public | `array $details`, `bool $maskPatientData = true` | array |
+| AuditService | [`maskChanges()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L333) | 333 | public | `array $changes`, `bool $maskPatientData = true` | array |
+| AuditService | [`isDenylistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L347) | 347 | public | `string $key` | bool |
+| AuditService | [`isSecretKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L355) | 355 | private | `string $key` | bool |
+| AuditService | [`isPhiKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L363) | 363 | private | `string $key` | bool |
+| AuditService | [`keyMatches()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L371) | 371 | private | `string $key`, `array $terms` | bool |
+| AuditService | [`isDateAllowlistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L388) | 388 | private | `string $key` | bool |
+| AuditService | [`maskValue()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L404) | 404 | private | `mixed $value`, `bool $isDateAllowlisted = false`, `bool $maskPatientData = true` | mixed |
+| AuditService | [`maskFreeText()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L449) | 449 | private | `string $text`, `bool $maskPatientData = true` | string |
 
 ### `app/Services/Audit/PricingAuditService.php`
 
@@ -1761,9 +1764,9 @@ method — several controllers here run 400–900 lines.
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
 | AuditLogSeeder | [`scenarios()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L54) | 54 | private | — | array |
-| AuditLogSeeder | [`run()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L149) | 149 | public | — | void |
-| AuditLogSeeder | [`offsetFor()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L184) | 184 | private | `int $index` | Carbon |
-| AuditLogSeeder | [`row()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L195) | 195 | private | `string $category`, `string $eventTitle`, `string $sensitivity`, `?array $actor`, `?array $target`, `string $status`, `Carbon $createdAt`, `array $details = []`, `array $changes = []` | array |
+| AuditLogSeeder | [`run()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L152) | 152 | public | — | void |
+| AuditLogSeeder | [`offsetFor()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L187) | 187 | private | `int $index` | Carbon |
+| AuditLogSeeder | [`row()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L198) | 198 | private | `string $category`, `string $eventTitle`, `string $sensitivity`, `?array $actor`, `?array $target`, `string $status`, `Carbon $createdAt`, `array $details = []`, `array $changes = []` | array |
 
 ### `database/seeders/BaselineTestSectionSeeder.php`
 
@@ -1903,4 +1906,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-12. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._

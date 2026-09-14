@@ -41,6 +41,31 @@ for 880 s. `Storage::disk('s3')->temporaryUrl(...)` with `ResponseContentDisposi
 ☠️ `FILESYSTEM_DISK` defaults to `local`; only `SecureImageService` names `s3` explicitly. Anything that
 relies on the default disk writes to the container filesystem, which is not persisted.
 
+## AWS SES (⚠️ `ws-404`, unmerged)
+
+`config/services.php` has always carried SES credentials — they read the **same `AWS_*` variables the S3
+disk uses** — but no mailer selected them. `ws-404` adds a **`ses-v2`** mailer, making SES reachable with
+`MAIL_MAILER=ses-v2` and no other change. `MAIL_MAILER` is in the compose allowlist, so this is a DevOps
+env value rather than a code change.
+
+Why it matters more than a transport swap: SES v2 goes over **HTTPS**, which deletes the entire failure
+class the invitation job works around — no socket to refuse on `:587`, no per-connection message ceiling
+(`messages_per_connection`), no shared-mailbox connection limit, nothing for a firewall or fail2ban to
+rate-limit. The connection-failure/deferral machinery in
+[CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) becomes a fallback path rather than the
+common one. v2 rather than legacy v1 because SES exposes its rate and reputation controls only on v2.
+
+☠️ **The `failover` chain used to end in `log`, and that was not a fallback.** `log` accepts every
+message and delivers none while reporting success, so a broken primary read as a clean send and no
+patient received anything. `ws-404` changes the chain to `['ses-v2', 'smtp']`. The same trap still sits
+in `config/mail.php`'s `'default' => env('MAIL_MAILER', 'log')` — an unset `MAIL_MAILER` silently
+discards all mail, which is the first thing `php artisan mail:preflight` checks for ([JOBS.md](JOBS.md)).
+
+⚠️ **SES identity verification is account state, not config.** `mail:preflight` calls SES v2 to confirm
+the `from` address is a verified identity and reports account-level sending state; a correct config with
+an unverified sender still delivers nothing. [not deeply traced] — the preflight's SES account checks
+were read at the signature level, not exercised against a live account.
+
 ## HubSpot
 
 One method, `submitEnquiry()`, called from `ContactController::submit()`

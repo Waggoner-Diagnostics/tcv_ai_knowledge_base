@@ -101,9 +101,25 @@ delivered is refunded individually by the job. Consequences worth knowing:
 
 - A send that is interrupted (container restart) leaves rows at `email_status = 'pending'` **already
   charged**. On `develop`, `php artisan invitations:send-pending` finishes them and nothing runs it
-  automatically. ⚠️ Unmerged `ws-404` adds `SweepPendingInvitationsJob`, which clears them without an
-  operator — dispatched after the response from the send and invitation-list endpoints, so recovery
-  needs web traffic rather than a scheduler. See [../JOBS.md](../JOBS.md).
+  automatically. ⭐ Unmerged `ws-404` adds two automatic paths: `SweepPendingInvitationsJob` (dispatched
+  after the response from the send and invitation-list endpoints, so it needs web traffic) **and** the
+  scheduled command, now that the branch also ships a `backend-scheduler` service.
+  See [../JOBS.md](../JOBS.md).
+
+⭐ **`ws-404` narrows what counts as "undeliverable", and that changes the refund rate** (unmerged). A
+refund now fires only when the SMTP server **rejected the recipient**. A failure to reach the server at
+all — refused connection, dropped socket, TLS that never completed — leaves the row `pending` with its
+charge and its live token intact, for a sweep to retry.
+
+☠️ Before this, an unreachable mail host produced a burst of `SOURCE_REVOKED` refund grants — one per
+address in flight — and revoked every one of those invitations. The credits balanced, but the customer's
+patients were silently un-invited and had to be re-sent by hand. If you are reconciling credit history
+across a known outage window on `develop`, that burst is the signature to look for.
+
+⚠️ **`SendTestInvitationEmailsJob::failed()` no longer refunds either.** It used to mark the whole batch
+failed, revoked and refunded; on `ws-404` it only releases `sending` claims back to `pending`, leaving
+`sent` and `failed` rows alone. The job dying says nothing about whether any address is deliverable.
+This becomes reachable for the first time under `mail.invitation_dispatch=queue`.
 - A refunded row is also `is_revoked = true`, which deliberately blocks both resend and cancel — a
   resend would be free and a cancel would refund the same charge twice.
 - The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller. This

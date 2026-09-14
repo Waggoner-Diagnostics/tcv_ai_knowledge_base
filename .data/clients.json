@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-12T13:20:31+02:00",
+    "generated_at": "2026-09-14T12:54:52+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -1523,7 +1523,7 @@
             "hooks": 18,
             "pages": 91,
             "components": 49,
-            "loc": 39373
+            "loc": 39374
         }
     },
     "website": {

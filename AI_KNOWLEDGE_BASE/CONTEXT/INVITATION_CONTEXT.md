@@ -247,6 +247,34 @@ no buttons, because both remediation endpoints 404 on a revoked row.
 A row stuck at `pending` means a send was interrupted — the batch job leaves it there when it cannot
 reach the SMTP host.
 
+⭐ **`ws-404` makes that distinction explicit, and it is the point of the branch.** `sendOne()` returns
+`sent` / `failed` / `deferred` instead of a bool:
+
+```
+pending ──────► sent       accepted by the server
+   │
+   ├──────────► failed     the server REJECTED THIS RECIPIENT
+   │                       → credit refunded, is_revoked = true      (a verdict on the address)
+   │
+   └──────────► pending    we never reached the server at all
+                           → claim released, charge and token intact (a verdict on nothing)
+```
+
+☠️ Before this, both arms went to `failed`. A few minutes of mail-host downtime therefore looked like a
+scattering of undeliverable patients — each revoked, each refunded, each needing to be re-sent by hand.
+`isConnectionFailure()` separates them by matching the literal Symfony message formats, because Symfony
+gives every one of them exception code 0 and the message is the only discriminator.
+
+⚠️ Two of those needles (`has been closed unexpectedly`, and the read/write failures) can in principle
+fire *after* the server accepted DATA, so deferring them risks a **duplicate email**. That is the
+deliberate trade and the same one `recordSent()` already makes: a duplicate is milder than revoking an
+invitation the recipient is holding in their inbox.
+
+A batch stops after `MAX_CONSECUTIVE_CONNECTION_FAILURES = 3` consecutive deferrals and puts the whole
+process into a 60-second stand-down (`HOST_STANDDOWN_SECONDS`, a static so all 20 batches of a
+500-address send share one view of the outage). A `sent` **or** a `failed` resets the counter — a
+rejection aimed at one address is not evidence about the host.
+
 ⚠️ **`SweepPendingInvitationsJob` (`ws-404`, not on `develop`)** clears these without an operator. It is dispatched
 `->afterResponse()` from **`sendInvitations()` and `getUnregisteredInvitations()`** — opening the list
 that shows a stranded row is what clears it — and is throttled by an atomic cache lock
@@ -255,10 +283,14 @@ with its own `mail.invitation_sweep_budget` (default 60s), and ignores rows youn
 `mail.invitation_sweep_age_minutes` (default 15) so it cannot race a send still in progress.
 
 ☠️ **It needs traffic — an idle deployment sweeps nothing.** `php artisan invitations:send-pending`
-remains the manual route, and on `develop` it is the *only* route. The scheduled entry `ws-404` adds for
-it does **not** fire: there is no cron and no `schedule:work` container. Both paths are safe to have at once —
-they select the same rows via `TestInvitation::awaitingDelivery()` and each row is claimed atomically,
-so an address is sent once. See [../JOBS.md](../JOBS.md).
+remains the manual route, and on `develop` it is the *only* route.
+
+📌 **Corrected 2026-09-14.** This said the scheduled entry `ws-404` adds does not fire for want of a
+cron or `schedule:work` container. That was true of `b69a2c37`; `07a1c9b2` adds a `backend-scheduler`
+service, so on `ws-404` the command **does** run every ten minutes and the sweep is the *second* of two
+automatic paths rather than the only one. Both are safe to have at once — they select the same rows via
+`TestInvitation::awaitingDelivery()` and each row is claimed atomically, so an address is sent once.
+See [../JOBS.md](../JOBS.md) and [../DEPLOYMENT.md](../DEPLOYMENT.md).
 
 ### SMTP connection recycling (`ws-404`)
 

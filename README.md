@@ -121,9 +121,17 @@ Never regenerate the whole KB. Full detail:
 
 ## Last synced
 
-**2026-08-19** — first generation. Indexes built from `TCV-Backend` `85586469` (`develop`, 2026-08-18),
-`TCV-Frontend` `d7cdbc8` (`develop`, 2026-08-18), `TCV-Website` `9ea8202` (`main`, 2026-05-22). Compare
-those SHAs with each repo's `git rev-parse --short HEAD` before trusting the generated indexes.
+**2026-09-14.** Indexes built from `TCV-Backend` `c3449270` (`develop`), `TCV-Frontend` `e9b664c`
+(`develop`), `TCV-Website` `cb4a1b6` (`website-integration` — the one deliberate exception, see
+[HOW_TO_REGENERATE](AI_KNOWLEDGE_BASE/GUIDES/HOW_TO_REGENERATE.md)). Routes came from
+`artisan route:list --json`, the authoritative source. Compare those SHAs with each repo's
+`git rev-parse --short HEAD` before trusting the generated indexes.
+
+First generated 2026-08-19. Per-sync deltas are recorded in
+[AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md).
+
+⚠️ Backend `ws-404` and `ws-449` are ahead of `develop` and are **not** indexed — feature branches are
+never indexed here, so their behaviour is documented in prose only.
 
 ## Honest scope
 

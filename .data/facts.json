@@ -1,21 +1,21 @@
 {
-    "generated_at": "2026-09-12T13:20:27+02:00",
+    "generated_at": "2026-09-14T12:53:59+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "fe989d4a",
+            "sha": "c3449270",
             "branch": "develop",
-            "date": "2026-09-12"
+            "date": "2026-09-14"
         },
         "frontend": {
-            "sha": "8574b0f",
+            "sha": "e9b664c",
             "branch": "develop",
-            "date": "2026-09-12"
+            "date": "2026-09-14"
         },
         "website": {
-            "sha": "deb667a",
+            "sha": "cb4a1b6",
             "branch": "website-integration",
-            "date": "2026-09-11"
+            "date": "2026-09-12"
         }
     },
     "classes": [
@@ -1239,8 +1239,8 @@
             "fqcn": "App\\Http\\Controllers\\AuthController",
             "kind": "class",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 35,
-            "end_line": 1040,
+            "line": 37,
+            "end_line": 1045,
             "extends": "Controller",
             "implements": [],
             "traits": [
@@ -1250,8 +1250,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 53,
-                    "end_line": 57,
+                    "line": 45,
+                    "end_line": 49,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1264,8 +1264,8 @@
                 },
                 {
                     "name": "login",
-                    "line": 59,
-                    "end_line": 235,
+                    "line": 51,
+                    "end_line": 227,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1295,8 +1295,8 @@
                 },
                 {
                     "name": "createStripeCustomer",
-                    "line": 237,
-                    "end_line": 244,
+                    "line": 229,
+                    "end_line": 236,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1312,8 +1312,8 @@
                 },
                 {
                     "name": "register",
-                    "line": 246,
-                    "end_line": 316,
+                    "line": 238,
+                    "end_line": 321,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1338,15 +1338,18 @@
                         "Log::error",
                         "getMessage",
                         "log",
-                        "auditDetails",
+                        "Country::find",
+                        "State::find",
+                        "all",
+                        "pluck",
                         "ApiResponse::success",
                         "ApiResponse::error"
                     ]
                 },
                 {
                     "name": "sendResetLinkEmail",
-                    "line": 318,
-                    "end_line": 359,
+                    "line": 323,
+                    "end_line": 364,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1372,8 +1375,8 @@
                 },
                 {
                     "name": "setOrResetPassword",
-                    "line": 361,
-                    "end_line": 464,
+                    "line": 366,
+                    "end_line": 469,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1409,8 +1412,8 @@
                 },
                 {
                     "name": "verifySetupToken",
-                    "line": 466,
-                    "end_line": 486,
+                    "line": 471,
+                    "end_line": 491,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1430,8 +1433,8 @@
                 },
                 {
                     "name": "verifyEmail",
-                    "line": 489,
-                    "end_line": 522,
+                    "line": 494,
+                    "end_line": 527,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1453,8 +1456,8 @@
                 },
                 {
                     "name": "logout",
-                    "line": 524,
-                    "end_line": 546,
+                    "line": 529,
+                    "end_line": 551,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1472,8 +1475,8 @@
                 },
                 {
                     "name": "impersonationTargetLabel",
-                    "line": 553,
-                    "end_line": 560,
+                    "line": 558,
+                    "end_line": 565,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1485,8 +1488,8 @@
                 },
                 {
                     "name": "impersonateUser",
-                    "line": 562,
-                    "end_line": 599,
+                    "line": 567,
+                    "end_line": 604,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1509,8 +1512,8 @@
                 },
                 {
                     "name": "stopImpersonation",
-                    "line": 601,
-                    "end_line": 637,
+                    "line": 606,
+                    "end_line": 642,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1534,8 +1537,8 @@
                 },
                 {
                     "name": "isTokenValid",
-                    "line": 645,
-                    "end_line": 697,
+                    "line": 650,
+                    "end_line": 702,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -1554,8 +1557,8 @@
                 },
                 {
                     "name": "verifyPassword",
-                    "line": 704,
-                    "end_line": 737,
+                    "line": 709,
+                    "end_line": 742,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1574,8 +1577,8 @@
                 },
                 {
                     "name": "changePassword",
-                    "line": 744,
-                    "end_line": 777,
+                    "line": 749,
+                    "end_line": 782,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1606,8 +1609,8 @@
                 },
                 {
                     "name": "sendVerificationEmailForUser",
-                    "line": 782,
-                    "end_line": 903,
+                    "line": 787,
+                    "end_line": 908,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -1637,8 +1640,8 @@
                 },
                 {
                     "name": "verifyEmailByToken",
-                    "line": 908,
-                    "end_line": 977,
+                    "line": 913,
+                    "end_line": 982,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1662,8 +1665,8 @@
                 },
                 {
                     "name": "resendVerificationByToken",
-                    "line": 982,
-                    "end_line": 1011,
+                    "line": 987,
+                    "end_line": 1016,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1684,8 +1687,8 @@
                 },
                 {
                     "name": "resendEmailVerificationLink",
-                    "line": 1013,
-                    "end_line": 1039,
+                    "line": 1018,
+                    "end_line": 1044,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1704,13 +1707,7 @@
                     ]
                 }
             ],
-            "constants": [
-                {
-                    "name": "SELF_SIGNUP_AUDIT_FIELDS",
-                    "value": "[…]",
-                    "line": 44
-                }
-            ],
+            "constants": [],
             "relations": []
         },
         {
@@ -1780,7 +1777,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/ContactController.php",
             "line": 14,
-            "end_line": 73,
+            "end_line": 89,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -1803,7 +1800,7 @@
                 {
                     "name": "submit",
                     "line": 26,
-                    "end_line": 72,
+                    "end_line": 88,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -1816,11 +1813,11 @@
                         "Country::find",
                         "State::find",
                         "submitEnquiry",
+                        "log",
+                        "user",
                         "ApiResponse::success",
                         "Log::error",
                         "getMessage",
-                        "log",
-                        "user",
                         "ApiResponse::error"
                     ]
                 }
@@ -2735,7 +2732,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
             "line": 36,
-            "end_line": 1092,
+            "end_line": 1115,
             "extends": "Controller",
             "implements": [],
             "traits": [
@@ -2945,7 +2942,7 @@
                 {
                     "name": "update",
                     "line": 400,
-                    "end_line": 555,
+                    "end_line": 578,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -2985,6 +2982,9 @@
                         "AuditEventCatalog::accountEventKey",
                         "user",
                         "User::find",
+                        "firstWhere",
+                        "AuditEventCatalog::get",
+                        "AuditEventCatalog::statusChangeTitle",
                         "ApiResponse::success",
                         "DB::rollBack",
                         "Log::error",
@@ -2994,8 +2994,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 557,
-                    "end_line": 582,
+                    "line": 580,
+                    "end_line": 605,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3019,8 +3019,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 584,
-                    "end_line": 632,
+                    "line": 607,
+                    "end_line": 655,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3049,8 +3049,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 638,
-                    "end_line": 692,
+                    "line": 661,
+                    "end_line": 715,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3077,8 +3077,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 698,
-                    "end_line": 822,
+                    "line": 721,
+                    "end_line": 845,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3110,8 +3110,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 827,
-                    "end_line": 896,
+                    "line": 850,
+                    "end_line": 919,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3129,8 +3129,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 903,
-                    "end_line": 944,
+                    "line": 926,
+                    "end_line": 967,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3154,8 +3154,8 @@
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 951,
-                    "end_line": 983,
+                    "line": 974,
+                    "end_line": 1006,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3173,8 +3173,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 990,
-                    "end_line": 1011,
+                    "line": 1013,
+                    "end_line": 1034,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -3194,8 +3194,8 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 1024,
-                    "end_line": 1065,
+                    "line": 1047,
+                    "end_line": 1088,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3224,8 +3224,8 @@
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 1070,
-                    "end_line": 1091,
+                    "line": 1093,
+                    "end_line": 1114,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5266,8 +5266,8 @@
             "fqcn": "App\\Http\\Controllers\\TestController",
             "kind": "class",
             "file": "app/Http/Controllers/TestController.php",
-            "line": 35,
-            "end_line": 906,
+            "line": 37,
+            "end_line": 959,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5275,8 +5275,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 49,
-                    "end_line": 63,
+                    "line": 51,
+                    "end_line": 65,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5293,8 +5293,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 65,
-                    "end_line": 73,
+                    "line": 67,
+                    "end_line": 75,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5314,8 +5314,8 @@
                 },
                 {
                     "name": "userIndex",
-                    "line": 75,
-                    "end_line": 102,
+                    "line": 77,
+                    "end_line": 104,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5336,8 +5336,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 104,
-                    "end_line": 111,
+                    "line": 106,
+                    "end_line": 113,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5355,8 +5355,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 113,
-                    "end_line": 119,
+                    "line": 115,
+                    "end_line": 121,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5373,8 +5373,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 121,
-                    "end_line": 153,
+                    "line": 123,
+                    "end_line": 160,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5392,13 +5392,14 @@
                         "getChanges",
                         "log",
                         "user",
+                        "AuditEventCatalog::statusChangeTitle",
                         "json"
                     ]
                 },
                 {
                     "name": "destroy",
-                    "line": 161,
-                    "end_line": 170,
+                    "line": 168,
+                    "end_line": 177,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5417,8 +5418,8 @@
                 },
                 {
                     "name": "assignTest",
-                    "line": 178,
-                    "end_line": 278,
+                    "line": 185,
+                    "end_line": 288,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5447,6 +5448,7 @@
                         "log",
                         "user",
                         "Test::find",
+                        "TestHelper::getEyeLabel",
                         "Log::info",
                         "ApiResponse::success",
                         "Log::error",
@@ -5455,8 +5457,8 @@
                 },
                 {
                     "name": "performTest",
-                    "line": 286,
-                    "end_line": 316,
+                    "line": 296,
+                    "end_line": 326,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5481,8 +5483,8 @@
                 },
                 {
                     "name": "getTestSession",
-                    "line": 324,
-                    "end_line": 344,
+                    "line": 334,
+                    "end_line": 354,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5500,8 +5502,8 @@
                 },
                 {
                     "name": "getSectionPlates",
-                    "line": 353,
-                    "end_line": 373,
+                    "line": 363,
+                    "end_line": 383,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5520,8 +5522,8 @@
                 },
                 {
                     "name": "getPlateUrl",
-                    "line": 379,
-                    "end_line": 398,
+                    "line": 389,
+                    "end_line": 408,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5540,8 +5542,8 @@
                 },
                 {
                     "name": "getTestResult",
-                    "line": 406,
-                    "end_line": 442,
+                    "line": 416,
+                    "end_line": 452,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5563,8 +5565,8 @@
                 },
                 {
                     "name": "downloadTestResultPDF",
-                    "line": 450,
-                    "end_line": 565,
+                    "line": 460,
+                    "end_line": 575,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5602,8 +5604,8 @@
                 },
                 {
                     "name": "organizationAllowsDownload",
-                    "line": 573,
-                    "end_line": 613,
+                    "line": 583,
+                    "end_line": 623,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5622,8 +5624,8 @@
                 },
                 {
                     "name": "callerOwnsPatientTest",
-                    "line": 621,
-                    "end_line": 652,
+                    "line": 631,
+                    "end_line": 662,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5640,8 +5642,8 @@
                 },
                 {
                     "name": "callerOwnsPatient",
-                    "line": 661,
-                    "end_line": 704,
+                    "line": 671,
+                    "end_line": 714,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -5659,8 +5661,8 @@
                 },
                 {
                     "name": "getActiveTest",
-                    "line": 714,
-                    "end_line": 784,
+                    "line": 724,
+                    "end_line": 794,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5687,8 +5689,8 @@
                 },
                 {
                     "name": "getActiveTestsWithAssignmentFlag",
-                    "line": 786,
-                    "end_line": 809,
+                    "line": 796,
+                    "end_line": 819,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5710,29 +5712,36 @@
                 },
                 {
                     "name": "assignUserTest",
-                    "line": 811,
-                    "end_line": 817,
+                    "line": 821,
+                    "end_line": 832,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
                     "doc": "",
                     "calls": [
                         "user",
-                        "syncWithoutDetaching",
+                        "all",
+                        "values",
+                        "sort",
+                        "pluck",
                         "assignedTests",
+                        "syncWithoutDetaching",
+                        "logAssignedTestsChange",
                         "ApiResponse::success"
                     ]
                 },
                 {
                     "name": "unassignUserTest",
-                    "line": 819,
-                    "end_line": 830,
+                    "line": 834,
+                    "end_line": 849,
                     "visibility": "public",
                     "static": false,
                     "params": [
+                        "Request $request",
                         "$id"
                     ],
                     "returns": "",
@@ -5742,14 +5751,38 @@
                         "count",
                         "assignedTests",
                         "ApiResponse::error",
+                        "all",
+                        "values",
+                        "sort",
+                        "pluck",
                         "detach",
+                        "logAssignedTestsChange",
                         "ApiResponse::success"
                     ]
                 },
                 {
+                    "name": "logAssignedTestsChange",
+                    "line": 859,
+                    "end_line": 875,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "User $user",
+                        "array $before",
+                        "array $after"
+                    ],
+                    "returns": "void",
+                    "doc": "Both self-service (profile page, actor === target) and admin-managing-another-user",
+                    "calls": [
+                        "log",
+                        "user"
+                    ]
+                },
+                {
                     "name": "bulkUpdateAssignment",
-                    "line": 832,
-                    "end_line": 905,
+                    "line": 877,
+                    "end_line": 958,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5766,11 +5799,15 @@
                         "toArray",
                         "pluck",
                         "assignedTests",
+                        "all",
+                        "values",
+                        "sort",
                         "DB::beginTransaction",
                         "syncWithoutDetaching",
                         "detach",
                         "DB::commit",
                         "Log::info",
+                        "logAssignedTestsChange",
                         "ApiResponse::success",
                         "DB::rollBack",
                         "Log::error",
@@ -5924,8 +5961,8 @@
             "fqcn": "App\\Http\\Controllers\\TestInvitationController",
             "kind": "class",
             "file": "app/Http/Controllers/TestInvitationController.php",
-            "line": 21,
-            "end_line": 692,
+            "line": 22,
+            "end_line": 709,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -5933,8 +5970,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 23,
-                    "end_line": 26,
+                    "line": 24,
+                    "end_line": 27,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5947,8 +5984,8 @@
                 },
                 {
                     "name": "sendInvitations",
-                    "line": 28,
-                    "end_line": 220,
+                    "line": 29,
+                    "end_line": 237,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -5970,14 +6007,19 @@
                         "increment",
                         "PatientTest::where",
                         "dispatchEmailBatch",
+                        "min",
+                        "TestInvitation::whereIn",
+                        "toDateString",
+                        "Carbon::parse",
+                        "AuditEventCatalog::invitationSentTitle",
                         "Log::error",
                         "getMessage"
                     ]
                 },
                 {
                     "name": "createPendingInvitations",
-                    "line": 231,
-                    "end_line": 262,
+                    "line": 248,
+                    "end_line": 279,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6001,8 +6043,8 @@
                 },
                 {
                     "name": "dispatchEmailBatch",
-                    "line": 278,
-                    "end_line": 281,
+                    "line": 295,
+                    "end_line": 298,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6019,8 +6061,8 @@
                 },
                 {
                     "name": "getUnregisteredInvitations",
-                    "line": 287,
-                    "end_line": 356,
+                    "line": 304,
+                    "end_line": 373,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6052,8 +6094,8 @@
                 },
                 {
                     "name": "resendUnregisteredInvitation",
-                    "line": 362,
-                    "end_line": 428,
+                    "line": 379,
+                    "end_line": 445,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6084,8 +6126,8 @@
                 },
                 {
                     "name": "cancelUnregisteredInvitation",
-                    "line": 433,
-                    "end_line": 493,
+                    "line": 450,
+                    "end_line": 510,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6116,8 +6158,8 @@
                 },
                 {
                     "name": "sendInvitationEmail",
-                    "line": 501,
-                    "end_line": 504,
+                    "line": 518,
+                    "end_line": 521,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -6136,8 +6178,8 @@
                 },
                 {
                     "name": "verifyCode",
-                    "line": 509,
-                    "end_line": 623,
+                    "line": 526,
+                    "end_line": 640,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6170,8 +6212,8 @@
                 },
                 {
                     "name": "checkTokenStatus",
-                    "line": 628,
-                    "end_line": 691,
+                    "line": 645,
+                    "end_line": 708,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6570,7 +6612,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
             "line": 27,
-            "end_line": 522,
+            "end_line": 552,
             "extends": "Controller",
             "implements": [],
             "traits": [
@@ -6693,7 +6735,7 @@
                 {
                     "name": "update",
                     "line": 204,
-                    "end_line": 285,
+                    "end_line": 315,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6705,17 +6747,21 @@
                     "calls": [
                         "User::findOrFail",
                         "auditSnapshot",
+                        "all",
+                        "values",
+                        "sort",
+                        "pluck",
+                        "assignedTests",
                         "validated",
                         "input",
                         "update",
                         "auditChanges",
                         "getChanges",
-                        "log",
                         "AuditEventCatalog::accountEventKey",
+                        "AuditEventCatalog::get",
+                        "AuditEventCatalog::statusChangeTitle",
+                        "log",
                         "user",
-                        "all",
-                        "pluck",
-                        "assignedTests",
                         "Log::info",
                         "json",
                         "Log::warning",
@@ -6725,8 +6771,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 288,
-                    "end_line": 300,
+                    "line": 318,
+                    "end_line": 330,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6743,8 +6789,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 305,
-                    "end_line": 337,
+                    "line": 335,
+                    "end_line": 367,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6769,8 +6815,8 @@
                 },
                 {
                     "name": "userWithType",
-                    "line": 345,
-                    "end_line": 463,
+                    "line": 375,
+                    "end_line": 493,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -6812,8 +6858,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 465,
-                    "end_line": 478,
+                    "line": 495,
+                    "end_line": 508,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -6829,8 +6875,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 483,
-                    "end_line": 521,
+                    "line": 513,
+                    "end_line": 551,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13553,8 +13599,8 @@
             "fqcn": "App\\Services\\Audit\\AuditEventCatalog",
             "kind": "class",
             "file": "app/Services/Audit/AuditEventCatalog.php",
-            "line": 65,
-            "end_line": 467,
+            "line": 71,
+            "end_line": 521,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13562,8 +13608,8 @@
             "methods": [
                 {
                     "name": "get",
-                    "line": 416,
-                    "end_line": 423,
+                    "line": 448,
+                    "end_line": 455,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13575,8 +13621,8 @@
                 },
                 {
                     "name": "accountEventKey",
-                    "line": 435,
-                    "end_line": 444,
+                    "line": 467,
+                    "end_line": 476,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13589,8 +13635,8 @@
                 },
                 {
                     "name": "creditEventKey",
-                    "line": 455,
-                    "end_line": 466,
+                    "line": 487,
+                    "end_line": 498,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13600,13 +13646,44 @@
                     "returns": "string",
                     "doc": "credits_licensing has the same per-target-type key shape as accounts_users, but the",
                     "calls": []
+                },
+                {
+                    "name": "statusChangeTitle",
+                    "line": 506,
+                    "end_line": 509,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "string $eventKey",
+                        "string $afterStatus"
+                    ],
+                    "returns": "string",
+                    "doc": "Builds the dynamic title for a status-change event: the catalog's own static base",
+                    "calls": [
+                        "self::get"
+                    ]
+                },
+                {
+                    "name": "invitationSentTitle",
+                    "line": 517,
+                    "end_line": 520,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "int $recipientCount"
+                    ],
+                    "returns": "string",
+                    "doc": "Builds the dynamic title for `test.invitation_sent`: the catalog's static base title",
+                    "calls": [
+                        "self::get"
+                    ]
                 }
             ],
             "constants": [
                 {
                     "name": "EVENTS",
                     "value": "[…]",
-                    "line": 67
+                    "line": 73
                 }
             ],
             "relations": []
@@ -13655,7 +13732,7 @@
             "kind": "class",
             "file": "app/Services/Audit/AuditService.php",
             "line": 23,
-            "end_line": 453,
+            "end_line": 461,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -13663,8 +13740,8 @@
             "methods": [
                 {
                     "name": "log",
-                    "line": 84,
-                    "end_line": 162,
+                    "line": 91,
+                    "end_line": 170,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13676,7 +13753,8 @@
                         "array $details = []",
                         "array $changes = []",
                         "?Request $request = null",
-                        "?string $sessionKeyOverride = null"
+                        "?string $sessionKeyOverride = null",
+                        "?string $eventTitleOverride = null"
                     ],
                     "returns": "?AuditLog",
                     "doc": "is fixed per event key, this is the free text that varies per call.",
@@ -13697,8 +13775,8 @@
                 },
                 {
                     "name": "personSnapshot",
-                    "line": 167,
-                    "end_line": 180,
+                    "line": 175,
+                    "end_line": 188,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13712,8 +13790,8 @@
                 },
                 {
                     "name": "roleFor",
-                    "line": 189,
-                    "end_line": 197,
+                    "line": 197,
+                    "end_line": 205,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13725,8 +13803,8 @@
                 },
                 {
                     "name": "lookupCountry",
-                    "line": 199,
-                    "end_line": 221,
+                    "line": 207,
+                    "end_line": 229,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13740,8 +13818,8 @@
                 },
                 {
                     "name": "parseBrowser",
-                    "line": 223,
-                    "end_line": 239,
+                    "line": 231,
+                    "end_line": 247,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13753,8 +13831,8 @@
                 },
                 {
                     "name": "sessionKeyForToken",
-                    "line": 262,
-                    "end_line": 265,
+                    "line": 270,
+                    "end_line": 273,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -13766,8 +13844,8 @@
                 },
                 {
                     "name": "sessionKey",
-                    "line": 267,
-                    "end_line": 298,
+                    "line": 275,
+                    "end_line": 306,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13786,8 +13864,8 @@
                 },
                 {
                     "name": "maskDetails",
-                    "line": 306,
-                    "end_line": 319,
+                    "line": 314,
+                    "end_line": 327,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13805,8 +13883,8 @@
                 },
                 {
                     "name": "maskChanges",
-                    "line": 325,
-                    "end_line": 337,
+                    "line": 333,
+                    "end_line": 345,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13824,8 +13902,8 @@
                 },
                 {
                     "name": "isDenylistedKey",
-                    "line": 339,
-                    "end_line": 342,
+                    "line": 347,
+                    "end_line": 350,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -13839,8 +13917,8 @@
                 },
                 {
                     "name": "isSecretKey",
-                    "line": 347,
-                    "end_line": 350,
+                    "line": 355,
+                    "end_line": 358,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13854,8 +13932,8 @@
                 },
                 {
                     "name": "isPhiKey",
-                    "line": 355,
-                    "end_line": 358,
+                    "line": 363,
+                    "end_line": 366,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13869,8 +13947,8 @@
                 },
                 {
                     "name": "keyMatches",
-                    "line": 363,
-                    "end_line": 374,
+                    "line": 371,
+                    "end_line": 382,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13883,8 +13961,8 @@
                 },
                 {
                     "name": "isDateAllowlistedKey",
-                    "line": 380,
-                    "end_line": 385,
+                    "line": 388,
+                    "end_line": 393,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13896,8 +13974,8 @@
                 },
                 {
                     "name": "maskValue",
-                    "line": 396,
-                    "end_line": 432,
+                    "line": 404,
+                    "end_line": 440,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -13914,8 +13992,8 @@
                 },
                 {
                     "name": "maskFreeText",
-                    "line": 441,
-                    "end_line": 452,
+                    "line": 449,
+                    "end_line": 460,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -18570,7 +18648,7 @@
             "kind": "class",
             "file": "database/seeders/AuditLogSeeder.php",
             "line": 28,
-            "end_line": 231,
+            "end_line": 234,
             "extends": "Seeder",
             "implements": [],
             "traits": [],
@@ -18579,7 +18657,7 @@
                 {
                     "name": "scenarios",
                     "line": 54,
-                    "end_line": 147,
+                    "end_line": 150,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -18589,8 +18667,8 @@
                 },
                 {
                     "name": "run",
-                    "line": 149,
-                    "end_line": 182,
+                    "line": 152,
+                    "end_line": 185,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18606,8 +18684,8 @@
                 },
                 {
                     "name": "offsetFor",
-                    "line": 184,
-                    "end_line": 193,
+                    "line": 187,
+                    "end_line": 196,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -18624,8 +18702,8 @@
                 },
                 {
                     "name": "row",
-                    "line": 195,
-                    "end_line": 230,
+                    "line": 198,
+                    "end_line": 233,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -26388,19 +26466,19 @@
             "kind": "dispatch",
             "event": "UserPasswordSet",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 402
+            "line": 407
         },
         {
             "kind": "dispatch",
             "event": "PasswordReset",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 428
+            "line": 433
         },
         {
             "kind": "dispatch",
             "event": "Verified",
             "file": "app/Http/Controllers/AuthController.php",
-            "line": 502
+            "line": 507
         },
         {
             "kind": "dispatch",
