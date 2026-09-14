@@ -41,7 +41,8 @@ commits can reference a feature without restating it.
 | **F-080** | Contact / enquiry | `POST api/contact` | `ContactController` · `HubSpotService` | — | [THIRD_PARTY](THIRD_PARTY.md) |
 | **F-081** | Reference data | `api/dropdown/*` · `GET api/countries-with-states` | `DropdownValuesController` | `countries`, `states`, `compliances`, `privileges`, `organization_types`, `organization_settings_options` | — |
 | **F-082** | Audit trail (on `develop` since 2026-09-09) | `GET api/audit-logs`, `api/audit-logs/people`, `api/audit-logs/{id}` (Super Admin only) | `AuditLogController` · `Audit\AuditService` · `Audit\AuditEventCatalog` (61 events / 8 categories, only login/logout wired to a real call site so far) | `audit_logs` | [AUDIT_TRAIL_BACKEND](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md), [AUDIT_TRAIL_FRONTEND](CONTEXT/AUDIT_TRAIL_FRONTEND_CONTEXT.md) |
-| | 🚧 unmerged: `TCV-Backend@feat/audit-trail-improvement-11-sep-26` reworks several event titles/descriptions to be dynamic and adds 3 `*_suspended` events (64→67) — not in the count above until it merges. See AUDIT_TRAIL_BACKEND_CONTEXT.md §13. | | | | |
+| | ✅ merged to `develop` (PR #238, `c3449270`): `feat/audit-trail-improvement-11-sep-26` reworked several event titles/descriptions to be dynamic and added 3 `*_suspended` events (64→67) — not reflected in the row above, which predates this KB's last full sync. See AUDIT_TRAIL_BACKEND_CONTEXT.md §13. | | | | |
+| | 🚧 unmerged: `TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep` fixes a missing discount breakdown on payment-success, a mislabelled `test.invitation_sent_bulk` key (67→66), and a hard-coded `test.started` Credits Used field. See AUDIT_TRAIL_BACKEND_CONTEXT.md §14. | | | | |
 
 ## Depth of tracing
 

@@ -3,10 +3,20 @@
 **Repo:** `TCV-Backend` — ✅ **shipped to `develop` 2026-09-09** (PR #227, merge `940238fd`).
 **Frontend contract:** ✅ also merged — `feat/ui-audit-trail` landed on `TCV-Frontend@develop` as PR #375 (`6b6c5ae`), specified in [AUDIT_TRAIL_FRONTEND_CONTEXT.md](./AUDIT_TRAIL_FRONTEND_CONTEXT.md). Phases 1–3 were built against fixtures; Phase 4 (swap three function bodies for axios calls) and the login/logout instrumentation described in SERVICES.md are both done and merged.
 
-> 🚧 **Unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-improvement-11-sep-26` (branched off the
-> shipped state above, not yet on `develop` as of 2026-09-14) reworks several event **titles/descriptions**
-> and adds 3 new catalog events. See §13 — do not treat §13's numbers as `develop`'s current state until
-> that branch merges and this KB is regenerated against it.
+> ✅ **§13's branch has since merged to `develop`.** `feat/audit-trail-improvement-11-sep-26` landed as
+> PR #238 (merge `c3449270`, confirmed an ancestor of `origin/develop` as of 2026-09-14) — the
+> title/description rework and the 3 new suspended-status events described in §13 are now `develop`'s
+> actual state. §13's own "not yet on develop" framing is stale; the content (titles, new keys, catalog
+> counts) is otherwise accurate.
+>
+> 🚧 **New unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`
+> (branched off `c3449270`, not yet on `develop` as of 2026-09-14) fixes 3 more User-Panel-reported
+> defects — a missing discount breakdown on `billing.payment_succeeded`, a mislabelled
+> `test.invitation_sent_bulk` key, and a hard-coded `Credits Used` on `test.started`. See §14 — do not
+> treat §14's numbers as `develop`'s current state until that branch merges and this KB is regenerated
+> against it (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
+> `develop`, so a full `composer regenerate` was deliberately **not** run for this update — see
+> `GUIDES/HOW_TO_REGENERATE.md`'s "never index a feature branch" rule).
 
 > ⚠️ **This document was written as a *plan*, while the work was still on a branch.** It is kept
 > because the reasoning is worth having, but read it as design intent that has now shipped — where it
@@ -359,3 +369,79 @@ branch even started.)
   doesn't anticipate a separate one for this.
 
 Reviewed (`tcv-reviewer`, scanner clean, no blocking findings) — two non-blocking notes: `invitationSentTitle()`'s "Multiple" branch is presently unreachable given how the call site is gated (bulk sends use a different key with no override), and the new `suspended` path has no equivalent gap since it got its own dedicated key. `composer test`: 715 passed / 2 failed, both pre-existing and unrelated (confirmed via `git stash` — a HubSpot-mock test and a pre-flagged quoted-printable assertion).
+
+---
+
+## 14. Unmerged follow-up — User-Panel defect pass (`feat/audit-trail-user-panel-improvement-14-sep`)
+
+**Status: 🚧 not on `develop`.** Branched off `c3449270` (§13's merge commit). Fixes 3 of 4 issues
+reported against the User Panel category of the live catalog; the 4th was evaluated for feasibility
+only. Planned in `C:\Users\User\.claude\plans\there-are-some-changes-golden-volcano.md`.
+
+**1. `billing.payment_succeeded` now carries the discount breakdown.** Previously only
+`billing.checkout_discount_applied` (a separate, earlier row logged in
+`PaymentController::confirmPayment()`) showed Code/Type/Amount for a discounted purchase — the
+success row itself only had Amount/Payment Method/Transaction ID/Credits Purchased, so an auditor
+had to cross-reference two rows to see a discount was involved.
+`PaymentController.php` now forwards `discount_type` (already computed at checkout, previously
+never passed downstream) into what `StripeProvider::confirmPayment()` receives; that method's
+`billing.payment_succeeded` call now appends Discount Code / Discount Type / Discount Amount,
+guarded by the same `isset($paymentData['discount_id'])` check already used for
+`transaction_details`, so non-discounted purchases are unaffected. **Only the `/api/payment/confirm`
+→ `StripeProvider` path was covered** — the legacy `/api/stripe/confirm-payment` /
+`confirm-ach-payment` endpoints (`StripePaymentController`) never accepted a discount in their
+validation at all and were left as-is; flagged, not fixed, since nothing there needs a discount
+field if no discount can reach it.
+
+**2. `test.invitation_sent_bulk` removed — the "CSV (bulk)" title was fiction.** There is no
+CSV-upload feature anywhere on the backend; recipients are always a submitted list. The catalog
+nonetheless had a second, fully separate key with a static `'Test invitation sent via CSV (bulk)'`
+title, and `TestInvitationController::sendInvitations()` routed every `$createdCount > 1` send to
+it — which is exactly why §13's own review flagged `invitationSentTitle()`'s "(Multiple)" branch as
+unreachable dead code. This pass **is** that fix: the bulk key is gone, the 3-way `$eventKey`
+selection collapsed to 2 (`test.invitation_resent` / `test.invitation_sent`), and
+`invitationSentTitle()` is now actually reachable for counts > 1, producing
+`"Test invitation sent (Multiple)"` (capitalized, consistent with the rest of the catalog's dynamic
+titles — a lowercase `"(multiple)"` was considered and rejected for consistency).
+**Catalog size: 67 → 66; `test_activity` 6 → 5.**
+
+**3. `test.started`'s `Credits Used` was a hard-coded literal, not a ledger read.**
+`TestController::assignTest()` logged `$isEmailInvite ? 0 : 1` — for a patient-invited test this
+always showed **0**, even though 1 credit genuinely was consumed, just earlier (at invitation-send
+time, `CreditConsume::consume(..., CreditConsume::EVENT_TEST_INVITATION, ...)`) and on a different
+audit row (`test.invitation_sent`). Fixed as a **read-only lookup at the existing audit call site
+only** — no change to `TestAssignmentService`, credit deduction, or any control flow — checking
+`CreditConsume` for a row whose `ref_id` contains the invitation id. Self-service tests are
+untouched (`1`, unchanged, was never the bug). **When no matching `credit_consume` row exists for
+an invited test** (a genuine gap — refund, migration, etc.), **the `Credits Used` entry is omitted
+from `details` entirely**, not sent as `value: null` — the frontend's `DetailValue`
+(`AuditDetailSections.js:76-79`) renders a `null` as the literal string `"NA"`, which reads as "a
+number was expected and is missing" rather than "not applicable here"; omitting the key avoids that
+false impression.
+
+**4. Test abandonment — evaluated, not implemented this pass.** No code exists today
+(`PatientTest::STATUS_ABANDONED` is only ever set by an admin credit-revoke action, never by
+automatic staleness detection; no `test.abandoned` catalog key; no `started_at`/timeout column; no
+in-app scheduler in any environment). Recommended design for a later pass, matching the existing
+`SendPendingInvitations`/`SettleNegativeCreditBalances` precedent: a new `test.abandoned` catalog key
+(`test_activity`, `medium`, redacted per §5 — `unique_test_id`/test name/last section, never the
+patient's name) plus a new artisan command run by an ops-provisioned external cron (no in-app
+scheduler runs anywhere, so this is the only option that produces a real timestamped audit row
+rather than a read-time-only computed badge). Staleness threshold is an open product decision,
+deliberately not settled.
+
+**Verification:** `composer test` — 729 passed, same 2 pre-existing/unrelated failures as §13
+(confirmed via `git stash` against this branch too — a HubSpot-mock test and the quoted-printable
+assertion). New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
+(scenario/catalog parity), `AuditedInvitationSendingTest` (renamed multi-recipient case),
+`AuditedPaymentConfirmationTest` (new discount-fields case + an explicit absent-when-no-discount
+assertion), `AuditedTestLifecycleTest` (two new cases: credits-used-as-1 via a real
+`CreditConsume` row, and the row omitted when none exists).
+
+**KB regeneration note:** none of the three repos are currently checked out on `develop`
+(`TCV-Backend` is on this branch; `TCV-Frontend` on `ui/audit-trail-improvements-11-sep-26`;
+`TCV-Website` on `website-integration`), so per `GUIDES/HOW_TO_REGENERATE.md` this update is
+**hand-written prose only** — `composer regenerate` was deliberately not run. `FEATURE_INDEX.md`'s
+F-082 row and the generated `INDEXES/*` still reflect the pre-§13-merge `develop` state from the
+2026-08-19 sync; both that gap and this section should be reconciled the next time all three repos
+are actually on `develop` and a full regeneration is run.
