@@ -3,6 +3,21 @@
 **Repo:** `TCV-Backend` — ✅ **shipped to `develop` 2026-09-09** (PR #227, merge `940238fd`).
 **Frontend contract:** ✅ also merged — `feat/ui-audit-trail` landed on `TCV-Frontend@develop` as PR #375 (`6b6c5ae`), specified in [AUDIT_TRAIL_FRONTEND_CONTEXT.md](./AUDIT_TRAIL_FRONTEND_CONTEXT.md). Phases 1–3 were built against fixtures; Phase 4 (swap three function bodies for axios calls) and the login/logout instrumentation described in SERVICES.md are both done and merged.
 
+> ✅ **§13's branch has since merged to `develop`.** `feat/audit-trail-improvement-11-sep-26` landed as
+> PR #238 (merge `c3449270`, confirmed an ancestor of `origin/develop` as of 2026-09-14) — the
+> title/description rework and the 3 new suspended-status events described in §13 are now `develop`'s
+> actual state. §13's own "not yet on develop" framing is stale; the content (titles, new keys, catalog
+> counts) is otherwise accurate.
+>
+> 🚧 **New unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`
+> (branched off `c3449270`, not yet on `develop` as of 2026-09-14) fixes 3 more User-Panel-reported
+> defects — a missing discount breakdown on `billing.payment_succeeded`, a mislabelled
+> `test.invitation_sent_bulk` key, and a hard-coded `Credits Used` on `test.started`. See §14 — do not
+> treat §14's numbers as `develop`'s current state until that branch merges and this KB is regenerated
+> against it (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
+> `develop`, so a full `composer regenerate` was deliberately **not** run for this update — see
+> `GUIDES/HOW_TO_REGENERATE.md`'s "never index a feature branch" rule).
+
 > ⚠️ **This document was written as a *plan*, while the work was still on a branch.** It is kept
 > because the reasoning is worth having, but read it as design intent that has now shipped — where it
 > says "will" or names a branch, check the code on `develop` before trusting the tense.
@@ -298,3 +313,145 @@ Answers to the draft's four open questions:
 1. Cut "Account locked", "Failed attempt count", "Pricing changes discarded", "Discount code auto-expiry", "Report filtered"? *(recommend: cut all five from Phase 1)*
 2. Confirm the §5 redactions — particularly that **test results and diagnoses are never logged**, and that verification codes are never logged.
 3. Retention window for `PruneAuditLogs` — 1 year? 7 years? This is a compliance answer, not an engineering one.
+
+---
+
+## 13. Unmerged follow-up — title/description review pass (`feat/audit-trail-improvement-11-sep-26`)
+
+**Status: 🚧 not on `develop`.** This branch is a post-ship review pass against
+`changes to audit log for super admin role.xlsx` review comments, documented in
+`docs/plans/audit-trail-backend-changes.md` in the `waggoner-tcv` root (not this KB). Recorded here so a
+future KB regeneration against `develop` — once this branch merges — knows what changed and why, and so
+nobody re-derives it from scratch in the meantime.
+
+**New mechanism — `event_title` is no longer *always* fixed per key.** `AuditEventCatalog`'s design
+invariant ("event_title is fixed per event key") still holds for most of the catalog, but
+`AuditService::log()` now takes an optional trailing `?string $eventTitleOverride = null` — when a caller
+passes one, it replaces the catalog title for that single row. Fully backward compatible (defaults null,
+every pre-existing call site unaffected). Two new `AuditEventCatalog` static helpers build the override
+string: `statusChangeTitle(string $eventKey, string $afterStatus)` and `invitationSentTitle(int
+$recipientCount)`.
+
+**Titles/descriptions changed to be dynamic (single actual value, never "(X/Y)" literally), title and
+description always built from the same resolved local variable so they can't disagree:**
+
+| Event key | Old title | New behaviour |
+|---|---|---|
+| `account.user_status_changed` | `User Status changed (Active/Inactive)` | `User Status changed (Active)` **or** `(Inactive)`, resolved from the actual after-value. Description: `"Account status changed to {Active\|Inactive}."` |
+| `account.super_admin_status_changed` | same pattern | same pattern |
+| `account.organization_status_changed` | same pattern | same pattern. Description: `"Organization account status changed to {Active\|Inactive}."` |
+| `settings.test_status_changed` | `Test Status changed (Active/Inactive)` | same pattern. `Test::status` accessor is boolean-backed (`active`/`inactive` only) — no suspended concept here, deliberately left untouched below |
+| `test.invitation_sent` | `Test invitation sent (single / multiple)` | `Test invitation sent (Single)` **or** `(Multiple)`, from the actual recipient count at `TestInvitationController::sendInvitations()`. Description pluralizes too: `"Test invitation sent."` vs `"Test invitations sent."` |
+| `billing.discount_code_create_failed` | `Discount Code create failed (validation)` | reverted (static) to `Discount code creation failed` |
+| `auth.restricted_ip_added` / `_removed` / `_updated` | `Restricted IP address (Added\|Removed\|Updated)` | parentheses dropped (static): `Restricted IP address Added` / `Removed` / `Updated` |
+
+**Three new dedicated events — `suspended` is a real third `account_status` value** (`UserRequest.php`
+validates `required|in:active,inactive,suspended`), and product decided it should NOT share the
+Active/Inactive dynamic title. When the after-value is `suspended`, `UserController::update()`'s
+status-only branch and `OrganizationController`'s user-status branch now route to a dedicated static-title
+key instead of `statusChangeTitle()`:
+
+| Event key | Title | Category | Sensitivity |
+|---|---|---|---|
+| `account.user_suspended` | `User account suspended` | `accounts_users` | `high` |
+| `account.super_admin_suspended` | `Super Admin account suspended` | `accounts_users` | `high` |
+| `account.organization_suspended` | `Organization account suspended` | `accounts_users` | `high` |
+
+**Catalog size:** 64 → **67** events on this branch; `accounts_users` category 16 → **19**. (`develop`'s
+current figure is the F-082 row in `FEATURE_INDEX.md` — cross-check that against the real catalog before
+trusting either number; it was already observed stale relative to the shipped 64-event state before this
+branch even started.)
+
+**Two behavioural fixes, not just title text:**
+
+- **`UserController::update()`** — the "Assigned Tests" audit entry moved from a static current-state
+  snapshot under `details` to a real before/after diff appended to the `changes` ("what changed") array,
+  emitted only when the set actually differs. (This branch of `update()` doesn't itself mutate the pivot
+  today, so the diff is presently always a no-op — mechanism is correct if that ever changes.)
+- **`TestController::assignUserTest()` / `unassignUserTest()` / `bulkUpdateAssignment()`** — previously
+  logged **nothing** (confirmed gap: only a plain `Log::info()` in `bulkUpdateAssignment`, no
+  `AuditService::log()` call at all in any of the three). Now all three log via a new private
+  `logAssignedTestsChange()` helper, event key `account.profile_updated`, with a before/after "Assigned
+  Tests" diff under `changes` — only when the set actually changed (re-assigning an already-assigned test,
+  or a net-zero bulk call, logs nothing). `bulkUpdateAssignment`'s `user_id` param lets a Super Admin act on
+  another user's assignments (gated by `TestPolicy::viewTests()`); actor/target are correctly distinct in
+  that case, reusing `account.profile_updated` rather than a new key — the plan doc's own event list
+  doesn't anticipate a separate one for this.
+
+Reviewed (`tcv-reviewer`, scanner clean, no blocking findings) — two non-blocking notes: `invitationSentTitle()`'s "Multiple" branch is presently unreachable given how the call site is gated (bulk sends use a different key with no override), and the new `suspended` path has no equivalent gap since it got its own dedicated key. `composer test`: 715 passed / 2 failed, both pre-existing and unrelated (confirmed via `git stash` — a HubSpot-mock test and a pre-flagged quoted-printable assertion).
+
+---
+
+## 14. Unmerged follow-up — User-Panel defect pass (`feat/audit-trail-user-panel-improvement-14-sep`)
+
+**Status: 🚧 not on `develop`.** Branched off `c3449270` (§13's merge commit). Fixes 3 of 4 issues
+reported against the User Panel category of the live catalog; the 4th was evaluated for feasibility
+only. Planned in `C:\Users\User\.claude\plans\there-are-some-changes-golden-volcano.md`.
+
+**1. `billing.payment_succeeded` now carries the discount breakdown.** Previously only
+`billing.checkout_discount_applied` (a separate, earlier row logged in
+`PaymentController::confirmPayment()`) showed Code/Type/Amount for a discounted purchase — the
+success row itself only had Amount/Payment Method/Transaction ID/Credits Purchased, so an auditor
+had to cross-reference two rows to see a discount was involved.
+`PaymentController.php` now forwards `discount_type` (already computed at checkout, previously
+never passed downstream) into what `StripeProvider::confirmPayment()` receives; that method's
+`billing.payment_succeeded` call now appends Discount Code / Discount Type / Discount Amount,
+guarded by the same `isset($paymentData['discount_id'])` check already used for
+`transaction_details`, so non-discounted purchases are unaffected. **Only the `/api/payment/confirm`
+→ `StripeProvider` path was covered** — the legacy `/api/stripe/confirm-payment` /
+`confirm-ach-payment` endpoints (`StripePaymentController`) never accepted a discount in their
+validation at all and were left as-is; flagged, not fixed, since nothing there needs a discount
+field if no discount can reach it.
+
+**2. `test.invitation_sent_bulk` removed — the "CSV (bulk)" title was fiction.** There is no
+CSV-upload feature anywhere on the backend; recipients are always a submitted list. The catalog
+nonetheless had a second, fully separate key with a static `'Test invitation sent via CSV (bulk)'`
+title, and `TestInvitationController::sendInvitations()` routed every `$createdCount > 1` send to
+it — which is exactly why §13's own review flagged `invitationSentTitle()`'s "(Multiple)" branch as
+unreachable dead code. This pass **is** that fix: the bulk key is gone, the 3-way `$eventKey`
+selection collapsed to 2 (`test.invitation_resent` / `test.invitation_sent`), and
+`invitationSentTitle()` is now actually reachable for counts > 1, producing
+`"Test invitation sent (Multiple)"` (capitalized, consistent with the rest of the catalog's dynamic
+titles — a lowercase `"(multiple)"` was considered and rejected for consistency).
+**Catalog size: 67 → 66; `test_activity` 6 → 5.**
+
+**3. `test.started`'s `Credits Used` was a hard-coded literal, not a ledger read.**
+`TestController::assignTest()` logged `$isEmailInvite ? 0 : 1` — for a patient-invited test this
+always showed **0**, even though 1 credit genuinely was consumed, just earlier (at invitation-send
+time, `CreditConsume::consume(..., CreditConsume::EVENT_TEST_INVITATION, ...)`) and on a different
+audit row (`test.invitation_sent`). Fixed as a **read-only lookup at the existing audit call site
+only** — no change to `TestAssignmentService`, credit deduction, or any control flow — checking
+`CreditConsume` for a row whose `ref_id` contains the invitation id. Self-service tests are
+untouched (`1`, unchanged, was never the bug). **When no matching `credit_consume` row exists for
+an invited test** (a genuine gap — refund, migration, etc.), **the `Credits Used` entry is omitted
+from `details` entirely**, not sent as `value: null` — the frontend's `DetailValue`
+(`AuditDetailSections.js:76-79`) renders a `null` as the literal string `"NA"`, which reads as "a
+number was expected and is missing" rather than "not applicable here"; omitting the key avoids that
+false impression.
+
+**4. Test abandonment — evaluated, not implemented this pass.** No code exists today
+(`PatientTest::STATUS_ABANDONED` is only ever set by an admin credit-revoke action, never by
+automatic staleness detection; no `test.abandoned` catalog key; no `started_at`/timeout column; no
+in-app scheduler in any environment). Recommended design for a later pass, matching the existing
+`SendPendingInvitations`/`SettleNegativeCreditBalances` precedent: a new `test.abandoned` catalog key
+(`test_activity`, `medium`, redacted per §5 — `unique_test_id`/test name/last section, never the
+patient's name) plus a new artisan command run by an ops-provisioned external cron (no in-app
+scheduler runs anywhere, so this is the only option that produces a real timestamped audit row
+rather than a read-time-only computed badge). Staleness threshold is an open product decision,
+deliberately not settled.
+
+**Verification:** `composer test` — 729 passed, same 2 pre-existing/unrelated failures as §13
+(confirmed via `git stash` against this branch too — a HubSpot-mock test and the quoted-printable
+assertion). New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
+(scenario/catalog parity), `AuditedInvitationSendingTest` (renamed multi-recipient case),
+`AuditedPaymentConfirmationTest` (new discount-fields case + an explicit absent-when-no-discount
+assertion), `AuditedTestLifecycleTest` (two new cases: credits-used-as-1 via a real
+`CreditConsume` row, and the row omitted when none exists).
+
+**KB regeneration note:** none of the three repos are currently checked out on `develop`
+(`TCV-Backend` is on this branch; `TCV-Frontend` on `ui/audit-trail-improvements-11-sep-26`;
+`TCV-Website` on `website-integration`), so per `GUIDES/HOW_TO_REGENERATE.md` this update is
+**hand-written prose only** — `composer regenerate` was deliberately not run. `FEATURE_INDEX.md`'s
+F-082 row and the generated `INDEXES/*` still reflect the pre-§13-merge `develop` state from the
+2026-08-19 sync; both that gap and this section should be reconciled the next time all three repos
+are actually on `develop` and a full regeneration is run.
