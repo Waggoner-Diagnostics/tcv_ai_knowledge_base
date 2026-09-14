@@ -58,10 +58,28 @@ What that buys and what it costs:
 | ☠️ No automatic retry | a restart mid-send strands rows at `email_status = 'pending'` |
 | ☠️ Runs even on a 500 | terminating callbacks fire regardless of response status — see below |
 
-⭐ **Terminating callbacks fire whatever the response status.** A throw *after* dispatch would return a
-500 to the caller while every email still went out, and a retry would double-send and double-charge.
-`sendInvitations()` therefore does the dispatch as its **last statement**, after every fallible step.
-Keep it there.
+⭐ **Terminating callbacks fire whatever the response status.** A throw *after* dispatch returns a
+500 to the caller while every email still goes out, and a retry then double-sends and double-charges.
+
+📌 **Corrected 2026-09-14 — this used to say `sendInvitations()` "does the dispatch as its last
+statement, after every fallible step. Keep it there." That is not true of the code.** On `develop`
+roughly 40 lines run *after* the `dispatchEmailBatch()` loop and inside the same `try`: the
+`AuditEventCatalog::invitationSentTitle()` lookup, a `TestInvitation::…->min('expires_at')` query, and
+the `auditService->log()` call. Any of them throwing returns a 500 to a caller whose invitations have
+already been dispatched and charged for.
+
+☠️ **So the trap is live, not guarded against.** Treat it as an open issue rather than a rule the code
+follows:
+
+- A client retrying that 500 double-sends and double-charges. Nothing is idempotent at the request
+  level — the row-level claim in `SendTestInvitationEmailsJob` prevents one *batch* mailing an address
+  twice, but a second request creates a second set of invitation rows.
+- The narrow fix is to move the audit block before the dispatch loop, or to dispatch outside the `try`.
+  Neither has been done.
+
+`ws-404` adds one more line in that region (`SweepPendingInvitationsJob::dispatch()->afterResponse()`)
+and does **not** make this worse — the sweep is idempotent and only delivers rows that were already
+charged for.
 
 Anything left pending is recovered with `php artisan invitations:send-pending` ([JOBS.md](JOBS.md)) —
 on `develop` that is the only route, and nothing runs it automatically. ⚠️ Unmerged `ws-404` adds two

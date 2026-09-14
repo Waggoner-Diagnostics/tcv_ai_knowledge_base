@@ -98,6 +98,8 @@ Read the row for the thing you are about to change **before** you change it.
 | `mail.invitation_dispatch` | Setting `queue` requires `backend-queue` running, or batches pile up in `jobs` silently. It also makes `$tries`/`$backoff`/`failed()` live for the first time — check `failed()` still only *releases* claims and never reopens a `sent` row ([JOBS.md](JOBS.md)) |
 | `TestInvitation::scopeAwaitingDelivery()` | Three readers — `invitations:send-pending`, `SweepPendingInvitationsJob`, and the job's own re-query. It exists so they cannot drift; the `is_revoked` / `expires_at` clauses are what stop a cancelled-and-refunded invitation being mailed ([CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md)) |
 | The `failover` mailer chain | ☠️ Never put `log` or `array` in it. Both accept every message and report success while delivering nothing, so a broken primary reads as a clean send ([THIRD_PARTY.md](THIRD_PARTY.md)) |
+| **Adding a method to a queued job** | ☠️ Check the name against `InteractsWithQueue` first — `release()`, `attempts()`, `delete()`, `fail()`. A class method silently shadows the trait's with no error, and queue middleware call `$job->release($seconds)` on the handler. `SendTestInvitationEmailsJob` carried exactly this collision until `ws-404` renamed it `releaseClaim()` ([JOBS.md](JOBS.md)) |
+| **Adding queue middleware to `SendTestInvitationEmailsJob`** | It is the natural next step once `mail.invitation_dispatch=queue` — and it is what would have detonated the `release()` collision above. Re-check the job's method names against the trait before adding one |
 
 ---
 

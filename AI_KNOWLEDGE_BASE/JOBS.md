@@ -55,6 +55,21 @@ it now only releases `sending` claims back to `pending`. Rows already at `sent` 
 alone — reopening a `sent` row would mail that patient twice. This matters now that `queue` mode makes
 the method reachable at all.
 
+☠️ **Never name a method on a queued job `release()`.** `SendTestInvitationEmailsJob` had a private
+`release(TestInvitation $invitation)` that gave a claimed row back. The class also uses
+`InteractsWithQueue`, whose own **`release($delay = 0)` puts the job back on the queue** — so the
+class method silently shadowed the trait's, with no error, because a class method always wins over a
+trait's.
+
+It was harmless only while nothing called the trait version. Queue middleware do: `RateLimited`,
+`WithoutOverlapping` and `ThrottlesExceptions` all call `$job->release($seconds)` on the handler, and
+this job now runs on a real worker whenever `mail.invitation_dispatch=queue`. Adding a rate limiter to
+a bulk mail job — which [the review checklist actively asks for](REVIEW/REVIEW_CHECKLIST.md) — would
+have called a *private* method with an `int` where a `TestInvitation` was expected.
+
+Renamed to **`releaseClaim()`** on `ws-404` (`3f3aeb58`) before that could land. The same trap applies
+to any other `InteractsWithQueue` method name — `attempts()`, `delete()`, `fail()`.
+
 ### `SweepPendingInvitationsJob` — recovery that rides on web traffic (`ws-404`, **unmerged**)
 
 `SendTestInvitationEmailsJob` leaves a row at `email_status='pending'` when it cannot reach the SMTP

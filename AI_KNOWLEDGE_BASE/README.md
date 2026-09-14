@@ -41,11 +41,11 @@ tracks separately: the **QA automation helpers** (PR #223, 2026-09-08 — see
 and the **Audit Trail** read API (PR #227, 2026-09-09 — `AuditLogController`, `Services/Audit/`,
 `audit_logs`; the context packs for it are written but still sit on the KB branch `ws-422`).
 
-⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — four commits as of 2026-09-14,
-but only **two carry work**: `b69a2c37` (delivery recovery) and `07a1c9b2` (infrastructure + preflight).
-`3abe5aef` and `09707463` merge `develop` in, the second of them pulling in the audit-trail work of
-2026-09-14. Most of what the KB flags `ws-404` is merged; what is **not** on `develop` is the
-delivery-recovery and mail-infrastructure work, and passages describing it say so:
+⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — **three work commits** as of
+2026-09-14: `b69a2c37` (delivery recovery), `07a1c9b2` (infrastructure + preflight) and `3f3aeb58`
+(review fixes). The rest are merges of `develop` in, the latest (`13a4193c`) pulling in the `ws-449`
+IP-restriction work after PR #241. Most of what the KB flags `ws-404` is merged; what is **not** on
+`develop` is the delivery-recovery and mail-infrastructure work, and passages describing it say so:
 
 | `ws-404` only | Where |
 |---|---|
