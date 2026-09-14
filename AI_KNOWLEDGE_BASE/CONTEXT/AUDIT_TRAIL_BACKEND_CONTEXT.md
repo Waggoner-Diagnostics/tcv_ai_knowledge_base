@@ -3,6 +3,11 @@
 **Repo:** `TCV-Backend` — ✅ **shipped to `develop` 2026-09-09** (PR #227, merge `940238fd`).
 **Frontend contract:** ✅ also merged — `feat/ui-audit-trail` landed on `TCV-Frontend@develop` as PR #375 (`6b6c5ae`), specified in [AUDIT_TRAIL_FRONTEND_CONTEXT.md](./AUDIT_TRAIL_FRONTEND_CONTEXT.md). Phases 1–3 were built against fixtures; Phase 4 (swap three function bodies for axios calls) and the login/logout instrumentation described in SERVICES.md are both done and merged.
 
+> 🚧 **Unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-improvement-11-sep-26` (branched off the
+> shipped state above, not yet on `develop` as of 2026-09-14) reworks several event **titles/descriptions**
+> and adds 3 new catalog events. See §13 — do not treat §13's numbers as `develop`'s current state until
+> that branch merges and this KB is regenerated against it.
+
 > ⚠️ **This document was written as a *plan*, while the work was still on a branch.** It is kept
 > because the reasoning is worth having, but read it as design intent that has now shipped — where it
 > says "will" or names a branch, check the code on `develop` before trusting the tense.
@@ -288,3 +293,69 @@ Answers to the draft's four open questions:
 1. Cut "Account locked", "Failed attempt count", "Pricing changes discarded", "Discount code auto-expiry", "Report filtered"? *(recommend: cut all five from Phase 1)*
 2. Confirm the §5 redactions — particularly that **test results and diagnoses are never logged**, and that verification codes are never logged.
 3. Retention window for `PruneAuditLogs` — 1 year? 7 years? This is a compliance answer, not an engineering one.
+
+---
+
+## 13. Unmerged follow-up — title/description review pass (`feat/audit-trail-improvement-11-sep-26`)
+
+**Status: 🚧 not on `develop`.** This branch is a post-ship review pass against
+`changes to audit log for super admin role.xlsx` review comments, documented in
+`docs/plans/audit-trail-backend-changes.md` in the `waggoner-tcv` root (not this KB). Recorded here so a
+future KB regeneration against `develop` — once this branch merges — knows what changed and why, and so
+nobody re-derives it from scratch in the meantime.
+
+**New mechanism — `event_title` is no longer *always* fixed per key.** `AuditEventCatalog`'s design
+invariant ("event_title is fixed per event key") still holds for most of the catalog, but
+`AuditService::log()` now takes an optional trailing `?string $eventTitleOverride = null` — when a caller
+passes one, it replaces the catalog title for that single row. Fully backward compatible (defaults null,
+every pre-existing call site unaffected). Two new `AuditEventCatalog` static helpers build the override
+string: `statusChangeTitle(string $eventKey, string $afterStatus)` and `invitationSentTitle(int
+$recipientCount)`.
+
+**Titles/descriptions changed to be dynamic (single actual value, never "(X/Y)" literally), title and
+description always built from the same resolved local variable so they can't disagree:**
+
+| Event key | Old title | New behaviour |
+|---|---|---|
+| `account.user_status_changed` | `User Status changed (Active/Inactive)` | `User Status changed (Active)` **or** `(Inactive)`, resolved from the actual after-value. Description: `"Account status changed to {Active\|Inactive}."` |
+| `account.super_admin_status_changed` | same pattern | same pattern |
+| `account.organization_status_changed` | same pattern | same pattern. Description: `"Organization account status changed to {Active\|Inactive}."` |
+| `settings.test_status_changed` | `Test Status changed (Active/Inactive)` | same pattern. `Test::status` accessor is boolean-backed (`active`/`inactive` only) — no suspended concept here, deliberately left untouched below |
+| `test.invitation_sent` | `Test invitation sent (single / multiple)` | `Test invitation sent (Single)` **or** `(Multiple)`, from the actual recipient count at `TestInvitationController::sendInvitations()`. Description pluralizes too: `"Test invitation sent."` vs `"Test invitations sent."` |
+| `billing.discount_code_create_failed` | `Discount Code create failed (validation)` | reverted (static) to `Discount code creation failed` |
+| `auth.restricted_ip_added` / `_removed` / `_updated` | `Restricted IP address (Added\|Removed\|Updated)` | parentheses dropped (static): `Restricted IP address Added` / `Removed` / `Updated` |
+
+**Three new dedicated events — `suspended` is a real third `account_status` value** (`UserRequest.php`
+validates `required|in:active,inactive,suspended`), and product decided it should NOT share the
+Active/Inactive dynamic title. When the after-value is `suspended`, `UserController::update()`'s
+status-only branch and `OrganizationController`'s user-status branch now route to a dedicated static-title
+key instead of `statusChangeTitle()`:
+
+| Event key | Title | Category | Sensitivity |
+|---|---|---|---|
+| `account.user_suspended` | `User account suspended` | `accounts_users` | `high` |
+| `account.super_admin_suspended` | `Super Admin account suspended` | `accounts_users` | `high` |
+| `account.organization_suspended` | `Organization account suspended` | `accounts_users` | `high` |
+
+**Catalog size:** 64 → **67** events on this branch; `accounts_users` category 16 → **19**. (`develop`'s
+current figure is the F-082 row in `FEATURE_INDEX.md` — cross-check that against the real catalog before
+trusting either number; it was already observed stale relative to the shipped 64-event state before this
+branch even started.)
+
+**Two behavioural fixes, not just title text:**
+
+- **`UserController::update()`** — the "Assigned Tests" audit entry moved from a static current-state
+  snapshot under `details` to a real before/after diff appended to the `changes` ("what changed") array,
+  emitted only when the set actually differs. (This branch of `update()` doesn't itself mutate the pivot
+  today, so the diff is presently always a no-op — mechanism is correct if that ever changes.)
+- **`TestController::assignUserTest()` / `unassignUserTest()` / `bulkUpdateAssignment()`** — previously
+  logged **nothing** (confirmed gap: only a plain `Log::info()` in `bulkUpdateAssignment`, no
+  `AuditService::log()` call at all in any of the three). Now all three log via a new private
+  `logAssignedTestsChange()` helper, event key `account.profile_updated`, with a before/after "Assigned
+  Tests" diff under `changes` — only when the set actually changed (re-assigning an already-assigned test,
+  or a net-zero bulk call, logs nothing). `bulkUpdateAssignment`'s `user_id` param lets a Super Admin act on
+  another user's assignments (gated by `TestPolicy::viewTests()`); actor/target are correctly distinct in
+  that case, reusing `account.profile_updated` rather than a new key — the plan doc's own event list
+  doesn't anticipate a separate one for this.
+
+Reviewed (`tcv-reviewer`, scanner clean, no blocking findings) — two non-blocking notes: `invitationSentTitle()`'s "Multiple" branch is presently unreachable given how the call site is gated (bulk sends use a different key with no override), and the new `suspended` path has no equivalent gap since it got its own dedicated key. `composer test`: 715 passed / 2 failed, both pre-existing and unrelated (confirmed via `git stash` — a HubSpot-mock test and a pre-flagged quoted-printable assertion).
