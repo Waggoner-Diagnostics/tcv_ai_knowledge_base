@@ -9,12 +9,17 @@
 > actual state. §13's own "not yet on develop" framing is stale; the content (titles, new keys, catalog
 > counts) is otherwise accurate.
 >
-> 🚧 **New unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`
-> (branched off `c3449270`, not yet on `develop` as of 2026-09-14) fixes 3 more User-Panel-reported
-> defects — a missing discount breakdown on `billing.payment_succeeded`, a mislabelled
-> `test.invitation_sent_bulk` key, and a hard-coded `Credits Used` on `test.started`. See §14 — do not
-> treat §14's numbers as `develop`'s current state until that branch merges and this KB is regenerated
-> against it (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
+> ✅ **§14 has since MERGED to `develop`** (commit `4570912b` and its predecessors, confirmed
+> 2026-09-15 via `git merge-base --is-ancestor`). Its six User-Panel defect fixes — the discount
+> breakdown on `billing.payment_succeeded`, the `test.invitation_sent_bulk` removal, the hard-coded
+> `Credits Used`, the orphaned distributor-enquiry key, raw `state_id`/`country_id` in update diffs,
+> and the pricing rows on a manual credit grant — are now `develop` behaviour, not pending work.
+>
+> 🚧 **Still unmerged on that same branch:** §15's impersonation attribution, plus two unrelated
+> commits — `3e42305d` (date-only logging in audit rows) and `4c92b5e2` (`auth.account_locked`, a
+> NEW catalog key: **the catalog is 68, not 67** — `sign_ins_security` 12 → 13). Do not
+> treat §14's *counts* as current: they were accurate at the time of writing and have since moved.
+> Re-verify against the branch and regenerate this KB (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
 > `develop`, so a full `composer regenerate` was deliberately **not** run for this update — see
 > `GUIDES/HOW_TO_REGENERATE.md`'s "never index a feature branch" rule).
 
@@ -316,7 +321,7 @@ Answers to the draft's four open questions:
 
 ---
 
-## 13. Unmerged follow-up — title/description review pass (`feat/audit-trail-improvement-11-sep-26`)
+## 13. ✅ MERGED — title/description review pass (`feat/audit-trail-improvement-11-sep-26`)
 
 **Status: 🚧 not on `develop`.** This branch is a post-ship review pass against
 `changes to audit log for super admin role.xlsx` review comments, documented in
@@ -382,7 +387,7 @@ Reviewed (`tcv-reviewer`, scanner clean, no blocking findings) — two non-block
 
 ---
 
-## 14. Unmerged follow-up — User-Panel defect pass (`feat/audit-trail-user-panel-improvement-14-sep`)
+## 14. ✅ MERGED — User-Panel defect pass (`feat/audit-trail-user-panel-improvement-14-sep`, `4570912b`)
 
 **Status: 🚧 not on `develop`.** Branched off `c3449270` (§13's merge commit). Fixes 3 of 4 issues
 reported against the User Panel category of the live catalog; the 4th was evaluated for feasibility
@@ -413,7 +418,9 @@ selection collapsed to 2 (`test.invitation_resent` / `test.invitation_sent`), an
 `invitationSentTitle()` is now actually reachable for counts > 1, producing
 `"Test invitation sent (Multiple)"` (capitalized, consistent with the rest of the catalog's dynamic
 titles — a lowercase `"(multiple)"` was considered and rejected for consistency).
-**Catalog size: 67 → 66; `test_activity` 6 → 5.**
+**Catalog size: 67 → 66; `test_activity` 6 → 5.** (Item 4 below then adds one key back, so the
+branch ships 67 overall — `AuditEventCatalogTest::test_total_event_count_matches_the_post_cut_spreadsheet_tally`
+asserts 67, and the `AuditLogSeeder` docblock still says 66, which is stale.)
 
 **3. `test.started`'s `Credits Used` was a hard-coded literal, not a ledger read.**
 `TestController::assignTest()` logged `$isEmailInvite ? 0 : 1` — for a patient-invited test this
@@ -429,7 +436,54 @@ from `details` entirely**, not sent as `value: null` — the frontend's `DetailV
 number was expected and is missing" rather than "not applicable here"; omitting the key avoids that
 false impression.
 
-**4. Test abandonment — evaluated, not implemented this pass.** No code exists today
+**4. `settings.distributor_enquiry_submission_failed` was an orphaned key.**
+`DistributorController::submit()`'s catch block had always logged this key, but it was never added
+to `AuditEventCatalog::EVENTS` — so `AuditEventCatalog::get()` threw on every failed submission and
+`AuditService::log()`'s catch-all swallowed the throw. **No audit row was ever written for a lost
+distributor enquiry.** Adding the catalog entry (`settings_config`, `low`) is the whole fix.
+**Catalog size: 66 → 67; `settings_config` 4 → 5.**
+
+**5. `state_id` / `country_id` reached the drawer as raw foreign keys.**
+The reported symptom was "State and City show up as IDs, especially under *User details edited*".
+Only half of that is real, and the half that is real is worse than reported:
+
+- **`state_id` / `country_id` — a genuine defect, in three places.** `users.state_id` and
+  `users.country_id` are foreign keys. Every **create**-path detail block resolved them by hand
+  (`UserController::accountCreateDetails()`, `OrganizationController`'s account details,
+  `AuthController`'s registration event all do `optional(State::find(...))->name`), but all three
+  **update**-path diffs — `UserController::update()`, `OrganizationController::update()`'s user
+  branch, and `ProfileController::update()` — passed the columns straight through
+  `BuildsAuditDiffs`, shipping `"State Id": 3963 -> 3971`. The frontend cannot rescue this:
+  `AuditDetailSections.js`'s `DetailValue` renders any non-boolean, non-array value as
+  `String(value)`, and `formatFieldLabel` only title-cases the field name.
+- **`city` — not a defect.** `users.city` is `string(100)`, the only city column in the schema, and
+  every form that writes it (`NewUserModal`, `OrganisationModal`, `Register`, both profile pages)
+  is a free-text input with a digit-blocking key handler. It was already logging the literal name.
+  The reported "City" is almost certainly the adjacent `State Id`/`Country Id` rows in the same
+  address block. A regression assertion pins city as an unresolved string so it stays that way.
+
+Fixed **inside `BuildsAuditDiffs` rather than at the three call sites**, because per-call-site
+opt-in is exactly what produced the bug — the create paths remembered, the update paths didn't. A
+new `AUDIT_RELATION_FIELDS` map rewrites *both* halves of the entry (`state_id => 3963` becomes
+`State => 'Illinois'`), and `auditSnapshot()`/`auditChanges()`/`auditDetails()` all consult it with
+no caller changes at all. Deliberately **uncached**: a lookup only fires for a field that actually
+changed, so it costs at most four queries on an address edit, and a static memo would hand back a
+stale name for an id reused across `RefreshDatabase` cases. A null `state_id` (stateless country)
+stays null so the drawer still renders `NA`, and a deleted lookup row resolves to null rather than
+leaking the number back out. **Patient records are the one place an id legitimately reads as an id,
+and no patient field is audited through this trait — so there was nothing to exempt.**
+
+**6. `credits.assigned_to_*` logged pricing that never applied.**
+`CreditsController::store()` is a super admin granting credits by hand; `CreditsAddRequest` lets
+`price_per_credit` / `total_price` / `coupon_code` sit at their `0`/`null` defaults and nothing is
+ever charged. Logging **Price Per Credit / Total Price / Coupon Code** only invited the reader to
+think money changed hands. All three rows removed; `Type` / `Credits` / `Added Date` / `Expiry
+Date` are untouched. The revoke path (`destroy()`) never carried pricing and needed no change, and
+`PriceDetailController`'s own `Price Per Credit` row is a genuine price-settings event and stays.
+Real purchases remain audited by `StripeProvider` under `billing.payment_succeeded` with the
+amounts actually charged (item 1 above).
+
+**7. Test abandonment — evaluated, not implemented this pass.** No code exists today
 (`PatientTest::STATUS_ABANDONED` is only ever set by an admin credit-revoke action, never by
 automatic staleness detection; no `test.abandoned` catalog key; no `started_at`/timeout column; no
 in-app scheduler in any environment). Recommended design for a later pass, matching the existing
@@ -440,13 +494,27 @@ scheduler runs anywhere, so this is the only option that produces a real timesta
 rather than a read-time-only computed badge). Staleness threshold is an open product decision,
 deliberately not settled.
 
-**Verification:** `composer test` — 729 passed, same 2 pre-existing/unrelated failures as §13
-(confirmed via `git stash` against this branch too — a HubSpot-mock test and the quoted-printable
-assertion). New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
+**Verification:** `php artisan test` — **739 passed, 1 failed**, that one being
+`InvitationSendReviewFixesTest:261` (a quoted-printable `<a href=` assertion), confirmed to fail
+identically on `develop` via `git checkout develop` — pre-existing and unrelated. `vendor/bin/pint
+--test` fails repo-wide on `line_ending` (CRLF checkout) both here and on `develop`; this branch
+introduces no new fixer.
+
+New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
 (scenario/catalog parity), `AuditedInvitationSendingTest` (renamed multi-recipient case),
 `AuditedPaymentConfirmationTest` (new discount-fields case + an explicit absent-when-no-discount
 assertion), `AuditedTestLifecycleTest` (two new cases: credits-used-as-1 via a real
-`CreditConsume` row, and the row omitted when none exists).
+`CreditConsume` row, and the row omitted when none exists), and for items 5-6:
+`AuditedProfileControllerTest::test_changing_state_logs_the_name_not_the_id` (which also pins
+`city` as an unresolved literal), `AuditedUserControllerTest::test_changing_state_and_country_logs_
+names_not_ids` (covers a null "before" from a stateless country),
+`AuditedOrganizationControllerTest::test_changing_the_owners_state_logs_the_name_not_the_id`, and
+`AuditedCreditsControllerTest::test_assigning_credits_does_not_log_pricing_fields`.
+
+**Not covered — worth knowing.** `UpdateProfileRequest` makes `state_id` *required* whenever the
+selected country has any states, so "clear the state on a country that has one" is unreachable
+through the API and has no test; the null path is covered instead by the UserController case,
+which moves off a stateless country.
 
 **KB regeneration note:** none of the three repos are currently checked out on `develop`
 (`TCV-Backend` is on this branch; `TCV-Frontend` on `ui/audit-trail-improvements-11-sep-26`;
@@ -455,3 +523,126 @@ assertion), `AuditedTestLifecycleTest` (two new cases: credits-used-as-1 via a r
 F-082 row and the generated `INDEXES/*` still reflect the pre-§13-merge `develop` state from the
 2026-08-19 sync; both that gap and this section should be reconciled the next time all three repos
 are actually on `develop` and a full regeneration is run.
+
+## 15. Unmerged follow-up — impersonation attribution (`feat/audit-trail-user-panel-improvement-14-sep`)
+
+Backend commit `0256fe7e`; frontend on `TCV-Frontend@ui/audit-trail-improvements-11-sep-26`.
+**First schema change to `audit_logs` since the table was created.**
+
+**The defect.** `AuthController::impersonateUser()` mints the impersonation token **on the target
+user**, carrying one ability `impersonated-by:{adminId}`, and the SPA sends it as a plain bearer
+token (`AxiosInstance.js:43`). So for the whole impersonated session `$request->user()` **is the
+impersonated user** — and all ~75 audit call sites pass exactly that as `$actor` (48 of them
+literally `$request->user()`/`Auth::user()`/`auth()->user()`). The audit trail was faithfully
+recording what the auth layer told it. Two consequences:
+
+1. **"Who Did It" named the impersonated user alone** — the reported symptom.
+2. **`is_admin_action` was `false` on every impersonated row.** It was `$actor?->isSuperAdmin()`,
+   and the actor is the customer. Since `User::canImpersonateUser()` returns true only for a Super
+   Admin, *every* impersonated action is really an admin action — and all of them were invisible to
+   the admin-only filter, the one filter whose entire job is surfacing exactly that. This is the
+   compliance-relevant half and was **not** in the original report.
+
+**Shape: record both identities, don't swap.** `actor_*` keeps its existing meaning (the account the
+action ran as), so nothing that filters, groups or lists on `actor_id` changes behaviour; five
+`impersonator_*` columns are added alongside, denormalized like actor/target so the row survives the
+admin being edited or deleted. A straight swap was rejected — it would drop impersonated rows out of
+"everything that happened on this user's account", and make an admin's own action
+indistinguishable from one taken through someone else.
+
+**Detection is central, in `AuditService::log()`.** 75 call sites is untenable, and a new call site
+can forget. `impersonatorFor()` reads the current request's Sanctum token abilities for the
+`impersonated-by:` marker — now the shared `AuditService::IMPERSONATION_ABILITY_PREFIX` constant,
+because drift between the writer in `AuthController` and this reader produces silently wrong rows
+rather than an error. Two guards matter:
+
+- **`$request->user()->id === $actor->id`** keeps `account.impersonation_ended` correct: it
+  deliberately passes the *impersonator* as actor while the request runs on the impersonated user's
+  token, so the ids differ and it is left alone rather than described as impersonating itself.
+  `impersonation_started` needs no special case — it runs on the admin's own token, which carries no
+  such ability.
+- **`$token instanceof PersonalAccessToken`** — session/cookie auth resolves to a Sanctum
+  `TransientToken` with no abilities array at all. This is also why the tests mint real tokens with
+  `createToken(..., ['impersonated-by:N'])` instead of `Sanctum::actingAs()`.
+
+**`ip_address` moved cards, not columns.** The stored IP is the address the request arrived from,
+which on an impersonated row is the *admin's* browser. `AuditLog::toDetailArray()` hangs it off the
+impersonator card (`personArray()` now accepts either prefix); the column is unchanged.
+
+**People filter / dropdown.** An admin who only ever acts through impersonation appears as neither
+`actor_id` nor `target_id`, so `people()` unions the impersonator side in — and `index()`'s
+`actor_id` filter matches `actor_id OR impersonator_id`, so that entry is not a dead option.
+Additive: filtering by the impersonated account still returns its rows.
+
+**Backfill (`2026_09_15_000002`).** History reconstructs *exactly*, because the correlation was
+already in the data: `impersonateUser()` logs its row with `sessionKeyForToken($newToken)`, and every
+later request on that same token derives the identical `session_key` — so one impersonation's rows
+all share a `session_key` with the row that opened it, whose actor is the admin. Re-impersonating
+mints a new token and therefore a new key, so sessions cannot bleed into each other. The two
+impersonation events are excluded **on `actor_id`, not `event_title`**, so a later catalog rename
+cannot silently re-include them. `down()` clears only the columns it wrote and deliberately leaves
+`is_admin_action`, which cannot be distinguished from a value that was already true and is
+re-derived on every write.
+
+**⚠️ Two frontend surfaces, not one.** `PersonCard` in the detail drawer
+(`AuditTrail/AuditDetailSections.js`) and `PersonCell` in the **table** column definitions
+(`utils/columns/auditTrailColumns.js`) are independent components rendering the same person shape.
+The columns file lives OUTSIDE `pages/AuditTrail/`, which is how it was missed on the first pass —
+the drawer was fixed while the list column kept showing the impersonated user's name and email.
+`toListArray()` already carried `impersonator`, so the table fix was frontend-only. **Anything else
+that renders an audit person must be checked against both.**
+
+**Which events this can touch.** Impersonation is Super-Admin-only and the token carries exactly one
+ability, which bounds the list. Events that can gain an impersonator are anything reachable on an
+authenticated session: `patient.added/updated/deleted`, `test.started`, `test.completed`, the
+invitation events, the billing events, `account.profile_updated`, `auth.password_changed`/`_failed`,
+`auth.logout`, `report.patient_test_detail_viewed`, `report.user_tests_exported`,
+`settings.email_template_updated`. Unaffected: every unauthenticated event (`auth.login_*`,
+`account.self_signup`, `auth.password_reset_*`, `auth.email_verification_completed`,
+`settings.contact_*`) and the two impersonation events themselves.
+
+**Impact on non-impersonated rows: none.** `actor_*`, `is_admin_action` and `ip_address` placement
+are all unchanged (`impersonator_id` is null → every branch falls back to the old behaviour); the
+backfill's statements are both scoped to rows with an `impersonator_id`; and detection
+short-circuits before any query when the marker is absent, so there are **no extra DB queries** on a
+normal write. The `actor_id` filter is additive — no row is ever lost. One shape change: every row
+now carries an `impersonator` key, `null` on ordinary rows.
+
+**Accepted consequence.** The admin-only filter returns more rows than before — that is the point of
+the fix, confirmed as intended with the product owner, but it does change what an existing saved
+view shows.
+
+**⚠️ Route-group trap, found in review.** Every impersonation test initially drove `/api/profile`,
+which sits in the `auth:sanctum` group. `patients` sits under `FlexibleAuthMiddleware` instead, where
+nothing installs Sanctum's user resolver explicitly — attribution there rests on the default guard
+(`api`, whose driver is `sanctum`) resolving `$request->user()`. It does work, and now has its own
+test, but adding a patient while impersonating is THE flagship impersonation flow (see
+`OrganizationController`'s own note about `AddPatient.js`), so a silent failure there would be the
+first thing QA hits. Any future change to guards or middleware ordering must re-check this.
+
+**Pre-existing limitations surfaced by this work (not introduced, not fixed here):**
+
+- **Impersonating another Super Admin gives a degraded session.** `OrgPolicy` and `TestPolicy` gate
+  on `tokenCan('update-organization')` etc., and the impersonation token holds none of those
+  abilities, so those endpoints 403 even though the impersonated usertype is Super Admin. Net effect:
+  super-admin-only events cannot be produced through impersonation at all — which usefully bounds
+  both the event list above and any QA plan.
+- **`UserController::update()` has no `authorize()` call**, and `Route::apiResource('users')` sits in
+  the plain `auth:sanctum` group. Any authenticated user can call it. Worth its own ticket.
+
+**Verification:** `php artisan test` — **761 passed, 1 failed**, that one being the same pre-existing
+`InvitationSendReviewFixesTest:261` quoted-printable assertion that fails identically on `develop`.
+Frontend `AuditDetailSections.test.js` + `auditTrailColumns.test.js` — 27 passed; `eslint` clean.
+New coverage: 6 cases in `AuditedImpersonationTest` (both identities, admin-action flag, IP on the
+impersonator card, no impersonator on a normal action, neither impersonation event self-marked, and
+the `FlexibleAuthMiddleware` route group), 2 in `AuditLogAccessTest` (people dropdown, actor filter),
+6 in the new `ImpersonatorBackfillTest` (attribution, out-of-session rows untouched, no
+self-impersonation, no cross-session bleed, idempotence, `down()`), 3 `PersonCard` cases and a new
+`auditTrailColumns.test.js` (5 cases) on the frontend.
+
+**Stash/rebase hazard, for the record.** This work was stashed and later restored while both branches
+moved underneath it. `git stash pop` left `AuditDetailSections.test.js` in an unmerged conflict state
+(import line only — upstream had added `formatMaybeDate`/`moment`). Nothing was lost, but a
+`git status` showing `UU` after a pop is easy to miss and the file carries conflict markers until
+resolved.
+
