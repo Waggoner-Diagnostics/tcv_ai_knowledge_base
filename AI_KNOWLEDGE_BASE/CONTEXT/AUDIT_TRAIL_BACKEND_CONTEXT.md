@@ -10,9 +10,11 @@
 > counts) is otherwise accurate.
 >
 > 🚧 **New unmerged follow-up in flight:** `TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`
-> (branched off `c3449270`, not yet on `develop` as of 2026-09-14) fixes 3 more User-Panel-reported
+> (branched off `c3449270`, not yet on `develop` as of 2026-09-15) fixes 6 more User-Panel-reported
 > defects — a missing discount breakdown on `billing.payment_succeeded`, a mislabelled
-> `test.invitation_sent_bulk` key, and a hard-coded `Credits Used` on `test.started`. See §14 — do not
+> `test.invitation_sent_bulk` key, a hard-coded `Credits Used` on `test.started`, an orphaned
+> distributor-enquiry failure key, raw `state_id`/`country_id` foreign keys in every update diff,
+> and meaningless pricing rows on a manual credit grant. See §14 — do not
 > treat §14's numbers as `develop`'s current state until that branch merges and this KB is regenerated
 > against it (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
 > `develop`, so a full `composer regenerate` was deliberately **not** run for this update — see
@@ -413,7 +415,9 @@ selection collapsed to 2 (`test.invitation_resent` / `test.invitation_sent`), an
 `invitationSentTitle()` is now actually reachable for counts > 1, producing
 `"Test invitation sent (Multiple)"` (capitalized, consistent with the rest of the catalog's dynamic
 titles — a lowercase `"(multiple)"` was considered and rejected for consistency).
-**Catalog size: 67 → 66; `test_activity` 6 → 5.**
+**Catalog size: 67 → 66; `test_activity` 6 → 5.** (Item 4 below then adds one key back, so the
+branch ships 67 overall — `AuditEventCatalogTest::test_total_event_count_matches_the_post_cut_spreadsheet_tally`
+asserts 67, and the `AuditLogSeeder` docblock still says 66, which is stale.)
 
 **3. `test.started`'s `Credits Used` was a hard-coded literal, not a ledger read.**
 `TestController::assignTest()` logged `$isEmailInvite ? 0 : 1` — for a patient-invited test this
@@ -429,7 +433,54 @@ from `details` entirely**, not sent as `value: null` — the frontend's `DetailV
 number was expected and is missing" rather than "not applicable here"; omitting the key avoids that
 false impression.
 
-**4. Test abandonment — evaluated, not implemented this pass.** No code exists today
+**4. `settings.distributor_enquiry_submission_failed` was an orphaned key.**
+`DistributorController::submit()`'s catch block had always logged this key, but it was never added
+to `AuditEventCatalog::EVENTS` — so `AuditEventCatalog::get()` threw on every failed submission and
+`AuditService::log()`'s catch-all swallowed the throw. **No audit row was ever written for a lost
+distributor enquiry.** Adding the catalog entry (`settings_config`, `low`) is the whole fix.
+**Catalog size: 66 → 67; `settings_config` 4 → 5.**
+
+**5. `state_id` / `country_id` reached the drawer as raw foreign keys.**
+The reported symptom was "State and City show up as IDs, especially under *User details edited*".
+Only half of that is real, and the half that is real is worse than reported:
+
+- **`state_id` / `country_id` — a genuine defect, in three places.** `users.state_id` and
+  `users.country_id` are foreign keys. Every **create**-path detail block resolved them by hand
+  (`UserController::accountCreateDetails()`, `OrganizationController`'s account details,
+  `AuthController`'s registration event all do `optional(State::find(...))->name`), but all three
+  **update**-path diffs — `UserController::update()`, `OrganizationController::update()`'s user
+  branch, and `ProfileController::update()` — passed the columns straight through
+  `BuildsAuditDiffs`, shipping `"State Id": 3963 -> 3971`. The frontend cannot rescue this:
+  `AuditDetailSections.js`'s `DetailValue` renders any non-boolean, non-array value as
+  `String(value)`, and `formatFieldLabel` only title-cases the field name.
+- **`city` — not a defect.** `users.city` is `string(100)`, the only city column in the schema, and
+  every form that writes it (`NewUserModal`, `OrganisationModal`, `Register`, both profile pages)
+  is a free-text input with a digit-blocking key handler. It was already logging the literal name.
+  The reported "City" is almost certainly the adjacent `State Id`/`Country Id` rows in the same
+  address block. A regression assertion pins city as an unresolved string so it stays that way.
+
+Fixed **inside `BuildsAuditDiffs` rather than at the three call sites**, because per-call-site
+opt-in is exactly what produced the bug — the create paths remembered, the update paths didn't. A
+new `AUDIT_RELATION_FIELDS` map rewrites *both* halves of the entry (`state_id => 3963` becomes
+`State => 'Illinois'`), and `auditSnapshot()`/`auditChanges()`/`auditDetails()` all consult it with
+no caller changes at all. Deliberately **uncached**: a lookup only fires for a field that actually
+changed, so it costs at most four queries on an address edit, and a static memo would hand back a
+stale name for an id reused across `RefreshDatabase` cases. A null `state_id` (stateless country)
+stays null so the drawer still renders `NA`, and a deleted lookup row resolves to null rather than
+leaking the number back out. **Patient records are the one place an id legitimately reads as an id,
+and no patient field is audited through this trait — so there was nothing to exempt.**
+
+**6. `credits.assigned_to_*` logged pricing that never applied.**
+`CreditsController::store()` is a super admin granting credits by hand; `CreditsAddRequest` lets
+`price_per_credit` / `total_price` / `coupon_code` sit at their `0`/`null` defaults and nothing is
+ever charged. Logging **Price Per Credit / Total Price / Coupon Code** only invited the reader to
+think money changed hands. All three rows removed; `Type` / `Credits` / `Added Date` / `Expiry
+Date` are untouched. The revoke path (`destroy()`) never carried pricing and needed no change, and
+`PriceDetailController`'s own `Price Per Credit` row is a genuine price-settings event and stays.
+Real purchases remain audited by `StripeProvider` under `billing.payment_succeeded` with the
+amounts actually charged (item 1 above).
+
+**7. Test abandonment — evaluated, not implemented this pass.** No code exists today
 (`PatientTest::STATUS_ABANDONED` is only ever set by an admin credit-revoke action, never by
 automatic staleness detection; no `test.abandoned` catalog key; no `started_at`/timeout column; no
 in-app scheduler in any environment). Recommended design for a later pass, matching the existing
@@ -440,13 +491,27 @@ scheduler runs anywhere, so this is the only option that produces a real timesta
 rather than a read-time-only computed badge). Staleness threshold is an open product decision,
 deliberately not settled.
 
-**Verification:** `composer test` — 729 passed, same 2 pre-existing/unrelated failures as §13
-(confirmed via `git stash` against this branch too — a HubSpot-mock test and the quoted-printable
-assertion). New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
+**Verification:** `php artisan test` — **739 passed, 1 failed**, that one being
+`InvitationSendReviewFixesTest:261` (a quoted-printable `<a href=` assertion), confirmed to fail
+identically on `develop` via `git checkout develop` — pre-existing and unrelated. `vendor/bin/pint
+--test` fails repo-wide on `line_ending` (CRLF checkout) both here and on `develop`; this branch
+introduces no new fixer.
+
+New/updated coverage: `AuditEventCatalogTest` (catalog counts), `AuditLogSeederTest`
 (scenario/catalog parity), `AuditedInvitationSendingTest` (renamed multi-recipient case),
 `AuditedPaymentConfirmationTest` (new discount-fields case + an explicit absent-when-no-discount
 assertion), `AuditedTestLifecycleTest` (two new cases: credits-used-as-1 via a real
-`CreditConsume` row, and the row omitted when none exists).
+`CreditConsume` row, and the row omitted when none exists), and for items 5-6:
+`AuditedProfileControllerTest::test_changing_state_logs_the_name_not_the_id` (which also pins
+`city` as an unresolved literal), `AuditedUserControllerTest::test_changing_state_and_country_logs_
+names_not_ids` (covers a null "before" from a stateless country),
+`AuditedOrganizationControllerTest::test_changing_the_owners_state_logs_the_name_not_the_id`, and
+`AuditedCreditsControllerTest::test_assigning_credits_does_not_log_pricing_fields`.
+
+**Not covered — worth knowing.** `UpdateProfileRequest` makes `state_id` *required* whenever the
+selected country has any states, so "clear the state on a country that has one" is unreachable
+through the API and has no test; the null path is covered instead by the UserController case,
+which moves off a stateless country.
 
 **KB regeneration note:** none of the three repos are currently checked out on `develop`
 (`TCV-Backend` is on this branch; `TCV-Frontend` on `ui/audit-trail-improvements-11-sep-26`;

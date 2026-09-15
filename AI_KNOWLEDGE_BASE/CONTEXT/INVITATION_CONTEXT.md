@@ -56,7 +56,9 @@ POST api/test-invitations/send   ← auth:sanctum + throttle:bulk-invitations (5
                          then SweepPendingInvitationsJob (ws-404 only, throttled)
 ```
 
-⚠️ **The three audit keys do not mean what the catalog says.** `AuditEventCatalog` titles
+⚠️ **The three audit keys do not mean what the catalog says.** *(True of `develop`. Fixed on
+`TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`, which deletes the bulk key outright —
+see AUDIT_TRAIL_BACKEND_CONTEXT.md §14 item 2. Re-verify this paragraph once that branch merges.)* `AuditEventCatalog` titles
 `test.invitation_sent_bulk` "Test invitation sent via CSV (bulk)", but the controller picks it purely on
 `$createdCount > 1` — typing three addresses by hand emits the "via CSV" event. `test.invitation_resent`
 wins over both whenever `unique_test_id` is present, whatever the count. Do not read CSV usage out of
