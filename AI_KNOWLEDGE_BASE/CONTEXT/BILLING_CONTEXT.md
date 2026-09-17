@@ -45,6 +45,9 @@ routing level rather than by adding a null check per method — follow that shap
 
 Treat `api/stripe/*` as the deprecated surface regardless; build on `api/payment/*`.
 
+⚠️ **That split is why `ws-480`'s unlimited-credit refusal does not bite.** It was added to
+`StripePaymentController::createPaymentIntent()`, on the surface nothing calls — trap 9 below.
+
 `app/Services/PaymentProviders/` also carries commented-out routes for `partialRefund` / `refund` in
 `routes/api.php` — refunds exist in the controller but are **not routed**.
 
@@ -204,6 +207,41 @@ sync in trap 9 of [AUTH_CONTEXT](AUTH_CONTEXT.md#-traps) matters here.
 Nothing on the backend enforces a phone **format** on either path: `UpdateProfileRequest` has
 `['nullable', 'string', 'max:20']` and no format rule, and the payment path never reads `phone` at all.
 The SPA helper is the only guard, which is why it is shared rather than per-screen.
+
+### 9. ☠️ The unlimited-purchase refusal is on the deprecated surface (`ws-480`)
+
+`ws-480` (backend `8d247f8c`, 2026-09-17, **unmerged**) stops an unlimited-credit account from buying
+more credits. The server-side half is a single early return in
+`StripePaymentController::createPaymentIntent()`:
+
+```php
+if (Credits::getAvailableCredits($user->id) === 'Unlimited') {
+    Log::info('Blocked credit purchase for unlimited-credit account', ['user_id' => $user->id]);
+    return response()->json(['message' => 'Your account has unlimited credits, …'], 422);
+}
+```
+
+**Returned, not thrown** — deliberately. The method's `catch` turns any exception into a 500 *"Payment
+failed"*, which reads to a customer as an outage rather than a deliberate refusal. Any other refusal
+added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
+the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
+
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-090`) — the legacy surface, which the
+SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
+`POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **neither has an
+unlimited check on `ws-480`**. So the guard cannot fire on the path that takes money: the enforcement a
+customer actually meets is `CreditPage`/`Checkout` hiding the flow
+([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480-unmerged)), and a request that skips the SPA
+still reaches `BasePaymentProvider::createTransactionRecord()`, which writes the grant and the
+transaction as usual.
+
+**Where the check belongs if this is to hold server-side:** `PaymentController::initializePayment()`,
+before `DiscountCodeService::validate()`, plus `confirmPayment()` — `initialize` and `confirm` are
+separate requests, and only `confirm` grants the credits. Keep the legacy copy as well; it is guarded by
+`auth:sanctum` but still routed.
+
+⚠️ Nothing tests it: no backend test names `createPaymentIntent`, and the SPA has no `CreditPage` or
+`Checkout` test.
 
 ---
 

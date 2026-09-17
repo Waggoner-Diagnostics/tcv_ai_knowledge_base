@@ -7,7 +7,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Two branches are ahead of `develop` and **not** indexed: `ws-502` (list sort tiebreaks, both repos) and `tcv_data_migration` (152 files — introduces patient encryption at rest, so treat every patient/answer column in `INDEXES/` as the pre-encryption shape, [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)) |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Three branches are ahead of `develop` and **not** indexed: `ws-502` (list sort tiebreaks, both repos), `ws-480` (credit purchase gate + the user modal's at-least-one-test check, both repos — [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged)) and `tcv_data_migration` (152 files — introduces patient encryption at rest, so treat every patient/answer column in `INDEXES/` as the pre-encryption shape, [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)) |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `ff9be500` (develop) · `TCV-Frontend` `80403e7` (develop) · `TCV-Website` `cb4a1b6` (website-integration, unchanged) — generated **2026-09-17**. ⚠️ `git fetch` failed from the sync shell; SHAs match `origin/develop` as last fetched by the IDE (backend 2026-09-16 21:26, frontend 2026-09-15 16:54) |
 | **Backend scale** | 210 classes/interfaces/traits · 903 methods · 163 API endpoints · 53 tables · 131 migrations · suite **812 passed / 0 failed** |
@@ -67,6 +67,34 @@ On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `
 and a local `ws-400` holds one unpushed commit — the frontend and backend halves of the same ticket number
 are not in the same state, so check per repo. Backend `ws-401` also has one commit (`af555809`) beyond
 `develop`, though its repair migration is merged.
+
+### ⚠️ `ws-480` is prose-only — added 2026-09-17, nothing regenerated
+
+`ws-480` (unlimited-credit accounts must not be sold credits; the user modal must not save an empty test
+selection) sits on a branch in **both** code repos — backend `8d247f8c`, frontend `346efce`, each with a
+`develop` merge on top (`0dc601d4` / `77b8b09`). Neither is on `develop`, so **no index was regenerated
+for it** and `INDEXES/` still describes `develop`. The write-ups are:
+
+| Where | What it covers |
+|---|---|
+| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged) | the three gate flags on `CreditPage`, the separate `Checkout` guard, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
+| [CONTEXT/BILLING_CONTEXT.md trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) | the 422 in `StripePaymentController::createPaymentIntent()`, why it is returned rather than thrown, and where the check would have to go to bind |
+| [CONTEXT/CREDITS_CONTEXT.md trap 12](CONTEXT/CREDITS_CONTEXT.md#-traps) | what a purchase on top of an unlimited grant does to the balance once the grant lapses |
+| [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) | the blast-radius rows for both halves |
+
+☠️ **The one thing to carry out of that ticket:** the backend refusal landed on
+`POST api/stripe/create-payment-intent`, the **deprecated** surface no SPA code calls. The portal buys
+credits through `POST api/payment/initialize` → `POST api/payment/confirm`, and neither has the check, so
+on `ws-480` as written the rule is enforced in the client only. Read
+[BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md#two-parallel-payment-surfaces) before adding any rule to a
+payment handler.
+
+📌 **Two corrections went in with it**, both about code that had already changed on `develop`:
+`FRONTEND.md` said `initialized` is never reset and nothing clears the credits slice on logout — both
+untrue since `ws-397`'s follow-up `400cf66` (2026-08-31), which is what `ws-480`'s gate relies on; and
+`API_INDEX.md` still listed `api/stripe/*` as **public**, though it moved into `auth:sanctum` on
+2026-09-07 with [S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop) and the
+generated index has said so since.
 
 ### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
 

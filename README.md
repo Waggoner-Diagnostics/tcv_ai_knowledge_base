@@ -131,8 +131,12 @@ indexes.
 First generated 2026-08-19. Per-sync deltas are recorded in
 [AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md).
 
-✅ `ws-404` and `ws-449` are now **merged and indexed**. ⚠️ `ws-502` (both repos) is ahead of `develop`
-and is **not** indexed — feature branches never are.
+✅ `ws-404` and `ws-449` are now **merged and indexed**. ⚠️ `ws-502` and `ws-480` (both repos each) are
+ahead of `develop` and are **not** indexed — feature branches never are. Both are written up in the prose,
+labelled `unmerged`: `ws-502` in
+[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#server-sorted-grids-ws-502-unmerged), `ws-480` (credit
+purchase gate + the user modal's test check) in
+[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#credit-purchase-gate-ws-480-unmerged).
 
 ## Honest scope
 

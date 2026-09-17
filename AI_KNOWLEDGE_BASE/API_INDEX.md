@@ -21,7 +21,7 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 | `api/organizations`, `api/organization/*` | ~12 | mixed | `verify-signature` is public |
 | `api/credits`, `api/user/credits`, `api/patient-tests/*/revoke-credit` | ~9 | `auth:sanctum` | |
 | `api/payment/*` | 5 | `auth:sanctum` | the current payment surface |
-| `api/stripe/*` | 5 | **public** | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) |
+| `api/stripe/*` | 5 | `auth:sanctum` | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md). 📌 **Not public**: all five moved into the `auth:sanctum` group on 2026-09-07 ([S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop)); this row said *public* until 2026-09-17, while [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) and the public-route audit already showed otherwise. ☠️ On the unmerged `ws-480`, `create-payment-intent` (`API-090`) returns **422** for an unlimited-credit account — a refusal on the surface **no SPA code calls**, so it does not cover the live `api/payment/*` purchase ([BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
 | `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; **live rows only** since `ws-392` merged — deleting a code releases its name) |
 | `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design. ⭐ `send` returns **202** and no longer reports per-address delivery (`ws-404`, on `develop` since 2026-09-15). `POST test-invitations/{id}/cancel` (`API-103`) returns **409** when the row was already cancelled or expiry-refunded |
 | `api/admin/lms/*` | 8 | `auth:sanctum` | no role check |
@@ -81,8 +81,9 @@ That last row is the one to internalise ([ERROR_HANDLING.md](ERROR_HANDLING.md))
 ## Versioning
 
 **There is none.** No `api/v1`, no `Accept` versioning, no deprecation headers. The `api/stripe/*` group
-is the de-facto "old version" and is still live and public. Any breaking change to a response shape is a
-coordinated deploy with `TCV-Frontend` ([FULLSTACK_MAP.md](FULLSTACK_MAP.md)).
+is the de-facto "old version" and is still live and routed (behind `auth:sanctum` since
+2026-09-07). Any breaking change to a response shape is a coordinated deploy with `TCV-Frontend`
+([FULLSTACK_MAP.md](FULLSTACK_MAP.md)).
 
 ## Documentation
 

@@ -36,7 +36,7 @@ Read the row for the thing you are about to change **before** you change it.
 | `Credits::settleNegativeBalance()` / `credits:settle-negative-balances` — **`ws-402`, merged 2026-09-07** | ☠️ **Read trap 10 in [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) first.** Both subtract all-time consumption from `active()` grants. That asymmetry looks like a bug, has already been reported as one, and is correct — "correcting" it silently re-opens the hole where a user's next purchase vanishes. Two tests pin the behaviour down |
 | `price_details` | `DiscountCode::priceTiers()` matches credit packages against it; `PricingAuditService` logs changes |
 | `GET api/user/credits` (`UserController::getUserCredits`) | It is now on a **60 s timer per open SPA tab** (`useCreditsSync.js`, ws-397), not just a page-load call. Slowing it or changing its `data.credits` shape hits the header on every poll ([FRONTEND.md](FRONTEND.md#the-credit-balance-is-polled-not-pushed)) |
-| `slices/userCredits/userCreditSlice.js` `loading` / `initialized` | Four components read that flag (header, `Home.js`, `CreditPage.js`, `Profile.js`). `initialized` latches, so `loading` fires **once per page load** — restoring a per-fetch spinner re-breaks the poll's silent refresh |
+| `slices/userCredits/userCreditSlice.js` `loading` / `initialized` | Four components read `loading` (header, `Home.js`, `CreditPage.js`, `Profile.js`). `initialized` latches for one identity, so `loading` fires **once per page load** — restoring a per-fetch spinner re-breaks the poll's silent refresh. `clearedState()` resets it on logout and on an owner change; `ws-480`'s purchase gate reads `initialized` as "this user's balance is known", so keeping it across identities would flash the purchase flow at an unlimited account |
 
 ---
 
@@ -123,6 +123,19 @@ Read the row for the thing you are about to change **before** you change it.
 | `createPaginatedCrudSlice`'s fetch reducers | `listRequestId` compared with `action.meta.requestId` is what stops an old response overwriting a newer sort — credits, `userTestsReport`, `patientTests`. It is strict, so tests load lists through the thunk, not a hand-dispatched `fulfilled` |
 | `UserTestsReportService::buildTransformedTests()` | the patient drill-down **and** its Excel/PDF exports are ordered by `sortTransformedTests()` at the end of it. Filter before that call, never after ([REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) trap 7) |
 | `createCrudSlice`'s `createItem` (still `push`) | any page that shows newest first must re-order itself — Restricted IPs does ([FRONTEND.md](FRONTEND.md#redux)) |
+
+---
+
+## Credit purchase gate (`ws-480`, unmerged)
+
+| Change | Also check |
+|---|---|
+| **`pages/UserPannel/CreditPage/CreditPage.js`** | Three flags decide the whole page: `hasUnlimitedCredits` (string compare), `purchaseAllowed` (`!isImpersonating && !hasUnlimitedCredits`) and `purchaseGateResolved` (`isImpersonating \|\| creditsInitialized \|\| !!creditsError`). `purchaseAllowed` also overrides `?tab=`, so a new tab or a new reason to block purchasing goes through those flags, not through a fresh condition per JSX block ([FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged)) |
+| **`pages/UserPannel/CheckOutPage/Checkout.js`** | Its `blockedFromCheckout` is deliberately **not** the same expression — it waits for `creditsInitialized` before acting on the unlimited case, so a slow balance read cannot bounce a paying user off checkout. It also gates the `createSetupIntent()` dispatch, not just the redirect. Hiding the credits-page tab is not a guard: this route is reachable by URL and by history |
+| `slices/userCredits/userCreditSlice.js` — `initialized`, `error`, `clearedState` | `ws-480` reads them as "this user's balance is known". `initialized` resets only through `clearedState()` (logout, or a `loginSuccess`/`setImpersonationUser` with a different `ownerId`), and `error` is cleared on every `pending`. Making the slice keep `initialized` across identities would show the purchase flow to an unlimited account on the first paint |
+| `Credits::getAvailableCredits()` — a **new** refusal in a payment handler | Return the response; do not throw. `StripePaymentController`'s `catch` turns exceptions into a 500 *"Payment failed"*, which reads as an outage rather than a refusal ([BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
+| Anything that must hold server-side on the purchase path | ☠️ Put it in `PaymentController::initializePayment()` / `confirmPayment()`. `ws-480` put its 422 in `StripePaymentController::createPaymentIntent()` (`api/stripe/*`), which **no SPA code calls** — so the rule does not bind where money moves |
+| **`components/NewUserModal.js`** — the Assigned Tests block | The at-least-one-test check must stay *before* `createUser`/`updateUser` dispatches: the backend rule lives on `POST api/user/tests/bulk-update-assignment`, which only runs after the row exists, and the modal swallows that call's rejection with `console.error`. It is also conditioned on `allTests.length > 0`, so a failed test-list load does not block account creation |
 
 ---
 

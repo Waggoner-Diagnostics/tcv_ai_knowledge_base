@@ -297,16 +297,21 @@ It is not real time; do not describe it as such in release notes.
 `slices/userCredits/userCreditSlice.js`, which skips flipping `loading` so the header keeps showing the
 last known number instead of its `—` placeholder while the poll is in flight.
 
-☠️ **`initialized` latches true and nothing ever resets it.** `loading` therefore goes true **exactly
-once per page load** — the first non-background fetch. Every consumer of `state.userCredits.loading`
+**`initialized` latches true for as long as one identity holds the tab.** `loading` therefore goes true
+**once per page load** — the first non-background fetch. Every consumer of `state.userCredits.loading`
 (the header's `—`, `HomePage/Home.js`, `CreditPage/CreditPage.js`, `Setting/Profile.js`) shows its
 placeholder only on that first fetch and never again. A spinner that "stopped working" here is this,
 not a broken request.
 
-☠️ **Nothing clears the credits slice on logout.** `useLogOut` dispatches `logoutSuccess` and clears
-storage, but the store is never reset and there is no page reload. Log out and back in as a **different
-user in the same tab** and the header shows the *previous* user's balance until the new fetch resolves —
-with no placeholder, because `initialized` is still true. A hard refresh is what clears it.
+📌 **Corrected 2026-09-17.** This page used to say `initialized` is never reset and that nothing clears
+the credits slice on logout. Both stopped being true on 2026-08-31, in `ws-397`'s own follow-ups
+(`400cf66`, on `develop`): `clearedState()` rebuilds the slice from `initialState` — `initialized` back
+to `false` included — on `logoutSuccess`, and on `loginSuccess`/`setImpersonationUser` whenever the
+payload's user id differs from the stored `ownerId` (first sight of an owner is adopted without
+clearing, because auth hydrates from `localStorage` before the Header's first fetch resolves). So
+logging out and back in as a **different user in the same tab** does show the placeholder and does not
+show the previous user's balance. `ws-480`'s purchase gate depends on exactly that reset — it treats
+`initialized` as "this user's balance is known" ([Credit purchase gate](#credit-purchase-gate-ws-480-unmerged)).
 
 ☠️ **The effect order inside the hook is load-bearing.** The mount effect is declared *before* the
 `location.pathname` effect, and both run on mount; the mount effect stamps `lastFetchedAt`, so the 5 s
@@ -539,6 +544,104 @@ emits `onSort` and refetches page 1.
 
 ⚠️ **Seen, not fixed:** Add Credits' All/Available/Used/Expired tabs and its search box filter
 `filteredTableData` client-side, **over the 10 rows on screen**, not the user's whole grant list.
+
+---
+
+## Credit purchase gate (`ws-480`, unmerged)
+
+⚠️ **`ws-480` sits on a branch in both repos** (backend `8d247f8c`, frontend `346efce`, both 2026-09-17,
+each merged up from `develop` the same day) and is **not on `develop`**, so the generated indexes don't
+show it. Anything marked `ws-480` here describes that branch.
+
+An account holding a live unlimited grant has nothing left to buy, so the credits page must stop
+selling to it. `pages/UserPannel/CreditPage/CreditPage.js` decides that with three flags:
+
+| Flag | Value | Decides |
+|---|---|---|
+| `hasUnlimitedCredits` | `String(userCredits).toLowerCase() === "unlimited"` | the hero subtitle, the balance readout, the notice |
+| `purchaseAllowed` | `!isImpersonating && !hasUnlimitedCredits` | the tab strip, the Purchase tab, the empty-history CTA, and which tab `?tab=` may select |
+| `purchaseGateResolved` | `isImpersonating \|\| creditsInitialized \|\| !!creditsError` | whether **either** tab may paint yet |
+
+**The balance is a string, so the client compares it as one.** `Credits::getAvailableCredits()` returns
+`int|string` and `'Unlimited'` is the string ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). The header
+chip (`UserPannel/Header/Header.js`), `SendTestModal`, the credits page and the checkout page all do the
+same lower-cased string compare — four call sites, one rule. A numeric comparison coerces
+`'Unlimited'` to `0` and re-opens the purchase flow for exactly the accounts that must not see it.
+
+**`purchaseAllowed` merges two rules that used to be one.** Hiding the purchase flow while a Super Admin
+impersonates the account predates this ticket; `ws-480` folds the unlimited case into the same flag, so
+the read-only balance block, the hidden tab strip and the suppressed empty-state CTA now cover both.
+`?tab=purchase` is forced to `TABS.HISTORY` whenever `purchaseAllowed` is false — a URL or a stale
+history entry cannot reopen the flow either way.
+
+☠️ **The two rules are not knowable at the same moment, which is why the third flag exists.** Auth state
+answers impersonation on the first paint; the unlimited grant is only knowable once `GET api/user/credits`
+has come back. Painting the purchase tab before then flashes it in front of the accounts it is meant to
+be hidden from — a direct load of `/user-panel/credit?tab=purchase` is the reported repro. Until
+`purchaseGateResolved`, the page renders a `Loading credits…` line and **neither** tab. A failed read
+falls open (`creditsError` resolves the gate too) rather than trapping a paying customer behind an
+unrelated outage.
+
+⚠️ **Seen, not fixed:** every poll clears `error` in `fetchUserCredits.pending`, so for an account whose
+balance never loads the gate un-resolves on each retry — the page falls back to `Loading credits…`, then
+returns when the request rejects again. `useCreditsSync`'s backoff makes that up to 8 minutes apart
+(`POLL_INTERVAL_MS` × `2 ** consecutiveFailures`, capped at 8).
+
+**`/user-panel/checkout` is guarded separately, and on a different condition.** `CheckOutPage/Checkout.js`
+is reachable by URL and by browser history, so hiding the tab is not a guard. Its
+`blockedFromCheckout = isImpersonating || (creditsInitialized && hasUnlimitedCredits)` redirects to
+`/user-panel/credit` and also suppresses the `createSetupIntent()` dispatch. Note the asymmetry with the
+credits page: here an **unread** balance lets the page through (`creditsInitialized &&`), because bouncing
+a paying user off their own checkout on a slow read is the worse failure. The credits page holds its paint
+instead — it has something to show while it waits, and checkout does not.
+
+**The unlimited notice reuses the header chip's green** — `cp-alert--info` in `CreditPage.scss`
+(`#F0FDF4` / `#86EFAC` / `#166534`, darker text than the chip's `#16A34A` because this is body copy on a
+pale ground, not a large label). A new `cp-alert--*` modifier needs its own rule here or it renders
+unstyled, the same trap as the `&--type-*` credit-history badges
+([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)).
+
+☠️ **The backend half of `ws-480` guards the surface the SPA does not use.** The 422 landed in
+`StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`, `API-090`,
+the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` → `POST api/payment/confirm`
+(`slices/payment/paymentSlice.js`, `services/paymentProviders/StripeProvider.js`), and nothing in
+`TCV-Frontend/src` calls `api/stripe/create-payment-intent` at all. `PaymentController::initializePayment()`
+and `confirmPayment()` have **no unlimited check on `ws-480`**, so on the live money path the refusal is
+client-side only: a caller that skips the SPA runs `initialize` and then `confirm` as usual, and
+`confirm` is where `BasePaymentProvider::createTransactionRecord()` writes the `SOURCE_PURCHASE` grant and
+the transaction.
+[BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) has the detail.
+
+⚠️ **Nothing pins any of this.** There is no `CreditPage` or `Checkout` test in the SPA and no backend
+test touching `createPaymentIntent` — the suite passes whether the gate works or not.
+
+### The user modal's at-least-one-test pre-check (same ticket)
+
+`ws-480` also puts a client-side check in front of **Assigned Tests** in `components/NewUserModal.js`,
+which the ticket bundles with the purchase gate. It only applies to `USER_ROLES.CUSTOMER` rows, the only
+usertype whose tests the modal manages.
+
+☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
+user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-149`, 422
+`api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
+rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
+account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
+message on screen. The pre-check returns before `createUser`/`updateUser` is dispatched at all, so the two
+stay consistent.
+
+| Piece | Detail |
+|---|---|
+| The condition | `shouldManageTests && allTests.length > 0 && assignedTests.length === 0` |
+| Why `allTests.length` gates it | list still loading or failed ⇒ no checkbox to tick and no assignment call either, and the backend's own default assignment leaves the account valid. Blocking there would be a dead end |
+| On failure | sets `testError`, scrolls the group into view through `assignedTestsRef`, `setSubmitting(false)`, returns |
+| Clearing | an effect clears `testError` as soon as `assignedTests` is non-empty again, and the show/`initialData` effect clears it when the modal opens |
+| Label | *Assigned Tests* now carries a red `*` |
+
+⚠️ **The backend only enforces the invariant when the payload actually unassigns something**
+(`if (! empty($unassign))` in `TestController::bulkUpdateAssignment()`), and `unassignUserTest()` refuses
+only the last remaining row. The client check is not a mirror of a rule that would otherwise catch it —
+on this path it is the rule.
 
 ---
 
