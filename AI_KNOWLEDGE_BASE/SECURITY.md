@@ -14,8 +14,13 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 > `entrypoint.sh` boot fixes. Labels below have been flipped accordingly and re-verified against
 > `develop` at `52804ee9`.
 >
-> `ws-401` merged too — its placeholder repair is on `develop` as
-> `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`.
+> `ws-401`'s **first round** merged too — its placeholder repair is on `develop` as
+> `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`. ⚠️ The ticket's
+> **second round has not** (branch `ws-401`, `af55580`): it gives `org_test_link` a renderer and puts
+> user-typed organization and patient names into the invitation body, HTML-escaped there and left raw
+> in the subject — safe only while `emails.dynamic-template` renders the subject through Blade's
+> `{{ }}` ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). No `S-nn` either way; noted because
+> it is a new user-input-into-HTML path.
 >
 > ⚠️ **`ws-402` has NOT merged.** Findings and prose flagged `ws-402` — including
 > [S-19](#s-19) — still describe an unmerged branch. Never mark a finding fixed against an unmerged
