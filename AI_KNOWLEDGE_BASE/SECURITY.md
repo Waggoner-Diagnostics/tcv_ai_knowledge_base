@@ -16,11 +16,23 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 >
 > `ws-401`'s **first round** merged too — its placeholder repair is on `develop` as
 > `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`. ⚠️ The ticket's
-> **second round has not** (branch `ws-401`, `af55580`): it gives `org_test_link` a renderer and puts
+> **second round has not** (branch `ws-401`): it gives `org_test_link` a renderer and puts
 > user-typed organization and patient names into the invitation body, HTML-escaped there and left raw
 > in the subject — safe only while `emails.dynamic-template` renders the subject through Blade's
 > `{{ }}` ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). No `S-nn` either way; noted because
 > it is a new user-input-into-HTML path.
+>
+> ☠️ **That path had a real hole, caught in PR review on 2026-09-17 and fixed on the branch — it never
+> reached an environment, which is the only reason it carries no `S-nn`.** The org values were
+> substituted *before* `EmailContent::linkify()`, so a `https://…` inside a patient name was turned
+> into a **working anchor** in a genuine, organization-branded invitation. `e()` escapes
+> `&  <  >  "  '` and not a URL scheme, so escaping never touched it. The write side is
+> `OrganizationPatientController::storeDefaultPatient()` — a field whitelist that validates `gender`
+> and nothing else — reachable with an organization's launch URL, i.e. [S-05](#s-05)'s permanent
+> bearer credential, which is what makes it more than self-inflicted. (`storeProlificPatient()` hard-codes
+> both names to `N/A`, so it is not a way in.) Fixed by filling the org values last, after every markup
+> pass. **The general rule, for any of the four `Mail::` sites: user-typed values go in after the
+> passes that rewrite markup, never before one.**
 >
 > ⚠️ **`ws-402` has NOT merged.** Findings and prose flagged `ws-402` — including
 > [S-19](#s-19) — still describe an unmerged branch. Never mark a finding fixed against an unmerged

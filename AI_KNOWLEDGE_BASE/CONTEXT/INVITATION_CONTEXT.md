@@ -26,8 +26,10 @@
 | `components/richTextEditor/emailPlaceholders.js` *(TCV-Frontend)* | ⭐ Stored HTML ⇄ editor HTML; renders system values as read-only chips (`ws-400`) |
 | `components/richTextEditor/RichTextEditor.js` *(TCV-Frontend)* | The shared Quill wrapper; `lockPlaceholders` turns the chip behaviour on (`ws-400`) |
 
-> ⚠️ **`ws-401`'s second round is NOT on `develop`** — it is on `TCV-Backend@ws-401` (`af55580`,
-> 2026-09-17), awaiting PR review. It is what gives `org_test_link` a renderer, so every statement in
+> ⚠️ **`ws-401`'s second round is NOT on `develop`** — it is on `TCV-Backend@ws-401`, in PR review
+> since 2026-09-17 (no SHA named here: the branch has taken review-fix commits since, and this pack
+> describes its **head**, including the review round that moved the org substitution after `linkify()`).
+> It is what gives `org_test_link` a renderer, so every statement in
 > this pack about an organization's invitation using its own template describes that branch, not
 > `develop`. On `develop` the send path still pins `test_link`. The ticket's first round (the
 > `2026_09_03_000002` placeholder-repair migration) merged earlier as PR #212 and *is* on `develop`.
@@ -133,20 +135,21 @@ with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = aut
 `TestInvitationMailer::send()` is a sequence of passes over one string, and the order matters. (It was
 `TestInvitationController::sendInvitationEmail()` until `ws-404` extracted it; the controller method
 survives as a one-line delegate for the resend path. Both the batch job and the resend now go through
-the same passes — see the merge note below.) ⚠️ **`ws-401` added pass 1b and made the template type
-follow the sender** — the first line below read `TYPE_TEST_LINK`, pinned, until then. **On branch
-`ws-401`, not yet merged to `develop`**; this is the ticket's second round, its first (the placeholder
-repair migration) merged as PR #212.
+the same passes — see the merge note below.) ⚠️ **`ws-401` added a fourth pass for the org placeholders
+and made the template type follow the sender** — the first line below read `TYPE_TEST_LINK`, pinned,
+until then. **On branch `ws-401`, not yet merged to `develop`**; this is the ticket's second round, its
+first (the placeholder repair migration) merged as PR #212.
 
 ```
-sender = User::with('organization')->find(userId)                          ← ws-401
+sender = User::with('organization')->find(userId)  memoised per instance   ← ws-401
 EmailTemplateService::getTemplateForUser(userId, typeForUser(sender))      ← ws-401
    user_email_templates row  →  test_email_templates (admin default)  →  hard-coded fallback
  ├─ 1. str_replace the {{test_name}} {{verification_link}} {{verification_code}} {{expires_at}} … vars
- ├─ 1b. org_test_link only: the four org placeholders, from the sender +
- │      a Patient scoped to (user_id, email)                               ← ws-401
  ├─ 2. restyle: preg_replace_callback rewrites <a href="{the link}"> into the blue button
- └─ 3. EmailContent::linkify(): wrap any URL still sitting in plain text   ← ws-373
+ ├─ 3. EmailContent::linkify(): wrap any URL still sitting in plain text   ← ws-373
+ └─ 4. org_test_link only: the four org placeholders, from the sender +    ← ws-401
+       a Patient scoped to (user_id, email). LAST — after every pass that
+       rewrites markup, never before one.
 ```
 
 Pass 2 only reaches a link the template **already anchored**; a template whose `{{verification_link}}`
@@ -395,6 +398,14 @@ the org template, the patient got the generic one. That supersedes the `ws-456` 
 (2026-09-11) that there was no product requirement for organizations to have their own template and the
 gap was therefore not scheduled to close.
 
+⚠️ **That reversal is an engineering decision so far, not a recorded product sign-off** — raised in PR
+review on 2026-09-17 and still open at the time of writing. The precondition the `ws-456` decision named
+*is* met (all four placeholders are filled, which is why the tripwire below could be retired), so the
+code is not the blocker; what is missing is the product confirmation that organizations should send
+their own template at all. If that sign-off lands, delete this note. If it does **not**, the revert is
+bigger than re-pinning the type: the four org values, their escaping and their ordering all exist only
+to serve `org_test_link`.
+
 ☠️ **The pin `ws-401` removed was load-bearing, and its removal had conditions.** Until then
 `{{patient_firstname}}`, `{{patient_lastname}}`, `{{organization_name}}` and `{{organization_email}}`
 were substituted by **nothing** in any of the four `Mail::` sites (`TestInvitationMailer`,
@@ -407,30 +418,96 @@ context, substitute all four). **If you add a fifth org placeholder to the catal
 `organizationVariables()` in the same commit** — the catalogue is what the editor offers, and an offered
 token nothing fills is mailed to the patient as literal text.
 
+⭐ **Two tests render the *seeded* org body, not a simplified stand-in.** Every other test in the class
+overwrites the admin default with a short template, so none of them proves the row a real organization
+actually receives comes out clean. `test_the_seeded_org_template_renders_with_nothing_left_unfilled`
+and `…_for_an_address_with_no_patient` run `AdminSettingsSeeder` first and assert `{{` survives
+nowhere — which is what would catch a placeholder added to the seed and not to
+`organizationVariables()`, the failure the note above warns about.
+
 ⭐ **Where the org values come from, and what happens when they are missing.** Send Test collects an
 email address and nothing else, so the patient's name is known only when the sender already has a
 `patients` row on that address — `Patient::where('user_id', $sender->id)->where('email', $email)`,
 scoped to the sender so another account's patient on the same address cannot leak a name into the
-email. A first invitation has no name and the greeting falls back to the literal `Patient`.
-`{{organization_name}}` resolves `organization.organization_name` → `users.company_name` → `''`;
+email. A first invitation has no name and the greeting falls back to the literal `Patient` — but only
+when *both* names are unknown, because "Dear Patient Doe" is not a greeting.
+`{{organization_name}}` resolves `organization.organization_name` → `users.company_name` → `''`, and
+each step tests for an **empty string, not null**: an `organizations` row carrying `''` is not a null
+one, so a `??` chain would stop there and never reach `company_name`.
 `{{organization_email}}` is the sender's **login** address, the same column the legacy
 `trigger_patient_testEmail()` used.
 
-⭐ **The seeded greeting is a *pair* of placeholders, so it is filled as one.**
-`Dear {{patient_firstname}} {{patient_lastname}}:` filled one token at a time leaves `Dear Patient :`
-with a stray space whenever the last name is unknown. `fillOrganizationPlaceholders()` matches the pair
-first — allowing `\s`, `&nbsp;` or `&#160;` between them, because Quill emits the entity — and
-substitutes one full name, then runs the per-token pass. A pair the editor split across tags misses the
-paired match and degrades to the per-token result: cosmetic, not a failure.
+⚠️ **An organization with no name at all still sends, and says so in the log.** With neither an
+`organizations` row nor a `company_name`, the seeded template's sign-off goes out with a blank line
+where the sender's identity belongs — a silent degradation, since the send itself succeeds. `ws-401`
+logs `Organization invitation has no organization name to substitute` with the `user_id` and recipient.
+If that line shows up in QA, the account is missing its `organizations` row; it is not a mail fault.
 
-☠️ **Pass 1b runs *after* the generic pass, and escapes into the body but not the subject.** Org and
-patient names are typed in by users: run 1b first and a name holding `{{verification_link}}` would be
-substituted. Body values go through `e()` because they land in HTML; the subject's do not, because it is
-a plain-text header — **safe only because the one place the subject reaches HTML is
-`<title>{{ $subject }}</title>` in `emails.dynamic-template`, which Blade escapes.** If that view is
-ever changed to render the subject with `{!! !!}`, the subject values must be escaped too.
-`fillOrganizationPlaceholders()` uses `preg_replace_callback`, not `preg_replace`, so a `$1` inside a
-name is not read as a backreference.
+⚡ **Both lookups are memoised on the mailer instance** (`$senders` by user id, `$organizationValues` by
+`user_id|email`). `send()` runs once per delivery *attempt*, so uncached they repeat on all three tries
+inside `SendTestInvitationEmailsJob::sendOne()`'s retry loop, and the sender's repeats for every address
+in a batch — all of which share one sender — against the 240s budget. The mailer is not a container
+singleton, so the memo's lifetime is one job. Keyed rather than single-slot because
+`SweepPendingInvitationsJob` walks several senders through one instance.
+`OrganizationEmailTemplateTypeTest::test_the_sender_and_patient_lookups_are_not_repeated` counts the
+queries and pins it.
+
+⭐ **An empty value is not substituted — the token is *removed*, with the spacing that was only there
+to separate it.** The seeded greeting is `Dear {{patient_firstname}} {{patient_lastname}}:`, and
+substituting `''` for an unknown surname leaves `Dear Patient :`. Dropping the token alone does not
+help: the space in front of it is the part that shows. `removeEmptyToken()` matches a bounded run of
+whitespace, `&nbsp;`/`&#160;` (Quill emits the entity) **and tags** on either side of the token, then
+re-emits every tag untouched and keeps a single space only when there was whitespace on *both* sides —
+so `Dear {{patient_firstname}} <strong>{{patient_lastname}}</strong>,` gives
+`Dear Patient<strong></strong>,` and `{{patient_firstname}} {{patient_lastname}} — welcome` does not
+close up into one word.
+
+☠️ **Do not narrow that run back to whitespace-only.** The first cut of this matched the *pair* of
+tokens with `\s` between them, which meant the fix applied to `{{patient_firstname}} {{patient_lastname}}`
+and nothing else. Quill wraps edited runs in its own markup, so
+`<strong>{{patient_firstname}}</strong> {{patient_lastname}}` — the normal case here, not an exotic one
+— fell through to the per-token pass and produced the exact `Dear Patient ,` the code exists to prevent.
+Tags are preserved rather than swallowed because deleting the closing half of a pair to tidy up a space
+unbalances the body. `test_an_unknown_surname_leaves_no_stray_space` covers six spacings, three of them
+with markup between the tokens; `test_a_known_surname_keeps_its_spacing_through_markup` is the other
+direction.
+
+☠️☠️ **The org pass runs LAST — after every pass that rewrites markup, not merely after the generic
+substitution.** All four values are typed in by users, and `patients` rows are written by
+`OrganizationPatientController::storeDefaultPatient()` through a field whitelist that validates
+`gender` and nothing else, from an endpoint reachable by anyone holding the organization's launch URL
+(a permanent bearer credential — see [ORGANIZATION_CONTEXT](ORGANIZATION_CONTEXT.md)). Two orderings
+are wrong, for two different reasons:
+
+| Filled before | What the patient receives |
+|---|---|
+| pass 1 (generic) | a name holding `{{verification_link}}` is substituted with the real link |
+| pass 3 (`linkify`) | a name holding `https://evil.example` comes back out as a **working anchor** |
+
+The second is the one that bit in review (`ws-401`, PR round 2). `e()` escapes `&  <  >  "  '` — it does
+**not** touch a URL scheme — and `EmailContent::URL_PATTERN` matches any bare `http(s)://…` in a text
+node, which is exactly what the greeting is. A patient row named
+`Claim your results https://evil.example` on a target address therefore turned the organization's next
+invitation to that address into a genuine, org-branded email carrying an attacker-chosen link.
+`test_a_url_inside_a_patient_name_is_not_turned_into_a_link` and its `organization_name` twin pin the
+ordering; `test_the_verification_link_is_still_anchored_for_an_organization` pins that the guard did not
+cost the button. **If you add a pass to `send()`, it goes above the org block, never below it.**
+
+⭐ **One `strtr()`, not a `str_replace()` per key.** `strtr` makes a single left-to-right pass and never
+re-examines what it just inserted, so a patient named `{{organization_name}}` is greeted by that literal
+text instead of having the *next* key fill it in — the same "a value must not be read by a later pass"
+rule as the ordering above, one level down. It also keeps a `$1` in a name literal, which `preg_replace`
+would not. `test_a_placeholder_typed_into_a_name_is_not_substituted` covers it.
+
+☠️ **The body is escaped; the subject is not.** Body values go through `e()` because they land in HTML;
+the subject's do not, because it is a plain-text header — **safe only because the one place the subject
+reaches HTML is `<title>{{ $subject }}</title>` in `emails.dynamic-template`, which Blade escapes.** If
+that view is ever changed to render the subject with `{!! !!}`, the subject values must be escaped too.
+⚠️ For the same reason, assert escaping against the **rendered content** (`.container`), never the whole
+HTML body: the title supplies `&amp;` and `&lt;` on its own, so a whole-body assertion passes with `e()`
+deleted. `test_org_values_are_escaped_in_the_body_but_not_the_subject` uses the `renderedContent()`
+helper and also asserts the raw markup is **absent**, which is the half that actually fails without
+`e()`.
 
 ☠️ **A pre-`ws-456` row filed under `test_link` is still not migrated — the reason changed, the answer
 did not.** `ws-456` routed an organization's *editor* to `org_test_link` while the send path stayed on
