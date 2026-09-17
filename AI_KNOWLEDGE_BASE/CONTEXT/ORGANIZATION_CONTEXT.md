@@ -104,3 +104,13 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    compare with a tolerance, or better, don't compare at all.
 6. **The org's user and the org row are separate lifecycles.** Look up by `Organization::where('user_id', …)`
    (as `SendAfterPasswordReset` does), not by assuming `$user->organization` is loaded.
+7. **`GET api/organizations` sorting** (`OrganizationController::index()`, `ws-502` unmerged).
+   `sortBy`/`sortOrder` (camelCase), allow-listed. `account_status` and `credits` **inner-join
+   `users`**, which is safe only because `organizations.user_id` is NOT NULL. `compliance` left-joins
+   `compliances` and orders by its name, with no compliance last ascending. **Every sort now ends on
+   `organizations.id`** (qualified, because of those joins). Before `ws-502` none had a tiebreak. With
+   most orgs on one compliance and many at 0/Unlimited credits, Status, Compliance and Credits
+   repeated or dropped rows across pages on MySQL. ⚠️ **Tests need `Sanctum::actingAs($user,
+   ['view-organizations'])`.** The policy checks `tokenCan()`, so plain `actingAs()` gets "This action
+   is unauthorized" wrapped in a **500** by the controller's catch-all. Pinned by
+   `tests/Feature/Organizations/OrganizationListSortTest.php`.

@@ -7,7 +7,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`; the audit-trail work (`feat/ui-audit-trail`, then PR #238) has merged into it, so those counts are `develop` counts. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Backend `ws-404` and `ws-449` are ahead of `develop` and **not** indexed |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`; the audit-trail work (`feat/ui-audit-trail`, then PR #238) has merged into it, so those counts are `develop` counts. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Backend `ws-404`, `ws-449` and `tcv_data_migration` are ahead of `develop` and **not** indexed — `tcv_data_migration` is the largest of the three (130 files) and introduces patient encryption at rest, so treat every patient/answer column in `INDEXES/` as describing the pre-encryption shape ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)) |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `c3449270` (develop) · `TCV-Frontend` `e9b664c` (develop) · `TCV-Website` `cb4a1b6` (website-integration) — generated **2026-09-14** |
 | **Backend scale** | 207 classes/interfaces/traits · 863 methods · 162 API endpoints · 53 tables · 128 migrations |
@@ -69,6 +69,33 @@ drift — the branch rule above is why.
 On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
 `ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
 backend halves of the same ticket number are not in the same state, so check per repo.
+
+### ⚠️ `ws-502` (grid sort order) is on a branch in both code repos — prose only, not indexed
+
+Committed 2026-09-16 as `ws-502 sort order issue fix`: backend `00d5e98f`, frontend `a28074f`, each one
+commit on top of the `develop` it branched from. PR-review fixes to both followed on 2026-09-17 (backend
+`15207600`; frontend not yet committed when this was written). **Neither is merged**, so the indexes still describe `develop`. The
+ticket: sorting a server-paged admin grid didn't hold across pages. **Merge the two together**: the
+repeating rows come from the backend's missing tiebreak, so the frontend half alone doesn't fix them.
+Documented here:
+
+| `ws-502` | Where |
+|---|---|
+| Every server-sorted grid, its endpoint, param spelling and accepted keys; the three rules (primary-key tiebreak, allow-listed column ids, latest-response-wins, including replaced requests' errors); asc ↔ desc-only headers; `currentSort` keeping Redemptions' inline and fullscreen headers in step | [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged) |
+| Discount Codes: `type` sortable (fixed before percentage via an explicit `CASE`, never the raw enum), "Never" last ascending | [CONTEXT/DISCOUNT_CONTEXT.md](CONTEXT/DISCOUNT_CONTEXT.md) trap 6 |
+| Patient drill-down sort applied in PHP (`sortTransformedTests()`, plain text order for UUID ids); Redemptions `code` key, name order, blank company last, `td.id` tiebreak; unvalidated `sort_by` in `UserTestsReportService::query()` (observed, not changed) | [CONTEXT/REPORTING_CONTEXT.md](CONTEXT/REPORTING_CONTEXT.md) traps 7–9 |
+| Add Credits: Unlimited above amounts, no-expiry last, id tiebreak; `CreditRevocationTest` finds the grant by id | [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) trap 11 |
+| Organizations tiebreak, compliance order, `Sanctum::actingAs` for tests | [CONTEXT/ORGANIZATION_CONTEXT.md](CONTEXT/ORGANIZATION_CONTEXT.md) trap 7 |
+| Users / Super Admins: Country by name, id tiebreak on every branch | [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged) (no users pack exists) |
+| Restricted IPs newest first; `createCrudSlice.createItem` appends; `createPaginatedCrudSlice` stale-response guard | [FRONTEND.md](FRONTEND.md#redux) |
+| New tests (17 backend, 12 frontend), the SQLite tie/enum/integer-column traps, and running tests on a throwaway MariaDB | [TESTING.md](TESTING.md) |
+| Review/impact rules | [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) · [CODING_GUIDELINES.md](CODING_GUIDELINES.md) · [REVIEW_CHECKLIST](REVIEW/REVIEW_CHECKLIST.md) · [API_INDEX.md](API_INDEX.md) |
+
+**When it merges, regenerate. Expected, not measured:** methods **+1**
+(`UserTestsReportService::sortTransformedTests()`), one new class constant (`PATIENT_TEST_SORTS`),
+and no route, table or migration changes. So `PUBLIC_ROUTE_AUDIT`, `CONTRACT_DRIFT` and
+`FRONTEND_ROUTE_INDEX` should differ only in their date. Then flip every "`ws-502`, unmerged" label in
+the files above.
 
 ### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
 

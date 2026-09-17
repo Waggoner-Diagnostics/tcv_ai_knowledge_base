@@ -391,3 +391,17 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     that grant's amount and re-opens the hole it exists to close. Locked down by
     `CreditRevocationTest::test_settle_command_repairs_a_grant_spent_before_it_expired()` and
     `…_does_not_hand_back_credits_that_expired_unspent()`.
+11. **`GET api/credits` (the Add Credits grid) must not let stored stand-ins decide order** (`ws-502`,
+    unmerged). An unlimited grant is stored as `credits = 0`, and "No expiry" is `has_expiry = 0` or a
+    NULL `expiry_date`. Sorted naively, Unlimited mixed in with real zeros and "No expiry" came before
+    every date ascending. `CreditsController::index()` now orders `credits` as `is_unlimited_credit`
+    then `credits`, so Unlimited ranks above any amount, the same as the Users grid. `expiry_date` puts
+    no-expiry after every date ascending. Every sort then ends on `id`.
+    📌 **That tiebreak re-ordered an existing test.** A revocation counter-entry is written in the same
+    second as the grant it claws back. Newest-first now reliably lists the counter-entry *above* the
+    grant, where SQLite's insertion order used to put the grant first.
+    `CreditRevocationTest::test_credits_an_admin_took_back_are_not_reported_as_user_usage` now finds the
+    grant by `id` instead of reading `data.data.0`. Any new assertion on this listing should do the same.
+    Pinned by `tests/Feature/Credits/CreditListSortTest.php`. ⚠️ The grid's
+    All/Available/Used/Expired tabs still filter only the rows on screen
+    ([FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502-unmerged)).

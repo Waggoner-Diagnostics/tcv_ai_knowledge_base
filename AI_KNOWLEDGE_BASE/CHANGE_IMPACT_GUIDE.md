@@ -103,6 +103,19 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
+## Admin grids — sorting and paging (`ws-502`, unmerged)
+
+| Change | Also check |
+|---|---|
+| **`components/table/TableWithGlobalFilter.js`** | ~13 pages render it. On `ws-502` it forces `disableSortRemove` whenever `useServerSorting` is set, so every server grid's header toggles asc ↔ desc only. Its sort effect emits `onSort` only for a *changed* `id:direction` (`lastEmittedSortRef`), and the optional `currentSort` prop syncs the header from the page through the same ref. Redemptions, which renders the grid twice, depends on it ([FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged)). Pinned by `TableWithGlobalFilter.test.js` |
+| A list endpoint's `ORDER BY` | keep the trailing primary-key tiebreak, qualified if the query joins (`organizations.id`, `td.id`, `users.id`). SQLite tests pass without it, and MySQL pages repeat rows ([FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged)) |
+| A list endpoint's sort allow-list or `$sortMap` | the SPA column `id`s that send those keys. A removed key keeps returning 200, sorted by the default instead |
+| `createPaginatedCrudSlice`'s fetch reducers | `listRequestId` compared with `action.meta.requestId` is what stops an old response overwriting a newer sort — credits, `userTestsReport`, `patientTests`. It is strict, so tests load lists through the thunk, not a hand-dispatched `fulfilled` |
+| `UserTestsReportService::buildTransformedTests()` | the patient drill-down **and** its Excel/PDF exports are ordered by `sortTransformedTests()` at the end of it. Filter before that call, never after ([REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) trap 7) |
+| `createCrudSlice`'s `createItem` (still `push`) | any page that shows newest first must re-order itself — Restricted IPs does ([FRONTEND.md](FRONTEND.md#redux)) |
+
+---
+
 ## Routes
 
 | Change | Also check |

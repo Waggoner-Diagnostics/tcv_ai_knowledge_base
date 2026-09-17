@@ -155,6 +155,19 @@ section while the header still thinks they are outside it, and the prompt comes 
 Both build URLs from a `baseUrl` at runtime, which is why they show as `_scanner limit_` rows in
 [CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md) — that is expected, not a finding.
 
+☠️ **`createCrudSlice`'s `createItem` appends** (`s.list.push`), so a new row lands **last** whatever
+order the page shows. Restricted IPs (`pages/Setting/RestrictedIps.js`) therefore sorts its rows by `id`
+descending on every list change, so a just-added IP is the first row (`ws-502`, unmerged). Its API
+(`RestrictedIpController::index()` → `RestrictedIp::all()`) is still unordered. Pricing, Patients,
+Organisations and the admin slices share this factory, so **fix order per page, not in the factory**.
+
+**`createPaginatedCrudSlice` drops stale list responses (`ws-502`, unmerged).** `pending` stores
+`action.meta.requestId` in `listRequestId`; `fulfilled`/`rejected` return early unless their `requestId`
+matches. No exceptions, the same check as `discountSlice` and `discountCodesReportSlice`. So a test has
+to load a list through the thunk with a mocked `AxiosInstance` (`createpaginatedslice.test.js`'s
+`loadList`). A hand-dispatched `widgets/fetchPaginated/fulfilled` is now ignored. See
+[Server-sorted grids](#server-sorted-grids-ws-502-unmerged).
+
 ☠️ **`deleteItem` in `createPaginatedCrudSlice` omitted `skipErrorPopup` until 2026-09-07.**
 `createSlice.js` passes `{ skipErrorPopup: true }` on the request; the paginated twin did not. The
 `showPopup: false` in the thunk's catch only suppresses the *handler's* popup — the Axios response
@@ -433,6 +446,84 @@ Aggressive preloading far ahead of display will fetch URLs that expire before us
 
 ---
 
+## Server-sorted grids (`ws-502`, unmerged)
+
+⚠️ **`ws-502` sits on a branch in both repos** (backend `00d5e98f`, frontend `a28074f`, 2026-09-16,
+plus PR-review fixes on 2026-09-17: backend `15207600`, frontend not yet committed when this was
+written) and is **not on
+`develop`**, so the generated indexes don't show it. Anything marked `ws-502` here describes that
+branch. The frontend half alone doesn't fix the ticket: rows repeating across pages is the backend's
+missing tiebreak, so the two ship together.
+
+Every admin grid that pages on the server also sorts there. `useServerSorting` on
+`TableWithGlobalFilter` sets react-table's `manualSortBy`, so **the table never reorders rows itself**.
+A header click only calls `onSort(columnId, 'asc' | 'desc')` and the page refetches. The column's `id`
+(or string `accessor`) **is** the sort key sent to the API.
+
+| Grid | Page | Endpoint · param names | Keys the API accepts | Order beyond the column itself |
+|---|---|---|---|---|
+| Users / Super Admins | `pages/users/Users.js` · `pages/Admin/Admin.js` | `GET api/users/type/{usertype}` · `sortBy`/`sortOrder` | `full_name` `account_status` `country_id` `credits` `created_at` (+ `id` `name` `first_name` `last_name` `email` `updated_at`) | Country by **`countries.name`**, not id; unmatched id ("—") last ascending (`ws-502`). Credits: Unlimited above any number. Its clamp is `GREATEST` on MySQL and multi-argument `MAX` on SQLite (picked by `DB::getDriverName()`, as Organizations does). Before `ws-502`, a test sorting Users by credits was a 500 on SQLite |
+| Organizations | `pages/Organisation/Organisation.js` | `GET api/organizations` · `sortBy`/`sortOrder` | `organization_name` `account_status` `test_url` `compliance` `credits` | Compliance by name; none ("-") last ascending (`ws-502`) |
+| Discount Codes | `pages/DiscountCodes/DiscountCodes.jsx` | `GET api/discount-codes` · `sort_by`/`sort_order` | `code` `type` `expires_at` (+ `created_at` `minimum_order_amount` `is_active`) | Discount (`type`) = fixed before percentage ascending (explicit `CASE`, not the enum), then value; Valid Until "Never" last ascending (`ws-502`) |
+| Add Credits | `pages/AddCredits.js` | `GET api/credits` · `sort_by`/`sort_order` | `credits` `created_at` `expiry_date` | Unlimited above any amount; "No expiry" last ascending (`ws-502`) |
+| Discount Code Redemptions | `pages/Reports/DiscountCode.js` | `GET api/reports/discount-codes` · `sort_by`/`sort_order` | `code` `username` `email` `company` `total_credits` `discount_amount` `original_amount` `paid_amount` `used_on` | User = first then last name; a blank company (NULL or `''`, both shown "—") last ascending (`ws-502`) |
+| User Tests → patient detail | `pages/Reports/UserTestDetail.js` | `GET api/reports/user-tests?patient_id=` · `sort_by`/`sort_order` | `unique_test_id` `test_name` `created_at` `status` (mapped by the page's `sortFieldMap`) | sorted in PHP, not SQL — [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) trap 7 |
+| Audit Trail | `pages/AuditTrail/AuditTrail.js` | `GET api/audit-logs` · `sortBy`/`sortOrder` | `audit_id` `category` `created_at` `status` | the only one that **rejects** an unknown key (`AuditLogIndexRequest`); had an `id` tiebreak before `ws-502` |
+
+Note the two parameter spellings: `sortBy`/`sortOrder` versus `sort_by`/`sort_order`. Sending the wrong
+one is silently ignored.
+
+☠️ **Three rules, all learned from `ws-502` ("sort order not kept across pages"):**
+
+1. **Every paged `ORDER BY` ends on the primary key, in the sort direction.** Status has two values,
+   most users share a country, and dates tie to the second. MySQL leaves tie order undefined under
+   `LIMIT/OFFSET`, so a row can appear on page 1 *and* page 2, or on neither. Before `ws-502` only Audit
+   Trail and the Users *Credits* sort had a tiebreak. ☠️ **The suite cannot catch a missing one**,
+   because SQLite sorts ties stably ([TESTING.md](TESTING.md)).
+2. **A header whose key isn't on the endpoint's allow-list sorts by nothing, silently.** Most list
+   endpoints swap an unknown key for their default (`created_at`, or `used_on` for redemptions) and
+   return 200, so the arrow flips and the rows don't move. `ws-502` found two: Discount Codes'
+   *Discount* column (`type`, now allowed) and Redemptions' *Discount Code* column (`discount_code`, now
+   `id: 'code'`). ☠️ **`sortable: true/false` in a column file does nothing.** react-table v7 ignores it,
+   and `disableSortBy: true` is what hides a header's sort control.
+3. **Only the latest request may write the grid.** Sort clicks aren't debounced, and the
+   Users/Admins/Organizations search fires on every keystroke. An older response landing last used to
+   overwrite the newer one: rows in one order, the arrow and every later page in another. `ws-502`
+   guards every server grid. The four pages that hold rows in local state (Users, Admin, Organisation,
+   AuditTrail) use a `latestRequest` ref counter. `discountSlice`, `discountCodesReportSlice` and
+   `createPaginatedCrudSlice` store a `listRequestId` and compare it with `action.meta.requestId`, which
+   covers Add Credits and the report drill-down too. **A replaced request's error is dropped the same
+   way.** User Tests and User Test detail skip their error popup once the fetch effect's cleanup has
+   cleared `isActive`, and Add Credits checks a `latestCreditsRequest` counter in `fetchCreditsPage`.
+   The Axios interceptor's own popup still fires for any failed GET without `skipErrorPopup`, as it does
+   everywhere in the app.
+
+**A server-sorted header toggles asc ↔ desc only (`ws-502`).** `TableWithGlobalFilter` passes
+`disableSortRemove: disableSortRemove || useServerSorting`. Before, a third click cleared the arrow but
+the rows stayed in the last server order, because nothing tells the page the sort was removed.
+Client-sorted grids (Tests, Public Pages, Page Categories, Profile Summary) keep the three-state cycle.
+Covered by `components/table/TableWithGlobalFilter.test.js`.
+
+**`currentSort` keeps a header in step with the page's sort (`ws-502`).** Each `TableWithGlobalFilter`
+is its own react-table instance with its own `sortBy` state, and the page never used to tell it the
+sort. Redemptions renders the grid **twice**: inline, and again in the fullscreen portal. A sort picked
+in fullscreen left the inline arrow on the old column after closing. The optional
+`currentSort={{ id, order }}` prop now syncs the header whenever the page's sort changes.
+`lastEmittedSortRef` is the sort the table and page last agreed on, so the page echoing a click back
+changes nothing, and a sort adopted from the page is never reported as a click. Redemptions passes
+`sortState`, so Date Used also shows ↓ on first load. **The other grids don't pass it yet**, so their
+arrow starts blank while the API applies `created_at desc`. To wire one up, pass its sort state. Don't
+seed react-table's `initialState.sortBy` without seeding `lastEmittedSortRef` too, or the mount itself
+emits `onSort` and refetches page 1.
+
+**Redemptions now returns to page 1 on sort** (`ws-502`), like every other grid. It used to re-fetch the
+*current* page in the new order.
+
+⚠️ **Seen, not fixed:** Add Credits' All/Available/Used/Expired tabs and its search box filter
+`filteredTableData` client-side, **over the 10 rows on screen**, not the user's whole grant list.
+
+---
+
 ## ☠️ Known drift and dead code
 
 Regenerated every run; the current state:
@@ -469,6 +560,9 @@ Regenerated every run; the current state:
   existed only inside `Checkout.js`'s change handler, which is how the pre-filled value reached Stripe
   unvalidated ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) trap 8).
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
+- **A server-sorted column's `id` must be a key the endpoint allow-lists**, and a page that fetches into
+  local state must drop out-of-date responses. See
+  [Server-sorted grids](#server-sorted-grids-ws-502-unmerged).
 - **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
   on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).
 - **State another session can change must be re-fetched, not assumed fresh.** Nothing is pushed to the

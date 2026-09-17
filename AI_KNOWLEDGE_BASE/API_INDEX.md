@@ -35,8 +35,15 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 - **JSON in, JSON out.** `Content-Type: application/json`, `Accept: application/json`.
 - **Auth**: `Authorization: Bearer <token>`. Session-token routes also accept `X-Session-Token`.
 - **Validation**: a FormRequest where one exists ([REQUESTS.md](REQUESTS.md)); otherwise inline.
-- **Pagination**: `?limit=` (default 10) plus `?sort_by=`, `?sort_order=`, `?search=`. Sort fields are
-  allow-listed per controller — an unknown `sort_by` silently falls back to `created_at`.
+- **Pagination**: `?limit=` (default 10) plus a sort pair and `?search=`. **The sort pair is spelled two
+  ways.** `sortBy`/`sortOrder` for `users/type/{usertype}`, `organizations` and `audit-logs`;
+  `sort_by`/`sort_order` for `discount-codes`, `credits` and both reports. The wrong spelling is ignored.
+  Sort fields are allow-listed per endpoint, and an unknown key **silently falls back** to the default
+  (`created_at`; `used_on` for redemptions). The one exception is `audit-logs`, whose FormRequest
+  rejects it. ⚠️ On `develop`, `reports/user-tests?patient_id=` ignores the sort pair entirely, and
+  paged lists other than `audit-logs` have **no `id` tiebreak**, so rows can repeat or go missing
+  across pages on MySQL. Both are fixed on the unmerged `ws-502` — per-endpoint table in
+  [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged).
 - **Search** goes through the `Searchable` trait ([HELPERS.md](HELPERS.md)).
 
 ## Response conventions — and the eight shapes

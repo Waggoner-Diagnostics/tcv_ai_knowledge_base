@@ -88,6 +88,9 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
       and a join **through** one silently drops rows.
 - [ ] Table name verified against the model's `$table` — `testanswers`, `credit_consume`,
       `email_template` don't follow convention.
+- [ ] A paged, sortable query **ends its `ORDER BY` on the primary key** in the sort direction, and any
+      NULL/stand-in value ("Never", Unlimited-as-0) has a deliberate position. A test proving it must
+      assert tied rows come back in id order. A page-walk test passes on SQLite either way. (`ws-502`)
 
 ### 6a. Data migrations (a migration that writes rows, not schema)
 
@@ -139,6 +142,10 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
 - [ ] Lazy imports use `lazyWithRetry`.
 - [ ] No client logic that branches on a **403** — the backend returns 500 for those.
 - [ ] Paginated tables use `createPaginatedCrudSlice`.
+- [ ] Every sortable header on a `useServerSorting` grid sends a key the endpoint allow-lists (an
+      unknown key is silently replaced by the default, so the grid shows a sort it isn't doing), and
+      unsortable columns use `disableSortBy`, not `sortable: false`. A fetch that writes the grid
+      ignores out-of-date responses. [FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502-unmerged)
 - [ ] `eslint src --max-warnings 0` on the PR branch reports the **same or fewer** problems as
       the same command run against `develop`. Not an absolute zero-warnings gate — `develop`
       itself has never passed `--max-warnings 0` outright (198+ pre-existing warnings, 2

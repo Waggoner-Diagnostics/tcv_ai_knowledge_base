@@ -29,7 +29,30 @@ credit is refunded. `sendOne()` stops returning `bool` and returns one of three 
 |---|---|---|
 | `sent` | The server accepted the message | `sent` |
 | `failed` | The server **rejected this recipient** — a verdict on the address | `failed`, revoked, credit refunded |
-| `deferred` | We never reached the server at all — a verdict on **nothing** | released back to `pending` |
+| `deferred` | We never reached the server, **or it declined to take the message on its own account** | released back to `pending` |
+
+📌 **Amended 2026-09-16 (QA re-report on `ws-404`).** `deferralReason()` now owns this decision and
+returns non-null for **three** cases, not one. The `deferred` arm originally covered connect failures
+only; the two additions are:
+
+- **An SMTP 4xx that outlasts the three in-call attempts** (`isTransientReply()`). Those attempts span
+  about three seconds, and nothing producing a 4xx clears that fast. Deliberately narrower than
+  `isTransient()`, which also matches code **0** — the socket bucket holding the post-DATA cases
+  (`timed out`, `has been closed unexpectedly`, read/write) that must keep failing, because deferring
+  those risks a duplicate email. A 4xx *reply* proves the server did not queue the message
+  (RFC 5321 §4.2.5); silence proves nothing.
+- ☠️ **A 5xx rejecting the *sender's* quota rather than the recipient** (`isSenderQuotaRejection()`).
+  This is what QA actually hit, and it is the counter-example to "believe a 5xx". The host answered 286
+  rows of one 500-address send with `550-Domain devwaggonerllc.space has exceeded the max emails per
+  hour (200/200 (100%)) allowed. Message discarded.` — the same 550 a dead mailbox returns, so the
+  message text is the only discriminator. It names the sending domain and an hour; it stops being true
+  at the top of the next one. The needles are sender-scoped on purpose, and a bare `quota exceeded` /
+  `over quota` is deliberately **absent** — that is how a host reports the *recipient's* mailbox being
+  full, which is a real verdict and must keep failing.
+
+⚠️ QA's host caps the domain at **200 emails/hour**, so a 500-address send cannot complete inside one
+hour by construction. That is an environment limit, not a code defect — the fix makes the overflow
+*late* rather than *lost*.
 
 `isConnectionFailure()` makes the call, matching the literal Symfony message formats (`Connection could
 not be established`, `Unable to connect with STARTTLS`, `timed out`, `has been closed unexpectedly`,
@@ -45,6 +68,9 @@ Two circuit breakers sit on top:
 - **Batch breaker** — `MAX_CONSECUTIVE_CONNECTION_FAILURES = 3` consecutive deferrals stops the batch.
   A `sent` **or** a `failed` resets the counter: a rejection aimed at one address says nothing about the
   host and must not trip a connection breaker.
+  ⭐ Since the 4xx amendment above, a throttling host reaches this breaker at all. Previously each 4xx
+  write-off reset the counter, so a host answering "not now" was never recognised as one condition —
+  the batch ground on and kept converting the same throttle into fresh undeliverable addresses.
 - **Process stand-down** — `HOST_STANDDOWN_SECONDS = 60`, held in a **static** so the 20 batches of a
   500-address send share one view of the outage instead of each rediscovering it. It carries across
   requests in the same FPM child, which is why it expires on a timestamp rather than being a flag, and

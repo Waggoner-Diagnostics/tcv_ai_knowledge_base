@@ -117,9 +117,10 @@ survives as a one-line delegate for the resend path. Both the batch job and the 
 the same three passes — see the merge note below.)
 
 ```
-EmailTemplateService::getTemplateForUser(userId, TYPE_TEST_LINK)
+EmailTemplateService::getTemplateForUser(userId, typeForUser(sender))   ← org_test_link for an organization (ws-401)
    user_email_templates row  →  test_email_templates (admin default)  →  hard-coded fallback
  ├─ 1. str_replace the {{test_name}} {{verification_link}} {{verification_code}} {{expires_at}} … vars
+ │     then, org only: {{patient_firstname}} {{patient_lastname}} {{organization_name}} {{organization_email}}
  ├─ 2. restyle: preg_replace_callback rewrites <a href="{the link}"> into the blue button
  └─ 3. EmailContent::linkify(): wrap any URL still sitting in plain text   ← ws-373
 ```
@@ -256,9 +257,26 @@ pending ──────► sent       accepted by the server
    ├──────────► failed     the server REJECTED THIS RECIPIENT
    │                       → credit refunded, is_revoked = true      (a verdict on the address)
    │
-   └──────────► pending    we never reached the server at all
+   └──────────► pending    we never reached the server at all,
+                           OR it declined to take the message itself
                            → claim released, charge and token intact (a verdict on nothing)
 ```
+
+📌 **`deferralReason()` was widened 2026-09-16**, after QA re-reported scattered "Send Failed — Credit
+Refunded" rows on a 500-address send. Two arms were added: a 4xx that outlasts the in-call attempts
+(`isTransientReply()`), and — the one QA actually hit — a **5xx about the sender's own quota**
+(`isSenderQuotaRejection()`). 286 rows carried `550-Domain devwaggonerllc.space has exceeded the max
+emails per hour (200/200 (100%)) allowed. Message discarded.`, which is the same 550 a dead mailbox
+returns, so only the wording separates them.
+
+☠️ **Do not read "5xx" as "verdict on the address" in this subsystem.** That assumption is what the
+QA report broke: the code is set by the host, and a host that caps its own customers uses the same
+code for "your domain is over its limit" as for "no such mailbox". Equally, do not widen the needles
+to a bare `quota exceeded` — that phrasing means the *recipient's* mailbox is full.
+
+⚠️ QA's mail host allows **200 emails/hour** for the whole domain. A 500-address QA send therefore
+cannot finish inside the hour whatever the code does; the remainder now waits for a sweep instead of
+being written off. Production is `ses-v2` and does not share this limit.
 
 ☠️ Before this, both arms went to `failed`. A few minutes of mail-host downtime therefore looked like a
 scattering of undeliverable patients — each revoked, each refunded, each needing to be re-sent by hand.
@@ -336,31 +354,45 @@ Body **and subject** are checked on both paths — the mailer substitutes into b
 are not advertised, so a template already using one keeps saving. A test asserts `known()` stays in
 sync with the `$variables` map in `TestInvitationMailer::send()` — **for `test_link` only**
 (`EmailTemplatePlaceholderValidationTest::test_known_covers_everything_the_mailer_substitutes` passes
-that type explicitly). Nothing has ever checked the org vocabulary against a renderer, which is how the
-gap below went unnoticed.
+that type explicitly). The org vocabulary got the same check on `ws-401`, once the mailer started
+rendering it (below).
 
-☠️☠️ **`org_test_link` has no renderer at all. Do not wire it into the send path.** Its four required
-placeholders — `{{patient_firstname}}`, `{{patient_lastname}}`, `{{organization_name}}`,
-`{{organization_email}}` — are substituted by **nothing**, in any of the four `Mail::` sites
-(`TestInvitationMailer`, `AuthController`, `TestResumeController`, `TestService`). `send()` therefore
-pins `TYPE_TEST_LINK` rather than calling `typeForUser()`, and that pin is load-bearing: swapping it for
-the derived type mails the literal text `{{patient_firstname}}` to the patient, and does so even for an
-organization with **no** custom template, because the seeded org admin default carries all four tokens.
-`send()` is not given patient context, so closing this means changing its signature and all three call
-sites (`TestInvitationController`, `SendTestInvitationEmailsJob`, `SendPendingInvitations`).
+⭐ **Organizations send on `org_test_link` (`ws-401`, 2026-09-16, not merged).** Until then `send()`
+pinned `TYPE_TEST_LINK`, because nothing substituted the org vocabulary's four required placeholders.
+QA reported the result as a bug: an organization's Email Configuration showed the org template, but the
+patient received the generic Send Test email. The earlier "no product requirement" call (`ws-456`
+review, 2026-09-11) is superseded.
 
-Confirmed 2026-09-11 during `ws-456` review: there is **no product requirement for organizations to
-have their own template**, so the gap is not scheduled to close.
-`OrganizationEmailTemplateTypeTest::test_the_mailer_still_cannot_render_the_org_vocabulary` is a
-tripwire that fails if the org variables are ever added, pointing at the pin that is then safe to
-remove.
+`send()` now resolves the type with `EmailTemplateService::typeForUser()`, the same call the editor
+uses, and for an organization fills the four extra tokens itself. The signature did not change: the
+sender is loaded from `$userId` and the patient from `(user_id, email)`, so none of the three call sites
+were touched.
 
-⚠️ **Consequence worth knowing:** `ws-456` routes an organization's *editor* to `org_test_link` while
-the *send* path stays on `test_link`. An organization can therefore save a template under Settings >
-Email Configuration that no email will ever use — a silent no-op, not a crash. Any future fix is a
-product decision (drop the type, or give the mailer patient context), not a one-line type swap. **The
-data migration to move pre-`ws-456` misfiled rows into `org_test_link` was deliberately not written for
-this reason** — it would move data into a type nothing renders.
+| Placeholder | Value |
+|---|---|
+| `{{patient_firstname}}` / `{{patient_lastname}}` | Latest `patients` row with this owner's `user_id` and this `email`. **Send Test collects only an address**, so a first invitation has no patient: first name becomes `Patient`, last name empty. |
+| `{{organization_name}}` | `organizations.organization_name`, else `users.company_name` |
+| `{{organization_email}}` | The organization user's login `email` (what legacy `trigger_patient_testEmail()` used) |
+
+- **The name pair is filled as a unit first.** `{{patient_firstname}}<space or &nbsp;>{{patient_lastname}}`
+  becomes the full name (or `Patient`). Filled token by token, an unknown last name would leave
+  `Dear Patient :` in the seeded greeting.
+- **Org values run *after* the generic pass** so a name typed as `{{verification_link}}` is not
+  substituted. They are `e()`-escaped in the body and raw in the subject (a plain-text header).
+- ☠️ **The patient lookup matches plaintext `patients.email`.** If the patient-encryption draft
+  (`.tcv-encryption-draft`) lands, this query has to move to the blind index with it, like every other
+  `Patient::where('email', …)`. Otherwise it finds nobody and every greeting silently becomes `Patient`.
+- ⚠️ The other three `Mail::` sites (`AuthController`, `TestResumeController`, `TestService`) still
+  render no org vocabulary. None of them reads `org_test_link`, so nothing is broken today.
+
+Covered by `OrganizationEmailTemplateTypeTest` (sends through `SendTestInvitationEmailsJob` and reads
+the delivered message) and
+`EmailTemplatePlaceholderValidationTest::test_known_org_vocabulary_is_everything_the_mailer_substitutes_for_an_organization`,
+which fails if the editor's org vocabulary and the mailer drift apart.
+
+⚠️ **Pre-`ws-456` misfiled rows are still not migrated.** An organization that saved its copy before
+`ws-456` has it under `test_link`, which neither the editor nor the send path reads for that account
+any more. It now gets the org admin default until it saves again.
 
 ☠️ **The vocabulary is scoped by `type`, and anything that writes stored rows has to respect that** —
 a data migration bypasses both save paths and answers to neither. `{{email}}` / `{{token}}` are
