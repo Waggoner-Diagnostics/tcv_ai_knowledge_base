@@ -147,10 +147,18 @@ EmailTemplateService::getTemplateForUser(userId, typeForUser(sender))      ← w
  ├─ 1. str_replace the {{test_name}} {{verification_link}} {{verification_code}} {{expires_at}} … vars
  ├─ 2. restyle: preg_replace_callback rewrites <a href="{the link}"> into the blue button
  ├─ 3. EmailContent::linkify(): wrap any URL still sitting in plain text   ← ws-373
- └─ 4. org_test_link only: the four org placeholders, from the sender +    ← ws-401
-       a Patient scoped to (user_id, email). LAST — after every pass that
-       rewrites markup, never before one.
+ └─ 4. org_test_link only, and only with a non-null sender: the four org    ← ws-401
+       placeholders, from the sender + a Patient scoped to (user_id, email).
+       LAST — after every pass that rewrites markup, never before one.
 ```
+
+⚠️ **The `$sender !== null` half of pass 4's condition is unreachable today and stays anyway.**
+`typeForUser(null)` casts to `0`, `User::ORGANIZATION` is `4`, so a deleted sender never enters the
+branch — but that is a value coincidence in a *different* class, and `organizationVariables()` types
+its parameter non-nullable. If it ever did fire, the `TypeError` would be caught by
+`SendTestInvitationEmailsJob::sendOne()`'s `catch (\Throwable)` and scored as a **bad address**:
+invitation revoked, credit refunded, nothing in the log saying the account was missing. Added in PR
+review round 2 (`ws-401`, 2026-09-17).
 
 Pass 2 only reaches a link the template **already anchored**; a template whose `{{verification_link}}`
 was saved as plain text needs pass 3. Pass 3 skips anything pass 2 already wrapped, so the two do not
@@ -430,7 +438,11 @@ email address and nothing else, so the patient's name is known only when the sen
 `patients` row on that address — `Patient::where('user_id', $sender->id)->where('email', $email)`,
 scoped to the sender so another account's patient on the same address cannot leak a name into the
 email. A first invitation has no name and the greeting falls back to the literal `Patient` — but only
-when *both* names are unknown, because "Dear Patient Doe" is not a greeting.
+when *both* names are unknown, because "Dear Patient Doe" is not a greeting. That makes the greeting a
+**three-way** choice, and the third branch is the one to remember: a row with a surname and no first
+name greets by surname alone, `Dear Doe:`. It is a copy decision rather than a consequence of the
+code, so it is pinned by `…::test_a_patient_with_only_a_surname_is_greeted_by_surname` against the
+*seeded* body — change the wording and that test is where it is recorded.
 `{{organization_name}}` resolves `organization.organization_name` → `users.company_name` → `''`, and
 each step tests for an **empty string, not null**: an `organizations` row carrying `''` is not a null
 one, so a `??` chain would stop there and never reach `company_name`.
@@ -457,10 +469,22 @@ to separate it.** The seeded greeting is `Dear {{patient_firstname}} {{patient_l
 substituting `''` for an unknown surname leaves `Dear Patient :`. Dropping the token alone does not
 help: the space in front of it is the part that shows. `removeEmptyToken()` matches a bounded run of
 whitespace, `&nbsp;`/`&#160;` (Quill emits the entity) **and tags** on either side of the token, then
-re-emits every tag untouched and keeps a single space only when there was whitespace on *both* sides —
-so `Dear {{patient_firstname}} <strong>{{patient_lastname}}</strong>,` gives
-`Dear Patient<strong></strong>,` and `{{patient_firstname}} {{patient_lastname}} — welcome` does not
-close up into one word.
+re-emits every tag untouched and keeps a single space when whitespace sat on *either* side **and the
+next character still wants one** — so `Dear {{patient_firstname}} <strong>{{patient_lastname}}</strong>,`
+gives `Dear Patient<strong></strong>,` and `{{patient_firstname}} {{patient_lastname}} — welcome` does
+not close up into one word.
+
+☠️ **The "either side" half of that rule is a fix, not the original design** (PR review round 2,
+`ws-401`, 2026-09-17). It first required whitespace on *both* sides, which closed the gap up whenever
+the editor had put a tag on one of them: `Dear {{patient_firstname}}<strong>{{patient_lastname}}</strong>,`
+with a blank `first_name` rendered **`DearDoe,`**. `patients.first_name` is nullable and
+`storeDefaultPatient()` validates nothing about it, so that is reachable from the launch URL, not
+theoretical. The `HUGGING_PUNCTUATION` list (`.,;:!?)]}`) is the other half — without it, relaxing to
+"either side" would reintroduce the `Dear Patient :` this whole pass exists to prevent, because the
+seeded greeting ends in a colon. Both halves are pinned by
+`OrganizationEmailTemplateTypeTest::test_a_blank_first_name_keeps_the_surname_spaced` (4 data sets)
+alongside the original `…::test_an_unknown_surname_leaves_no_stray_space` (6). **Change one and run
+both** — they pull in opposite directions by design.
 
 ☠️ **Do not narrow that run back to whitespace-only.** The first cut of this matched the *pair* of
 tokens with `\s` between them, which meant the fix applied to `{{patient_firstname}} {{patient_lastname}}`
@@ -670,3 +694,11 @@ refund. (Under impersonation `auth()` is the impersonated owner, so that is corr
 13. **Turning the scheduler on acts on history.** Its first run resends every still-valid stranded row
     and refunds every expired one — irreversibly. Read the runbook in [../DEPLOYMENT.md](../DEPLOYMENT.md)
     before enabling it anywhere with a backlog.
+14. ⚠️ **`SendTestInvitationEmailsJob::sendBatch()` selects by `whereIn('id', …)` with no
+    `where('user_id', …)`.** Pre-existing and harmless today — both callers group by sender before
+    constructing the job (`SweepPendingInvitationsJob::sweep()` does it explicitly) — but `ws-401`
+    raised what a mismatch would cost. The template *type*, the organization name and the patient
+    lookup now all derive from `$this->userId`, while the recipient address derives from the row: an id
+    list that ever mixed senders would mail one organization's branding, sign-off and patient name to
+    another's invitee, not merely charge the wrong account. A defensive scope on the query is cheap.
+    **Not part of `ws-401`** — raised in its round-2 review (2026-09-17) and left for its own ticket.
