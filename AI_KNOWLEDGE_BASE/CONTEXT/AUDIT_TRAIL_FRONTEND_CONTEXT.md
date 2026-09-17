@@ -16,6 +16,7 @@ Delivered in three phases:
 | 2 | Filter popup + filter/query logic + active-filter chips | **done** |
 | 3 | Row detail side drawer | **done** |
 | 4 | Swap fixtures for the live endpoint | **done** (2026-09-08) — `src/apis/fixtures/` deleted, the three API modules call the real endpoints |
+| — | Post-ship: impersonation display, date and enum-value formatting in the drawer | **done**, on `develop` 2026-09-15 (PRs #384, #386) — see [Post-ship changes](#post-ship-changes-on-develop-2026-09-15-prs-384--386) at the end |
 
 Backend work is tracked separately (see [Backend — not in phase 1](#backend--not-in-phase-1)).
 
@@ -759,3 +760,61 @@ deliberately: `USER_ROLES.CUSTOMER` is `2` while `ROLE_LABELS` in `Sidebar.js` l
   `th` and `td`, Audit ID's fixed width intact, `--admin` class on the admin actor and absent on
   a non-admin, and the four spot-checked category chips resolving to the right tone class.
   Passed, then deleted.
+
+---
+
+## Post-ship changes (on `develop` 2026-09-15, PRs #384 + #386)
+
+Three changes to what the drawer and table *render*; the API contract only gained one key.
+
+### 1. Impersonated actions lead with the admin
+
+The backend now sends `impersonator` (same person shape, `null` on ordinary rows) alongside `actor` on
+both the list and detail payloads — see
+[AUDIT_TRAIL_BACKEND_CONTEXT §15](./AUDIT_TRAIL_BACKEND_CONTEXT.md). An impersonation token belongs to the
+impersonated user, so `actor` is the account the action ran *as*.
+
+| Surface | File | What it renders when `impersonator` is set |
+|---|---|---|
+| Drawer, "Who Did It" | `pages/AuditTrail/AuditDetailDrawer.js` → `PersonCard` in `AuditDetailSections.js` | `person = impersonator`, `impersonating = actor` → an extra muted line `⟲ impersonating {actor.name}` (`FiRepeat`, `.at-personcard__impersonating`) |
+| Table, "Who Did It" column | `utils/columns/auditTrailColumns.js` → `PersonCell` | same lead; the `impersonating …` line **replaces the company line** (a 240px cell has no room for a fourth line), with a tooltip `Acting through {actor.email}`. The column `accessor` also returns the impersonator's name so react-table's row model agrees with the cell |
+
+☠️ **Two independent components render an audit person.** `PersonCard` (drawer) and `PersonCell` (table)
+share no code, and the columns file lives **outside** `pages/AuditTrail/` — which is how the first fix
+updated the drawer and missed the table. Any future change to how a person renders must be made in both.
+"Who Was Affected" never passes `impersonating`.
+
+### 2. `DetailValue` formats dates
+
+Details and What Changed carry raw column values, so a logged date reached a super admin in storage
+format — and a naive datetime in UTC. `formatMaybeDate()` (exported) rewrites exactly three string shapes
+and leaves everything else (ids, coupon codes, version strings) alone:
+
+| Shape | Regex | `parseDateTimeString` type | Renders |
+|---|---|---|---|
+| date only | `^\d{4}-\d{2}-\d{2}$` | `2` | `June 9, 2026` |
+| naive datetime (stored UTC) | `^…[T ]HH:mm:ss$` | `18` — `moment.utc(…).local()` | `Jun 9, 2026 04:03 PM` in the viewer's zone |
+| zoned / ISO | `…(\.\d+)?(Z\|±HH:MM)$` | `23` | `June 9, 2026, 04:03:49 PM` |
+
+It runs before the array/long-text/enum branches and on each array item.
+
+⚠️ **This interacts with the backend's own date handling.** Since `3e42305d`/`c6734fb3` `BuildsAuditDiffs`
+already truncates datetime-cast fields to `Y-m-d` before logging — *except* when that truncation would make
+a same-day, time-only change look like a no-op, in which case it sends the full `Y-m-d H:i:s`. So a
+What Changed row normally arrives date-only (type 2), and a naive datetime (type 18, **converted to local
+time**) means "only the time of day changed".
+
+### 3. `DetailValue` title-cases enum-like strings
+
+`isEnumLikeValue()` matches only `^[a-z]+(_[a-z]+)*$` — a raw enum/type column the backend did not format
+(`test_link`, `requires_payment_method`) — and renders it through `formatFieldLabel` (`Test Link`).
+Anything with a digit, an uppercase letter or other punctuation is left exactly as sent, so Stripe ids
+(`pi_3Nx…`), uppercase coupon codes, emails, UUIDs and IPs are never mangled. ⚠️ A genuinely lowercase
+single word (`active`, `pending`) *is* enum-like and will render capitalised — intended, but do not rely
+on `DetailValue` to show a lowercase literal verbatim.
+
+### Verification
+
+`AuditDetailSections.test.js` (+111 lines) and a new `utils/columns/auditTrailColumns.test.js` (+73) —
+**18** `it`/`test` cases across the two files on `develop`, covering the impersonation card and cell,
+date shapes, and the enum-like guard. Counted, not run, for the 2026-09-17 KB sync.

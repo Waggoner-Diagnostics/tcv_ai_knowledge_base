@@ -42,7 +42,7 @@ browser with a Bearer token.
 | **Discount codes** | `DiscountCodeService` · `DiscountCodeController` | `pages/DiscountCodes/` · `redux/slices/discount/` | — | [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) |
 | **Organisations / LMS launch** | `OrganizationController::verifySignature` · `Lms/*` | `pages/Organisation/` · `redux/slices/auth/signatureVerificationSlice.js` · `pages/UserPannel/AddPatient/OrganizationPatient.js` | — | [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md) |
 | **Reports** | `ReportController` · `Reports/*` · `Exports/*` | `pages/Reports/` · `redux/slices/reports/` | — | [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) |
-| **IP restriction** | `RestrictIpMiddleware` · `RestrictedIpController` | `pages/Setting/RestrictedIps.js` · `services/errorHandler.js` (`IP_RESTRICTED`) | — | [MIDDLEWARE.md](MIDDLEWARE.md) |
+| **IP restriction** | `RestrictIpMiddleware` · `RestrictedIpController` · `GET api/access-check` (`ws-449`) · `trustProxies()` | `pages/Setting/RestrictedIps.js` · `services/errorHandler.js` (`IP_RESTRICTED`) — ⚠️ nothing calls `access-check` yet | ☠️ `nginx.conf` (the edge) — its `set_real_ip_from 0.0.0.0/0` decides what the backend thinks the client IP is | [MIDDLEWARE.md](MIDDLEWARE.md) · [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not) |
 | **Marketing content** | — | — | `app/**` + `views/*Client.jsx` | [WEBSITE.md](WEBSITE.md) |
 
 ---

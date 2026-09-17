@@ -85,8 +85,9 @@ writable — `user_id` included, which reassigns ownership. Block.
   the app is throttled today.
 - **Token lifetime & storage.** New credentials should be hashed at rest (the LMS session token is the
   example done right; invitation, session and resume tokens are stored plaintext).
-- **Expiry.** New tokens need a TTL *and* someone to enforce it — nothing is scheduled, so expiry is
-  checked at read time only ([JOBS.md](../JOBS.md)).
+- **Expiry.** New tokens need a TTL *and* someone to enforce it — the one scheduled task is invitation
+  recovery, and the scheduler is off by default, so expiry is checked at read time only
+  ([JOBS.md](../JOBS.md)).
 - **Idempotency** on anything that spends a credit or charges a card.
 
 ---

@@ -1,27 +1,26 @@
 # Middleware
 
-Four classes exist in `app/Http/Middleware/`. **One is global, two are aliased, one is dead.**
+Four classes exist in `app/Http/Middleware/` on `develop` (verified 2026-09-17). **Two are global, two
+are aliased.**
 
 | Class | ID | How it runs | Notes |
 |---|---|---|---|
-| `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request |
-| `EnsureTokenIsValid` | `MW-001` | **never aliased, never routed** — dead | Still present on `develop`. Do not resurrect it; use `auth:sanctum` or `FlexibleAuthMiddleware` ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)) |
+| `AddRequestId` | `MW-001` | **prepended globally** in `bootstrap/app.php` | Stamps an `X-Request-Id` correlation id into Laravel's `Context`, so every log line for a request — and any job it dispatches — carries it, paired with a JSON log formatter ([LOGGING.md](LOGGING.md)) |
 | `FlexibleAuthMiddleware` | `MW-002` | alias `FlexibleAuthMiddleware` | The four-tier session gate |
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
+| `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request. Since `ws-449` also the whole of `GET api/access-check` |
 
-✅ **`AddRequestId` is now on `develop`** (merged from `tcv-backend-codefix`). It
-(prepended globally, stamping an `X-Request-Id` correlation id into Laravel's `Context` so every log line
-for a request — and any job it dispatches — carries it, paired with a JSON log formatter). Until that
-merges, there is no request correlation; see [LOGGING.md](LOGGING.md).
+📌 `EnsureTokenIsValid` (dead, never aliased) was **deleted** when `tcv-backend-codefix` merged; its old
+`MW-001` slot is now `AddRequestId`. Earlier text here saying it was "still present on `develop`" was stale.
 
-Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. ☠️ **On `develop` there is exactly
-one rate limit in the whole API** — the bare `throttle:10,1` on `POST api/contact` (`routes/api.php:254`).
-`login`, `register`, password reset, signature verification and bulk invitations are **entirely
-unthrottled**. `tcv-backend-codefix` adds six named limiters in
-`AppServiceProvider::configureRateLimiting()` — `login`, `register`, `password-reset`,
-`signature-verify`, `bulk-invitations` (ip-keyed) and `plate-url` (token-keyed) — but that branch is
-unmerged, and even there the five ip-keyed limiters collapse into one shared global bucket
-([S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)).
+Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. **Seven named limiters** live in
+`AppServiceProvider::configureRateLimiting()`, plus the bare `throttle:10,1` on `api/contact` and
+`api/distributor-enquiry`: `login`, `register`, `password-reset`, `signature-verify`, `bulk-invitations`
+(keyed `identifier|ip` through `callerKey()`), and `plate-url`, `send-resume-email` (keyed on the session
+or bearer token). ⭐ `login` alone has a custom response callback that writes `auth.account_locked`
+([CONFIGURATION.md](CONFIGURATION.md)). ☠️ The `|ip` half is only as trustworthy as `$request->ip()`, which
+since `ws-449` is forgeable by the traced chain
+([S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)).
 
 ---
 

@@ -41,7 +41,10 @@ timestamp and email.
 | **Org patient intake rejects everything** | `TURNSTILE_SECRET_KEY` unset — `TurnstileService` **fails closed** |
 | **409 `SESSION_STATUS_MISMATCH`** | the LMS session's `status` vs the route's `lms.status:` list ([LMS_CONTEXT](../CONTEXT/LMS_CONTEXT.md)) |
 | **`lms.status` gate "not working"** | it only applies when an `LmsSession` is attached — by design |
-| **LMS completions never arrive** | `lms_delivery_queue` rows stuck at `pending` ⇒ **no queue worker** ([QUEUES.md](../QUEUES.md)). Check `GET api/admin/lms/delivery-status` |
+| **LMS completions never arrive** | `lms_delivery_queue` rows stuck at `pending` ⇒ **no queue worker** — the environment is not running `COMPOSE_PROFILES=workers` ([QUEUES.md](../QUEUES.md)). Check `GET api/admin/lms/delivery-status` |
+| **Invitations stuck at "Sending…" for hours** | rows deferred, not failed: mail host unreachable, a 4xx, or the QA host's 200/hour `550` cap. Check `test_invitations.deferred_count` / `email_error` and the log line `Invitation email deferred: …`; recovery needs web traffic (the sweep) or `invitations:send-pending` ([JOBS.md](../JOBS.md)) |
+| **Burst of `SOURCE_REVOKED` refunds after a mail outage** | rows passed `mail.invitation_max_deferrals` (36) or expired undelivered — `email_error` says which ([CONTEXT/CREDITS_CONTEXT.md](../CONTEXT/CREDITS_CONTEXT.md)) |
+| **Audit rows show odd or foreign IPs** | ☠️ forged `X-Forwarded-For` — [S-16](../SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not) |
 | **"Insufficient credits" for an unlimited customer** | a caller missing the `!== 'Unlimited'` guard ([CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md)) |
 | **Customer charged, no credits** | the browser died before `POST api/payment/confirm`; the webhook does not fulfil ([BILLING_CONTEXT](../CONTEXT/BILLING_CONTEXT.md)) |
 | **Discount code rejected for a specific user** | the `discount_code_users` list is an **exclusion** list ([DISCOUNT_CONTEXT](../CONTEXT/DISCOUNT_CONTEXT.md)) |

@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-176`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-163`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -211,6 +211,12 @@ Table column definitions live one-file-per-table in `src/utils/columns/`, fed st
 `error_code` (today only `IP_RESTRICTED`, from
 [`RestrictIpMiddleware`](MIDDLEWARE.md)). The Axios response interceptor calls it automatically unless
 the request passes `skipErrorPopup: true` (or a thunk passes `showPopup: false`).
+
+⚠️ **The backend's SPA boot gate has no caller.** `ws-449` (backend, on `develop` since 2026-09-14) added a
+public `GET api/access-check` so a blocked client could see a full "access denied" page before the login
+form renders. Nothing in `TCV-Frontend/src` on `develop` — or on the local frontend `ws-449` branch, which
+has no commits beyond `develop` — calls it (verified 2026-09-17). A restricted client still sees the app
+until its first API call returns `IP_RESTRICTED`.
 
 ☠️ It classifies into `NETWORK / VALIDATION / AUTHENTICATION / AUTHORIZATION / PAYMENT / SERVER / UNKNOWN`
 — but the backend collapses 403 and 404 into **500** ([ERROR_HANDLING.md](ERROR_HANDLING.md)), so the
@@ -330,6 +336,18 @@ entry for either, so they rendered as an unstyled badge showing the raw word:
 A `failed` row is `is_revoked` server-side, so **both** `resend` and `cancel` 404 on it — offering the
 buttons would only produce errors. Retry by sending the address again from Send Test, which charges a
 credit properly ([CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md)).
+
+⚠️ **Since the 2026-09-15 backend merge, "Send Failed — Credit Refunded" has three more causes** besides a
+rejected address: a post-connect socket error (the host may have accepted the message), a row deferred
+more than 36 times (≈6h of mail outage), and a row that **expired** while still undelivered —
+`email_error` then reads `Invitation expired before it could be delivered`. Conversely a QA send that hits
+the host's 200/hour cap now stays `sending` for hours instead of flipping to failed. The tab shows none of
+this detail; read `test_invitations.email_error` ([CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md)).
+
+⚠️ **Cancel can now return 409** (`This invitation has already been cancelled.`) when the expiry refund
+or a second cancel got there first. `handleCancelInvitation` has no 409 arm — it shows
+`err?.message || "Failed to cancel invitation."` in an "Error" popup. [not traced whether the thunk
+rejects with the server message]
 
 ☠️ If you add a `status` value on the backend, it must be added to `statusBadge` here too — the map
 falls through to the raw string rather than failing loudly.

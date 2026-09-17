@@ -6,16 +6,21 @@
 ## Files
 | File | Role |
 |---|---|
-| `app/Http/Controllers/TestInvitationController.php` (559 lines) | ⭐ Send, verify, resend, cancel, list unregistered |
+| `app/Http/Controllers/TestInvitationController.php` | ⭐ Send, verify, resend, cancel, list unregistered |
 | `app/Http/Controllers/TestResumeController.php` (190 lines) | ⭐ Resume-link issue + redemption |
 | `app/Models/TestInvitation.php` · `TestSession.php` · `TestResumeToken.php` | The three token records |
 | `app/Models/TestEmailTemplates.php` · `UserEmailTemplate.php` | Per-user email copy |
 | `app/Services/EmailTemplateService.php` | Picks the sender's template, or the admin default, or a hard-coded fallback |
 | `app/Services/TestInvitationMailer.php` | ⭐ Renders + sends one invitation email — owns all three assembly passes (`ws-404`, extracted from the controller) |
-| `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response (`ws-404`) |
-| `app/Jobs/SweepPendingInvitationsJob.php` | ⭐ Re-sends rows stranded at `pending`, using web traffic as the clock (`ws-404`, **unmerged**) |
+| `app/Jobs/SendTestInvitationEmailsJob.php` | ⭐ Sends one batch of 25 after the response or on the queue; decides defer vs fail (`ws-404`) |
+| `app/Jobs/SweepPendingInvitationsJob.php` | ⭐ Re-sends rows stranded at `pending`, using web traffic as the clock (`ws-404`) |
 | `app/Support/EmailTemplatePlaceholders.php` | ⭐ The one placeholder vocabulary; both save paths validate against it (`ws-404`) |
-| `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'` (`ws-404`) |
+| `app/Console/Commands/SendPendingInvitations.php` | Recovers invitations stranded at `email_status='pending'`; refunds ones that expired undelivered. **Scheduled** every 10 min (`ws-404`) |
+| `app/Console/Commands/MailPreflight.php` | `mail:preflight` — is invitation email going to work in this environment? (`ws-404`) |
+
+> **All `ws-404` work in this file is on `TCV-Backend@develop`** — merged 2026-09-15 (PR #240) with a
+> follow-up on 2026-09-16 (PR #251). ☠️ The scheduled recovery exists in code but runs only where the
+> compose `workers` profile is on, which it is not by default ([../DEPLOYMENT.md](../DEPLOYMENT.md)).
 | `app/Console/Commands/CheckEmailTemplatePlaceholders.php` | Scans stored templates for placeholders that will not render (`ws-404`) |
 | `app/Support/EmailContent.php` | ⭐ Makes bare URLs and `{{placeholder}}`s clickable (`ws-373`) |
 | `components/richTextEditor/emailPlaceholders.js` *(TCV-Frontend)* | ⭐ Stored HTML ⇄ editor HTML; renders system values as read-only chips (`ws-400`) |
@@ -50,27 +55,29 @@ POST api/test-invitations/send   ← auth:sanctum + throttle:bulk-invitations (5
   │    ├─ bulk insert rows: token, code, expires_at = now+7d, email_status='pending'
   │    ├─ CreditConsume::consume(user, n, 'test_invitation', [ids])
   │    └─ PatientTest::increment('resend_count')  when unique_test_id given
-  ├─ audit: test.invitation_sent | _sent_bulk | _resent   ← only when created > 0
-  ├─ 202 Accepted  ← returns here, in well under a second
-  └─ AFTER the response: SendTestInvitationEmailsJob × ceil(n/25) mails the batches
-                         then SweepPendingInvitationsJob (ws-404 only, throttled)
+  ├─ for each chunk of 25: dispatchEmailBatch()   ← each wrapped in try/catch(\Throwable): log + continue
+  │      after_response (default): ->afterResponse(), shared $deadline (invitation_send_budget 240s)
+  │      queue:                    to backend-queue, per-batch budget (invitation_queue_batch_budget 60s)
+  ├─ SweepPendingInvitationsJob::dispatch()->afterResponse()   ← throttled; afterResponse even in queue mode
+  ├─ audit: test.invitation_sent (Single|Multiple) | test.invitation_resent   ← only when created > 0
+  └─ 202 Accepted  ← returns here, in well under a second; the batches run after it
 ```
 
-⚠️ **The three audit keys do not mean what the catalog says.** *(True of `develop`. Fixed on
-`TCV-Backend@feat/audit-trail-user-panel-improvement-14-sep`, which deletes the bulk key outright —
-see AUDIT_TRAIL_BACKEND_CONTEXT.md §14 item 2. Re-verify this paragraph once that branch merges.)* `AuditEventCatalog` titles
-`test.invitation_sent_bulk` "Test invitation sent via CSV (bulk)", but the controller picks it purely on
-`$createdCount > 1` — typing three addresses by hand emits the "via CSV" event. `test.invitation_resent`
-wins over both whenever `unique_test_id` is present, whatever the count. Do not read CSV usage out of
-these rows.
+✅ **The "via CSV (bulk)" audit key is gone** (merged 2026-09-15, AUDIT_TRAIL_BACKEND_CONTEXT §14 item 2).
+`test.invitation_sent_bulk` was chosen purely on `$createdCount > 1`, so typing three addresses by hand
+emitted a "sent via CSV" event. Now there are two keys: `test.invitation_resent` whenever
+`unique_test_id` is present, else `test.invitation_sent` with a dynamic `(Single)`/`(Multiple)` title.
+Rows written before the merge still carry the old key — do not read CSV usage out of them.
 
-⭐ **Dispatch order in `sendInvitations()` is deliberate and load-bearing.** All dispatching happens
-*last*, after every write. `afterResponse()` callbacks run once the response is sent whatever its
-status, so anything that threw after the first dispatch would return a 500 while the mail still went
-out — inviting a retry that sends the whole list twice and charges twice. The single `$deadline`
-(`mail.invitation_send_budget`, default 240s) is computed once for the **whole** send, not per chunk:
-the 20 batches a 500-address list produces all run back to back in the same FPM child, so a per-chunk
-budget would multiply by 20.
+⚠️ **Dispatch order in `sendInvitations()` is *not* what it was documented to be.** `afterResponse()`
+callbacks run once the response is sent whatever its status, so anything that throws after the first
+dispatch returns a 500 while the mail still goes out — inviting a retry that sends the whole list twice
+and charges twice. The audit block (an `expires_at` query, the title lookup, `auditService->log()`) runs
+**after** the dispatch loop inside the same `try`, so that window is open. Since 2026-09-15 a failing
+*dispatch* is caught per batch and cannot reach the outer catch; what follows the loop still can. See
+[../QUEUES.md](../QUEUES.md#after-response-dispatch-ws-404). The single `$deadline` is computed once for
+the **whole** send, not per chunk: the 20 batches a 500-address list produces all run back to back in the
+same FPM child, so a per-chunk budget would multiply by 20.
 
 **The response is now `202`, not `200`, and the payload changed** (`ws-404`). Delivery no longer happens
 inside the request, so it cannot be reported per address:
@@ -101,7 +108,9 @@ remainder come back in `skipped_emails`.
 
 **Credits are charged up front and refunded on failure** (`ws-404`). Delivery is asynchronous, so the
 whole batch is billed at insert time; `SendTestInvitationEmailsJob::markFailed()` returns one credit per
-address it cannot deliver, via `Credits::addCreditsToUser(..., SOURCE_REVOKED)`. It also sets
+address it cannot deliver, via `Credits::addCreditsToUser(..., SOURCE_REVOKED, creditedBy: null)`, and
+only if it still holds the row's `sending` claim (a row settled elsewhere in the meantime gets no second
+refund). `invitations:send-pending` also refunds rows that **expired while still `pending`**. It also sets
 `is_revoked` — deliberately, because that closes both remediation endpoints for a row whose credit has
 already been returned (a resend would be free, a cancel would refund a second time). Retry by sending
 the address again from Send Test, which charges properly.
@@ -140,8 +149,8 @@ copy this restyle shape anywhere else, keep the null check.
 admin default row is missing. `ws-373` changed it from a bare `<p>{{verification_link}}</p>` to a proper
 button plus a copy-and-paste line, so a missing admin row no longer produces an unclickable email.
 
-**The default subject changed on `ws-400`** (2026-08-31 — merged into `ws-404` on 2026-09-01, not yet
-deployed): `Welcome to Testing Color Vision` → **`You have been invited to take a color vision test`**,
+**The default subject changed on `ws-400`** (2026-08-31 — merged into `ws-404` on 2026-09-01, on
+`develop` since 2026-09-15): `Welcome to Testing Color Vision` → **`You have been invited to take a color vision test`**,
 in all three places that can emit it — `AdminSettingsSeeder` (fresh DBs only), the `EmailTemplateService`
 fallback, and `2026_08_29_000001_update_default_test_email_subject` for rows already deployed. The
 migration is match-on-old-value and scoped to `type = 'test_link'`, so an admin who retitled the subject
@@ -164,17 +173,18 @@ defaults are ever given different wording again, an organization that falls thro
 admin default row missing) silently sends the *generic* subject. The fallback is a real send path, not
 dead code.
 
-☠️ **`ws-373` and `ws-400` edit the same `return` block and will conflict on merge.** `ws-373` replaces
-the fallback **body** (bare token → button + copy-and-paste line); `ws-400` replaces the **subject** on the
-line directly above it. Neither branch is merged, so both were cut from a `develop` that still holds the
-bare-token body — a trial `git merge-tree` reports exactly one conflict, in this file. The correct
-resolution keeps **both**: `ws-400`'s subject with `ws-373`'s body. Taking either side wholesale silently
-drops the other ticket's fix, and nothing downstream will fail loudly if you do.
+✅ **`ws-373` and `ws-400` edited the same `return` block — resolved on `develop`.** `ws-373` replaced the
+fallback **body**; `ws-400` replaced the **subject** on the line above it. Both reached `develop` through
+`ws-404` (2026-09-15) and the fallback now carries both: subject `You have been invited to take a color
+vision test`, body built with `EmailContent::anchorPlaceholders(…, ['{{verification_link}}' => 'Start
+Test'])` so it renders the same button the save paths and repair migration produce. If you touch this
+block, keep both halves — nothing downstream fails loudly when one is lost.
 
 ### The template editor locks system values (`ws-400`)
 
-Committed on branches `ws-400` (both repos, 2026-08-31 → 2026-09-01); the backend half is merged into
-`ws-404`, not yet deployed.
+Committed on branches `ws-400` (both repos, 2026-08-31 → 2026-09-01). Backend half on `develop` via
+`ws-404` since 2026-09-15; `origin/ws-400` on the frontend is merged too (a local frontend `ws-400` holds
+one unpushed commit).
 
 `{{…}}` tokens and the Start Test button stopped being free text in the SPA's three template forms —
 `Setting/TestEmailTemplates.js` (admin default **and** org) and
@@ -246,8 +256,9 @@ pending ──────► sent      mail accepted by the SMTP server
 are handled in `InvitedPatientsTab.js`; a `failed` row shows "Send Failed — Credit Refunded" and offers
 no buttons, because both remediation endpoints 404 on a revoked row.
 
-A row stuck at `pending` means a send was interrupted — the batch job leaves it there when it cannot
-reach the SMTP host.
+A row stuck at `pending` means a send was interrupted or deferred — the batch job leaves it there when
+nothing it saw was a verdict on the address. `deferred_count` (2026-09-14 migration) says how many
+separate runs have deferred it.
 
 ⭐ **`ws-404` makes that distinction explicit, and it is the point of the branch.** `sendOne()` returns
 `sent` / `failed` / `deferred` instead of a bool:
@@ -255,44 +266,64 @@ reach the SMTP host.
 ```
 pending ──────► sent       accepted by the server
    │
-   ├──────────► failed     the server REJECTED THIS RECIPIENT
-   │                       → credit refunded, is_revoked = true      (a verdict on the address)
+   ├──────────► failed     the service REJECTED THIS RECIPIENT, or a post-connect socket error
+   │                       (timed out / closed unexpectedly — the message may already be delivered)
+   │                       → credit refunded, is_revoked = true
    │
-   └──────────► pending    we never reached the server at all
-                           → claim released, charge and token intact (a verdict on nothing)
+   └──────────► pending    never connected · SMTP 4xx · sender-quota 5xx · SES throttle/5xx/credentials
+                           → deferred_count+1, claim released, charge and token intact
+                           …unless deferred_count > mail.invitation_max_deferrals (36) → failed + refund
 ```
 
-☠️ Before this, both arms went to `failed`. A few minutes of mail-host downtime therefore looked like a
-scattering of undeliverable patients — each revoked, each refunded, each needing to be re-sent by hand.
-`isConnectionFailure()` separates them by matching the literal Symfony message formats, because Symfony
-gives every one of them exception code 0 and the message is the only discriminator.
+☠️ Before `ws-404`, every arm went to `failed`. A few minutes of mail-host downtime therefore looked like
+a scattering of undeliverable patients — each revoked, each refunded, each needing to be re-sent by hand.
+`deferralReason()` now makes the call; the full matching table (SMTP needles, SES error codes and cURL
+numbers, the sender-quota phrases) is in [../JOBS.md](../JOBS.md#-connection-failure-is-not-address-rejection).
 
-⚠️ Two of those needles (`has been closed unexpectedly`, and the read/write failures) can in principle
-fire *after* the server accepted DATA, so deferring them risks a **duplicate email**. That is the
-deliberate trade and the same one `recordSent()` already makes: a duplicate is milder than revoking an
-invitation the recipient is holding in their inbox.
+⚠️ **Deferral is narrower than "looks like a connection problem", on purpose.** An earlier version
+deferred `has been closed unexpectedly` and the read/write failures too. Those can fire *after* the
+server accepted DATA, and a deferred row is re-sent by the next sweep — so the patient could get the same
+invitation three times a sweep for a week. Since `8833f697` they retry within the call and then **fail**:
+one wrongly refunded address on a slow host is the cheaper mistake.
+
+⭐ **The QA "Send Failed — Credit Refunded" clusters were the sender quota, not bad addresses.** The QA
+mail host answers past 200 emails/hour with `550 … has exceeded the max emails per hour` — a 5xx, which
+every other rule treats as permanent. `isSenderQuotaRejection()` (`8ee517aa`, 2026-09-16) recognises the
+sender-scoped wording and defers. A bare `quota exceeded`/`over quota` still fails: that is how hosts
+report the *recipient's* mailbox as full.
 
 A batch stops after `MAX_CONSECUTIVE_CONNECTION_FAILURES = 3` consecutive deferrals and puts the whole
 process into a 60-second stand-down (`HOST_STANDDOWN_SECONDS`, a static so all 20 batches of a
 500-address send share one view of the outage). A `sent` **or** a `failed` resets the counter — a
-rejection aimed at one address is not evidence about the host.
+rejection aimed at one address is not evidence about the host. Because a 4xx now defers, a throttling
+host trips the breaker instead of quietly writing off the rest of the list.
 
-⚠️ **`SweepPendingInvitationsJob` (`ws-404`, not on `develop`)** clears these without an operator. It is dispatched
+⚠️ **The deferral cap is what stops a dead row blocking the queue.** Always the oldest `pending` id, an
+unreachable row sat first in every sweep and tripped the breaker ahead of everything behind it. At 36
+(≈6h of outage at one sweep per 10 min) it is written off with `Deferred N times without reaching the
+mail host`. The increment and the write-off happen **while the claim is held** — releasing first let the
+sweep deliver a row that was about to be revoked and refunded.
+
+⭐ **`SweepPendingInvitationsJob`** clears these without an operator. It is dispatched
 `->afterResponse()` from **`sendInvitations()` and `getUnregisteredInvitations()`** — opening the list
 that shows a stranded row is what clears it — and is throttled by an atomic cache lock
 (`invitations:sweep`, one run per `mail.invitation_sweep_interval`, default 600s), bounded to one batch
 with its own `mail.invitation_sweep_budget` (default 60s), and ignores rows younger than
 `mail.invitation_sweep_age_minutes` (default 15) so it cannot race a send still in progress.
 
-☠️ **It needs traffic — an idle deployment sweeps nothing.** `php artisan invitations:send-pending`
-remains the manual route, and on `develop` it is the *only* route.
+☠️ **It needs traffic — an idle deployment sweeps nothing.** The scheduled `invitations:send-pending`
+(every ten minutes) is the path that works on an idle system, but only where `backend-scheduler` runs,
+i.e. `COMPOSE_PROFILES=workers` — **off by default**. Without it, the sweep plus running the command by
+hand are the only routes. Having both is safe: they select the same rows via
+`TestInvitation::awaitingDelivery()` (now `->whereNotNull('user_id')` inside the query, so a page of
+orphans cannot starve owned rows) and each row is claimed atomically, so an address is sent once. See
+[../JOBS.md](../JOBS.md) and [../DEPLOYMENT.md](../DEPLOYMENT.md).
 
-📌 **Corrected 2026-09-14.** This said the scheduled entry `ws-404` adds does not fire for want of a
-cron or `schedule:work` container. That was true of `b69a2c37`; `07a1c9b2` adds a `backend-scheduler`
-service, so on `ws-404` the command **does** run every ten minutes and the sweep is the *second* of two
-automatic paths rather than the only one. Both are safe to have at once — they select the same rows via
-`TestInvitation::awaitingDelivery()` and each row is claimed atomically, so an address is sent once.
-See [../JOBS.md](../JOBS.md) and [../DEPLOYMENT.md](../DEPLOYMENT.md).
+☠️ **A row that expires while still `pending` is refunded only by the command.** `awaitingDelivery()`
+requires `expires_at > now()`, so neither the sweep nor a batch will ever touch it again.
+`SendPendingInvitations::expireStaleInvitations()` marks it `failed` + revoked
+(`Invitation expired before it could be delivered`) and refunds it — ahead of each send, bounded by
+`--limit`. No scheduler, no expiry refunds.
 
 ### SMTP connection recycling (`ws-404`)
 
@@ -372,7 +403,7 @@ A row holding a token its own type does not render is a **hard 422 on every save
 cannot edit that template at all until the token is deleted by hand — and a `FAILURE` from
 `templates:check-placeholders`. So a repair migration applying one map to both types would store rows
 the codebase's own scanner reports as broken, on exactly the templates it set out to fix.
-`2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` (`ws-401`, **not merged**)
+`2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` (`ws-401`, on `develop`)
 derives its map from `known($row->type)` for that reason, and leaves a bracket token with nowhere valid
 to go alone. Whether `{{email}}` / `{{token}}` *should* be valid for `org_test_link` is a product
 question — the answer belongs in `unlisted()`, never in stored data.
@@ -437,20 +468,31 @@ checks neither against the caller's session** — [S-03](../SECURITY.md#s-03--se
 
 ## Cancelling
 
-`POST api/test-invitations/{id}/cancel` (`auth:sanctum`):
-- sets `expires_at = now()` on the invitation **and** on any live `TestSession` for it,
-- refunds **1 credit** as a `SOURCE_REVOKED` grant to `auth()->user()`.
+`POST api/test-invitations/{id}/cancel` (`auth:sanctum`, `API-103`):
+- selects only `user_id = auth()->id()`, `is_used = false`, `is_revoked = false` — anyone else's
+  invitation is a not-found,
+- ⭐ **claims** the row: `UPDATE … SET is_revoked = true, expires_at = now() WHERE id = ? AND
+  is_revoked = false`. If that touches 0 rows — the expiry refund in `invitations:send-pending` or a
+  second cancel got there first — it returns **409 `This invitation has already been cancelled.`** and
+  refunds nothing (2026-09-15; before, both refunds went through for one charge),
+- expires any live `TestSession` for it,
+- refunds **1 credit** as a `SOURCE_REVOKED` grant to `auth()->user()`, with `original_source` traced via
+  `Credits::traceConsumedOrigin()`.
 
-☠️ The refund goes to the **caller**, not to the invitation's `user_id`. For a super admin cancelling on
-a customer's behalf, the credit lands in the wrong account. Compare with
-`CreditsController::revokeCredit()`, which correctly credits `$patientTest->patient->user`.
+📌 **Corrected 2026-09-17.** This used to say the refund lands on the *caller* rather than the owner, so a
+super admin cancelling for a customer would be credited. The select is scoped to `user_id =
+auth()->id()`, so the caller **is** the owner — a super admin gets a not-found, not a misdirected
+refund. (Under impersonation `auth()` is the impersonated owner, so that is correct too.) Compare
+`CreditsController::revokeCredit()`, which credits `$patientTest->patient->user` explicitly.
 
 ---
 
 ## ☠️ Traps
 
 1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Throttled 2026-09-02 (`throttle:bulk-invitations`, 5/min). `set_time_limit(0)` moved to `SendTestInvitationEmailsJob::handle()` (`ws-404`).
-2. **Cancel refunds the caller, not the owner** (above).
+2. ~~**Cancel refunds the caller, not the owner.**~~ 📌 Not a real trap — the cancel query is scoped to the
+   caller's own invitations (above). What *is* a trap: a cancel racing the expiry refund, which is why
+   the cancel now claims the row and 409s when it loses.
 3. **Expiry is compared as a date in some paths and a datetime in others** — `verifyCode()`/`checkTokenStatus()`
    comment their check as date-based ("expires_at < today") while `TestResumeToken::isExpired()` is a
    true datetime comparison. An invitation can therefore stay valid for part of its expiry day.
@@ -474,7 +516,7 @@ a customer's behalf, the credit lands in the wrong account. Compare with
 9. **There are two repair migrations now, and both skip rows they did not expect.**
    `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates` (`ws-373`) wraps a bare
    `{{verification_link}}` in a button; `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`
-   (`ws-401`, **not merged** — see [README](../README.md)) rewrites the pre-`{{…}}` spelling — `[link]`, `[patient_firstname]`, `[organization_name]` —
+   (`ws-401`, on `develop` since 2026-09-07 — see [README](../README.md)) rewrites the pre-`{{…}}` spelling — `[link]`, `[patient_firstname]`, `[organization_name]` —
    into canonical tokens. Each writes a row only when its pass actually changes it, so an already-anchored
    or customised template is left alone; each bumps `updated_at`, which the editor surfaces as "last
    modified"; and both are deliberately irreversible, because the state they replace is the broken one.
@@ -491,5 +533,11 @@ a customer's behalf, the credit lands in the wrong account. Compare with
     three template forms validate with `hasTestLinkButton()` — an anchor check, not a substring check —
     because pass 2 only restyles links the template already anchored. Anything that validates a template
     on `includes('{{verification_link}}')` is checking the wrong thing.
-11. **`ws-373` and `ws-400` conflict in `EmailTemplateService`** and the resolution must keep both sides
-    (subject from `ws-400`, body from `ws-373`) — see the send-flow section. Neither is merged yet.
+11. ✅ **`ws-373` and `ws-400` both edit `EmailTemplateService`'s fallback** — resolved on `develop`, which
+    keeps both sides (subject from `ws-400`, anchored body from `ws-373`). Keep both if you edit it.
+12. ☠️ **The scheduled recovery is registered but not running by default.** `invitations:send-pending` is
+    in `bootstrap/app.php`, but `backend-scheduler` needs `COMPOSE_PROFILES=workers`. Until an
+    environment opts in, expiry refunds never happen automatically and an idle system recovers nothing.
+13. **Turning the scheduler on acts on history.** Its first run resends every still-valid stranded row
+    and refunds every expired one — irreversibly. Read the runbook in [../DEPLOYMENT.md](../DEPLOYMENT.md)
+    before enabling it anywhere with a backlog.

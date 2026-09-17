@@ -1,8 +1,8 @@
 # API — Shape and Conventions
 
 The exhaustive table is generated: [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md)
-(**161 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
-(**16 of 162 endpoints are public**). This page is the shape.
+(**163 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
+(**17 of 163 endpoints are public**). This page is the shape.
 
 ## Base
 
@@ -23,10 +23,11 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 | `api/payment/*` | 5 | `auth:sanctum` | the current payment surface |
 | `api/stripe/*` | 5 | **public** | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) |
 | `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; **live rows only** since `ws-392` merged — deleting a code releases its name) |
-| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design. ⭐ `send` returns **202** and no longer reports per-address delivery (`ws-404`) |
+| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design. ⭐ `send` returns **202** and no longer reports per-address delivery (`ws-404`, on `develop` since 2026-09-15). `POST test-invitations/{id}/cancel` (`API-103`) returns **409** when the row was already cancelled or expiry-refunded |
 | `api/admin/lms/*` | 8 | `auth:sanctum` | no role check |
 | `api/reports/*`, `api/super-admin/dashboard` | 4 | `auth:sanctum` | no role check |
 | `api/dropdown/*`, `api/countries-with-states`, `api/restricted-ips`, `api/price-details` | ~12 | mixed | reference data |
+| `api/access-check` | 1 | **public** (closure) | `ws-449` SPA boot gate, 2026-09-14. No logic: the global `RestrictIpMiddleware` answers `IP_RESTRICTED` before the closure runs, so reaching it *is* the "allowed" signal. ⚠️ **No SPA caller on `develop`** |
 | `api/test-email-templates/*`, `api/user-email-template` | 6 | `auth:sanctum` | |
 | `api/contact` | 1 | `auth:sanctum` + `throttle:10,1` | the **only** throttled route |
 

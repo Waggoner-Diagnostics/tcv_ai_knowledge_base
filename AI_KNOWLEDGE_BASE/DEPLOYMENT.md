@@ -18,6 +18,12 @@ dispatch inputs default to. Confirm which branch you are deploying before assumi
 
 ☠️ **There is no production workflow in this repo.** Whatever promotes to production lives elsewhere.
 
+⚠️ **2026-09-15 (`45b53173`):** the "Code Quality Analysis: Backend" job now runs
+`composer install --prefer-source …` (the old line is left commented above it). `--prefer-source`
+clones each package's git repo instead of downloading dist archives — slower, and it needs git access to
+every dependency's source host from the runner. The commit carries no rationale; if that step starts
+timing out or failing auth, this is the first suspect. The lint step still never fails the pipeline.
+
 ⭐ **Scope note, 2026-09-09: this whole page is about `TCV-Backend`.** `TCV-Website` grew its own
 independent stack — `Dockerfile`, `docker-compose.yml`, `nginx.conf`, and **two** workflows including a
 uat/prod one with a manual approval gate. Nothing here describes it; see
@@ -39,33 +45,55 @@ reproduce 8.4-specific behaviour (deprecations in particular).
 
 ## Runtime
 
-`docker-compose.yml`, two services on the **external** network `tcv_network`:
+`docker-compose.yml`, on the **external** network `tcv_network`. Two services start by default; two more
+sit behind a profile:
 
-| Service | Notes |
-|---|---|
-| `backend-app-tcv` | php-fpm; every setting arrives as an env var; `restart: unless-stopped` |
-| `backend-nginx-tcv` | `nginx:1.25-alpine`, host **8080** → 80, mounts `./nginx.conf` and `./public` |
+| Service (container) | Starts by default? | Notes |
+|---|---|---|
+| `backend-tcv` (`backend-app-tcv`) | ✅ | php-fpm; every setting arrives as an env var; `restart: unless-stopped`; `RUN_INIT: "true"` |
+| `backend-nginx` (`backend-nginx-tcv`) | ✅ | `nginx:1.25-alpine`, host **8080** → 80, mounts `./nginx.conf` and `./public`. Forwards `X-Forwarded-For`/`-Proto`/`X-Real-IP` to php-fpm since `ws-449` ([S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)) |
+| `backend-queue` (`backend-queue-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384`. Drains the LMS backlog; also runs invitation batches when `MAIL_INVITATION_DISPATCH=queue` |
+| `backend-scheduler` (`backend-scheduler-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `schedule:work` — runs the one scheduled task (`invitations:send-pending`, every 10 min). Foreground, so the image needs no cron daemon. **Single replica by design** |
 
 Volumes: `/var/www/html/storage/logs` bind-mounted from the host, and `./public` shared with nginx.
+MySQL is external — there is no database service.
 
-☠️ **No database service and no queue worker.** MySQL is external. Nothing consumes the `database`
-queue — LMS deliveries accumulate ([QUEUES.md](QUEUES.md)).
+### ☠️ The worker and scheduler merged **off** — `COMPOSE_PROFILES=workers` turns them on
 
-### ⭐ `ws-404` adds two more services (unmerged)
+`ws-404` merged both services into `develop` on 2026-09-15, but `9c7d0f1e` put them behind the
+`workers` profile first. **`docker compose up -d` starts neither.** On an environment that has not opted
+in, nothing consumes the `database` queue (LMS deliveries still accumulate — [QUEUES.md](QUEUES.md)) and
+nothing runs the schedule; invitation recovery rests on `SweepPendingInvitationsJob` and web traffic.
 
-Both compose files gain a worker and a scheduler, which is what turns several standing ☠️ traps in this
-KB into `develop`-only ones:
+```bash
+COMPOSE_PROFILES=workers docker compose up -d          # or: docker compose --profile workers up -d
+COMPOSE_PROFILES=workers docker compose -f docker-compose-dev.yml up -d
+```
 
-| Service | Command | Notes |
-|---|---|---|
-| `backend-queue` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384` | Drains the LMS backlog; also runs invitation batches when `MAIL_INVITATION_DISPATCH=queue` |
-| `backend-scheduler` | `schedule:work` | Runs the one scheduled task. Foreground, so the image needs no cron daemon. **Single replica by design** — the schedule is not written to run concurrently |
+**Why off by default — the first-boot runbook** (the foot of `docker-compose.yml` spells it out). An
+environment that has never had a worker has a real, old backlog, and both containers start draining it
+the moment they come up, with no operator deciding any of it should happen:
+
+1. **The queue.** `SELECT queue, COUNT(*), MIN(FROM_UNIXTIME(created_at)) FROM jobs GROUP BY queue;` —
+   the `lms` rows are `ProcessLmsDeliveryJob`; starting the worker posts **every one** to the customer's
+   LMS, including results from months ago. Delete or re-queue deliberately *before* starting it.
+2. **Stranded invitations.** `SELECT email_status, COUNT(*), MIN(created_at) FROM test_invitations WHERE
+   email_status IN ('pending','sending') AND is_revoked = 0 GROUP BY email_status;` — the scheduler's first
+   `invitations:send-pending` **resends** anything still in its validity window to the patient, and
+   **refunds and revokes** anything past it (irreversible: it closes both resend and cancel).
+3. Only then, with ops sign-off, enable the profile.
+
+Safe first run on an environment with a backlog: leave the profile off, run
+`php artisan invitations:send-pending --limit=1` in the web container, read its summary line, then decide.
+The dev compose file carries the same profile for the same reason — dev shares a database with whatever
+was last restored into it, so an unreviewed first boot mails real addresses.
 
 Four details that are easy to "tidy" into a bug:
 
-- **`environment: &backend_env` / `*backend_env`.** The web service's env block is anchored and reused
-  verbatim. Splitting them lets a worker resolve a different database or mail host than the web process
-  and silently do the wrong work rather than fail.
+- **`environment: &backend_env` / `<<: *backend_env`.** The web service's env block is anchored and
+  merged into both workers, which override exactly one key (`RUN_INIT: "false"`). Splitting them lets a
+  worker resolve a different database or mail host than the web process and silently do the wrong work
+  rather than fail.
 - **Both drop to `www-data`** via `su`, while the entrypoint still starts as root so its `chown` of
   `storage/` works. Left as root, every file the worker wrote into the shared `storage/logs` volume
   would be root-owned and php-fpm (uid 33) could not append to the day's log — logging breaks for the
@@ -76,16 +104,14 @@ Four details that are easy to "tidy" into a bug:
 - **`--max-time=3600`** recycles the worker hourly so a leaked connection or stale config cache cannot
   accumulate in a long-lived process.
 
-⚠️ **Merging this starts real background work on first boot.** The LMS deliveries that have been
-accumulating in `lms_delivery_queue` begin draining, and `invitations:send-pending` starts running every
-ten minutes. Neither has ever executed in a deployed environment — expect a burst, not a quiet start.
-
 ## Boot (`entrypoint.sh`)
 
 ```
 chown/chmod storage bootstrap/cache
 APP_KEY      unset → FATAL, exit 1
 FRONTEND_URL unset → FATAL, exit 1
+RUN_INIT true|1|yes → continue · false|0|no → "Skipping…", exec "$@"     ← ws-404
+         unset      → continue only if basename(argv[0]) is php-fpm*
 config:clear route:clear cache:clear
 config:cache route:cache
 php artisan migrate --force --path=…create_cache_table.php   ← lock bootstrap, non-fatal
@@ -101,6 +127,13 @@ Operational consequences:
    about the schema.
 2. **Routes and config are cached at boot** — a route or config change needs a restart, not just a new
    file.
+
+   ☠️ **Only the web container migrates** (`RUN_INIT`). The switch exists because `--max-time=3600`
+   makes `backend-queue` exit hourly by design and `restart: unless-stopped` re-enters this entrypoint,
+   which re-ran `config:cache` and an `--isolated` migrate check every hour. `RUN_INIT` is explicit
+   because the old `"$1" = php-fpm` string test silently skipped migrations on `php-fpm -F`, an absolute
+   path, or any wrapper — the one container meant to migrate, serving a stale schema behind a log line
+   that looked intentional. Do not "simplify" it back to argv.
 3. ✅ **Fixed 2026-09-07 (`tcv-backend-codefix`, since merged into `develop`) — a fresh database could not bootstrap.**
    `--isolated` takes its lock through the default cache store, which is the *database* store
    (`CACHE_STORE` defaults to `database`), and `cache_locks` is itself created by a migration. On a
@@ -177,13 +210,17 @@ check the migration list before choosing a rolling deploy.
 6. `TURNSTILE_SECRET_KEY` set, or organisation patient intake **fails closed**.
 7. Lookup tables populated (`compliances`, `privileges`, `organization_types`,
    `organization_settings_options`, `price_details`, `email_template`) — the app is unusable without them.
-8. **A queue worker**, if LMS delivery is expected to work: `php artisan queue:work` against the same
-   image and env. (⭐ `ws-404` ships `backend-queue` for this — once it merges, this step is satisfied
-   by the compose file rather than by hand.)
+8. **A queue worker and scheduler**, if LMS delivery or scheduled invitation recovery is expected to
+   work: `COMPOSE_PROFILES=workers`. ☠️ Run the first-boot runbook above **before** enabling it on any
+   environment that has been running without one.
 9. **`MAIL_MAILER`** — the config default is **`log`**, which accepts every message and delivers
-   nothing. It is in the compose allowlist, so this is a DevOps env value, not a code change. On
-   `ws-404`, `php artisan mail:preflight` fails the environment for exactly this ([JOBS.md](JOBS.md)).
-10. The SPA and website are **separate deployments** with their own nginx configs
+   nothing. It is in the compose allowlist, so this is a DevOps env value, not a code change.
+   `php artisan mail:preflight` (on `develop` since 2026-09-15) fails the environment for exactly this
+   ([JOBS.md](JOBS.md)).
+10. **`set_real_ip_from 0.0.0.0/0` removed or narrowed** in `TCV-Website/nginx.conf` (the edge) **and**
+    `TCV-Frontend/nginx.conf` — since `ws-449` the backend believes the `X-Forwarded-For` chain it is handed
+    ([S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)).
+11. The SPA and website are **separate deployments** with their own nginx configs
     (`TCV-Frontend/nginx.conf`, `nginx.integration.conf`).
 
 ## Rollback notes

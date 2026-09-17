@@ -181,7 +181,7 @@ page is therefore still accepted through the emailed reset link. See
 
 ## `verify-password` is a fourth path, and it decides nothing
 
-`POST api/verify-password` (`API-176`, `auth:sanctum`, no throttle — the only rate limit in
+`POST api/verify-password` (`API-163`, `auth:sanctum`, no throttle — the only rate limit in
 `routes/api.php` is on `/contact`) → `AuthController::verifyPassword()`: validate, `Hash::check`,
 return 200, or 422 `api.incorrect_password`. It writes **nothing** — no session flag, no token
 ability, no log line. Its only caller is the SPA's Patients-menu prompt, which treats the 200 as
@@ -250,7 +250,7 @@ Neither body is a Blade file. `ResetPasswordNotification::toMail()` and
 placeholder is **not** guaranteed — the same placeholder can be an `<a href>` in one environment and
 plain text in another.
 
-`ws-373` (2026-08-31 — merged into `ws-404` on 2026-09-01, not yet deployed) closed that gap from
+`ws-373` (2026-08-31 — merged into `ws-404` on 2026-09-01, on `develop` since `ws-404` merged 2026-09-15) closed that gap from
 both ends:
 
 | Where | What changed |

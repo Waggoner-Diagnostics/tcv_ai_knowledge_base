@@ -68,7 +68,7 @@ generic webhook). See [THIRD_PARTY.md](THIRD_PARTY.md).
 
 - No mobile or desktop client in these repos. (`TCV-Frontend` contains a large dead file pasted from
   such an app — see [FRONTEND.md](FRONTEND.md).)
-- No scheduler and no queue worker in either compose file, despite a `database` queue
-  ([QUEUES.md](QUEUES.md)).
+- A queue worker and scheduler exist in compose since 2026-09-15, but behind the `workers` profile —
+  **off by default**, so a standard deploy still runs neither ([QUEUES.md](QUEUES.md)).
 - No repository layer, no observers, no broadcast channels
   ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)).

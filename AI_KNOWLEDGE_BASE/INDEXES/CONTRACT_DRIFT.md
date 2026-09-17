@@ -36,12 +36,12 @@ the backend, so the browser only ever talks to the website's own origin.
 
 | Website route | Methods | Forwards to | Backend route exists? |
 |---|---|---|---|
-| `/api/auth` | POST | `/api/login` | ✅ `API-037` |
-| `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-013` |
-| `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` | ✅ `API-030` |
-| `/api/logout` | POST | `/api/logout` | ✅ `API-038` |
-| `/api/register` | POST | `/api/register` | ✅ `API-075` |
+| `/api/auth` | POST | `/api/login` | ✅ `API-038` |
+| `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-014` |
+| `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` | ✅ `API-031` |
+| `/api/logout` | POST | `/api/logout` | ✅ `API-039` |
+| `/api/register` | POST | `/api/register` | ✅ `API-076` |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._

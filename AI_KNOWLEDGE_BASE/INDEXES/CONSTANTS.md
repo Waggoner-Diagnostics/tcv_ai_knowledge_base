@@ -5,6 +5,12 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 
+### `MailPreflight` — `app/Console/Commands/MailPreflight.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `APP_SEND_RATE` | — | [36](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L36) |
+
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 
 | Constant | Value | Line |
@@ -20,6 +26,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
 
+### `BuildsAuditDiffs` — `app/Http/Controllers/Concerns/BuildsAuditDiffs.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `AUDIT_RELATION_FIELDS` | `[…]` | [193](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L193) |
+
 ### `DiscountCodeController` — `app/Http/Controllers/DiscountCodeController.php`
 
 | Constant | Value | Line |
@@ -31,9 +43,11 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `USER_AUDIT_FIELDS` | `[…]` | [41](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L41) |
-| `ORG_AUDIT_FIELDS` | `[…]` | [52](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L52) |
-| `DISPLAY_BRANDING_OPTIONS` | `[…]` | [83](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L83) |
-| `HIDDEN_SETTINGS_OPTIONS` | `[…]` | [86](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L86) |
+| `USER_AUDIT_BOOLEAN_FIELDS` | `[…]` | [48](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L48) |
+| `ORG_AUDIT_FIELDS` | `[…]` | [55](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L55) |
+| `ORG_AUDIT_BOOLEAN_FIELDS` | `[…]` | [67](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L67) |
+| `DISPLAY_BRANDING_OPTIONS` | `[…]` | [96](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L96) |
+| `HIDDEN_SETTINGS_OPTIONS` | `[…]` | [99](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L99) |
 
 ### `PatientController` — `app/Http/Controllers/PatientController.php`
 
@@ -53,6 +67,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `ENVIRONMENTS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L36) |
 
+### `TestInvitationController` — `app/Http/Controllers/TestInvitationController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `DISPATCH_QUEUE` | `'queue'` | [31](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L31) |
+
 ### `TestResumeController` — `app/Http/Controllers/TestResumeController.php`
 
 | Constant | Value | Line |
@@ -64,6 +84,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `AUDIT_FIELDS` | `[…]` | [37](../../../TCV-Backend/app/Http/Controllers/UserController.php#L37) |
+| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [47](../../../TCV-Backend/app/Http/Controllers/UserController.php#L47) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
@@ -114,8 +135,20 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `BATCH_SIZE` | `25` | [40](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L40) |
-| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [43](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L43) |
+| `BATCH_SIZE` | `25` | [82](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L82) |
+| `MAX_ATTEMPTS_PER_EMAIL` | `3` | [85](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L85) |
+| `DEFAULT_MAX_DEFERRALS` | `36` | [119](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L119) |
+| `MAX_CONSECUTIVE_CONNECTION_FAILURES` | `3` | [127](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L127) |
+| `HOST_STANDDOWN_SECONDS` | `60` | [137](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L137) |
+| `RESULT_SENT` | `'sent'` | [140](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L140) |
+| `RESULT_FAILED` | `'failed'` | [141](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L141) |
+| `RESULT_DEFERRED` | `'deferred'` | [142](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L142) |
+
+### `SweepPendingInvitationsJob` — `app/Jobs/SweepPendingInvitationsJob.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `LOCK_KEY` | `'invitations:sweep'` | [67](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L67) |
 
 ### `PrefixEmailSubject` — `app/Listeners/PrefixEmailSubject.php`
 
@@ -254,10 +287,11 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SECRET_DENYLIST` | `[…]` | [31](../../../TCV-Backend/app/Services/Audit/AuditService.php#L31) |
-| `PHI_DENYLIST` | `[…]` | [41](../../../TCV-Backend/app/Services/Audit/AuditService.php#L41) |
-| `DENYLIST` | `[…]` | [50](../../../TCV-Backend/app/Services/Audit/AuditService.php#L50) |
-| `DATE_ALLOWLIST` | `[…]` | [63](../../../TCV-Backend/app/Services/Audit/AuditService.php#L63) |
+| `SECRET_DENYLIST` | `[…]` | [32](../../../TCV-Backend/app/Services/Audit/AuditService.php#L32) |
+| `PHI_DENYLIST` | `[…]` | [42](../../../TCV-Backend/app/Services/Audit/AuditService.php#L42) |
+| `DENYLIST` | `[…]` | [51](../../../TCV-Backend/app/Services/Audit/AuditService.php#L51) |
+| `IMPERSONATION_ABILITY_PREFIX` | `'impersonated-by:'` | [70](../../../TCV-Backend/app/Services/Audit/AuditService.php#L70) |
+| `DATE_ALLOWLIST` | `[…]` | [72](../../../TCV-Backend/app/Services/Audit/AuditService.php#L72) |
 
 ### `PricingAuditService` — `app/Services/Audit/PricingAuditService.php`
 
@@ -344,4 +378,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._

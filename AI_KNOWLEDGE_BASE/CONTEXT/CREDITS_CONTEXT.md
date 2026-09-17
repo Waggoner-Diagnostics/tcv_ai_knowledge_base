@@ -91,7 +91,8 @@ copy their shape.
 | Path | When | Amount | `event_type` recorded |
 |---|---|---|---|
 | `TestInvitationController::sendInvitations()` | at **queue** time, per email (`ws-404`) | 1 per invited address (always the authenticated caller since 2026-08-26) | `test_invitation` |
-| `SendTestInvitationEmailsJob::markFailed()` | **refund**, per undeliverable address (`ws-404`) | +1, as a `SOURCE_REVOKED` grant | — |
+| `SendTestInvitationEmailsJob::markFailed()` | **refund**, per undeliverable address — or per row that passed the deferral cap (`ws-404`) | +1, as a `SOURCE_REVOKED` grant, `credited_by = null` | — |
+| `SendPendingInvitations::expireStaleInvitations()` | **refund**, per row that expired while still `pending` (2026-09-15) | +1, `SOURCE_REVOKED`, `credited_by = null` | — |
 | `TestAssignmentService` (via `TestController::assignTest()`) | at **assign** time — *unless* `test_invitation_id` is present | 1 | ⚠️ `test_completion` |
 | — | never actually at completion | — | — |
 
@@ -100,16 +101,28 @@ request, so the whole batch is billed inside the insert transaction and each add
 delivered is refunded individually by the job. Consequences worth knowing:
 
 - A send that is interrupted (container restart) leaves rows at `email_status = 'pending'` **already
-  charged**. On `develop`, `php artisan invitations:send-pending` finishes them and nothing runs it
-  automatically. ⭐ Unmerged `ws-404` adds two automatic paths: `SweepPendingInvitationsJob` (dispatched
-  after the response from the send and invitation-list endpoints, so it needs web traffic) **and** the
-  scheduled command, now that the branch also ships a `backend-scheduler` service.
-  See [../JOBS.md](../JOBS.md).
+  charged**. Two automatic paths finish them on `develop`: `SweepPendingInvitationsJob` (dispatched after
+  the response from the send and invitation-list endpoints, so it needs web traffic) and the scheduled
+  `invitations:send-pending` — ☠️ the latter only where `COMPOSE_PROFILES=workers` runs
+  `backend-scheduler`, which is **off by default**. See [../JOBS.md](../JOBS.md).
+- ⭐ **A row that expires while still undelivered is now refunded** (`expireStaleInvitations()`,
+  2026-09-15). Before, it fell out of `awaitingDelivery()` (which needs `expires_at > now()`) and stayed
+  charged forever. It runs only inside `invitations:send-pending` — so without the scheduler, only when
+  an operator runs the command.
 
-⭐ **`ws-404` narrows what counts as "undeliverable", and that changes the refund rate** (unmerged). A
-refund now fires only when the SMTP server **rejected the recipient**. A failure to reach the server at
-all — refused connection, dropped socket, TLS that never completed — leaves the row `pending` with its
-charge and its live token intact, for a sweep to retry.
+⭐ **`ws-404` narrows what counts as "undeliverable", and that changes the refund rate** (on `develop`
+since 2026-09-15). A refund fires when the mail service **rejected the recipient**. Three things instead
+leave the row `pending` with its charge and live token intact for a sweep to retry: never reaching the
+host (refused connection, STARTTLS failure, SES cURL 6/7/35, SES throttling/5xx/credential errors), an
+SMTP **4xx**, and a **sender-scoped quota 5xx** such as the QA host's 200-emails/hour cap. Full rules:
+[../JOBS.md](../JOBS.md#-connection-failure-is-not-address-rejection).
+
+⚠️ **Two cases still refund that a reader might expect to defer.** (1) A post-connect socket error —
+`timed out`, `closed unexpectedly` — **fails** the row, because the server may already have accepted the
+message and a retry would mail the patient again. (2) A row deferred more than
+`mail.invitation_max_deferrals` (**36**, ≈6h of outage at one sweep per 10 min) is written off and
+refunded. A long mail outage therefore still ends in a burst of `SOURCE_REVOKED` grants — just after
+hours, not minutes.
 
 ☠️ Before this, an unreachable mail host produced a burst of `SOURCE_REVOKED` refund grants — one per
 address in flight — and revoked every one of those invitations. The credits balanced, but the customer's
@@ -117,13 +130,28 @@ patients were silently un-invited and had to be re-sent by hand. If you are reco
 across a known outage window on `develop`, that burst is the signature to look for.
 
 ⚠️ **`SendTestInvitationEmailsJob::failed()` no longer refunds either.** It used to mark the whole batch
-failed, revoked and refunded; on `ws-404` it only releases `sending` claims back to `pending`, leaving
+failed, revoked and refunded; it now only releases `sending` claims back to `pending`, leaving
 `sent` and `failed` rows alone. The job dying says nothing about whether any address is deliverable.
-This becomes reachable for the first time under `mail.invitation_dispatch=queue`.
+This is reachable only under `mail.invitation_dispatch=queue`.
 - A refunded row is also `is_revoked = true`, which deliberately blocks both resend and cancel — a
   resend would be free and a cancel would refund the same charge twice.
-- The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller. This
-  is the opposite of `cancelUnregisteredInvitation()`, which credits `auth()->user()` (the trap below).
+- The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller, who in
+  a sweep is whichever customer's request happened to trigger it. `cancelUnregisteredInvitation()`
+  credits `auth()->user()` instead, which is the same account there because its select is scoped to
+  `user_id = auth()->id()` (📌 an earlier KB note called that a wrong-account trap; it is not).
+- ⭐ **Every refund path is now race-guarded — one charge, one refund** (2026-09-15). `markFailed()`
+  writes only `WHERE email_status='sending' AND is_revoked=false`; `expireStaleInvitations()` only
+  `WHERE email_status='pending' AND is_revoked=false`; `cancelUnregisteredInvitation()` flips
+  `is_revoked` with `WHERE is_revoked=false` and returns **409 "This invitation has already been
+  cancelled."** if it lost. Whoever flips the flag owns the refund; the loser changes nothing. Before
+  this, the expiry refund and a user's cancel could both refund one invitation.
+
+☠️ **`Credits::addCreditsToUser($user, $credits, $creditedBy = false)`** — the third argument is new
+(2026-09-15) and its default is a sentinel, not null. `false` (omitted) → `auth()->id()`, correct when a
+human's own request triggers the grant. **Pass `creditedBy: null` from any automated path.** The sweep
+runs inside *another* customer's request, so `auth()->id()` there recorded that stranger as the person who
+refunded this customer's credit in `credits.credited_by`. The job's
+`markFailed()` and `expireStaleInvitations()` both pass `null`.
 
 ☠️ **The `event_type` values are misleading.** Both spends happen before the test is taken, but the
 direct-assign path records `EVENT_TEST_COMPLETION`. Any report filtering `credit_consume.event_type`

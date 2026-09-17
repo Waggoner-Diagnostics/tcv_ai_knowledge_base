@@ -23,7 +23,7 @@
 |---|---|
 | `auth:sanctum` | a valid 15-minute Sanctum token |
 | `FlexibleAuthMiddleware` | **any of four** token kinds — Sanctum, TestSession, LmsSession, legacy org session |
-| `—` | **public** — 21 endpoints are ([PUBLIC_ROUTE_AUDIT.md](../INDEXES/PUBLIC_ROUTE_AUDIT.md)) |
+| `—` | **public** — 17 endpoints are ([PUBLIC_ROUTE_AUDIT.md](../INDEXES/PUBLIC_ROUTE_AUDIT.md)) |
 
 If you see `lms.status:…`, remember it only bites for LMS sessions
 ([MIDDLEWARE.md](../MIDDLEWARE.md)).

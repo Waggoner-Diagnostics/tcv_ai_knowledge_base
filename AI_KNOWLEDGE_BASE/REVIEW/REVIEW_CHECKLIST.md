@@ -58,8 +58,14 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
       **before any arithmetic**. [CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md)
 - [ ] No double-charge: the `if (!$isEmailInvite)` condition in `assignTest()` is the entire guard, and
       it depends on `test_invitation_id` being merged by `FlexibleAuthMiddleware`.
-- [ ] A refund credits the **owner**, not `auth()->user()` — `cancelUnregisteredInvitation()` already
-      gets this wrong. [INVITATION_CONTEXT](../CONTEXT/INVITATION_CONTEXT.md)
+- [ ] A refund credits the **owner**, not `auth()->user()`, unless the query is scoped to the caller's own
+      rows (as `cancelUnregisteredInvitation()` is). Background/sweep refunds pass
+      `Credits::addCreditsToUser(..., creditedBy: null)` — omitting it records whichever customer's request
+      triggered the sweep. [CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md)
+- [ ] A refund is **race-guarded**: the write that flips `is_revoked` (or leaves `sending`) carries the
+      precondition in its `WHERE`, and the refund happens only if it touched exactly one row. Three paths
+      can settle one invitation (`markFailed`, `expireStaleInvitations`, cancel).
+      [INVITATION_CONTEXT](../CONTEXT/INVITATION_CONTEXT.md)
 - [ ] Balance is **derived**, never stored. No new "balance" column or cached total.
 - [ ] Money stays `decimal:2`. No new float money.
 - [ ] Credit/discount checks under contention are locked, or the race is acknowledged in the PR.

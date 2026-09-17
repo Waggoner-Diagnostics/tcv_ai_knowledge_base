@@ -48,6 +48,12 @@ git -C ../<repo> log --oneline <branch>..develop     # must be EMPTY (superset)
 git -C ../<repo> merge-base --is-ancestor develop <branch> && echo superset
 ```
 
+⚠️ **Fetch before you trust `develop`.** A local `develop` is only as current as its last fetch. If
+`git fetch` fails from your shell (on 2026-09-17 it returned `Repository not found` for `TCV-Backend` and
+`TCV-Frontend` — the stored credential lacked access, while the IDE's own fetch worked), fetch from
+wherever does work first and compare `git rev-parse develop origin/develop` — and record in the sync note
+which fetch the SHAs came from.
+
 ☠️ **Never index a feature branch — not even a fix branch.** The 2026-09-02 sync was generated from
 `tcv-backend-codefix` (backend) and `QA` (frontend). That branch carries the ownership-scoping fixes
 for `S-02`/`S-03`/`S-14` and had moved the five Stripe payment routes inside `auth:sanctum`, so the
@@ -142,6 +148,17 @@ add a middleware alias to the backend, add it to the map.
 Known limits of the static parser: it does not resolve `Route::controller()`, `Route::match()`, or
 routes registered from a service provider. None of those are used today; if one is introduced, the
 counts will silently drop — which is what `verify.php`'s count check is for.
+
+⚠️ **"Dropped later by a migration" in `DATABASE_TABLE_INDEX.md` includes `down()` drops.** `extract.php`
+walks every `Schema::table` closure in a migration file without telling `up()` from `down()`, so a column
+a migration *adds* in `up()` and drops in its own `down()` is listed as dropped. Found 2026-09-17 on
+`test_invitations.deferred_count` (added by `2026_09_14_000001`, live on `develop`). Treat that footnote as
+"some migration mentions dropping it" and confirm with `DESCRIBE` or by reading the migration.
+
+☠️ **The `API-nnn` ids renumber when a route sorts ahead of existing ones.** They are assigned by sorted
+URI, so the 2026-09-17 addition of `api/access-check` shifted **every** endpoint id by one. After a
+regeneration, `grep -rn 'API-[0-9]' AI_KNOWLEDGE_BASE --include=*.md` outside `INDEXES/` and re-resolve each
+citation against the new index — `verify.php` does not check them.
 
 ## The client scan is a lower bound
 

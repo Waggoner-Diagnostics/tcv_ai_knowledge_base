@@ -2,47 +2,54 @@
 
 `QUEUE_CONNECTION=database`. Tables: `jobs`, `job_batches`, `failed_jobs`.
 
-## ☠️ Nothing consumes the queue (on `develop`)
+## ☠️ By default, nothing consumes the queue
 
-Neither `docker-compose.yml` nor `docker-compose-dev.yml` defines a worker service, and
-`entrypoint.sh` ends with `exec php-fpm`. **Unless a worker runs somewhere outside these files,
-dispatched jobs sit in the `jobs` table forever.**
+`ws-404` (merged 2026-09-15) added a worker service to **both** compose files — but behind the
+`workers` profile, so **`docker compose up -d` does not start it**. `entrypoint.sh` still ends with
+`exec php-fpm` for the web container. **Unless an environment runs with `COMPOSE_PROFILES=workers` (or a
+worker runs somewhere outside these files), dispatched jobs sit in the `jobs` table forever.**
 
-Practical effect: `ProcessLmsDeliveryJob` is the only job that *is* queued, so **LMS completion
-reporting silently does not happen** in an environment without a worker. (`SendTestInvitationEmailsJob`
-sidesteps this entirely — see [After-response dispatch](#after-response-dispatch-ws-404).) The `lms_delivery_queue` row is created (that part is
-synchronous), so `GET api/admin/lms/delivery-status` shows entries stuck at `pending` — that is the
-diagnostic.
+Practical effect: `ProcessLmsDeliveryJob` is the job that *is* always queued, so **LMS completion
+reporting silently does not happen** in an environment without the profile. (`SendTestInvitationEmailsJob`
+sidesteps this by default — see [After-response dispatch](#after-response-dispatch-ws-404).) The
+`lms_delivery_queue` row is created (that part is synchronous), so `GET api/admin/lms/delivery-status`
+shows entries stuck at `pending` — that is the diagnostic.
 
-To run one: `php artisan queue:work` in a container from the same image with the same environment.
-
-### ⭐ `ws-404` ships that worker (unmerged)
-
-`07a1c9b2` adds two long-running services to **both** compose files, so the statement above is scoped to
-`develop` and no longer describes that branch:
+### The worker and scheduler services (`workers` profile)
 
 | Service | Command | Exists for |
 |---|---|---|
 | `backend-queue` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384` | `ProcessLmsDeliveryJob` (the LMS backlog above) and invitation batches once `MAIL_INVITATION_DISPATCH=queue` |
 | `backend-scheduler` | `schedule:work` | The one scheduled task, `invitations:send-pending` — the foreground equivalent of a crontab entry, so the image still needs no cron daemon |
 
-Both reuse the web service's `environment:` block through a YAML anchor (`&backend_env` / `*backend_env`)
-so a worker cannot drift onto a different database or mail host than the web process, and both drop to
-`www-data` — a root-owned file in the shared `storage/logs` volume would stop php-fpm (uid 33) appending
-to the day's log and break logging for the whole app.
+☠️ **Enabling the profile drains the backlog immediately** — every LMS delivery queued while no worker
+existed goes out, and the first scheduled `invitations:send-pending` resends or refunds every stranded
+invitation. Run the queries in [DEPLOYMENT.md](DEPLOYMENT.md)'s first-boot runbook before turning it on.
+
+Both merge the web service's `environment:` block through a YAML anchor (`&backend_env` / `<<: *backend_env`)
+so a worker cannot drift onto a different database or mail host than the web process, override only
+`RUN_INIT: "false"` (so they never rebuild caches or migrate), and both drop to `www-data` — a root-owned
+file in the shared `storage/logs` volume would stop php-fpm (uid 33) appending to the day's log and break
+logging for the whole app.
 
 ⚠️ **`--queue=lms,default` is priority-ordered, and `--tries=1` is a floor, not a rule.** A job's own
 `$tries` overrides the flag, so `SendTestInvitationEmailsJob` still gets its 3 attempts while
 `ProcessLmsDeliveryJob` keeps the single attempt its manual retry state machine expects. Same for
 `--timeout`. Change the flags and you change neither job's behaviour — change the job.
 
+☠️ **`retry_after` must stay longer than `--timeout`.** `config/queue.php`'s `database.retry_after` is
+**360** (it was 90 until `9c7d0f1e`). It is when the queue decides a *reserved* job has died and hands it
+to another worker — not a backoff. At 90 against `--timeout=300`, any invitation batch running past 90s
+was re-reserved while still sending, and two workers mailed the same patients. Raise the worker's
+`--timeout` and you must raise this with it.
+
 ## After-response dispatch (`ws-404`)
 
-Because no worker exists, bulk invitation email does **not** use the queue. It uses Laravel's
-`->afterResponse()`, which registers a terminating callback instead of enqueuing:
+By default bulk invitation email does **not** use the queue. It uses Laravel's `->afterResponse()`,
+which registers a terminating callback instead of enqueuing:
 
 ```php
-SendTestInvitationEmailsJob::dispatch($invitationIds, $userId)->afterResponse();
+SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, $deadline)->afterResponse();
 ```
 
 PHP-FPM flushes the response (`fastcgi_finish_request`), the browser disconnects with its `202`, and
@@ -53,8 +60,8 @@ What that buys and what it costs:
 
 | | |
 |---|---|
-| ✅ No worker, no cron, no compose change needed | |
-| ☠️ Holds a php-fpm child for the whole send | ~3–5 min for 500 addresses, against the base image's default `pm.max_children = 5` |
+| ✅ No worker, no cron, no compose profile needed | |
+| ☠️ Holds a php-fpm child for the whole send | ~3–5 min for 500 addresses, against the base image's default `pm.max_children = 5`; capped by `mail.invitation_send_budget` (240s) for the whole send |
 | ☠️ No automatic retry | a restart mid-send strands rows at `email_status = 'pending'` |
 | ☠️ Runs even on a 500 | terminating callbacks fire regardless of response status — see below |
 
@@ -64,36 +71,40 @@ What that buys and what it costs:
 📌 **Corrected 2026-09-14 — this used to say `sendInvitations()` "does the dispatch as its last
 statement, after every fallible step. Keep it there." That is not true of the code.** On `develop`
 roughly 40 lines run *after* the `dispatchEmailBatch()` loop and inside the same `try`: the
-`AuditEventCatalog::invitationSentTitle()` lookup, a `TestInvitation::…->min('expires_at')` query, and
+`TestInvitation::…->min('expires_at')` query, the `AuditEventCatalog::invitationSentTitle()` lookup, and
 the `auditService->log()` call. Any of them throwing returns a 500 to a caller whose invitations have
 already been dispatched and charged for.
 
-☠️ **So the trap is live, not guarded against.** Treat it as an open issue rather than a rule the code
-follows:
+☠️ **So the trap is live, not guarded against** — re-verified 2026-09-17. Treat it as an open issue:
 
 - A client retrying that 500 double-sends and double-charges. Nothing is idempotent at the request
   level — the row-level claim in `SendTestInvitationEmailsJob` prevents one *batch* mailing an address
   twice, but a second request creates a second set of invitation rows.
-- The narrow fix is to move the audit block before the dispatch loop, or to dispatch outside the `try`.
-  Neither has been done.
+- ✅ **Narrowed on 2026-09-15 (`8833f697`):** each `dispatchEmailBatch()` call is now wrapped in its own
+  `try/catch (\Throwable)` that logs `Failed to dispatch invitation email batch; rows left pending for
+  recovery` and continues. A failing *dispatch* (e.g. the `jobs` INSERT in queue mode) no longer reaches
+  the outer catch. What follows the loop still can.
+- The narrow fix for the rest is to move the audit block before the dispatch loop, or to dispatch outside
+  the `try`. Neither has been done.
 
-`ws-404` adds one more line in that region (`SweepPendingInvitationsJob::dispatch()->afterResponse()`)
-and does **not** make this worse — the sweep is idempotent and only delivers rows that were already
-charged for.
+The loop is followed by `SweepPendingInvitationsJob::dispatch()->afterResponse()`, which does **not** make
+this worse — the sweep is idempotent and only delivers rows that were already charged for.
 
-Anything left pending is recovered with `php artisan invitations:send-pending` ([JOBS.md](JOBS.md)) —
-on `develop` that is the only route, and nothing runs it automatically. ⚠️ Unmerged `ws-404` adds two
-recovery paths that need no operator: `SweepPendingInvitationsJob`, dispatched `->afterResponse()` from
-the send and list endpoints and throttled to one run per interval, **and** the scheduled command now
-that the branch also ships a `backend-scheduler` service to run it.
+Anything left pending is recovered by three routes ([JOBS.md](JOBS.md)): `SweepPendingInvitationsJob`,
+riding on the send and list endpoints and throttled to one run per interval (works on every deployment);
+the scheduled `invitations:send-pending` (only where the `workers` profile runs `backend-scheduler`); and
+running that command by hand.
 
-### ⭐ `ws-404` makes the dispatch mode configurable
+### ⭐ The dispatch mode is configurable
 
-`dispatchEmailBatch()` gains a fork on `config('mail.invitation_dispatch')`:
+`dispatchEmailBatch()` forks on `config('mail.invitation_dispatch')`:
 
 ```php
-if (config('mail.invitation_dispatch') === 'queue') {
-    SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, null);   // no deadline
+if (config('mail.invitation_dispatch') === self::DISPATCH_QUEUE) {
+    SendTestInvitationEmailsJob::dispatch(
+        $invitationIds, $userId, null,
+        (float) config('mail.invitation_queue_batch_budget', 60),   // a DURATION, resolved in handle()
+    );
     return;
 }
 SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, $deadline)->afterResponse();
@@ -101,13 +112,23 @@ SendTestInvitationEmailsJob::dispatch($invitationIds, $userId, $deadline)->after
 
 | Mode | Default? | What changes |
 |---|---|---|
-| `after_response` | ✅ `MAIL_INVITATION_DISPATCH` unset ⇒ this | Today's behaviour, exactly as described above. `$tries`/`$backoff`/`failed()` stay inert |
-| `queue` | | Runs on `backend-queue`. Real retries, a `failed_jobs` dead-letter and no competition with web traffic for the FPM pool. **The deadline is passed as `null`** — it exists only to stop a send holding an FPM child, and on the queue path nothing is holding a request |
+| `after_response` | ✅ `MAIL_INVITATION_DISPATCH` unset ⇒ this | Behaviour described above. `$tries`/`$backoff`/`failed()` stay inert. One absolute `$deadline` for the whole send |
+| `queue` | | Runs on `backend-queue`. Real retries, a `failed_jobs` dead-letter and no competition with web traffic for the FPM pool. Each batch gets **its own 60s budget**, converted to a deadline when the worker starts it |
+
+📌 **The queue path no longer passes a null deadline** (it did before `8833f697`). With none, a fully
+unreachable host ran every address through three ~30s connect attempts until the batch hit the job's
+`$timeout = 180`, got killed, and was retried up to `$tries` times with backoff — one dead host tied up
+the single worker for hours across a large send. ☠️ And the budget must be a **duration**, not a
+timestamp computed at dispatch: all 20 batches of a 500-address send dispatch together but run one after
+another, so a shared timestamp is spent by the first few and the rest return immediately, leaving hundreds
+of charged invitations `pending` with nothing logged.
 
 ☠️ **Setting `queue` without a running worker is worse than leaving it alone** — batches accept into
 `jobs` and nothing sends them, with no error anywhere, the same silent failure `ProcessLmsDeliveryJob`
-already suffers. The sweep is what keeps that recoverable rather than permanent: rows stay `pending`
-until something delivers them, so a dead worker degrades to *late* mail, not *lost* mail.
+already suffers. Since the worker is now **off by default**, this is the likely state of any environment
+that sets the variable without also setting `COMPOSE_PROFILES=workers`. The sweep is what keeps that
+recoverable rather than permanent: rows stay `pending` until something delivers them, so a dead worker
+degrades to *late* mail, not *lost* mail.
 
 ⭐ **The sweep stays on `->afterResponse()` even in queue mode, deliberately.** Its job is to catch what
 nothing else delivered, and the case most needing catching is a dead worker — exactly when dispatching
@@ -144,7 +165,7 @@ Notable things that are **not** queued and therefore run inside the request:
 
 | Work | Where | Cost |
 |---|---|---|
-| ~~Sending up to **500** invitation emails~~ | `TestInvitationController::sendInvitations()` | **no longer synchronous** — batched after the response (`ws-404`, above). The request now only inserts rows and charges credits |
+| ~~Sending up to **500** invitation emails~~ | `TestInvitationController::sendInvitations()` | **no longer synchronous** — batched after the response or on the queue (`ws-404`, above). The request now only inserts rows and charges credits |
 | Verification / reset / setup emails | `AuthController`, notifications | per-request SMTP round-trip |
 | Test-resume email | `TestResumeController` | same |
 | Stripe customer creation | on **every** login | an API call in the login path |
@@ -159,15 +180,18 @@ inside the password-set request.
 1. `implements ShouldQueue` + `use Dispatchable, InteractsWithQueue, Queueable, SerializesModels`.
 2. Decide retries deliberately: the framework default (`$tries` unset ⇒ retry forever) or the manual
    pattern `ProcessLmsDeliveryJob` uses. Do not mix them.
-3. **Confirm a worker exists in the target environment**, or the feature will look broken with no error.
-4. Failures land in `failed_jobs`; `php artisan queue:failed` lists them.
+3. **Confirm a worker exists in the target environment** — i.e. that it runs with the `workers` profile —
+   or the feature will look broken with no error.
+4. Keep the job's `$timeout` under the worker's `--timeout=300`, and both under `retry_after` (360).
+5. Never name a method `release()`, `attempts()`, `delete()` or `fail()` ([JOBS.md](JOBS.md)).
+6. Failures land in `failed_jobs`; `php artisan queue:failed` lists them.
 
 ## What is missing
 
-No `Schedule` — `routes/console.php` defines only the stock `inspire` command and `bootstrap/app.php`
-on `develop` has no `->withSchedule(...)`. (⚠️ Unmerged `ws-404` adds one task **and** the
-`backend-scheduler` service that runs it, so on that branch it does fire every ten minutes — see
-[JOBS.md](JOBS.md).)
+**One** scheduled task (`invitations:send-pending`, every ten minutes), registered in
+`bootstrap/app.php` since 2026-09-15 and run only by `backend-scheduler` under the `workers` profile.
+`routes/console.php` defines only the stock `inspire` command.
 
-So there is **no** cleanup of expired sessions, invitations, resume tokens, or stale
+There is still **no** cleanup of expired sessions, invitations, resume tokens, or stale
 `personal_access_tokens`. Those tables grow without bound; the only expiry is checked at read time.
+(`invitations:send-pending` now *refunds* undelivered expired invitations, but deletes nothing.)

@@ -1,7 +1,9 @@
 # Database
 
-MySQL, **53 tables**, reconstructed from 128 migrations — the indexed snapshot, taken from
-`TCV-Backend@develop` at `940238fd` (2026-09-09, with the Audit Trail merged). Full column detail:
+MySQL, **53 tables**, reconstructed from 131 migrations — the indexed snapshot, taken from
+`TCV-Backend@develop` at `ff9be500` (2026-09-17 sync; `ws-404`, `ws-449` and the audit impersonation
+work merged — new since 2026-09-14: `test_invitations.deferred_count` and five `audit_logs.impersonator_*`
+columns plus their backfill). Full column detail:
 [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still

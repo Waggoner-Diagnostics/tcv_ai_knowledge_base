@@ -1,12 +1,12 @@
 # Class Index
 
-**207 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
+**210 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
 
 | ID | Class | Kind | Extends | File:Line | Methods |
 |---|---|---|---|---|---|
 | `CTRL-001` | `AuditLogController` | class | Controller | [app/Http/Controllers/AuditLogController.php:12](../../../TCV-Backend/app/Http/Controllers/AuditLogController.php#L12) | 3 |
 | `CTRL-002` | `AuthController` | class | Controller | [app/Http/Controllers/AuthController.php:37](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L37) | 19 |
-| `CTRL-003` | `BuildsAuditDiffs` | trait | — | [app/Http/Controllers/Concerns/BuildsAuditDiffs.php:20](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L20) | 3 |
+| `CTRL-003` | `BuildsAuditDiffs` | trait | — | [app/Http/Controllers/Concerns/BuildsAuditDiffs.php:22](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L22) | 9 |
 | `CTRL-004` | `ConfirmPasswordController` | class | Controller | [app/Http/Controllers/Auth/ConfirmPasswordController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/ConfirmPasswordController.php#L8) | 1 |
 | `CTRL-005` | `ContactController` | class | Controller | [app/Http/Controllers/ContactController.php:14](../../../TCV-Backend/app/Http/Controllers/ContactController.php#L14) | 2 |
 | `CTRL-006` | `Controller` | class | BaseController | [app/Http/Controllers/Controller.php:8](../../../TCV-Backend/app/Http/Controllers/Controller.php#L8) | 0 |
@@ -33,14 +33,14 @@
 | `CTRL-027` | `SuperAdminDashboardController` | class | Controller | [app/Http/Controllers/SuperAdminDashboardController.php:14](../../../TCV-Backend/app/Http/Controllers/SuperAdminDashboardController.php#L14) | 2 |
 | `CTRL-028` | `TestAnswerController` | class | Controller | [app/Http/Controllers/TestAnswerController.php:10](../../../TCV-Backend/app/Http/Controllers/TestAnswerController.php#L10) | 5 |
 | `CTRL-029` | `TestConditionController` | class | Controller | [app/Http/Controllers/TestConditionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestConditionController.php#L11) | 5 |
-| `CTRL-030` | `TestController` | class | Controller | [app/Http/Controllers/TestController.php:37](../../../TCV-Backend/app/Http/Controllers/TestController.php#L37) | 23 |
-| `CTRL-031` | `TestEmailTemplateController` | class | Controller | [app/Http/Controllers/TestEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php#L16) | 6 |
-| `CTRL-032` | `TestInvitationController` | class | Controller | [app/Http/Controllers/TestInvitationController.php:22](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L22) | 10 |
+| `CTRL-030` | `TestController` | class | Controller | [app/Http/Controllers/TestController.php:38](../../../TCV-Backend/app/Http/Controllers/TestController.php#L38) | 23 |
+| `CTRL-031` | `TestEmailTemplateController` | class | Controller | [app/Http/Controllers/TestEmailTemplateController.php:17](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php#L17) | 6 |
+| `CTRL-032` | `TestInvitationController` | class | Controller | [app/Http/Controllers/TestInvitationController.php:23](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L23) | 10 |
 | `CTRL-033` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:15](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L15) | 4 |
 | `CTRL-034` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-035` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
 | `CTRL-036` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:27](../../../TCV-Backend/app/Http/Controllers/UserController.php#L27) | 11 |
-| `CTRL-037` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:15](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L15) | 4 |
+| `CTRL-037` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L16) | 4 |
 | `CTRL-038` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
 | `MODEL-002` | `AuditLog` | class | Model | [app/Models/AuditLog.php:8](../../../TCV-Backend/app/Models/AuditLog.php#L8) | 4 |
@@ -73,7 +73,7 @@
 | `MODEL-029` | `TestAnswer` | class | Model | [app/Models/TestAnswer.php:8](../../../TCV-Backend/app/Models/TestAnswer.php#L8) | 7 |
 | `MODEL-030` | `TestCondition` | class | Model | [app/Models/TestCondition.php:8](../../../TCV-Backend/app/Models/TestCondition.php#L8) | 1 |
 | `MODEL-031` | `TestEmailTemplates` | class | Model | [app/Models/TestEmailTemplates.php:8](../../../TCV-Backend/app/Models/TestEmailTemplates.php#L8) | 0 |
-| `MODEL-032` | `TestInvitation` | class | Model | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | 4 |
+| `MODEL-032` | `TestInvitation` | class | Model | [app/Models/TestInvitation.php:8](../../../TCV-Backend/app/Models/TestInvitation.php#L8) | 5 |
 | `MODEL-033` | `TestResumeToken` | class | Model | [app/Models/TestResumeToken.php:7](../../../TCV-Backend/app/Models/TestResumeToken.php#L7) | 2 |
 | `MODEL-034` | `TestSection` | class | Model | [app/Models/TestSection.php:8](../../../TCV-Backend/app/Models/TestSection.php#L8) | 3 |
 | `MODEL-035` | `TestSectionPlate` | class | Model | [app/Models/TestSectionPlate.php:8](../../../TCV-Backend/app/Models/TestSectionPlate.php#L8) | 2 |
@@ -85,7 +85,7 @@
 | `MODEL-041` | `UserStripeDetail` | class | Model | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | 1 |
 | `SVC-001` | `AuditEventCatalog` | class | — | [app/Services/Audit/AuditEventCatalog.php:71](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L71) | 5 |
 | `SVC-002` | `AuditLogger` | class | — | [app/Services/Audit/AuditLogger.php:7](../../../TCV-Backend/app/Services/Audit/AuditLogger.php#L7) | 1 |
-| `SVC-003` | `AuditService` | class | — | [app/Services/Audit/AuditService.php:23](../../../TCV-Backend/app/Services/Audit/AuditService.php#L23) | 16 |
+| `SVC-003` | `AuditService` | class | — | [app/Services/Audit/AuditService.php:24](../../../TCV-Backend/app/Services/Audit/AuditService.php#L24) | 17 |
 | `SVC-004` | `BasePaymentProvider` | class | — | [app/Services/PaymentProviders/BasePaymentProvider.php:10](../../../TCV-Backend/app/Services/PaymentProviders/BasePaymentProvider.php#L10) | 10 |
 | `SVC-005` | `ColorVisionDiagnosisService` | class | — | [app/Services/ColorVisionDiagnosisService.php:15](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php#L15) | 13 |
 | `SVC-006` | `CornerstoneProvider` | class | — | [app/Services/Lms/Providers/CornerstoneProvider.php:18](../../../TCV-Backend/app/Services/Lms/Providers/CornerstoneProvider.php#L18) | 7 |
@@ -119,7 +119,8 @@
 | `SVC-034` | `UserTestsReportService` | class | — | [app/Services/Reports/UserTestsReportService.php:12](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L12) | 7 |
 | `SVC-035` | `XapiStatementBuilder` | class | — | [app/Services/Lms/XapiStatementBuilder.php:11](../../../TCV-Backend/app/Services/Lms/XapiStatementBuilder.php#L11) | 12 |
 | `JOB-001` | `ProcessLmsDeliveryJob` | class | — | [app/Jobs/ProcessLmsDeliveryJob.php:17](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php#L17) | 3 |
-| `JOB-002` | `SendTestInvitationEmailsJob` | class | — | [app/Jobs/SendTestInvitationEmailsJob.php:35](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L35) | 13 |
+| `JOB-002` | `SendTestInvitationEmailsJob` | class | — | [app/Jobs/SendTestInvitationEmailsJob.php:77](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php#L77) | 26 |
+| `JOB-003` | `SweepPendingInvitationsJob` | class | — | [app/Jobs/SweepPendingInvitationsJob.php:56](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php#L56) | 3 |
 | `MW-001` | `AddRequestId` | class | — | [app/Http/Middleware/AddRequestId.php:20](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php#L20) | 1 |
 | `MW-002` | `FlexibleAuthMiddleware` | class | — | [app/Http/Middleware/FlexibleAuthMiddleware.php:17](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L17) | 7 |
 | `MW-003` | `LmsSessionStatusMiddleware` | class | — | [app/Http/Middleware/LmsSessionStatusMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L9) | 1 |
@@ -162,9 +163,10 @@
 | `LSN-004` | `SendAfterPasswordReset` | class | — | [app/Listeners/SendAfterPasswordReset.php:11](../../../TCV-Backend/app/Listeners/SendAfterPasswordReset.php#L11) | 1 |
 | `CMD-001` | `BackfillStripeSourceApp` | class | Command | [app/Console/Commands/BackfillStripeSourceApp.php:31](../../../TCV-Backend/app/Console/Commands/BackfillStripeSourceApp.php#L31) | 1 |
 | `CMD-002` | `CheckEmailTemplatePlaceholders` | class | Command | [app/Console/Commands/CheckEmailTemplatePlaceholders.php:18](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php#L18) | 2 |
-| `CMD-003` | `SendPendingInvitations` | class | Command | [app/Console/Commands/SendPendingInvitations.php:17](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php#L17) | 2 |
-| `CMD-004` | `SettleNegativeCreditBalances` | class | Command | [app/Console/Commands/SettleNegativeCreditBalances.php:32](../../../TCV-Backend/app/Console/Commands/SettleNegativeCreditBalances.php#L32) | 1 |
-| `CMD-005` | `UploadTestPlates` | class | Command | [app/Console/Commands/UploadTestPlates.php:9](../../../TCV-Backend/app/Console/Commands/UploadTestPlates.php#L9) | 1 |
+| `CMD-003` | `MailPreflight` | class | Command | [app/Console/Commands/MailPreflight.php:28](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L28) | 13 |
+| `CMD-004` | `SendPendingInvitations` | class | Command | [app/Console/Commands/SendPendingInvitations.php:21](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php#L21) | 3 |
+| `CMD-005` | `SettleNegativeCreditBalances` | class | Command | [app/Console/Commands/SettleNegativeCreditBalances.php:32](../../../TCV-Backend/app/Console/Commands/SettleNegativeCreditBalances.php#L32) | 1 |
+| `CMD-006` | `UploadTestPlates` | class | Command | [app/Console/Commands/UploadTestPlates.php:9](../../../TCV-Backend/app/Console/Commands/UploadTestPlates.php#L9) | 1 |
 
 ## Other classes (providers, exports, notifications, mail, rules, traits, support, seeders)
 
@@ -180,7 +182,7 @@
 | `OrganizationTestUrlNotification` | class | [app/Notifications/OrganizationTestUrlNotification.php:11](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L11) | 4 |
 | `ResetPasswordNotification` | class | [app/Notifications/ResetPasswordNotification.php:11](../../../TCV-Backend/app/Notifications/ResetPasswordNotification.php#L11) | 4 |
 | `VerifyEmailNotification` | class | [app/Notifications/VerifyEmailNotification.php:8](../../../TCV-Backend/app/Notifications/VerifyEmailNotification.php#L8) | 3 |
-| `AppServiceProvider` | class | [app/Providers/AppServiceProvider.php:18](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L18) | 6 |
+| `AppServiceProvider` | class | [app/Providers/AppServiceProvider.php:22](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L22) | 7 |
 | `AuthServiceProvider` | class | [app/Providers/AuthServiceProvider.php:13](../../../TCV-Backend/app/Providers/AuthServiceProvider.php#L13) | 1 |
 | `EventServiceProvider` | class | [app/Providers/EventServiceProvider.php:9](../../../TCV-Backend/app/Providers/EventServiceProvider.php#L9) | 0 |
 | `LmsServiceProvider` | class | [app/Providers/LmsServiceProvider.php:18](../../../TCV-Backend/app/Providers/LmsServiceProvider.php#L18) | 2 |
@@ -212,6 +214,7 @@
 | `PrivilegesTableSeeder` | class | [database/seeders/PrivilegesTableSeeder.php:8](../../../TCV-Backend/database/seeders/PrivilegesTableSeeder.php#L8) | 1 |
 | `ProlificIdSeeder` | class | [database/seeders/ProlificIdSeeder.php:9](../../../TCV-Backend/database/seeders/ProlificIdSeeder.php#L9) | 2 |
 | `SeniorDiagnosticsTestWithTestSectionSeeder` | class | [database/seeders/SeniorDiagnosticsTestWithTestSectionSeeder.php:10](../../../TCV-Backend/database/seeders/SeniorDiagnosticsTestWithTestSectionSeeder.php#L10) | 5 |
+| `SuperAdminSeeder` | class | [database/seeders/SuperAdminSeeder.php:10](../../../TCV-Backend/database/seeders/SuperAdminSeeder.php#L10) | 1 |
 | `TestWithTestSectionSeeder` | class | [database/seeders/TestWithTestSectionSeeder.php:10](../../../TCV-Backend/database/seeders/TestWithTestSectionSeeder.php#L10) | 5 |
 | `TwelvePlateTritanTestWithTestSectionSeeder` | class | [database/seeders/TwelvePlateTritanTestWithTestSectionSeeder.php:10](../../../TCV-Backend/database/seeders/TwelvePlateTritanTestWithTestSectionSeeder.php#L10) | 1 |
 | `WorldSeeder` | class | [database/seeders/WorldSeeder.php:8](../../../TCV-Backend/database/seeders/WorldSeeder.php#L8) | 1 |
@@ -219,4 +222,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._

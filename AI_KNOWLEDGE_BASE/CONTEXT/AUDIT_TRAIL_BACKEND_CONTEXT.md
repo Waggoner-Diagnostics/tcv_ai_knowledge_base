@@ -15,13 +15,13 @@
 > `Credits Used`, the orphaned distributor-enquiry key, raw `state_id`/`country_id` in update diffs,
 > and the pricing rows on a manual credit grant — are now `develop` behaviour, not pending work.
 >
-> 🚧 **Still unmerged on that same branch:** §15's impersonation attribution, plus two unrelated
-> commits — `3e42305d` (date-only logging in audit rows) and `4c92b5e2` (`auth.account_locked`, a
-> NEW catalog key: **the catalog is 68, not 67** — `sign_ins_security` 12 → 13). Do not
-> treat §14's *counts* as current: they were accurate at the time of writing and have since moved.
-> Re-verify against the branch and regenerate this KB (neither `TCV-Backend` nor `TCV-Frontend`/`TCV-Website` are currently checked out on
-> `develop`, so a full `composer regenerate` was deliberately **not** run for this update — see
-> `GUIDES/HOW_TO_REGENERATE.md`'s "never index a feature branch" rule).
+> ✅ **Everything else from that branch has merged too** (verified 2026-09-17 with
+> `git merge-base --is-ancestor` against `develop` `ff9be500`): §15's impersonation attribution
+> (`0256fe7e`), `3e42305d` (date-only logging), `4c92b5e2` (`auth.account_locked`) and the review fix
+> `c6734fb3` — all in PR #245 (2026-09-15); the last three are written up as §16. **The catalog is 68 events** on `develop`
+> (`AuditEventCatalogTest` asserts 68; `sign_ins_security` 13). §14's per-step counts were accurate when
+> written; 68 is the current total. The KB was regenerated from `develop` on 2026-09-17, so
+> `audit_logs`' five `impersonator_*` columns and `AuditService::impersonatorFor()` are in the indexes.
 
 > ⚠️ **This document was written as a *plan*, while the work was still on a branch.** It is kept
 > because the reasoning is worth having, but read it as design intent that has now shipped — where it
@@ -43,9 +43,9 @@
 | `ApiResponse::success(int, string, $data)` → `{success,status_code,message,data}` | `app/Helpers/ApiResponse.php` |
 | Zone 3 = `Route::middleware('auth:sanctum')->group(...)` | `routes/api.php:118` |
 | Middleware registration is Laravel 12 `bootstrap/app.php` style | `bootstrap/app.php:20-29` |
-| **Trusted-proxy config exists but is inert** — `trustProxies()` is called in `bootstrap/app.php`, gated on a non-empty `TRUSTED_PROXIES`, which defaults to empty (no `TrustProxies` class in `app/Http/Middleware/`; it is framework-level) | `bootstrap/app.php` · see B1 below |
-| Nginx forwards `X-Forwarded-For` | `TCV-Frontend/nginx.conf:42,54,63` |
-| No account-lockout mechanism anywhere | no `RateLimiter`/`lockout`/attempt counter in `AuthController` |
+| ~~Trusted-proxy config exists but is inert~~ — 📌 **stale since 2026-09-14 (`ws-449`)**: `trustProxies()` is now always called, defaulting to every private range. See B1 | `bootstrap/app.php` · see B1 below |
+| Nginx forwards `X-Forwarded-For` | `TCV-Frontend/nginx.conf:42,54,63` — and since `ws-449`, `TCV-Backend/nginx.conf` to php-fpm |
+| ~~No account-lockout mechanism anywhere~~ — 📌 **stale**: the `login` limiter (5/min per `email\|ip`) is the lockout, and since PR #245 it logs `auth.account_locked` (§16) | `AppServiceProvider::accountLockedResponse()` |
 | No geo-IP or user-agent parsing dependency | `composer.json` require block |
 
 Two of these are blocking and are dealt with in §6.
@@ -192,15 +192,11 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 
 ## 6. Two blockers found in the current backend
 
-**B1 — `$request->ip()` will return the reverse proxy, not the user.** ⚠️ **PARTIALLY ADDRESSED on `develop` 2026-09-12 — still true in effect.** `bootstrap/app.php` now calls `$middleware->trustProxies(...)`, but it is gated on a non-empty `TRUSTED_PROXIES` env var and the default is empty, so the call is skipped and nothing has changed yet: every `actor_ip` is still the load balancer and every geo lookup still resolves to the datacentre.
+**B1 — `$request->ip()` returned the reverse proxy, not the user.** ☠️ **Changed shape on `develop` 2026-09-14 (`ws-449`) — now the opposite problem.** `trustProxies()` is always called with a private-range default and the backend nginx forwards `X-Forwarded-For`, so `$request->ip()` is no longer the proxy. But the edge (`TCV-Website/nginx.conf`) and `TCV-Frontend/nginx.conf` both still `set_real_ip_from 0.0.0.0/0`, so by the traced chain **`audit_logs.ip_address` and the geo `location` are whatever the client puts in `X-Forwarded-For`** — worse for an audit trail than the uniformly wrong datacentre IP it replaced. Not yet reproduced on a live stack; how to check on QA is in [SECURITY.md S-16](../SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not). The fix is in those two nginx files, not here.
 
-☠️ **Setting `TRUSTED_PROXIES` right now would make it worse, not better.** `TCV-Frontend/nginx.conf:41` still has `set_real_ip_from 0.0.0.0/0`, so nginx rebuilds `X-Forwarded-For` from a client-supplied value — trust the hop today and `actor_ip` becomes attacker-chosen, which is worse for an audit trail than a uniformly wrong datacentre IP. Narrow the nginx CIDR first, then set the var to the same CIDR (never `*`). Full analysis in [SECURITY.md](../SECURITY.md) `S-16`; the same fix also un-breaks `RestrictIpMiddleware`.
+📌 The earlier notes here — "setting `TRUSTED_PROXIES` would make it worse", "you cannot set it accidentally, it is not in the compose allowlist", and "use `X-Real-IP`, the one header a client cannot forge" — are all **superseded**: the default now does what setting it would have done, the variable is in the allowlist, and the backend nginx overwrites `X-Real-IP` with the frontend container's address.
 
-⭐ **In practice you cannot set it accidentally.** `TRUSTED_PROXIES` is absent from the `environment:` allowlist of both compose files, so it never reaches the container today — wiring it is a deliberate code change in `TCV-Backend`, not an env-file edit. Plan `actor_ip` work on the assumption that `$request->ip()` is the proxy until that lands. See [ENVIRONMENT.md](../ENVIRONMENT.md).
-
-⭐ If you need a usable client IP for audit rows before that lands, `X-Real-IP` is populated from nginx's `$realip_remote_addr` (the pre-rewrite peer) and is the one header on this path a client cannot forge — but `trustProxies()` is configured for `X_FORWARDED_*` and does not read it.
-
-**B2 — "Account locked (too many failed attempts)" has nothing to log.** No lockout, throttle, or failed-attempt counter exists on the login path (`routes/api.php` throttles only `/contact`). The spreadsheet also asks for a "Failed attempt count" on every failed login, which likewise does not exist. Either build lockout as a prerequisite, or cut both rows from Phase 1. Recommend cutting — it is a separate feature, not an audit feature.
+**B2 — "Account locked (too many failed attempts)".** ✅ **Now logged** (PR #245, 2026-09-15) as `auth.account_locked` (`sign_ins_security`, `critical`). The original objection — no lockout exists — was overtaken by the `login` rate limiter (5/min per `email|ip`), and the event hooks that limiter's rejection. See §16. "Failed attempt count" on every failed login is still not implemented.
 
 **Three more rows that are not implementable as written:**
 
@@ -323,7 +319,7 @@ Answers to the draft's four open questions:
 
 ## 13. ✅ MERGED — title/description review pass (`feat/audit-trail-improvement-11-sep-26`)
 
-**Status: 🚧 not on `develop`.** This branch is a post-ship review pass against
+**Status: ✅ on `develop`** (PR #238, merge `c3449270`; the "not on develop" wording below is historical). This branch is a post-ship review pass against
 `changes to audit log for super admin role.xlsx` review comments, documented in
 `docs/plans/audit-trail-backend-changes.md` in the `waggoner-tcv` root (not this KB). Recorded here so a
 future KB regeneration against `develop` — once this branch merges — knows what changed and why, and so
@@ -389,7 +385,7 @@ Reviewed (`tcv-reviewer`, scanner clean, no blocking findings) — two non-block
 
 ## 14. ✅ MERGED — User-Panel defect pass (`feat/audit-trail-user-panel-improvement-14-sep`, `4570912b`)
 
-**Status: 🚧 not on `develop`.** Branched off `c3449270` (§13's merge commit). Fixes 3 of 4 issues
+**Status: ✅ on `develop`** (PRs #242 on 2026-09-14 and #243 on 2026-09-15). Branched off `c3449270` (§13's merge commit). Fixes 3 of 4 issues
 reported against the User Panel category of the live catalog; the 4th was evaluated for feasibility
 only. Planned in `C:\Users\User\.claude\plans\there-are-some-changes-golden-volcano.md`.
 
@@ -516,17 +512,14 @@ selected country has any states, so "clear the state on a country that has one" 
 through the API and has no test; the null path is covered instead by the UserController case,
 which moves off a stateless country.
 
-**KB regeneration note:** none of the three repos are currently checked out on `develop`
-(`TCV-Backend` is on this branch; `TCV-Frontend` on `ui/audit-trail-improvements-11-sep-26`;
-`TCV-Website` on `website-integration`), so per `GUIDES/HOW_TO_REGENERATE.md` this update is
-**hand-written prose only** — `composer regenerate` was deliberately not run. `FEATURE_INDEX.md`'s
-F-082 row and the generated `INDEXES/*` still reflect the pre-§13-merge `develop` state from the
-2026-08-19 sync; both that gap and this section should be reconciled the next time all three repos
-are actually on `develop` and a full regeneration is run.
+**KB regeneration note:** ✅ reconciled 2026-09-17 — the indexes were regenerated from `develop` with
+§13–§16 all merged.
 
-## 15. Unmerged follow-up — impersonation attribution (`feat/audit-trail-user-panel-improvement-14-sep`)
+## 15. ✅ MERGED — impersonation attribution (`feat/audit-trail-user-panel-improvement-14-sep`)
 
-Backend commit `0256fe7e`; frontend on `TCV-Frontend@ui/audit-trail-improvements-11-sep-26`.
+Backend commit `0256fe7e` (PR #245, on `develop` 2026-09-15); frontend PRs #384/#386 on
+`TCV-Frontend@develop` — rendering described in
+[AUDIT_TRAIL_FRONTEND_CONTEXT](./AUDIT_TRAIL_FRONTEND_CONTEXT.md#post-ship-changes-on-develop-2026-09-15-prs-384--386).
 **First schema change to `audit_logs` since the table was created.**
 
 **The defect.** `AuthController::impersonateUser()` mints the impersonation token **on the target
@@ -630,8 +623,9 @@ first thing QA hits. Any future change to guards or middleware ordering must re-
 - **`UserController::update()` has no `authorize()` call**, and `Route::apiResource('users')` sits in
   the plain `auth:sanctum` group. Any authenticated user can call it. Worth its own ticket.
 
-**Verification:** `php artisan test` — **761 passed, 1 failed**, that one being the same pre-existing
-`InvitationSendReviewFixesTest:261` quoted-printable assertion that fails identically on `develop`.
+**Verification:** `php artisan test` — **761 passed, 1 failed** on the branch, that one being the
+`InvitationSendReviewFixesTest:261` quoted-printable assertion. (📌 After the merge, the full suite on
+`develop` `ff9be500` is **812 passed, 0 failed** — measured 2026-09-17, so that assertion no longer fails.)
 Frontend `AuditDetailSections.test.js` + `auditTrailColumns.test.js` — 27 passed; `eslint` clean.
 New coverage: 6 cases in `AuditedImpersonationTest` (both identities, admin-action flag, IP on the
 impersonator card, no impersonator on a normal action, neither impersonation event self-marked, and
@@ -645,4 +639,81 @@ moved underneath it. `git stash pop` left `AuditDetailSections.test.js` in an un
 (import line only — upstream had added `formatMaybeDate`/`moment`). Nothing was lost, but a
 `git status` showing `UU` after a pop is easy to miss and the file carries conflict markers until
 resolved.
+
+## 16. ✅ MERGED 2026-09-15 — lockout audit and diff fidelity
+
+Three commits that shipped in PR #245 alongside §15, plus `986cb29b` from PR #243. None changes the
+schema; all change what an auditor reads. Catalog total after this section: **68**.
+
+### `auth.account_locked` (`4c92b5e2`, fixed by `c6734fb3`)
+
+`sign_ins_security` · `critical` · title `Account locked`. Written when the **`login` rate limiter**
+(5/min, keyed `callerKey(email)` = `email|ip`) rejects a request — which happens in `ThrottleRequests`
+**before** `AuthController::login()` runs, so no `auth.login_failed` call site can see it. The hook is
+`AppServiceProvider::accountLockedResponse()`, registered as the `login` limiter's `->response()`
+callback. It returns the same `429 {"success": false, "message": "Too many requests. Please try again
+later."}` the other six limiters return.
+
+- **Target** is `User::withTrashed()->where('email', …)->first()` — a soft-deleted account still gets
+  attributed, and an unknown email gives a null target. **No actor**, so `ip_address` is null on the row;
+  the IP is in `details` (`Reason`, `IP address`).
+- **One row per lockout, not per rejected request.** `ThrottleRequests` calls the callback on *every* 429.
+  Dedup is `Cache::add("audit:login-lockout:{$key}", true, $ttl)` with
+  `$ttl = RateLimiter::availableIn(md5('login'.$key))` — the limiter's own remaining window, read from the
+  exact key `ThrottleRequests::handleRequestUsingNamedLimiter()` uses. ☠️ The first version used a
+  hard-coded 60s TTL anchored to whichever rejection triggered it; under sustained retries the two clocks
+  drifted and a stale dedup key swallowed the *next* lockout's row (`c6734fb3`). If `availableIn()` is 0
+  the dedup is skipped rather than caching for 0s (which is a no-op on some stores and "forever" on others).
+- ⚠️ **Only as good as the limiter key.** Since `ws-449` the `ip` half can be forged
+  ([SECURITY.md S-16](../SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)),
+  so an attacker rotating `X-Forwarded-For` never trips the limiter and never produces this row.
+- Tests: `RateLimitScopeTest::test_a_lockout_writes_exactly_one_account_locked_audit_row` and
+  `…_two_separate_lockout_cycles_each_log_their_own_account_locked_audit_row` (the regression for the TTL
+  drift).
+
+### Dates in diffs are date-only — except when that would hide the change (`3e42305d`, `c6734fb3`)
+
+`BuildsAuditDiffs::normalizeAuditDate()` truncates a Carbon instance, or a string shaped
+`YYYY-MM-DD[T ]HH:MM…`, to `Y-m-d` in `auditChanges()` and `auditDetails()` — the drawer shows dates, and a
+midnight time next to a date-only value invited readers to think the time mattered. `3e42305d` also
+touched hand-built date rows in `AuthController` and `CreditsController` [not deeply traced].
+
+☠️ **The truncation collapsed real changes.** `getChanges()` lists only fields that genuinely changed, so a
+`DiscountCode.starts_at` moved from 08:00 to 17:00 on the same day logged `2026-06-09 → 2026-06-09`.
+`c6734fb3` fixed it in two places, and both are load-bearing:
+
+- `auditSnapshot()` now stores the **raw** model value (no normalisation) so the "before" keeps its time;
+- `auditChanges()` checks: if both sides are date-shaped and equal *after* truncation, emit the full
+  `Y-m-d H:i:s` (`fullAuditDateValue()`) instead.
+
+So a What Changed row normally arrives `Y-m-d`, and arrives with a time **only** when the time is the
+change. The SPA's `formatMaybeDate()` renders the two shapes differently — see
+[AUDIT_TRAIL_FRONTEND_CONTEXT](./AUDIT_TRAIL_FRONTEND_CONTEXT.md#post-ship-changes-on-develop-2026-09-15-prs-384--386).
+Test: `AuditedDiscountCodeControllerTest` (same-day, time-only `starts_at` change).
+
+### Boolean-flavoured fields are coerced explicitly (`986cb29b`)
+
+Whether a column's PHP value is a real `bool` depends on whether its model happens to `$casts` it, and the
+SPA's `DetailValue` prints a real boolean as Yes/No but anything else as raw text (`1`, `"0"`). Callers now
+name their boolean fields and all three helpers take a trailing `array $booleanFields = []`; coercion
+happens once, in `auditChanges()`/`auditDetails()` (`castAuditValue()`), and a null "before" stays null so
+it still renders `NA`.
+
+| Caller | Constant | Fields |
+|---|---|---|
+| `UserController::update()` | `AUDIT_BOOLEAN_FIELDS` | `show_occupational_questions`, `allow_monocular_test` |
+| `OrganizationController::update()` (user branch) | `USER_AUDIT_BOOLEAN_FIELDS` | same two |
+| `OrganizationController::update()` (org branch) | `ORG_AUDIT_BOOLEAN_FIELDS` | `show_tcv_branding`, `anonymize_patient`, `show_gender`, `show_zip`, `show_patient_id`, `send_test_email_to_patients`, `run_test_on_subdomain`, `authorized_redirect` |
+
+⚠️ Adding a boolean column to an audited field list without adding it to the matching constant brings the
+raw `1`/`0` back. `auditSnapshot()` accepts the parameter only for signature symmetry; it ignores it.
+
+### Foreign keys are named, and a few small fixes (`4570912b`, `87bd0b24`, `9934a1d6`)
+
+Already written up as §14 items 1–6: `AUDIT_RELATION_FIELDS` (`state_id`/`country_id` → names, applied in
+every helper), the discount breakdown on `billing.payment_succeeded`, the real `Credits Used` lookup on
+`test.started`, and the orphaned `settings.distributor_enquiry_submission_failed` key.
+
+**Suite on `develop` `ff9be500` after all of the above: 812 passed, 0 failed** (2433 assertions, measured
+2026-09-17).
 

@@ -446,8 +446,10 @@ the token lifetime on completion, not reinstating an auth-layer block.
 
 ### S-16 — Every client shares one IP: rate limits and IP restriction are both inert
 
-**Severity: high.** **Open** — diagnosed 2026-09-02, fix written but **deliberately not shipped**
-(see *Fix shape* below).
+**Severity: high.** **Open, and its shape changed on 2026-09-14** — diagnosed 2026-09-02; both
+backend halves are now on `develop` (`ws-449`, PR #241), but the `TCV-Frontend` nginx precondition below
+was **not** met. ☠️ Read [*Status 2026-09-17*](#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)
+first — the 2026-09-12 "fail-closed" status further down no longer describes `develop`.
 
 php-fpm sits behind the `backend-nginx` container, and nginx passed only the stock `fastcgi_params`,
 so `REMOTE_ADDR` was **always the nginx container's address**. Laravel had no trusted-proxy
@@ -473,7 +475,73 @@ address) but nginx does not rewrite the header, a client-sent `X-Forwarded-For` 
 `restricted_ips` blocklist. That is a *worse* position than today's single shared bucket. The written
 fix was held back on 2026-09-02 for exactly this reason: the nginx side was not being deployed.
 
-### Status 2026-09-12 — the Laravel half has landed, fail-closed
+### Status 2026-09-17 — both backend halves shipped; the frontend nginx precondition did not
+
+`ws-449` merged into `develop` on 2026-09-14 (PR #241, `d8970fe3`). It did two things, and together
+they remove the fail-closed gate the 2026-09-12 status below relied on:
+
+| Change | On `develop` now |
+|---|---|
+| `TCV-Backend/nginx.conf` `location ~ \.php$` | ✅ `fastcgi_param HTTP_X_FORWARDED_FOR $proxy_add_x_forwarded_for` (+ `_PROTO`, `X_REAL_IP`), set **after** `include fastcgi_params` so they override — the backend half of *Fix shape*, as specified |
+| `bootstrap/app.php` `trustProxies()` | ☠️ **Always called.** `TRUSTED_PROXIES` is parsed as `trim(...) ?: '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1'` (the empty-string trap below, fixed), and `'*'` is honoured. So an unset variable no longer means "skip" — it means **trust every private-range hop** |
+| `docker-compose*.yml` | `TRUSTED_PROXIES: ${TRUSTED_PROXIES}` added — the "third precondition" (no plumbing) is gone |
+| `routes/api.php` | `GET api/access-check` — public SPA boot gate, 17th public endpoint ([ROUTES.md](ROUTES.md)) |
+| `tests/Feature/Settings/RestrictedIpEnforcementTest.php` | first enforcement coverage: a listed IP arriving as `X-Forwarded-For` behind a `172.18.0.4` proxy is blocked |
+
+☠️ **What did *not* change: both nginx hops in front of the backend still trust `X-Forwarded-For` from
+anyone.** `TCV-Frontend/nginx.conf:41-42` has `set_real_ip_from 0.0.0.0/0` + `real_ip_header
+X-Forwarded-For` (last touched `c74c694`, 2026-05-22), and so does the product's actual **edge**,
+`TCV-Website/nginx.conf:49-50` on `website-integration` (commented `# restrict in production`) — see
+[WEBSITE.md](WEBSITE.md#deployment--docker-nginx-and-two-github-workflows). Narrowing those was the first of
+the two "must change before the var is set" items below, and the default now behaves as though the var
+were set to every private range. Following the same trace this finding already documents:
+
+```
+client sends     X-Forwarded-For: 1.2.3.4
+TCV-Website      real_ip (trusts 0.0.0.0/0, non-recursive) → $remote_addr = 1.2.3.4
+  (edge)         proxy_set_header XFF $proxy_add_x_forwarded_for → "1.2.3.4, 1.2.3.4"
+TCV-Frontend     real_ip again → $remote_addr = 1.2.3.4 → XFF "1.2.3.4, 1.2.3.4, 1.2.3.4"
+TCV-Backend      fastcgi XFF $proxy_add_x_forwarded_for → "…, 1.2.3.4, <frontend-nginx 172.x>"
+Laravel          REMOTE_ADDR = backend-nginx (172.x, trusted); walks XFF right-to-left,
+                 skips 172.x (trusted), stops at 1.2.3.4  → $request->ip() = 1.2.3.4
+```
+
+**If nothing in front of the website's nginx appends the real peer, a client chooses its own
+`$request->ip()` on `develop`.** Consequences, in order of severity:
+
+- **The `email|ip` login limiter is bypassable per account.** Rotating `X-Forwarded-For` gives every
+  request a fresh `callerKey()`, so the 5/min budget on a *single* account no longer binds — worse than
+  the pre-`ws-449` state, where the IP half was a constant and the per-account budget held. The same
+  applies to `register`, `password-reset`, `signature-verify` and `bulk-invitations`. The
+  `auth.account_locked` audit row keys the same way, so it will not fire either.
+- **`restricted_ips` now blocks honest clients but not a determined one** — a listed client sends any
+  other address.
+- **`audit_logs.ip_address` and the GeoLite2 `location.country` derived from it are
+  attacker-controlled** on every row that has an actor.
+
+☠️ **`X-Real-IP` is no longer the trustworthy fallback either.** The 2026-09-12 note below recommends it
+because the upstream nginx sets it from `$realip_remote_addr`. But `TCV-Backend/nginx.conf` now has
+`fastcgi_param HTTP_X_REAL_IP $remote_addr` **after** `include fastcgi_params`, which overwrites that
+header, and the backend nginx has no `real_ip` module config — so its `$remote_addr` is the frontend-nginx
+container. PHP now sees `X-Real-IP` = a `172.x` Docker address on every request.
+
+⚠️ **Not reproduced against a running stack** — this is the code-and-config trace, same as the rest of
+this file. The one thing that would change the outcome is a load balancer in front of the website's nginx
+that appends the real peer (the edge's non-recursive `real_ip` would then take that value); none is
+documented anywhere in this KB or any of the three compose files — the website maps host port 80 straight
+to its nginx. To
+confirm on QA: log in **successfully** with `X-Forwarded-For: 203.0.113.77` and read that row's
+`audit_logs.ip_address` (a *failed* login has no actor, and `AuditService` writes `ip_address` as null
+when the actor is null — it would prove nothing).
+
+**Fix, starting at the first hop:** at the **edge** (`TCV-Website/nginx.conf`), drop the two `real_ip`
+lines — or narrow `set_real_ip_from` to a real load balancer's CIDR if one is added — and send
+`proxy_set_header X-Forwarded-For $remote_addr` instead of `$proxy_add_x_forwarded_for`, so client input
+is discarded where it enters. Then narrow `TCV-Frontend/nginx.conf`'s `set_real_ip_from` to the Docker
+network, so it only believes the website container. Two nginx-only changes in the two client repos; no
+backend change. Until both land, prefer leaving limits keyed on the account identifier over the IP.
+
+### Status 2026-09-12 — the Laravel half has landed, fail-closed *(superseded 2026-09-17)*
 
 `bootstrap/app.php` on `develop` now calls `trustProxies()`, but **only when `TRUSTED_PROXIES` is a
 non-empty comma-separated CIDR list**; the default is empty and the call is skipped entirely. So the
@@ -497,8 +565,8 @@ Two things must change before the var is set: narrow `set_real_ip_from` to the r
 set `TRUSTED_PROXIES` to that same CIDR (never `*`).
 
 ⭐ Note `proxy_set_header X-Real-IP $realip_remote_addr` — `$realip_remote_addr` is the peer address
-*before* the `real_ip` rewrite, so `X-Real-IP` is the one genuinely trustworthy header on this path
-today. Laravel's `trustProxies()` is configured for the `X_FORWARDED_*` set and does **not** read it.
+*before* the `real_ip` rewrite, so `X-Real-IP` was the one genuinely trustworthy header on this path
+(☠️ **no longer, since 2026-09-14** — the backend nginx now overwrites it; see the 2026-09-17 status). Laravel's `trustProxies()` is configured for the `X_FORWARDED_*` set and does **not** read it.
 
 ⭐ **There is a third precondition nobody has hit yet, because the variable has no plumbing.**
 `TRUSTED_PROXIES` appears in exactly one place in the backend repo — the `env()` call in
@@ -640,8 +708,9 @@ of that branch. (That headline is now **16 of 162** after the Audit Trail routes
 below for the one addition.) The description below is kept for history.
 
 ⭐ **2026-09-12 — one new public endpoint, reviewed and accepted.** The `develop` merge added
-`POST api/distributor-enquiry` (`API-030`, `DistributorController@submit`), taking the public count
-15 → 16. It is public by intent — a marketing enquiry form on the unauthenticated site — and it is
+`POST api/distributor-enquiry` (`API-031` since the 2026-09-17 renumbering, `DistributorController@submit`), taking the public count
+15 → 16. (**2026-09-17:** 16 → **17 of 163** with `GET api/access-check` from `ws-449` — see
+[S-16](#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert).) It is public by intent — a marketing enquiry form on the unauthenticated site — and it is
 built defensively: `throttle:10,1`, a `DistributorEnquiryFormRequest` for validation, and it forwards
 to HubSpot with `allowUpdatingExistingContact: false`, so a caller cannot PATCH a stranger's contact
 record by claiming their email. Nothing persists locally (HubSpot is the system of record), so only a
@@ -714,7 +783,7 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 | `S-10` | Global IP middleware, uncached DB hit per request | low | `RestrictIpMiddleware` |
 | `S-11` | `revokeAccess()` leaves the S3 URL live | low | `SecureImageService` |
 | `S-12` | Trace/message leak outside production | low | `Exceptions\Handler` |
-| `S-16` | Proxy IP makes all rate limits one global bucket and `RestrictIpMiddleware` inert. Laravel half **landed on `develop` 2026-09-12, fail-closed** (`trustProxies()` gated on `TRUSTED_PROXIES`, default empty ⇒ still inert). ☠️ Do not set the var until `nginx.conf`'s `set_real_ip_from 0.0.0.0/0` is narrowed | **high** | `nginx.conf` · `bootstrap/app.php` |
+| `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 
 ---
@@ -722,7 +791,7 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 ## Rules for new code
 
 1. **Never trust an id from the request when a session already implies it.** Derive it from the session.
-2. **Guard by default.** A route added outside the two middleware groups is public — 20 already are
+2. **Guard by default.** A route added outside the two middleware groups is public — 17 already are
    ([PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md)). Check the audit after every route change.
 3. **Return `ApiResponse::error(HttpStatus::…)` explicitly** for authorisation failures. If you rely on
    an exception, the handler turns it into a 500 and the client cannot distinguish it from a crash.
@@ -732,4 +801,5 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 ---
 
 _Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`); findings dated 2026-09-02 re-verified
-2026-09-04 against `tcv-backend-codefix` (`f96382ea`)._
+2026-09-04 against `tcv-backend-codefix` (`f96382ea`); `S-16` re-traced 2026-09-17 against `TCV-Backend`
+`develop` (`ff9be500`) and `TCV-Frontend` `develop` (`80403e7`)._

@@ -39,34 +39,24 @@ same warning at boot.
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
 | Deploy | `IMAGE_TAG_BACKEND` |
 
-⚠️ **`$request->ip()` is still not the client, even though the code to fix it has landed.**
-php-fpm sits behind the `backend-nginx` container, so `REMOTE_ADDR` is always the proxy: the five
-IP-keyed rate limiters share one platform-wide bucket and `RestrictIpMiddleware` can never match a
-real client.
+☠️ **`TRUSTED_PROXIES` — the fail-closed default is gone (`ws-449`, 2026-09-14).**
+`bootstrap/app.php` now calls `trustProxies()` on every boot. Unset (or empty, which is what compose
+substitutes for an unset host variable) resolves to **`10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1`**;
+`*` is honoured. `TCV-Backend/nginx.conf` now forwards `X-Forwarded-For` to php-fpm, so `$request->ip()`
+is resolved from that header rather than being the proxy.
 
-`bootstrap/app.php` reads **`TRUSTED_PROXIES`** (on `develop` since 2026-09-12) and calls `trustProxies()`
-— but **only when it is non-empty**, and the default is empty, so nothing has changed in effect.
+That fixes the shared-bucket outage, but the two nginx hops in front — `TCV-Website/nginx.conf:49` (the
+edge) and `TCV-Frontend/nginx.conf:41` — both still carry `set_real_ip_from 0.0.0.0/0`, so the chain
+starts from a client-supplied value and the private-range default then believes it. **Leaving the
+variable unset is no longer the safe choice.** Setting it narrower does not help either while those
+nginx files trust every peer; they are the fix. Read [S-16 *Status 2026-09-17*](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)
+before changing either.
 
-☠️ **Do not set `TRUSTED_PROXIES` yet.** `TCV-Frontend/nginx.conf:41` still carries
-`set_real_ip_from 0.0.0.0/0`, so nginx rebuilds `X-Forwarded-For` from a client-supplied value; trusting
-the hop today lets a caller choose their own IP and bypass every limiter. Narrow the nginx CIDR first,
-then set this to the same CIDR — never `*`. Read
-[S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert) first.
-
-☠️ **`TRUSTED_PROXIES` is not wired up yet — setting it changes nothing today.** It appears in exactly
-one place in the whole backend repo: the `env()` call in `bootstrap/app.php:51`. It is **not** in the
-`environment:` block of `docker-compose.yml` or `docker-compose-dev.yml`, not in `.env.example`, and not
-in `entrypoint.sh`.
-
-That matters because of how env reaches this app. Compose passes an **explicit allowlist** —
-`KEY: ${KEY}`, 57 entries on `develop` — so a variable absent from that block never reaches the
-container whatever an env file says. Two separate steps are therefore needed, and they belong to
-different people:
-
-| Step | Owner |
-|---|---|
-| Add `TRUSTED_PROXIES: ${TRUSTED_PROXIES}` to the `environment:` block of both compose files | **code change in `TCV-Backend`** |
-| Supply the value for each environment | **DevOps** — env values are applied directly by them |
+It **is** wired up now: `TRUSTED_PROXIES: ${TRUSTED_PROXIES}` is in the `environment:` block of both
+compose files. Compose passes an **explicit allowlist** — `KEY: ${KEY}`, **59** entries on `develop`
+(`TRUSTED_PROXIES` and `MAIL_INVITATION_DISPATCH` are the two newest) — so a variable absent from that
+block never reaches the container whatever an env file says. Supplying a value per environment is
+DevOps' step.
 
 ⚠️ **And it must end up as a real container env var, not only a `.env` line.** The value is read with
 `env()` inside the `withMiddleware` closure — which runs before the config provider, so `config()` is
@@ -78,32 +68,41 @@ allowlist.)
 
 **Invitation delivery tuning** (all optional; defaults are the deployed behaviour):
 
-| Variable | Default | Branch | Controls |
-|---|---|---|---|
-| `MAIL_INVITATION_SEND_BUDGET` | `240` | `develop` | Seconds for a whole bulk send, computed once across all batches |
-| `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | ⚠️ `ws-404` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
-| `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | ⚠️ `ws-404` | How old a `pending` row must be before the sweep touches it |
-| `MAIL_INVITATION_SWEEP_BUDGET` | `60` | ⚠️ `ws-404` | Seconds for one sweep batch |
-| `MAIL_CONNECTION_RETRY_DELAY` | `2` | ⚠️ `ws-404` | Base seconds before retrying an address whose **connection** failed, multiplied by attempt number (≈2s then 4s). Longer than the 4xx retry on purpose: a 421 is the server talking and relents in about a second, whereas nothing answering on the port means a restarting daemon or a rate limiter. `phpunit.xml` sets it to **0** so the failure-path tests do not sleep through the suite |
-| `MAIL_INVITATION_DISPATCH` | `after_response` | ⚠️ `ws-404` | `queue` hands batches to `backend-queue`; anything else (or unset) runs them in the web process after the response |
+All on `develop` since `ws-404` merged (2026-09-15):
 
-Two gaps, and `ws-404` closes one of them for exactly one variable:
+| Variable | Default | Controls |
+|---|---|---|
+| `MAIL_INVITATION_SEND_BUDGET` | `240` | Seconds for a whole bulk send in `after_response` mode, computed once across all batches |
+| `MAIL_INVITATION_QUEUE_BATCH_BUDGET` | `60` | Seconds **per batch** in `queue` mode, converted to a deadline when the worker *starts* the batch (never at dispatch — 20 batches of a 500-address send dispatch together but run serially, so a dispatch-time deadline expired for all but the first few). Kept well under the job's `$timeout` of 180 |
+| `MAIL_CONNECTION_RETRY_DELAY` | `2` | Base seconds before retrying an address whose **connection** failed, multiplied by attempt number (≈2s then 4s). Longer than the 4xx retry on purpose: a 421 is the server talking and relents in about a second, whereas nothing answering on the port means a restarting daemon or a rate limiter. `phpunit.xml` sets it to **0** so the failure-path tests do not sleep through the suite |
+| `MAIL_INVITATION_MAX_DEFERRALS` | `36` | Separate batch runs one row may be deferred before it is written off, revoked and refunded. ☠️ **A downtime tolerance, not a retry count** — at one deferral per 10-minute scheduled sweep, 36 ≈ six hours of mail-host outage (an earlier value of 5 was ≈40 minutes, short enough for a routine SES incident to irreversibly revoke the oldest invitations of every send in flight) |
+| `MAIL_INVITATION_SWEEP_INTERVAL` | `600` | Minimum seconds between `SweepPendingInvitationsJob` runs (floor 60) |
+| `MAIL_INVITATION_SWEEP_AGE_MINUTES` | `15` | How old a `pending` row must be before the sweep touches it |
+| `MAIL_INVITATION_SWEEP_BUDGET` | `60` | Seconds for one sweep batch |
+| `MAIL_INVITATION_DISPATCH` | `after_response` | `queue` hands batches to `backend-queue`; anything else (or unset) runs them in the web process after the response |
+| `DB_QUEUE_RETRY_AFTER` | `360` (was `90`) | ☠️ Must exceed `backend-queue`'s `--timeout=300`, or a still-running invitation batch is re-reserved by a second worker and re-sent |
 
-- The `SWEEP` keys, `connection_retry_delay` and `invitation_dispatch` do not exist on `develop` at
-  all — they arrive with `ws-404`.
-- ⚠️ **None of the budget/sweep/retry variables is in the compose `environment:` block**, on either
-  branch, so none can be injected into the container even where the config key exists.
-  `MAIL_INVITATION_SEND_BUDGET` is a live config key on `develop` yet always resolves to its `240`
-  default for exactly this reason.
-- ⭐ **`MAIL_INVITATION_DISPATCH` is the exception**: `ws-404` adds it to the allowlist in both compose
-  files, so it is the one invitation variable DevOps can actually set. That is deliberate — it is the
-  switch that needs turning per environment, and the others are tuning knobs.
+- ⚠️ **Only `MAIL_INVITATION_DISPATCH` is in the compose `environment:` allowlist.** Every other row
+  above resolves to its config default in a deployed container, whatever an env file says — retuning
+  means editing `config/mail.php` / `config/queue.php` and deploying. That is deliberate: dispatch mode
+  is the switch that needs turning per environment; the rest are tuning knobs.
+- ☠️ **`MAIL_INVITATION_DISPATCH=queue` without a running `backend-queue` is the dangerous
+  combination** — batches accept into `jobs` and nothing sends them, with no error anywhere. And since
+  the 2026-09-15 merge the worker is **off by default** (compose `workers` profile), so this now bites on
+  a *current* image, not just an old one. Rows stay `pending`, so the sweep and the scheduled command
+  are the backstop.
 
-Wiring any of the rest is a compose change in `TCV-Backend`, not something an env-file edit can deliver.
+**Deployment / process switches** (new with `ws-404`):
 
-☠️ **Setting `MAIL_INVITATION_DISPATCH=queue` without `backend-queue` running is the dangerous
-combination** — batches accept into `jobs` and nothing sends them, with no error anywhere. The two
-arrive in the same commit, so this only bites if someone sets the variable against an older image.
+| Variable | Where | Meaning |
+|---|---|---|
+| `COMPOSE_PROFILES=workers` | host, at `docker compose up` | Starts `backend-queue` and `backend-scheduler`. ☠️ Unset = neither exists. Read the first-boot runbook in [DEPLOYMENT.md](DEPLOYMENT.md) before setting it on any environment with a backlog |
+| `RUN_INIT` | compose literal, not `${…}` | `true` on `backend-tcv` → `entrypoint.sh` rebuilds caches and runs migrations; `false` on the two worker containers → skipped. Unset falls back to "argv[0] basename is `php-fpm*`" |
+
+**Seeder-only** (not in compose, never read at runtime): `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD`
+for `Database\Seeders\SuperAdminSeeder` — defaults `superadmin@tcv.test` / `password123`, and the seeder
+**prints the password to the console**. It is `updateOrCreate` on email, so re-running it resets that
+account's password. Not called from `DatabaseSeeder`; run it explicitly.
 
 Not in compose but read by config: `AUTH_PASSWORD_BROKER`, `AUTH_PASSWORD_RESET_TOKEN_TABLE`,
 **`AUTH_PASSWORD_SETUP_TOKEN_EXPIRE`** (default 2880 min = 48 h), `SANCTUM_TOKEN_PREFIX`,

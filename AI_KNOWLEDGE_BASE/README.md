@@ -7,10 +7,10 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`; the audit-trail work (`feat/ui-audit-trail`, then PR #238) has merged into it, so those counts are `develop` counts. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Backend `ws-404` and `ws-449` are ahead of `develop` and **not** indexed |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ `ws-502` (list sort tiebreaks, both repos) is ahead of `develop` and **not** indexed |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `c3449270` (develop) · `TCV-Frontend` `e9b664c` (develop) · `TCV-Website` `cb4a1b6` (website-integration) — generated **2026-09-14** |
-| **Backend scale** | 207 classes/interfaces/traits · 863 methods · 162 API endpoints · 53 tables · 128 migrations |
+| **Code state at sync** | `TCV-Backend` `ff9be500` (develop) · `TCV-Frontend` `80403e7` (develop) · `TCV-Website` `cb4a1b6` (website-integration, unchanged) — generated **2026-09-17**. ⚠️ `git fetch` failed from the sync shell; SHAs match `origin/develop` as last fetched by the IDE (backend 2026-09-16 21:26, frontend 2026-09-15 16:54) |
+| **Backend scale** | 210 classes/interfaces/traits · 903 methods · 163 API endpoints · 53 tables · 131 migrations · suite **812 passed / 0 failed** |
 | **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -39,36 +39,34 @@ describe shipped behaviour, not a branch. Backend `develop` has since taken two 
 tracks separately: the **QA automation helpers** (PR #223, 2026-09-08 — see
 [SECURITY.md](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env))
 and the **Audit Trail** read API (PR #227, 2026-09-09 — `AuditLogController`, `Services/Audit/`,
-`audit_logs`; the context packs for it are written but still sit on the KB branch `ws-422`).
+`audit_logs`).
 
-⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — **three work commits** as of
-2026-09-14: `b69a2c37` (delivery recovery), `07a1c9b2` (infrastructure + preflight) and `3f3aeb58`
-(review fixes). The rest are merges of `develop` in, the latest (`13a4193c`) pulling in the `ws-449`
-IP-restriction work after PR #241. Most of what the KB flags `ws-404` is merged; what is **not** on
-`develop` is the delivery-recovery and mail-infrastructure work, and passages describing it say so:
+### ✅ `ws-404` and `ws-449` have merged — labels flipped 2026-09-17
 
-| `ws-404` only | Where |
+**`ws-404`** merged into backend `develop` as PR #240 (2026-09-15) with a follow-up, PR #251
+(2026-09-16). Every passage that flagged it "unmerged" / "`ws-404` only" now describes shipped code, and
+the indexes list **three** jobs, **six** commands and one schedule. It landed **substantially changed**
+from the `3f3aeb58` state the KB last described — read these before trusting older notes:
+
+| Changed after `3f3aeb58` | Where |
 |---|---|
-| `SweepPendingInvitationsJob` (`JOB-003`) — sweeps stranded `pending` rows using web traffic as the clock | [JOBS.md](JOBS.md) · [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) |
-| `->withSchedule(...)` with one task, `invitations:send-pending` | [CONFIGURATION.md](CONFIGURATION.md) · [JOBS.md](JOBS.md) |
-| ⭐ **`backend-queue` and `backend-scheduler` compose services** — the branch ships the worker and the scheduler process it needs | [DEPLOYMENT.md](DEPLOYMENT.md) · [QUEUES.md](QUEUES.md) |
-| ⭐ **`mail.invitation_dispatch`** — `after_response` (default) vs `queue`, selecting where batches run | [ENVIRONMENT.md](ENVIRONMENT.md) · [QUEUES.md](QUEUES.md) |
-| ⭐ **Connection failure ≠ address rejection** — unreachable-host sends defer instead of failing, so no spurious revoke + refund | [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) · [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) |
-| ⭐ **`ses-v2` mailer + `failover` no longer falls back to `log`** | [THIRD_PARTY.md](THIRD_PARTY.md) · [CONFIGURATION.md](CONFIGURATION.md) |
-| `MailPreflight` console command, `config/mail.php` sweep keys, `TestInvitation::awaitingDelivery()` | [ENVIRONMENT.md](ENVIRONMENT.md) |
+| ☠️ **`backend-queue` and `backend-scheduler` merged behind the compose `workers` profile — off by default.** A plain `docker compose up` still runs no worker and no scheduler, so the 2026-09-14 correction "the schedule fires" is **not** true of `develop` as deployed. First-boot runbook added | [DEPLOYMENT.md](DEPLOYMENT.md) · [QUEUES.md](QUEUES.md) · [JOBS.md](JOBS.md) |
+| Defer-vs-fail rules rewritten: `deferralReason()` defers never-connected, SMTP **4xx**, and **sender-quota 5xx** (the QA host's 200/hour `550`, `8ee517aa`); SES errors classified; post-DATA socket errors now **fail** to avoid duplicate emails | [JOBS.md](JOBS.md#-connection-failure-is-not-address-rejection) · [THIRD_PARTY.md](THIRD_PARTY.md) |
+| **Deferral cap** — `test_invitations.deferred_count`, `mail.invitation_max_deferrals` = **36** (≈6h), then write-off + refund | [JOBS.md](JOBS.md) · [ENVIRONMENT.md](ENVIRONMENT.md) |
+| **Expiry refunds** (`expireStaleInvitations()`), claim-guarded `markFailed()`, cancel **409** on a lost race, `credited_by = null` for automated refunds | [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) · [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) |
+| Queue batch budget (`invitation_queue_batch_budget` 60s, resolved at run time), `retry_after` 90 → **360**, `RUN_INIT` in `entrypoint.sh` | [QUEUES.md](QUEUES.md) · [CONFIGURATION.md](CONFIGURATION.md) · [DEPLOYMENT.md](DEPLOYMENT.md) |
 
-📌 **Correction, 2026-09-14 — the KB's "nothing runs the scheduler on `ws-404` either" note was true of
-`b69a2c37` and is now wrong.** `07a1c9b2` adds both a `backend-queue` (`queue:work --queue=lms,default`)
-and a `backend-scheduler` (`schedule:work`) service to **both** compose files, so on that branch the
-scheduled task does fire and the `database` queue does get consumed. Every passage that said otherwise
-has been corrected. The claim remains true of **`develop`**, which is what the deployment runs today.
+**`ws-449`** merged as PR #241 (2026-09-14): public `GET api/access-check` (the 17th public endpoint — no
+SPA caller yet), backend nginx forwarding `X-Forwarded-For`, and ☠️ `trustProxies()` **always on** with a
+private-range default. Because the edge and SPA nginx still `set_real_ip_from 0.0.0.0/0`, **S-16 changed
+shape rather than closing** — client IPs are now forgeable by the traced chain. Read
+[S-16 *Status 2026-09-17*](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not).
 
-Indexes are generated from `develop`, so they list **two** jobs and no schedule. That is correct, not
-drift — the branch rule above is why.
-
-On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
-`ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
-backend halves of the same ticket number are not in the same state, so check per repo.
+On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404`, `ws-407`
+(PR #378) and `ws-417`, and `origin/ws-400` is merged. **`ws-401` is still unmerged there** (2 commits),
+and a local `ws-400` holds one unpushed commit — the frontend and backend halves of the same ticket number
+are not in the same state, so check per repo. Backend `ws-401` also has one commit (`af555809`) beyond
+`develop`, though its repair migration is merged.
 
 ### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
 
@@ -86,7 +84,7 @@ around. Indexing `develop` here meant indexing the *less* deployable of the two.
 workflow.
 
 ☠️ **This exception is scoped to `TCV-Website` and does not generalise.** `TCV-Backend` and
-`TCV-Frontend` are still indexed from `develop`, and `ws-404` is still prose-only. Before indexing any
+`TCV-Frontend` are still indexed from `develop`, and `ws-502` is prose-only. Before indexing any
 other repo off a non-`develop` branch, establish the same two facts: the branch is a strict superset of
 `develop`, and it is what actually deploys.
 
@@ -96,6 +94,42 @@ corner-clipping fix, written up in
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
+
+### What the 2026-09-17 sync changed
+
+Backend `develop` advanced from `c3449270` to `ff9be500` (33 commits: `ws-404` PRs #240/#251, `ws-449`
+PR #241, audit-trail PRs #242/#243/#245, and `45b53173`'s CI tweak); frontend `develop` from `e9b664c` to
+`80403e7` (audit-trail PRs #384/#386). `TCV-Website` was not in scope and is unchanged at `cb4a1b6`
+(its local `website-integration` is 2 commits behind origin — pull before the next website sync).
+`routes_source` stayed `artisan route:list --json`, so route figures compare directly.
+
+| Count | 2026-09-14 | 2026-09-17 | Why |
+|---|---|---|---|
+| Endpoints | 162 | **163** | `GET api/access-check` (`ws-449`) |
+| Public `api/*` | 16 | **17** | the same route — public by design, reviewed; see [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not) |
+| Classes/interfaces/traits | 207 | **210** | `MailPreflight` (`CMD-003`), `SweepPendingInvitationsJob` (`JOB-003`), `SuperAdminSeeder` |
+| Methods | 863 | **903** | mostly `SendTestInvitationEmailsJob` (13 → 26), `MailPreflight` (13), `BuildsAuditDiffs` (3 → 9), `accountLockedResponse()` |
+| Migrations | 128 | **131** | `…_14_000001_add_deferred_count_to_test_invitations`, `…_15_000001_add_impersonator_to_audit_logs`, `…_15_000002_backfill_impersonator_on_audit_logs` |
+| Jobs | 2 | **3** | `SweepPendingInvitationsJob` |
+| Tests | 574 (09-09) | **812 passed, 0 failed** | measured on `ff9be500` ([TESTING.md](TESTING.md)) |
+| Everything else | — | **unchanged** | tables 53, relations 70, controllers 38, models 41, services 35, spa_routes 65, spa_slices 43, spa_api_calls 88, spa_drift 8, website_pages 32 |
+
+☠️ **Every `API-nnn` id shifted by one.** `api/access-check` sorts first, so it took `API-001`. The four
+prose citations were re-resolved (two were already stale: `verify-password` is `API-163`,
+`distributor-enquiry` is `API-031`); `CMD-003`…`006` also renumbered around `MailPreflight`. See
+[HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md).
+
+**Derived views:** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) gained exactly `api/access-check`
+(everything else renumbered only). [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) changed only in id
+renumbering — no client call lost its endpoint. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md) is
+identical apart from the date — no page became unreachable.
+
+**Prose corrections made on the way that were stale before this sync** (not caused by it): `ROUTES.md`
+zone counts (still quoting the 09-04 AST parse, and listing the five Stripe routes as public);
+`MIDDLEWARE.md` / `ARCHITECTURE_REALITY.md` saying `EnsureTokenIsValid` is still present and there is only
+one rate limit; the invitation "cancel refunds the wrong account" trap (the query is caller-scoped);
+`ws-373`/`ws-400` "will conflict" (both merged and reconciled); and `ws-401`'s repair migration labelled
+unmerged.
 
 ### What the 2026-09-14 sync changed
 
@@ -115,10 +149,10 @@ endpoint, no page became unreachable by every role. `routes_source` stayed
 `artisan route:list --json` (backend `vendor/` is present), so the route figures are directly comparable
 with the previous sync rather than being a parser artefact.
 
-⚠️ **`ws-404` is still prose-only and was not indexed** — the branch rule above. Its documentation was
-refreshed by hand on 2026-09-14; see the `ws-404` block below. A second backend branch, **`ws-449`**
-(adds the public `GET /access-check` SPA boot gate), is also ahead of `develop` and likewise not
-indexed — so the **16** public endpoints counted here do not include it.
+⚠️ *(As of 2026-09-14 — superseded: both merged and were indexed on 2026-09-17.)* **`ws-404` was still
+prose-only and not indexed** — the branch rule above. A second backend branch, **`ws-449`** (adds the
+public `GET /access-check` SPA boot gate), was also ahead of `develop` — so the **16** public endpoints
+counted here did not include it.
 
 ### What the 2026-09-07 sync changed
 
@@ -406,13 +440,13 @@ before writing code.
 ### Layers
 | Doc | Exists? |
 |---|---|
-| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 36 |
+| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 38 |
 | [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
 | [REQUESTS.md](REQUESTS.md) | ✅ 26 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
-| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 2 jobs · `database` driver · **no worker in compose** |
+| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 3 jobs · 6 commands · 1 schedule · `database` driver · worker + scheduler **behind the `workers` compose profile, off by default** |
 | [REPOSITORIES.md](REPOSITORIES.md) | ⚠️ 1 only — not a pattern |
 | [HELPERS.md](HELPERS.md) | ✅ static classes, **no** global functions |
 | [CACHE.md](CACHE.md) / [STORAGE.md](STORAGE.md) | ✅ minimal · S3 for plates |
@@ -431,13 +465,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 161 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **16 public** (non-QA environment) |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 204 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 823 |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 163 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **17 public** (non-QA environment) |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 210 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 903 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |
-| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 204 |
+| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 — ⚠️ its "dropped later" footnotes include `down()`-only drops ([HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md)) |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 210 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |

@@ -57,7 +57,9 @@ ledger with one to stop two concurrent revokes both reading the same unspent bal
 exercise that race at all — it is only really closed on MySQL (dev/QA/prod).
 
 ☠️ **`QUEUE_CONNECTION=sync` in tests.** `ProcessLmsDeliveryJob` runs inline, so the delivery tests
-never exercise the fact that **production has no queue worker at all** ([QUEUES.md](QUEUES.md)).
+never exercise the fact that **a deployment without `COMPOSE_PROFILES=workers` has no queue worker at
+all** — the default ([QUEUES.md](QUEUES.md)). Nor can they see `database.retry_after` re-reserving a
+long-running job, or the scheduler not running: the suite calls commands and jobs directly.
 
 ☠️ **One MySQL-only migration takes down the whole suite.** `RefreshDatabase` re-runs every migration
 for every test, so an unguarded `ALTER TABLE … MODIFY` or `CONCAT()` aborts migration and **every test
@@ -81,30 +83,31 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 | `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, merged into `ws-404`) |
-| `tests/Feature/TestInvitations/` | 3 | **36** | `ws-404`, merged into `develop` — batched send + 202, after-response delivery, SMTP 421 retry vs 5xx, credit charge/refund, the recovery command, placeholder validation (typo / markup-split / space-padded), the review-fix regressions, and the `ws-373` linkify guard |
-| `tests/Feature/TestInvitations/NormalizeLegacyBracketPlaceholdersMigrationTest.php` | 1 | **13** | `ws-401` (merged) — the legacy `[bracket]` → `{{token}}` repair migration: the rewrite itself, `[link]` → an anchored Start Test button, subjects rewritten *without* anchoring, and the four ways it must hold back — a token the row's `type` does not render, a row whose type has no vocabulary at all, a subject that would outgrow its column, and `<style>` block contents. Also pins that `email_template` is untouched, that a canonical row is byte-identical afterwards, and that a second `migrate` is a no-op |
+| `tests/Feature/TestInvitations/` — `BatchedInvitationSendTest` (31) · `InvitationSendReviewFixesTest` (30) · `InvitationSendRaceTest` (10) · `MailPreflightTest` (6) · `EmailTemplatePlaceholderValidationTest` (13) · `OrganizationEmailTemplateTypeTest` (8) · 3 audit files (10) | 9 (+ the migration test below) | **108** | `ws-404`, on `develop` since 2026-09-15 — batched send + 202, after-response vs queue dispatch (and the queue batch budget resolving at run time), the defer/fail taxonomy (connect failure, SMTP 4xx, sender-quota 550, SES errors, post-DATA errors *failing*), the deferral cap and its `>` boundary, the claim-held write-off ordering, expiry refunds and their double-refund guard, `credited_by = null`, orphan-page starvation, the cancel 409 race, `mail:preflight`, placeholder validation, and the `ws-373` linkify guard. Counts are static `test_*` method counts |
+| `tests/Feature/Settings/RestrictedIpEnforcementTest.php` | 1 | **6** | `ws-449` — the first test that `restricted_ips` actually blocks anyone: a listed IP as the direct peer, and as `X-Forwarded-For` behind a trusted `172.18.0.4` proxy. ⚠️ It proves Laravel's half; it cannot see nginx, so it says nothing about [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)'s forgery path |
+| `tests/Feature/Auth/AuditedImpersonationTest.php` · `ImpersonatorBackfillTest.php` | 2 | **15** | Audit impersonation (PR #245) — both identities recorded, admin-action flag, IP on the impersonator card, the `FlexibleAuthMiddleware` route group, and the backfill's session-key reconstruction, idempotence and `down()` |
+| `tests/Feature/TestInvitations/NormalizeLegacyBracketPlaceholdersMigrationTest.php` | 1 | **14** | `ws-401` (merged) — the legacy `[bracket]` → `{{token}}` repair migration: the rewrite itself, `[link]` → an anchored Start Test button, subjects rewritten *without* anchoring, and the four ways it must hold back — a token the row's `type` does not render, a row whose type has no vocabulary at all, a subject that would outgrow its column, and `<style>` block contents. Also pins that `email_template` is untouched, that a canonical row is byte-identical afterwards, and that a second `migrate` is a no-op |
 | `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417` (merged) — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
 | `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
 | `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
 | `tests/Feature/Authorization/` | 3 | **22** | `tcv-backend-codefix` (merged) — `SessionOwnershipTest` (9) and `OrganizationScopeTest` (8) cover [S-02](SECURITY.md)/[S-03](SECURITY.md)/[S-14](SECURITY.md)/[S-18](SECURITY.md): they build real SHA-256 sessions rather than stubbing the middleware, so a forged `patient_id`/`org_id` is genuinely rejected. `TestSessionPatientIdMigrationTest` (5, added 2026-09-07) covers the migration's data step — sessions with no recoverable identity are expired, invitation-backed ones are untouched, an already-expired row keeps its timestamp, and no duplicate index is left beside the foreign key. All three files were tightened on 2026-09-07: `assertNotEquals(200, …)` — which a stray 500 satisfies — was replaced with exact statuses, and `test_staff_cannot_reassign_a_patient_to_another_account` now asserts the PUT actually returned 200, so it can no longer confuse "ownership is protected" with "the route is broken" |
-| `tests/Feature/RateLimitScopeTest.php` | 1 | **3** | `tcv-backend-codefix` (merged) — the limiters are keyed per account, not per (shared) IP: one account exhausting its budget must not lock out another, asserted only after confirming the first really is 429 so it cannot pass vacuously. Plus (2026-09-07) that every `throttle:<name>` a route references resolves to a registered limiter |
+| `tests/Feature/RateLimitScopeTest.php` | 1 | **5** | `tcv-backend-codefix` (merged) — the limiters are keyed per account, not per (shared) IP: one account exhausting its budget must not lock out another, asserted only after confirming the first really is 429 so it cannot pass vacuously. Plus (2026-09-07) that every `throttle:<name>` a route references resolves to a registered limiter, and (PR #245) exactly one `auth.account_locked` row per lockout, including across two separate lockout cycles |
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-**574 tests pass on `develop`** across **39 files** — 1388 assertions, 0 failures, ~29 s (measured
-2026-09-09 with `php artisan test`). The per-branch totals this section used to track (93 on `develop`,
-149 on `ws-404`, 186 on `ws-417`, 245 on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those
-lines have all landed, so `develop` is now the number that matters. Still untested: the test execution
-loop, resume, payments, reports, organisations.
+**812 tests pass on `develop` `ff9be500`** — **2433 assertions, 0 failures**, 1 PHPUnit deprecation,
+1 min 25 s (measured 2026-09-17 with `vendor/bin/phpunit`, PHP 8.2.12, in-memory SQLite). Up from 574 on
+2026-09-09: the difference is `ws-404`'s invitation suites, `ws-449`'s IP enforcement test, and the audit
+trail's per-controller suites. A static count finds **579 `test_*` methods in 71 files** — the gap to
+812 is data providers. The Stripe SDK prints several `Undefined property of Stripe\PaymentIntent`
+notices to stderr during the run; they are noise, not failures. 📌 The
+`InvitationSendReviewFixesTest:261` quoted-printable assertion that earlier KB notes call a known failure
+**passes** on `develop`.
 
-### ⚠️ `ws-404` adds 21 tests that are not on `develop` (unmerged)
-
-Counted from the branch, not measured — the suite was not run for this sync.
-
-| File | Δ | Covers |
-|---|---|---|
-| `TestInvitations/BatchedInvitationSendTest.php` | 13 → **28** | The connection-failure taxonomy and the dispatch modes: a refused connection leaves the row `pending` rather than `failed`, the recovery command then delivers it, three consecutive connection failures stop the batch, later batches skip a host already known down, **a rejected address does not trip the connection breaker**, `queue` mode dispatches to a worker and drops the FPM deadline while the default still sends after the response, the sweep's throttle/age/cancelled-row rules, and that a job the queue gives up on leaves rows recoverable without ever reopening an address already `sent` |
-| `TestInvitations/MailPreflightTest.php` | **+6** | `mail:preflight` — new file |
+The per-branch totals this section used to track (93 on `develop`, 149 on `ws-404`, 186 on `ws-417`, 245
+on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all landed, so `develop` is
+the number that matters. Still untested: the test execution loop, resume, payments, reports,
+organisations, and anything nginx does.
 
 ⭐ **`phpunit.xml` sets `MAIL_CONNECTION_RETRY_DELAY=0`.** The connection-failure tests exhaust every
 retry on purpose; without it they would spend about a minute of the suite asleep. Keep it when adding to
@@ -114,7 +117,7 @@ that file — a real backoff there is not extra realism, it is just a slower sui
 login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
 `verify-password` remain untested.
 
-✅ **The whole suite is green on `develop` as of 2026-09-09** — including
+✅ **The whole suite is green on `develop` as of 2026-09-17** (812/812) — including
 `DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which used to fail on a clean
 tree and was for a while the one expected red. If you see it fail again, that is a regression now, not
 the known-bad case.

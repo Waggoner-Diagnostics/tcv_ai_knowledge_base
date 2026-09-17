@@ -1,12 +1,13 @@
 # File Index
 
-**207 PHP files** containing classes, under `app/` + `database/`.
+**210 PHP files** containing classes, under `app/` + `database/`.
 
 | File | Classes | Methods |
 |---|---|---|
 | [`app/Console/Commands/BackfillStripeSourceApp.php`](../../../TCV-Backend/app/Console/Commands/BackfillStripeSourceApp.php) | BackfillStripeSourceApp | 1 |
 | [`app/Console/Commands/CheckEmailTemplatePlaceholders.php`](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php) | CheckEmailTemplatePlaceholders | 2 |
-| [`app/Console/Commands/SendPendingInvitations.php`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php) | SendPendingInvitations | 2 |
+| [`app/Console/Commands/MailPreflight.php`](../../../TCV-Backend/app/Console/Commands/MailPreflight.php) | MailPreflight | 13 |
+| [`app/Console/Commands/SendPendingInvitations.php`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php) | SendPendingInvitations | 3 |
 | [`app/Console/Commands/SettleNegativeCreditBalances.php`](../../../TCV-Backend/app/Console/Commands/SettleNegativeCreditBalances.php) | SettleNegativeCreditBalances | 1 |
 | [`app/Console/Commands/UploadTestPlates.php`](../../../TCV-Backend/app/Console/Commands/UploadTestPlates.php) | UploadTestPlates | 1 |
 | [`app/Events/TestCompleted.php`](../../../TCV-Backend/app/Events/TestCompleted.php) | TestCompleted | 1 |
@@ -26,7 +27,7 @@
 | [`app/Http/Controllers/Auth/ResetPasswordController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/ResetPasswordController.php) | ResetPasswordController | 0 |
 | [`app/Http/Controllers/Auth/VerificationController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php) | VerificationController | 1 |
 | [`app/Http/Controllers/AuthController.php`](../../../TCV-Backend/app/Http/Controllers/AuthController.php) | AuthController | 19 |
-| [`app/Http/Controllers/Concerns/BuildsAuditDiffs.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php) | BuildsAuditDiffs | 3 |
+| [`app/Http/Controllers/Concerns/BuildsAuditDiffs.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php) | BuildsAuditDiffs | 9 |
 | [`app/Http/Controllers/ContactController.php`](../../../TCV-Backend/app/Http/Controllers/ContactController.php) | ContactController | 2 |
 | [`app/Http/Controllers/Controller.php`](../../../TCV-Backend/app/Http/Controllers/Controller.php) | Controller | 0 |
 | [`app/Http/Controllers/CreditsController.php`](../../../TCV-Backend/app/Http/Controllers/CreditsController.php) | CreditsController | 7 |
@@ -87,7 +88,8 @@
 | [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 2 |
 | [`app/Http/Requests/ValidateDiscountCodeRequest.php`](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php) | ValidateDiscountCodeRequest | 2 |
 | [`app/Jobs/ProcessLmsDeliveryJob.php`](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php) | ProcessLmsDeliveryJob | 3 |
-| [`app/Jobs/SendTestInvitationEmailsJob.php`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php) | SendTestInvitationEmailsJob | 13 |
+| [`app/Jobs/SendTestInvitationEmailsJob.php`](../../../TCV-Backend/app/Jobs/SendTestInvitationEmailsJob.php) | SendTestInvitationEmailsJob | 26 |
+| [`app/Jobs/SweepPendingInvitationsJob.php`](../../../TCV-Backend/app/Jobs/SweepPendingInvitationsJob.php) | SweepPendingInvitationsJob | 3 |
 | [`app/Listeners/HandleLmsNotificationOnCompletion.php`](../../../TCV-Backend/app/Listeners/HandleLmsNotificationOnCompletion.php) | HandleLmsNotificationOnCompletion | 2 |
 | [`app/Listeners/HandleLmsSectionProgressOnCompletion.php`](../../../TCV-Backend/app/Listeners/HandleLmsSectionProgressOnCompletion.php) | HandleLmsSectionProgressOnCompletion | 2 |
 | [`app/Listeners/PrefixEmailSubject.php`](../../../TCV-Backend/app/Listeners/PrefixEmailSubject.php) | PrefixEmailSubject | 2 |
@@ -124,7 +126,7 @@
 | [`app/Models/TestAnswer.php`](../../../TCV-Backend/app/Models/TestAnswer.php) | TestAnswer | 7 |
 | [`app/Models/TestCondition.php`](../../../TCV-Backend/app/Models/TestCondition.php) | TestCondition | 1 |
 | [`app/Models/TestEmailTemplates.php`](../../../TCV-Backend/app/Models/TestEmailTemplates.php) | TestEmailTemplates | 0 |
-| [`app/Models/TestInvitation.php`](../../../TCV-Backend/app/Models/TestInvitation.php) | TestInvitation | 4 |
+| [`app/Models/TestInvitation.php`](../../../TCV-Backend/app/Models/TestInvitation.php) | TestInvitation | 5 |
 | [`app/Models/TestResumeToken.php`](../../../TCV-Backend/app/Models/TestResumeToken.php) | TestResumeToken | 2 |
 | [`app/Models/TestSection.php`](../../../TCV-Backend/app/Models/TestSection.php) | TestSection | 3 |
 | [`app/Models/TestSectionPlate.php`](../../../TCV-Backend/app/Models/TestSectionPlate.php) | TestSectionPlate | 2 |
@@ -140,7 +142,7 @@
 | [`app/Policies/CreditsPolicy.php`](../../../TCV-Backend/app/Policies/CreditsPolicy.php) | CreditsPolicy | 7 |
 | [`app/Policies/OrgPolicy.php`](../../../TCV-Backend/app/Policies/OrgPolicy.php) | OrgPolicy | 5 |
 | [`app/Policies/TestPolicy.php`](../../../TCV-Backend/app/Policies/TestPolicy.php) | TestPolicy | 5 |
-| [`app/Providers/AppServiceProvider.php`](../../../TCV-Backend/app/Providers/AppServiceProvider.php) | AppServiceProvider | 6 |
+| [`app/Providers/AppServiceProvider.php`](../../../TCV-Backend/app/Providers/AppServiceProvider.php) | AppServiceProvider | 7 |
 | [`app/Providers/AuthServiceProvider.php`](../../../TCV-Backend/app/Providers/AuthServiceProvider.php) | AuthServiceProvider | 1 |
 | [`app/Providers/EventServiceProvider.php`](../../../TCV-Backend/app/Providers/EventServiceProvider.php) | EventServiceProvider | 0 |
 | [`app/Providers/LmsServiceProvider.php`](../../../TCV-Backend/app/Providers/LmsServiceProvider.php) | LmsServiceProvider | 2 |
@@ -148,7 +150,7 @@
 | [`app/Rules/TurnstileToken.php`](../../../TCV-Backend/app/Rules/TurnstileToken.php) | TurnstileToken | 2 |
 | [`app/Services/Audit/AuditEventCatalog.php`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php) | AuditEventCatalog | 5 |
 | [`app/Services/Audit/AuditLogger.php`](../../../TCV-Backend/app/Services/Audit/AuditLogger.php) | AuditLogger | 1 |
-| [`app/Services/Audit/AuditService.php`](../../../TCV-Backend/app/Services/Audit/AuditService.php) | AuditService | 16 |
+| [`app/Services/Audit/AuditService.php`](../../../TCV-Backend/app/Services/Audit/AuditService.php) | AuditService | 17 |
 | [`app/Services/Audit/PricingAuditService.php`](../../../TCV-Backend/app/Services/Audit/PricingAuditService.php) | PricingAuditService | 1 |
 | [`app/Services/ColorVisionDiagnosisService.php`](../../../TCV-Backend/app/Services/ColorVisionDiagnosisService.php) | ColorVisionDiagnosisService | 13 |
 | [`app/Services/DiscountCodeService.php`](../../../TCV-Backend/app/Services/DiscountCodeService.php) | DiscountCodeService | 7 |
@@ -208,10 +210,11 @@
 | [`database/seeders/PrivilegesTableSeeder.php`](../../../TCV-Backend/database/seeders/PrivilegesTableSeeder.php) | PrivilegesTableSeeder | 1 |
 | [`database/seeders/ProlificIdSeeder.php`](../../../TCV-Backend/database/seeders/ProlificIdSeeder.php) | ProlificIdSeeder | 2 |
 | [`database/seeders/SeniorDiagnosticsTestWithTestSectionSeeder.php`](../../../TCV-Backend/database/seeders/SeniorDiagnosticsTestWithTestSectionSeeder.php) | SeniorDiagnosticsTestWithTestSectionSeeder | 5 |
+| [`database/seeders/SuperAdminSeeder.php`](../../../TCV-Backend/database/seeders/SuperAdminSeeder.php) | SuperAdminSeeder | 1 |
 | [`database/seeders/TestWithTestSectionSeeder.php`](../../../TCV-Backend/database/seeders/TestWithTestSectionSeeder.php) | TestWithTestSectionSeeder | 5 |
 | [`database/seeders/TwelvePlateTritanTestWithTestSectionSeeder.php`](../../../TCV-Backend/database/seeders/TwelvePlateTritanTestWithTestSectionSeeder.php) | TwelvePlateTritanTestWithTestSectionSeeder | 1 |
 | [`database/seeders/WorldSeeder.php`](../../../TCV-Backend/database/seeders/WorldSeeder.php) | WorldSeeder | 1 |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._

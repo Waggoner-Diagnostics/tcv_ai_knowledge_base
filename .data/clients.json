@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-14T12:54:52+02:00",
+    "generated_at": "2026-09-17T07:31:27+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -1516,14 +1516,14 @@
             "REACT_APP_TURNSTILE_SITE_KEY"
         ],
         "counts": {
-            "source_files": 276,
+            "source_files": 278,
             "spa_routes": 75,
             "api_calls": 93,
             "slices": 43,
             "hooks": 18,
-            "pages": 91,
+            "pages": 92,
             "components": 49,
-            "loc": 39374
+            "loc": 39653
         }
     },
     "website": {

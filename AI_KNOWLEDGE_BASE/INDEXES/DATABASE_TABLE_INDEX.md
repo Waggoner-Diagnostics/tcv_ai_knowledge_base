@@ -1,6 +1,6 @@
 # Database Table Index
 
-**53 tables**, reconstructed from 128 migrations.
+**53 tables**, reconstructed from 131 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -10,7 +10,7 @@ the only authority before you write a migration against a column.
 |---|---|---|---|---|
 | `TABLE-001` | `admin_settings` | 3 | `2025_07_02_072409_create_admin_settings_table.php` | 3 |
 | `TABLE-002` | `allowed_tests` | 2 | `2025_06_23_115716_create_allowed_tests_table.php` | 2 |
-| `TABLE-003` | `audit_logs` | 22 | `2026_09_08_094214_create_audit_logs_table.php` | 4 |
+| `TABLE-003` | `audit_logs` | 27 | `2026_09_08_094214_create_audit_logs_table.php` | 6 |
 | `TABLE-004` | `cache` | 3 | `0001_01_01_000001_create_cache_table.php` | 2 |
 | `TABLE-005` | `cache_locks` | 3 | `0001_01_01_000001_create_cache_table.php` | 2 |
 | `TABLE-006` | `compliances` | 2 | `2025_06_23_093258_create_compliances_table.php` | 2 |
@@ -45,7 +45,7 @@ the only authority before you write a migration against a column.
 | `TABLE-035` | `sessions` | 6 | `0001_01_01_000001_create_users_table.php` | 2 |
 | `TABLE-036` | `test_conditions` | 4 | `2025_06_20_071025_create_test_conditions_table.php` | 2 |
 | `TABLE-037` | `test_email_templates` | 0 | _altered only_ | 3 |
-| `TABLE-038` | `test_invitations` | 12 | `2026_02_26_084221_create_test_invitations_table.php` | 8 |
+| `TABLE-038` | `test_invitations` | 13 | `2026_02_26_084221_create_test_invitations_table.php` | 10 |
 | `TABLE-039` | `test_resume_tokens` | 5 | `2026_05_25_000002_create_test_resume_tokens_table.php` | 2 |
 | `TABLE-040` | `test_section_plates` | 6 | `2025_06_20_071402_create_test_section_plates_table.php` | 2 |
 | `TABLE-041` | `test_sections` | 22 | `2025_06_20_071148_create_test_sections_table.php` | 8 |
@@ -107,6 +107,11 @@ the only authority before you write a migration against a column.
 | `ip_address` | string | `2026_09_08_094214_create_audit_logs_table.php` |
 | `session_key` | string | `2026_09_08_094214_create_audit_logs_table.php` |
 | `created_at` | timestamp | `2026_09_08_094214_create_audit_logs_table.php` |
+| `impersonator_id` | unsignedBigInteger | `2026_09_15_000001_add_impersonator_to_audit_logs_table.php` |
+| `impersonator_name` | string | `2026_09_15_000001_add_impersonator_to_audit_logs_table.php` |
+| `impersonator_email` | string | `2026_09_15_000001_add_impersonator_to_audit_logs_table.php` |
+| `impersonator_role` | string | `2026_09_15_000001_add_impersonator_to_audit_logs_table.php` |
+| `impersonator_company_name` | string | `2026_09_15_000001_add_impersonator_to_audit_logs_table.php` |
 
 ### `cache` — `TABLE-004`
 
@@ -545,8 +550,9 @@ _No columns detected (index/constraint-only migrations)._
 | `email_status` | string | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
 | `email_sent_at` | timestamp | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
 | `email_error` | text | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `deferred_count` | unsignedInteger | `2026_09_14_000001_add_deferred_count_to_test_invitations_table.php` |
 
-_Dropped later by a migration (may still be listed above): `is_revoked`, `resend_count`._
+_Dropped later by a migration (may still be listed above): `is_revoked`, `resend_count`, `deferred_count`._
 
 ### `test_resume_tokens` — `TABLE-039`
 
@@ -767,4 +773,4 @@ _Dropped later by a migration (may still be listed above): `usertype`, `includeW
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-14. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._

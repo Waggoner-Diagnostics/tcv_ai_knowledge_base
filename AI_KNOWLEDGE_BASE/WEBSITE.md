@@ -89,7 +89,7 @@ forwards server-side. Consequences worth knowing:
   copy that branch into the other three proxies without the same `isDev` guard.
 - All five backend targets exist today — verified in
   [INDEXES/CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md#tcv-website-proxy-routes);
-  `/api/distributor-enquiry` resolves to `API-030`.
+  `/api/distributor-enquiry` resolves to `API-031`.
 
 ⭐ **`/api/distributor-enquiry` (2026-09-12) follows the pattern exactly** — same `API_URL` guard, same
 `content-type` check returning 502 with the first 400 characters logged, and a generic 500 on throw. It
