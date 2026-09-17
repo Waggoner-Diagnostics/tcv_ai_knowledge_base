@@ -73,21 +73,36 @@ are not in the same state, so check per repo. Backend `ws-401` also has one comm
 `ws-480` (unlimited-credit accounts must not be sold credits; the user modal must not save an empty test
 selection) sits on a branch in **both** code repos — backend `8d247f8c`, frontend `346efce`, each with a
 `develop` merge on top (`0dc601d4` / `77b8b09`). Neither is on `develop`, so **no index was regenerated
-for it** and `INDEXES/` still describes `develop`. The write-ups are:
+for it** and `INDEXES/` still describes `develop`.
+
+⚠️ **Both halves moved after those shas.** Code reviews on 2026-09-17 found a real defect in each, and
+neither fix is in the ticket's original commit. The backend fix landed as **`b081b618`** ("ws-480 PR
+review change", pushed); the **frontend fix is still uncommitted** in its working tree, so `346efce` does
+not contain it. Re-check the shas before citing them, and regenerate `INDEXES/` only once `ws-480` merges.
+
+| Repo | What the review found | Where it is written up |
+|---|---|---|
+| `TCV-Backend` | the refusal sat only on the deprecated `api/stripe/*` surface, so the live purchase path was open | [BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) |
+| `TCV-Frontend` | the purchase gate keyed off `initialized \|\| !!error`, which pins the credits page on `Loading credits…` for good on any failure carrying no JSON `message` | [FRONTEND.md](FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only) |
+
+The write-ups are:
 
 | Where | What it covers |
 |---|---|
-| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged) | the three gate flags on `CreditPage`, the separate `Checkout` guard, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
-| [CONTEXT/BILLING_CONTEXT.md trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) | the 422 in `StripePaymentController::createPaymentIntent()`, why it is returned rather than thrown, and where the check would have to go to bind |
+| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged) | the three gate flags on `CreditPage`, `userCredits.settled` and why the gate cannot be derived from `error`, the separate `Checkout` guard and its `createSetupIntent()` condition, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
+| [CONTEXT/BILLING_CONTEXT.md trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) | the 422, why it is returned rather than thrown, the four handlers it ended up on, and `Credits::hasUnlimited()` |
 | [CONTEXT/CREDITS_CONTEXT.md trap 12](CONTEXT/CREDITS_CONTEXT.md#-traps) | what a purchase on top of an unlimited grant does to the balance once the grant lapses |
 | [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) | the blast-radius rows for both halves |
 
-☠️ **The one thing to carry out of that ticket:** the backend refusal landed on
-`POST api/stripe/create-payment-intent`, the **deprecated** surface no SPA code calls. The portal buys
-credits through `POST api/payment/initialize` → `POST api/payment/confirm`, and neither has the check, so
-on `ws-480` as written the rule is enforced in the client only. Read
+☠️ **The one thing to carry out of that ticket:** the backend refusal first landed on
+`POST api/stripe/create-payment-intent` **alone** — the deprecated surface no SPA code calls. The portal
+buys credits through `POST api/payment/initialize` → `POST api/payment/confirm`, so as written the rule
+was enforced in the client only. ✅ **Caught in review and fixed on the branch the same day**: the
+refusal now sits on all four routed purchase handlers, behind one predicate
+(`Credits::hasUnlimited()`), pinned by `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`.
+The lesson outlives the fix — read
 [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md#two-parallel-payment-surfaces) before adding any rule to a
-payment handler.
+payment handler, and count the handlers on **both** surfaces.
 
 📌 **Two corrections went in with it**, both about code that had already changed on `develop`:
 `FRONTEND.md` said `initialized` is never reset and nothing clears the credits slice on logout — both

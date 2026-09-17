@@ -86,11 +86,18 @@ copy their shape.
 
 ⭐ **`ws-480` (unmerged, 2026-09-17) adds a third kind of caller: one that refuses rather than adapts.**
 An unlimited grant covers every test, so there is nothing left to sell — the credits page stops offering
-the purchase flow and `StripePaymentController::createPaymentIntent()` answers **422** instead of opening
-a payment intent. Both compare against the string (`=== 'Unlimited'` in PHP, a lower-cased string compare
-in the SPA). ☠️ The backend half sits on the **deprecated** `api/stripe/*` surface, which the SPA never
-calls, so on `ws-480` the live `api/payment/*` path is gated by UI only — trap 12, and
-[BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480).
+the purchase flow, and all four routed purchase handlers answer **422** instead of taking the money
+(`PaymentController::initializePayment()` / `confirmPayment()`, plus the two legacy
+`StripePaymentController` halves).
+
+📌 **The backend half does not compare against the string.** It calls
+`Credits::hasUnlimited(int $userId): bool`, the single predicate added with the fix, which wraps the
+`is_unlimited_credit` + `scopeActive()` query `getTotalUserCredit()` already ran (and which now calls it).
+Use that for any new "is this account unlimited?" decision; `=== 'Unlimited'` remains the rule only for
+code that has a `getAvailableCredits()` return value in hand. The SPA half still does a lower-cased
+string compare, because what crosses the wire is the string. See
+[BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)
+for why the refusal is returned rather than thrown, and why the two `confirm` copies log at `warning`.
 
 ---
 
@@ -441,20 +448,23 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     Pinned by `tests/Feature/Credits/CreditListSortTest.php`. ⚠️ The grid's
     All/Available/Used/Expired tabs still filter only the rows on screen
     ([FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502-unmerged)).
-12. **An unlimited holder can still be sold credits, and the purchase can be eaten later** (`ws-480`,
-    unmerged). Nothing in the credit model forbids buying on top of a live `is_unlimited_credit` grant,
-    and the money path never asks: `PaymentController::initializePayment()` / `confirmPayment()` don't
-    read the balance, so `BasePaymentProvider::createTransactionRecord()` writes a finite grant beside
+12. **An unlimited holder could be sold credits, and the purchase eaten later** — closed on `ws-480`
+    (unmerged). **Nothing in the credit *model* forbids it**, which is why this stays on the list: the
+    arithmetic below is still what happens if a grant reaches an unlimited account by any route the
+    refusal does not cover. `BasePaymentProvider::createTransactionRecord()` writes a finite grant beside
     the unlimited one. While unlimited lives, `getAvailableCredits()` still answers `'Unlimited'`, so the
     purchase shows up nowhere. When it lapses, the new grant meets **all-time** consumption — including
     every test taken *under* unlimited — and is consumed by it: granted 10, consumed 10 under unlimited,
     balance **0**. That is trap 10's arithmetic, reached by buying instead of by being granted, and the
     repair is the same `credits:settle-negative-balances` (run it *before* the purchase, or the deficit
     it would have written has already been absorbed).
-    `ws-480` closes the door in the SPA (`CreditPage`, `Checkout`) and on
-    `POST api/stripe/create-payment-intent` — the surface the SPA does **not** use
+    ✅ `ws-480` now closes the door in the SPA (`CreditPage`, `Checkout`) **and on all four routed
+    purchase handlers** — `api/payment/initialize`, `api/payment/confirm`, and both legacy
+    `api/stripe/*` halves. It was for a time on the legacy surface only, which is the more useful lesson
     ([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480-unmerged),
     [BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
+    ⚠️ Still uncovered by the refusal: an **admin grant** to an unlimited account
+    (`CreditsController`), and `confirmACHPayment()`, which writes a grant but is not routed.
     ⚠️ **Undoing such a purchase is not a code path that exists**: `refund()` / `partialRefund()` are
     written but unrouted (BILLING trap 5), so it is a Stripe-side refund plus
     `CreditsController::destroy()` on the grant — which writes a `SOURCE_ADMIN_REVOKED` counter-entry

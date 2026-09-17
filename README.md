@@ -136,7 +136,10 @@ ahead of `develop` and are **not** indexed — feature branches never are. Both 
 labelled `unmerged`: `ws-502` in
 [FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#server-sorted-grids-ws-502-unmerged), `ws-480` (credit
 purchase gate + the user modal's test check) in
-[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#credit-purchase-gate-ws-480-unmerged).
+[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#credit-purchase-gate-ws-480-unmerged) and
+[BILLING_CONTEXT trap 9](AI_KNOWLEDGE_BASE/CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480),
+whose *Status 2026-09-17* covers the review fix that moved the unlimited-credit refusal onto the live
+`api/payment/*` path — a change made **after** the branch shas quoted there, and uncommitted at the time.
 
 ## Honest scope
 

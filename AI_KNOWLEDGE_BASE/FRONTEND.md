@@ -311,7 +311,10 @@ payload's user id differs from the stored `ownerId` (first sight of an owner is 
 clearing, because auth hydrates from `localStorage` before the Header's first fetch resolves). So
 logging out and back in as a **different user in the same tab** does show the placeholder and does not
 show the previous user's balance. `ws-480`'s purchase gate depends on exactly that reset — it treats
-`initialized` as "this user's balance is known" ([Credit purchase gate](#credit-purchase-gate-ws-480-unmerged)).
+`settled` (added on that branch, reset the same way) as "this user's balance question has been answered"
+([Credit purchase gate](#credit-purchase-gate-ws-480-unmerged)). Any field added to this slice that a gate
+will read has to go in `initialState`, or `clearedState()` will not clear it and it will leak across
+identities.
 
 ☠️ **The effect order inside the hook is load-bearing.** The mount effect is declared *before* the
 `location.pathname` effect, and both run on mount; the mount effect stamps `lastFetchedAt`, so the 5 s
@@ -560,7 +563,7 @@ selling to it. `pages/UserPannel/CreditPage/CreditPage.js` decides that with thr
 |---|---|---|
 | `hasUnlimitedCredits` | `String(userCredits).toLowerCase() === "unlimited"` | the hero subtitle, the balance readout, the notice |
 | `purchaseAllowed` | `!isImpersonating && !hasUnlimitedCredits` | the tab strip, the Purchase tab, the empty-history CTA, and which tab `?tab=` may select |
-| `purchaseGateResolved` | `isImpersonating \|\| creditsInitialized \|\| !!creditsError` | whether **either** tab may paint yet |
+| `purchaseGateResolved` | `isImpersonating \|\| creditsSettled` | whether the **Purchase** tab may paint yet |
 
 **The balance is a string, so the client compares it as one.** `Credits::getAvailableCredits()` returns
 `int|string` and `'Unlimited'` is the string ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). The header
@@ -578,22 +581,62 @@ history entry cannot reopen the flow either way.
 answers impersonation on the first paint; the unlimited grant is only knowable once `GET api/user/credits`
 has come back. Painting the purchase tab before then flashes it in front of the accounts it is meant to
 be hidden from — a direct load of `/user-panel/credit?tab=purchase` is the reported repro. Until
-`purchaseGateResolved`, the page renders a `Loading credits…` line and **neither** tab. A failed read
-falls open (`creditsError` resolves the gate too) rather than trapping a paying customer behind an
-unrelated outage.
+`purchaseGateResolved`, the page renders a `Loading credits…` line in place of the Purchase tab. A failed
+read **falls open** rather than trapping a paying customer behind an unrelated outage.
 
-⚠️ **Seen, not fixed:** every poll clears `error` in `fetchUserCredits.pending`, so for an account whose
-balance never loads the gate un-resolves on each retry — the page falls back to `Loading credits…`, then
-returns when the request rejects again. `useCreditsSync`'s backoff makes that up to 8 minutes apart
-(`POLL_INTERVAL_MS` × `2 ** consecutiveFailures`, capped at 8).
+### ☠️ `settled`, not `initialized || !!error` — the gate has to key off something forward-only
+
+The gate was first written as `creditsInitialized || !!creditsError`, and a code review on 2026-09-17
+found that expression fails in both directions. `userCredits.settled` was added to the slice to replace
+it, set in **both** `fetchUserCredits.fulfilled` and `.rejected` (after the staleness guard) and reset
+only by `clearedState`. Read it for any "has the balance question been answered?" gate; `initialized`
+still means specifically *a read succeeded*, which is the right test when you need the number itself.
+
+| What goes wrong with `initialized \|\| !!error` | Why |
+|---|---|
+| ☠️ Gate never resolves — `Loading credits…` forever | The thunk rejects with `error.response?.data?.message`, so `error` is left **`undefined`** whenever the failure carried no JSON `message`: offline, server unreachable, or an nginx HTML 502. `initialized` is false too, so the gate that was meant to fall open pinned itself shut instead — the exact opposite of the intent. Pinned by `userCreditSlice.test.js` |
+| ⚠️ Gate un-resolves on every retry | `fetchUserCredits.pending` clears `error` unconditionally, including for background polls, so the page flipped back to `Loading credits…` and returned when the request rejected again. `useCreditsSync`'s backoff spaced that up to 8 minutes apart (`POLL_INTERVAL_MS` × `2 ** consecutiveFailures`, capped at 8) |
+
+### ☠️ Anything that waits on `settled` needs the read to be **bounded**
+
+`axiosInstance` sets **no global timeout**, deliberately — bulk invitation sends and report exports
+legitimately run for minutes. So a request that *hangs* rather than fails never rejects, and a gate
+waiting on `settled` never resolves. A second review round caught this: gating `Checkout`'s
+`createSetupIntent()` on `settled` had made **paying** depend on `GET api/user/credits` answering, so a
+stalled FPM pool would have stopped checkout for everyone — a worse failure than the stray SetupIntent
+that gate was added to prevent.
+
+The fix is a **per-request** timeout on the balance read (`CREDITS_REQUEST_TIMEOUT_MS`, 15s, inside
+`fetchUserCredits`), not a global one. It is under `useCreditsSync`'s 60s poll so a timed-out read is
+retried by the next tick. A timeout carries no `status`, so the response interceptor cannot mistake it for
+a 401 and nobody is logged out; it does reach the global error popup, but only for the one *foreground*
+read per session (`useCreditsSync` passes `background: initialized`), which is an accepted trade against
+a silent stall. `userCreditSlice.test.js` pins both the timeout's presence and that a timeout still sets
+`settled`.
+
+⚠️ **The general rule:** a readiness flag is only as good as the slowest path that sets it. Before making
+anything wait on one, check that every path — success, failure **and hang** — reaches it.
+
+📌 **Credit history no longer waits on the gate at all.** It has its own thunk and its own loading state
+and nothing on it depends on the balance, so gating it too only meant a credits outage took the history
+away as well — the one thing still worth reading when the balance will not load. The `Loading credits…`
+placeholder is scoped to `activeTab === TABS.PURCHASE` for the same reason; without that scoping it would
+render *alongside* the history rather than instead of it.
 
 **`/user-panel/checkout` is guarded separately, and on a different condition.** `CheckOutPage/Checkout.js`
 is reachable by URL and by browser history, so hiding the tab is not a guard. Its
 `blockedFromCheckout = isImpersonating || (creditsInitialized && hasUnlimitedCredits)` redirects to
-`/user-panel/credit` and also suppresses the `createSetupIntent()` dispatch. Note the asymmetry with the
-credits page: here an **unread** balance lets the page through (`creditsInitialized &&`), because bouncing
-a paying user off their own checkout on a slow read is the worse failure. The credits page holds its paint
-instead — it has something to show while it waits, and checkout does not.
+`/user-panel/credit`. Note the asymmetry with the credits page: here an **unread** balance lets the page
+through (`creditsInitialized &&`), because bouncing a paying user off their own checkout on a slow read is
+the worse failure. The credits page holds its paint instead — it has something to show while it waits, and
+checkout does not.
+
+⚠️ **The `createSetupIntent()` dispatch needs `creditsSettled` on top of that**, and did not have it until
+the 2026-09-17 review. Blocking requires a *successful* read, so on a cold load `blockedFromCheckout` is
+still false while the balance is in flight, and an unlimited account opening `/user-panel/checkout`
+directly set up a Stripe payment method in the moment before the redirect fired. It waits for `settled`
+rather than `initialized` deliberately: gating on `initialized` would close that hole but block checkout
+for **everyone** whenever the credits endpoint is down, which is the worse trade.
 
 **The unlimited notice reuses the header chip's green** — `cp-alert--info` in `CreditPage.scss`
 (`#F0FDF4` / `#86EFAC` / `#166534`, darker text than the chip's `#16A34A` because this is body copy on a
@@ -601,19 +644,25 @@ pale ground, not a large label). A new `cp-alert--*` modifier needs its own rule
 unstyled, the same trap as the `&--type-*` credit-history badges
 ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)).
 
-☠️ **The backend half of `ws-480` guards the surface the SPA does not use.** The 422 landed in
-`StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`, `API-090`,
-the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` → `POST api/payment/confirm`
-(`slices/payment/paymentSlice.js`, `services/paymentProviders/StripeProvider.js`), and nothing in
-`TCV-Frontend/src` calls `api/stripe/create-payment-intent` at all. `PaymentController::initializePayment()`
-and `confirmPayment()` have **no unlimited check on `ws-480`**, so on the live money path the refusal is
-client-side only: a caller that skips the SPA runs `initialize` and then `confirm` as usual, and
-`confirm` is where `BasePaymentProvider::createTransactionRecord()` writes the `SOURCE_PURCHASE` grant and
-the transaction.
-[BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) has the detail.
+☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
+landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
+`API-090`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
+`services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
+`api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
 
-⚠️ **Nothing pins any of this.** There is no `CreditPage` or `Checkout` test in the SPA and no backend
-test touching `createPaymentIntent` — the suite passes whether the gate works or not.
+✅ **Fixed on the branch (2026-09-17).** `PaymentController::initializePayment()` and `confirmPayment()`
+now carry the same refusal, as does the legacy `StripePaymentController::confirmPayment()`. Both `confirm`
+handlers matter on their own: `confirm` is where `BasePaymentProvider::createTransactionRecord()` writes
+the `SOURCE_PURCHASE` grant, so a caller skipping the SPA cannot run `initialize` and then `confirm` past
+the gate.
+[BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)
+has the detail, including why the backend now calls `Credits::hasUnlimited()` rather than comparing
+against the string.
+
+⚠️ **The SPA half is still unpinned.** `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`
+covers the four backend handlers, but there is still no `CreditPage` or `Checkout` test — the frontend
+gate passes whether it works or not, and it is the gate a customer actually meets.
 
 ### The user modal's at-least-one-test pre-check (same ticket)
 

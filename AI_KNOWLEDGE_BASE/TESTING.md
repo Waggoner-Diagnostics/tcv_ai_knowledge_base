@@ -133,7 +133,27 @@ notices to stderr during the run; they are noise, not failures. 📌 The
 The per-branch totals this section used to track (93 on `develop`, 149 on `ws-404`, 186 on `ws-417`, 245
 on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all landed, so `develop` is
 the number that matters. Still untested: the test execution loop, resume, payments, reports,
-organisations, and anything nginx does.
+organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (unmerged,
+below) pins the unlimited-credit purchase refusal; nothing still covers a **successful** purchase end to
+end.
+
+### ⚠️ `ws-480` adds 6 backend tests that are not on `develop` (unmerged)
+
+`tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`, added 2026-09-17 with the PR-review fix
+that moved the unlimited-credit refusal onto the live purchase path
+([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
+Measured on the branch with the fix applied: **the full backend suite passes at 837 tests / 2572
+assertions**, 6 of them this file. ⚠️ The fix was **uncommitted in the working tree** when measured, so it
+is not in `8d247f8c`.
+
+| Case | Covers |
+|---|---|
+| 4 refusal cases | 422 from `api/payment/initialize`, `api/payment/confirm`, `api/stripe/create-payment-intent` and `api/stripe/confirm-payment`. The two `api/payment/*` cases inject a `PaymentProviderInterface` mock with `shouldNotReceive()`, so the test fails if the refusal lands *after* any Stripe work rather than before it |
+| ordinary account not refused | a finite grant with a balance still reaches `initializePayment()` — the guard keys off an unlimited grant, not off having credits |
+| expired unlimited grant | `Credits::hasUnlimited()` goes through `scopeActive()`, so a lapsed `is_unlimited_credit` row does not refuse the purchase — the same boundary `CreditsExpiryBoundaryTest` pins for the balance |
+
+☠️ The SPA half is still unpinned: no `CreditPage` or `Checkout` test, and that is the gate a customer
+actually meets ([FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged)).
 
 ### ⚠️ `ws-502` adds 17 backend tests that are not on `develop` (unmerged)
 
@@ -268,7 +288,18 @@ local run reads **1 failed / 8 passed, 117/117 tests passing**. Read the test co
 counts.
 
 On `ws-407` (not yet on `develop`) that becomes **1 failed / 9 passed, 129/129** — the branch adds
-`src/utils/validation.test.js`. ⚠️ In a **full** run on that branch, `DiscountCodeModal.test.js` is
+`src/utils/validation.test.js`.
+
+On `ws-480` (not yet on `develop`, measured 2026-09-17 with the review fix in the working tree) a full run
+reads **1 failed / 17 passed, 191/191 tests passing** — still the same single `App.test.js` suite failure,
+confirmed pre-existing by stashing the branch's own changes and re-running. The branch adds **4 tests** to
+`src/redux/slices/userCredits/userCreditSlice.test.js`, a `settled` block covering the purchase gate:
+`settled` false until a read finishes then true on success; **true after a failure carrying no error
+message** (a network error, where the thunk rejects with `undefined` — the case that pinned the credits
+page on `Loading credits…` indefinitely); still true while a later poll's `pending` has cleared `error`;
+and reset when a different user signs in. See
+[FRONTEND.md](FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only).
+⚠️ The SPA gate itself is still unpinned — there is no `CreditPage` or `Checkout` test. ⚠️ In a **full** run on that branch, `DiscountCodeModal.test.js` is
 sometimes reported as a failed *suite* with all 55 of its tests passing, on a post-teardown `act()`
 warning from Formik; it passes in isolation and imports nothing `ws-407` touches. Confirm a suspected
 failure with `--testPathPattern` before blaming a change.
