@@ -7,7 +7,7 @@ work on the project **without rescanning ~66,100 lines across 524 source files**
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ `ws-502` (list sort tiebreaks, both repos) is ahead of `develop` and **not** indexed |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Two branches are ahead of `develop` and **not** indexed: `ws-502` (list sort tiebreaks, both repos) and `tcv_data_migration` (152 files — introduces patient encryption at rest, so treat every patient/answer column in `INDEXES/` as the pre-encryption shape, [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)) |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `ff9be500` (develop) · `TCV-Frontend` `80403e7` (develop) · `TCV-Website` `cb4a1b6` (website-integration, unchanged) — generated **2026-09-17**. ⚠️ `git fetch` failed from the sync shell; SHAs match `origin/develop` as last fetched by the IDE (backend 2026-09-16 21:26, frontend 2026-09-15 16:54) |
 | **Backend scale** | 210 classes/interfaces/traits · 903 methods · 163 API endpoints · 53 tables · 131 migrations · suite **812 passed / 0 failed** |
