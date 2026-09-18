@@ -25,7 +25,7 @@
 | Middleware registration is Laravel 12 `bootstrap/app.php` style | `bootstrap/app.php:20-29` |
 | **Trusted-proxy config exists but is inert** — `trustProxies()` is called in `bootstrap/app.php`, gated on a non-empty `TRUSTED_PROXIES`, which defaults to empty (no `TrustProxies` class in `app/Http/Middleware/`; it is framework-level) | `bootstrap/app.php` · see B1 below |
 | Nginx forwards `X-Forwarded-For` | `TCV-Frontend/nginx.conf:42,54,63` |
-| No account-lockout mechanism anywhere | no `RateLimiter`/`lockout`/attempt counter in `AuthController` |
+| ~~No account-lockout mechanism anywhere~~ **Superseded 2026-09-15** — `throttle:login` (`AppServiceProvider::configureRateLimiting()`) locks an account out for 5 failed attempts/minute; see the B2 update below | no `RateLimiter`/`lockout`/attempt counter in `AuthController` itself — the lockout lives entirely in the shared limiter, not the controller |
 | No geo-IP or user-agent parsing dependency | `composer.json` require block |
 
 Two of these are blocking and are dealt with in §6.
@@ -166,7 +166,7 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 **Two design consequences:**
 
 - **Patients are never an `actor` and never a `target`.** For "Test completed" (and "Test abandoned" in the original spreadsheet, dropped — see §5) the spreadsheet names the Patient as the actor; the frontend role vocabulary has no `patient`, and `Patient` is not a `User`, so an `actor_id` would be a dangling reference. Log these with `actor = system` and the owning user/organisation as `target`, with the patient referenced only by `patient_ref` inside `details`.
-- **A denylist belongs in the service, not in the call sites.** `AuditService` masks recursively before any write: the reference plan's `password / token / secret / api_key` set **plus** `dob, date_of_birth, gender, zipcode, zip_code, diagnosis, result, verification_code, message, ssn, card_number`. Call sites will drift; one chokepoint will not. Give call sites a `ref()` helper so a patient reference cannot be hand-rolled, and add a test asserting that no `test_activity` or `accounts_users` row's `details`/`changes` JSON ever matches an email- or date-shaped pattern — it catches the regression the day someone adds a new call site.
+- **A denylist belongs in the service, not in the call sites — but its scope is `patient_records` only, by product decision.** `AuditService` masks recursively before any write, and the PHI/PII set (`dob, date_of_birth, gender, zipcode, zip_code, diagnosis, result, verification_code, message, ssn, card_number`, plus the email/date content net in `maskFreeText`) fires only when `event.category === 'patient_records'`. Outside that category — `accounts_users`, `sign_ins_security`, `billing_payment`, `credits_licensing`, `test_activity`, `reports_exports`, `settings_config` — only the reference plan's secrets set (`password / token / secret / api_key`) is masked. **Confirmed 2026-09-11: user, organization and super-admin data does not require PHI-style redaction; only patient-record events do.** This reverses the original "one chokepoint regardless of category" framing below — call sites still cannot hand-roll masking, but the category gate is intentional, not drift. `AuditServiceLogTest.php::test_a_non_patient_event_does_not_redact_email_or_date_content` asserts this is the shipped behavior. (Superseded guidance, kept for history: the original plan called for a category-agnostic chokepoint and a regression test asserting no `test_activity`/`accounts_users` row ever matches an email- or date-shaped pattern — that test would now fail by design and should not be added.)
 
 ---
 
@@ -180,7 +180,7 @@ For an **edit**, log the *names* of the changed fields and no values: `"changed_
 
 ⭐ If you need a usable client IP for audit rows before that lands, `X-Real-IP` is populated from nginx's `$realip_remote_addr` (the pre-rewrite peer) and is the one header on this path a client cannot forge — but `trustProxies()` is configured for `X_FORWARDED_*` and does not read it.
 
-**B2 — "Account locked (too many failed attempts)" has nothing to log.** No lockout, throttle, or failed-attempt counter exists on the login path (`routes/api.php` throttles only `/contact`). The spreadsheet also asks for a "Failed attempt count" on every failed login, which likewise does not exist. Either build lockout as a prerequisite, or cut both rows from Phase 1. Recommend cutting — it is a separate feature, not an audit feature.
+**B2 — "Account locked (too many failed attempts)" has nothing to log.** ✅ **Fixed 2026-09-15.** This was true when this doc was written, but `throttle:login` (`RateLimiter::for('login', ...)`, 5/minute keyed on `email|ip`) shipped separately on `develop` afterwards, and its rejection happens in `ThrottleRequests` *before* `AuthController::login()` runs — so none of that controller's three `auth.login_failed` call sites could ever see a lockout. Fixed by giving the `login` limiter its own `->response()` callback (`AppServiceProvider::accountLockedResponse()`) that writes a new catalog event, `auth.account_locked` (`sign_ins_security`, `critical`, `status: failed`), with `actor = null` (system-triggered — no authenticated user), `target` = the account looked up by the submitted email (or null if none exists), and the IP address carried as a `details[]` entry (not the `ip_address` column, which `AuditService::log()` only populates when `actor !== null`). De-duplicated via `Cache::add('audit:login-lockout:{key}', true, 60)` keyed the same way the limiter itself is, since `ThrottleRequests` calls the response callback on *every* rejected request, not once per lockout — without the guard a client that keeps retrying would keep writing rows. Covered by `RateLimitScopeTest::test_a_lockout_writes_exactly_one_account_locked_audit_row`. The spreadsheet's "Failed attempt count" per row remains unimplemented — `Limit::perMinute(5)` is a rolling-window counter Laravel's `RateLimiter` doesn't expose per-row, and nothing resets it on a successful login, so "5 *consecutive*" is approximate, not literal.
 
 **Three more rows that are not implementable as written:**
 
@@ -235,6 +235,7 @@ Grouped by the file that changes. Every method listed was confirmed to exist on 
 | File | Methods | Events |
 |---|---|---|
 | `AuthController` | `login`, `logout`, `register`, `impersonateUser`, `stopImpersonation`, `sendResetLinkEmail`, `setOrResetPassword`, `verifyEmail`/`verifyEmailByToken`, `changePassword`, `verifyPassword` | sign-in ok/failed, sign-out, registration, impersonation start/end, reset requested/completed, email verified, password changed, Patients-page verification |
+| `AppServiceProvider::accountLockedResponse()` (not `AuthController`) | the `login` rate limiter's `->response()` callback | account locked (5 failed attempts/minute) — see B2 update above; the only call site not in a controller/service, because the throttle rejects the request before `AuthController::login()` runs |
 | `UserController` | `store`, `update`, `destroy` | user + super-admin create / edit (before-after) / delete; status toggle |
 | `OrganizationController` | `store`, `update`, `destroy` | organisation create / edit / delete / status |
 | `CreditsController` | `store`, `destroy`, `revokeCredit`, `checkDiscountCodeValidity` | credits assigned, revoked, refunded; discount applied/failed at checkout |
@@ -295,6 +296,6 @@ Answers to the draft's four open questions:
 
 **Resolved:** the eight categories in §3; `critical` added to the frontend enum; failed logins classified `critical` (§4). All three are applied in the frontend on `feat/ui-audit-trail`.
 
-1. Cut "Account locked", "Failed attempt count", "Pricing changes discarded", "Discount code auto-expiry", "Report filtered"? *(recommend: cut all five from Phase 1)*
+1. ~~Cut "Account locked"~~ — **shipped 2026-09-15** (see B2). "Failed attempt count", "Pricing changes discarded", "Discount code auto-expiry", "Report filtered" remain cut.
 2. Confirm the §5 redactions — particularly that **test results and diagnoses are never logged**, and that verification codes are never logged.
 3. Retention window for `PruneAuditLogs` — 1 year? 7 years? This is a compliance answer, not an engineering one.

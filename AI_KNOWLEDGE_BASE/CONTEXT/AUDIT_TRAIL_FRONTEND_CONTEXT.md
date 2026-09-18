@@ -451,7 +451,7 @@ The two reference screens differ in exactly one section — everything else is c
 ├ meta bar ────────────  status pill · category chip · clock + date & time
 ├ What Happened ───────  event description
 ├ Who Did It ──────────  avatar · name · email · company|role · IP
-├ Who Was Affected ────  same card, or a "no target" placeholder
+├ Who Was Affected ────  same card, or the section is omitted entirely (see revision below)
 ├ ▸ Details ───────────  key/value pairs — screen 1        ┐ either,
 ├ ▸ What Changed ──────  before → after table — screen 2   ┘ both, or neither
 ├ Session Details ─────  location · device
@@ -523,9 +523,10 @@ Three shape decisions, each with a reason the backend needs to honour:
   (First Name, Last Name, Email, …) and neither JSON nor a PHP associative array guarantees key
   order survives serialisation. An array of `{label, value}` does.
 - **`value` is polymorphic and the renderer infers from its type** — `string|number` → one line,
-  `string[]` → a stacked list (Assigned Tests), `boolean` → a check/cross flag row. The backend
-  sends data; the drawer decides how it looks — the same principle that keeps category labels in
-  the frontend constant. `before`/`after` in `changes` accept those three types plus `null`.
+  `string[]` → a stacked list (Assigned Tests), `boolean` → `"Yes"`/`"No"` text (see revision
+  below; originally a check/cross flag row). The backend sends data; the drawer decides how it
+  looks — the same principle that keeps category labels in the frontend constant. `before`/`after`
+  in `changes` accept those three types plus `null`.
 - **`session` is structured, not pre-formatted.** The mock renders
   `India, Pune, Maharashtra, India(Asia/Kolkata)` and `Desktop · Microsoft Edge · Windows 10/11`;
   those separators are presentation. Structured fields also let a missing city degrade to the
@@ -607,7 +608,7 @@ and `selectedRowId` in phase 1, which is what this attaches to.
 - Clicking any row opens the drawer with its header already populated, and the detail sections
   skeleton in and then resolve.
 - Both reference screens reproduce: record `722` shows *Details* with a string, an array, and two
-  boolean flags; record `721` shows *What Changed*.
+  booleans (rendered as Yes/No text as of the revision below); record `721` shows *What Changed*.
 - Long values, array values, a null `before`, and a missing target all render without overflow.
 - A record with no `details`/`changes`/`related_activity` drops those sections rather than
   showing empty boxes.
@@ -679,6 +680,27 @@ Three density changes after reviewing the built drawer. Stylesheet only; no mark
 
 Verified by compiling the sheet and scanning the generated CSS: no drawer-scoped selector outside
 the title declares a `font-size` above 14 px or below 11 px.
+
+---
+
+### Post-Phase-4 revisions — product decisions (branch `ui/audit-trail-improvements-11-sep-26`, confirmed 2026-09-11)
+
+Two changes on top of the live-endpoint drawer, both confirmed as deliberate product decisions
+(not defects) after review:
+
+1. **"Who Was Affected" no longer shows a "no target" placeholder.** When `record?.target` is
+   falsy, the whole section is now omitted rather than rendering a placeholder card. This
+   supersedes the Phase 3 layout note above ("same card, or a 'no target' placeholder") — the
+   section now behaves like `details`/`changes`/`session`/`related_activity`: present or absent,
+   never an empty stand-in.
+2. **Boolean values render as `"Yes"`/`"No"` text, not a check/cross flag row.** This supersedes
+   the Phase 3 API-contract note above. `DetailValue` in `AuditDetailSections.js` handles the
+   `boolean` branch as plain text.
+
+Not changed by this revision: column `minWidth` → `width` in `auditTrailColumns.js` was reviewed
+in the same branch and judged a local styling adjustment, not a decision requiring a KB update —
+`TableWithGlobalFilter.js`'s `columnSizingStyle()` helper (added in the Phase 1 revisions below)
+is untouched and still honours both.
 
 ---
 
