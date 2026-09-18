@@ -72,7 +72,7 @@ Read off the branch, not off the plan doc — these are the binding facts.
 
 **People — `GET /api/audit-logs/people`** → flat `[{id,name,email,role,company_name}]`.
 
-**Export — `GET /api/audit-logs/export`** — the button exists but has **no `onClick`** (`AuditTrail.js:281-291`). Wiring it is frontend work, and it cannot be a `window.open`: the endpoint sits behind `auth:sanctum`, so it needs `axiosInstance.get(..., { responseType: 'blob' })`.
+**Export — `GET /api/audit-logs/export`** — ✅ **shipped to `develop` 2026-09-18** (PR #261, merge `07cf5b6f`). The endpoint, its FormRequest, the CSV streamer, and the frontend blob-download wiring all exist — see **§17**. The old note here ("the button exists but has no `onClick`") is superseded; the button now calls `exportAuditLogs()` which does exactly the `axiosInstance.get(..., { responseType: 'blob', skipErrorPopup: true })` predicted here.
 
 ### Three frontend constants that constrain the backend
 
@@ -716,4 +716,113 @@ every helper), the discount breakdown on `billing.payment_succeeded`, the real `
 
 **Suite on `develop` `ff9be500` after all of the above: 812 passed, 0 failed** (2433 assertions, measured
 2026-09-17).
+
+## 17. ✅ MERGED — CSV export + local-timezone date filtering (`feat/audit-trail-export-18-sep`)
+
+> ✅ **On `develop` 2026-09-18** (PR #261, merge `07cf5b6f`). Backend commits `457ed0a6`, `62b031c6`,
+> `8d723b1e` (branched off `872cf9a5`/PR #250); frontend counterpart merged as PR #398 (`432f046`) — see
+> [AUDIT_TRAIL_FRONTEND_CONTEXT §Export](./AUDIT_TRAIL_FRONTEND_CONTEXT.md#post-ship-export--local-timezone-filtering-develop-2026-09-18-pr-398). The
+> merge brought in the same commits with no additional review fixes. **The catalog stays 68 events** — this
+> pass adds no `EVENTS` keys, only a `CATEGORY_LABELS` map and export plumbing.
+
+The Export button described in §2 as "no `onClick`" is now wired end-to-end. Three intertwined changes:
+
+### The export endpoint
+
+- **Route:** `GET /api/audit-logs/export`, added in Zone 3 **before** `/{id}` (`whereNumber('id')` on the
+  detail route already prevented capture, but literal-before-param is kept as the stated rule). Super-Admin
+  gate moved into the FormRequest, not the controller body — same as `index()` now.
+- **`AuditLogController::export()`** runs the *same* query as `index()` via the new `AuditLogFilter`, applies
+  `status` itself (never sorted — see below), enforces a **50 000-row ceiling** (`MAX_EXPORT_ROWS`) checked
+  with a `count()` **before** `streamDownload()` starts (once headers are on the wire there is no way back to
+  an error response), and streams via `AuditLogCsvExport`. Over the ceiling → `422 audit_logs_export_too_large`.
+- **`AuditLogFilter` (new, `app/Services/Audit/`)** — the filter + sort rules extracted out of `index()` so
+  the export applies **byte-identical** filtering; an export that silently disagreed with the table it was
+  launched from would be worse than none. `apply()` deliberately does **not** apply `status` (both callers do,
+  after cloning for tab counts). Its search branch **replaces the `Searchable` trait** for this table: the
+  trait's date-shaped-term branch only covers `expiry_date`/`created_at`/`updated_at`, so a date-shaped search
+  ("2026-09-08") would add zero predicates and return every row — fixed at the call site, not the trait.
+  The **Audit-ID exact match** (originally added on `develop` in `24e2d739`, see §17.1) lives here now:
+  `ctype_digit($term)` → `orWhere('id', (int) $term)`, exact not `LIKE`, since a partial "1" matching 1/10/12
+  would surprise.
+
+### `AuditLogCsvExport` (new, `app/Exports/`)
+
+- **CSV, not XLSX** (the other two exports in that folder are XLSX): an audit export is read by tooling as
+  often as by a person, and PhpSpreadsheet holds the whole workbook in memory — won't hold at 50 k rows.
+  `fputcsv` straight to `php://output` keeps memory flat.
+- **`chunkByIdDesc(1000)`**, never `->get()` or `chunk()` (OFFSET pagination shifts under an append-only
+  table). ☠️ **The query passed in MUST carry no `ORDER BY`.** `chunkByIdDesc()` only strips existing orders on
+  the cursor column (`id`); any other `ORDER BY` (e.g. the table's default `created_at DESC`) survives, leads,
+  and the cursor starts mid-set — the docblock records this produced 1,999 rows / 1,000 distinct ids for any
+  count above the chunk size, a plausible-looking file silently missing its oldest rows. This is why `export()`
+  deliberately omits `applySort()`. Nothing is lost: `audit_logs` is append-only with no `updated_at`, so
+  `id DESC` **is** chronological order.
+- **15 columns**, order mirrors the on-screen table (`auditTrailColumns.js`) left-to-right, with four
+  export-only columns folded into their group: **Sensitivity, IP Address, the untruncated Description, and the
+  failure reason** — the four things the list payload can't provide, which is most of why this is a server-side
+  export. "Who Did It" is the **impersonator** when there is one (matching the table); the account acted
+  through moves to "Acting Through", blank on ordinary rows.
+- **Failure reason** comes from `AuditLog::failureReason()` (new) — reads the `['label' => 'Reason', 'value' => …]`
+  entry out of `details`, the by-convention slot every `failed`-status call site uses (there is no
+  `failure_reason` column).
+- **Category label** via `AuditEventCatalog::categoryLabel()` (new) + `CATEGORY_LABELS` const — the eight
+  display labels, mirrored from the frontend `AUDIT_CATEGORIES` because the CSV has no frontend to hand keys
+  to. Degrades to the raw key rather than throwing (an unknown category must not fail an export of thousands
+  of valid rows). `AuditEventCatalogTest` already pins these keys to `AuditLogIndexRequest::CATEGORIES`.
+- **UTF-8 BOM** written first (Excel reads a BOM-less UTF-8 CSV as the system codepage). **CSV/formula
+  injection neutralised** — a cell opening `= + - @` (tab/CR too) is prefixed with `'` (free-text names,
+  companies, descriptions originate from user input).
+- **`Date & Time` is UTC, spelled out** (`Y-m-d H:i:s UTC`) — `created_at` is UTC and the date filter compares
+  in UTC, so any other zone would put the file and the filter that produced it in different timezones.
+
+### Local-timezone date filtering — resolves the §10 / frontend-timezone gap
+
+This is the fix for the "One more frontend gap" in §10 (viewer-timezone `from`/`to` vs UTC `created_at`).
+
+- The window is stated **only** as `from`/`to` (local calendar dates), plus **`from_offset`/`to_offset`** — the
+  viewer's UTC offset in **minutes** at each boundary (IST = 330), sent by the frontend's `toQueryParams()`.
+  `AuditLogFilter::boundary()` derives the UTC instants from `from 00:00:00` / `to 23:59:59` minus the offset.
+  Absent → 0, i.e. a plain UTC day, so non-SPA callers are unaffected with no fallback branch.
+- ☠️ **Offsets, not instants, by design.** An earlier revision took the instants directly as `from_at`/`to_at`,
+  which let a 1-day `from`/`to` pass the 31-day cap while a 10-year instant range scanned the table. The cap
+  must measure the same values that state the window. **Do not reintroduce a second way to say "which rows".**
+- Compared directly against `created_at`, **not `whereDate()`** — `whereDate()` wraps the column in `DATE()`,
+  defeating every `(*, created_at)` composite index on this table for its primary filter.
+- Validation: `from_offset`/`to_offset` are `integer|between:-720,840` (the real UTC-offset span, UTC−12 to
+  UTC+14) and `required_with` each other; `from`/`to` are `required_with` each other on `index` (a one-sided
+  range is unbounded on the other end and walks past the cap).
+
+### `ValidatesAuditDateRange` trait (new, `app/Http/Requests/Concerns/`)
+
+- **31-day ceiling** (`MAX_DATE_RANGE_DAYS = 31`), shared by `AuditLogIndexRequest` and `AuditLogExportRequest`
+  so the two can't drift; **must match `MAX_DATE_RANGE_DAYS` in `TCV-Frontend/src/constants/auditTrail.js`.**
+  Measures `from`/`to` (inclusive: same day = 1 day). Bounds export volume on an append-only,
+  cross-organisation table. The frontend calendar refuses a wider selection; this is the backstop.
+- **Caps a range that was SUPPLIED** — a request with no `from`/`to` passes straight through. `AuditLogExportRequest`
+  marks both **`required`** (an unbounded export would run a full `COUNT(*)` before the row cap can reject it);
+  `AuditLogIndexRequest` leaves them optional (its paginator bounds the response regardless).
+- `AuditLogExportRequest` reuses `AuditLogIndexRequest::CATEGORIES` / `SENSITIVITY_LEVELS` verbatim, and omits
+  `page`/`limit`/`sortBy`/`sortOrder` (whole set, fixed order — accepting a param only to ignore it would be a
+  small lie).
+
+**New/updated tests:** `AuditLogExportTest` (534 lines — filter parity with index, date-range validation, row
+cap, CSV shape/order, injection escaping, BOM, impersonation columns), `AuditLogSearchTest` (audit-ID exact
+match, from `24e2d739`), and 3 cases added to `AuditLogAccessTest` (export gate).
+
+### 17.1. ✅ ON DEVELOP — two smaller audit changes since the 2026-09-17 sync
+
+Merged to `develop` after the KB's `ff9be500` sync, independent of the export branch:
+
+- **`24e2d739` — Audit-ID exact-match search** (PR #250, `fix/audit-trail-improvement-16-sep-26`, merged
+  `872cf9a5`). Added to `AuditLogController::index()` on `develop`; the export branch then **moved it into
+  `AuditLogFilter`** so index and export share it. `AuditLogSearchTest` (+69 lines).
+- **`050d092b` — discount-toggle message is now dynamic.** `DiscountCodeController`'s
+  `billing.discount_code_toggled` description changed from the static `'Discount code activated/inactivated.'`
+  to `'Discount code '.($discount->is_active ? 'activated' : 'inactivated').'.'` — same dynamic-title style §13
+  applied to status-change events. One line, description text only; catalog unchanged.
+
+> **Not audit-trail:** `ws-502` (`00d5e98f`, `15207600`) fixes list-sort order for Credits / Discount Codes /
+> Organizations / Users / Reports — unrelated to this feature, noted here only so a reader scanning `develop`'s
+> recent commits doesn't mistake it for audit work.
 
