@@ -165,6 +165,30 @@ has hashes built against the wrong key and patients are unfindable by address ([
    against both databases, never by comparing the old UI against the new one.
 7. **`migrate:*` reads `OLD_DB_CONNECTION`.** It is a second connection, configured separately; the
    commands fail loudly if it is absent rather than migrating nothing quietly.
+8. ☠️ **`insertOrIgnore` against a column with no unique index is a plain INSERT.** It ignores a row only
+   when one would be *violated*, so aimed at an unconstrained column it is a rename of `insert()`.
+   `runPreMigrationSetup()` wrote the legacy `compliance` and `type` values on top of the ones
+   `CompliancesTableSeeder` / `OrganizationTypesTableSeeder` had already inserted, and neither
+   `compliances.compliance` nor `organization_types.name` carried a unique index — so every run appended
+   another full copy. QA (`tcv_qa_db_test`) held `AICC/SABA` and `Non AICC/SABA` **twice** (ids 1–2
+   seeded with NULL timestamps, 3–4 stamped by the run) plus **6** duplicate organisation types, and the
+   Add Organisation dropdowns render one `<option>` per row. The lookup caches compounded it: keyed by
+   value and **last-row-wins**, so all **63** migrated organisations bound to the duplicate rather than
+   the seeded row — and because `validations.js` hardcodes `compliance_id === "1"` as AICC/SABA, all
+   **57** AICC/SABA orgs were being asked for a Static IP they should never need
+   ([ORGANIZATION trap 8](ORGANIZATION_CONTEXT.md)). Fixed by `ws-459` (**pending on `develop`,
+   uncommitted as of 2026-09-21**): `2026_09_21_000001_deduplicate_organization_lookup_tables` merges
+   each value onto its **lowest** id — repointing `organizations` **before** deleting, since neither
+   column has an FK and the Organisations grid left-joins, so a dangling id reads as *no compliance at
+   all* — and adds the two missing unique indexes; `importLookupValues()` replaces both `insertOrIgnore`
+   loops with a case-insensitive existence check and warns when the index is absent. Only these two
+   lookup tables are written by any `migrate:*` command; `countries`, `states`, `allowed_tests` and
+   `privileges` are unconstrained too but seeder-only, so they cannot duplicate this way.
+   ⚠️ `patients` and `credits` carry a `legacy_id` with **no unique index on it** — both rely entirely on
+   `migration_tracker`, and `transaction_details` is the same defect already proven to leak (hence
+   `deduplicateTransactionDetails()`). Pinned by
+   `tests/Feature/Migration/InsertOrIgnoreNeedsUniqueConstraintTest.php`, which fails if a new
+   `insertOrIgnore` targets an unconstrained table.
 
 ---
 

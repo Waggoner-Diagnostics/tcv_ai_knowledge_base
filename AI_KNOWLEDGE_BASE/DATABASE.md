@@ -140,6 +140,16 @@ recreates them. **Only `discount_code_users` is live.**
 - There is no seeder set for reference data beyond `database/seeders`; `compliances`, `privileges`,
   `organization_types`, `organization_settings_options` and `price_details` are lookup tables that must
   be populated for the app to be usable.
+- ☠️ **Lookup tables that the migration also writes need a unique index, or every run duplicates them.**
+  `compliances.compliance` and `organization_types.name` are unique as of
+  `2026_09_21_000001_deduplicate_organization_lookup_tables` (`ws-459`, **pending on `develop`,
+  uncommitted 2026-09-21**). They are seeded *and* filled from legacy data by `migrate:tcv-users-orgs`,
+  which used `insertOrIgnore` — a plain INSERT without a constraint to ignore against — so QA carried two
+  of each compliance and six duplicate org types, one extra set per run
+  ([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). `countries`, `states`,
+  `allowed_tests` and `privileges` have no unique index either; that is safe **only** because no
+  `migrate:*` command writes them. Seeder-only is the precondition — if one ever gains a migration
+  writer, it needs the index first.
 - ☠️ **MySQL-only SQL in a migration takes down the entire test suite, not one test.** Tests run on
   in-memory SQLite and `RefreshDatabase` re-migrates from scratch for every test, so a single
   unguarded `ALTER TABLE … MODIFY` or `CONCAT()` aborts migration and **every test errors**. This is
