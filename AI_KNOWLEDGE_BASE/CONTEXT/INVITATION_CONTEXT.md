@@ -437,9 +437,13 @@ nowhere — which is what would catch a placeholder added to the seed and not to
 
 ⭐ **Where the org values come from, and what happens when they are missing.** Send Test collects an
 email address and nothing else, so the patient's name is known only when the sender already has a
-`patients` row on that address — `Patient::whereEmail($email)->where('user_id', $sender->id)`,
+`patients` row on that address — `Patient::whereEmail($email)->where('user_id', $sender->id)->orderBy('id')`,
 scoped to the sender so another account's patient on the same address cannot leak a name into the
-email. A first invitation has no name and the greeting falls back to the literal `Patient` — but only
+email. ⚠️ **`orderBy('id')`, not `latest('id')`, and it has to stay that way:** nothing enforces one
+patient per address, so this can find several, and `TestController::patientByEmail()` resolves the same
+duplicates oldest-first. Disagree with it and the invitation greets one name while the test that
+invitation leads to shows another. `…::test_a_duplicated_address_greets_the_same_patient_the_test_flow_resolves`
+pins the agreement rather than the choice. A first invitation has no name and the greeting falls back to the literal `Patient` — but only
 when *both* names are unknown, because "Dear Patient Doe" is not a greeting. That makes the greeting a
 **three-way** choice, and the third branch is the one to remember: a row with a surname and no first
 name greets by surname alone, `Dear Doe:`. It is a copy decision rather than a consequence of the
@@ -474,8 +478,19 @@ receives. If you are reading an older copy of this pack, that prediction is the 
 ⚠️ **An organization with no name at all still sends, and says so in the log.** With neither an
 `organizations` row nor a `company_name`, the seeded template's sign-off goes out with a blank line
 where the sender's identity belongs — a silent degradation, since the send itself succeeds. `ws-401`
-logs `Organization invitation has no organization name to substitute` with the `user_id` and recipient.
-If that line shows up in QA, the account is missing its `organizations` row; it is not a mail fault.
+logs `Organization invitation has no organization name to substitute` with the `user_id` **and no
+recipient address**. If that line shows up in QA, the account is missing its `organizations` row; it is
+not a mail fault.
+
+☠️ **Neither log line `ws-401` adds carries the invitee's address, and new ones must not either.**
+`SendTestInvitationEmailsJob::withoutAddresses()` exists precisely to strip addresses that SMTP errors
+quote ("550 5.1.1 `<jane@example.com>` …"), so putting one in a context array walks straight past that
+guard — and `test_invitations.email` / `patients.email` are encrypted at rest, which logging in
+plaintext undoes. The row is the record: `email_status`, `email_sent_at` and `email_error` carry the
+full text for the practice that typed the address. ⚠️ **Pre-existing exception:** the success-path
+`Log::info('Invitation email sent', …)` in `TestInvitationMailer::send()` still carries `email`, and so
+does the `ws-373` restyle warning above it. Both predate `ws-401` and are left alone by it — worth its
+own ticket, not a drive-by in a template PR.
 
 ⚠️ **The org block's `$sender === null` branch is unreachable, and deliberately not left as a `skip`.**
 `typeForUser()` casts a null sender to `0` and `User::ORGANIZATION` is `4`, so a missing sender always
@@ -510,7 +525,7 @@ whitespace on**.
 |---|---|---|
 | 1 | whitespace on **both** sides | `Dear {{patient_firstname}}<strong>{{patient_lastname}}</strong>,` with a blank `first_name` rendered **`DearDoe,`** |
 | 2 | whitespace on **either** side, minus a `HUGGING_PUNCTUATION` denylist (`.,;:!?)]}`) | every mark *off* the list gained a space the template never had — `{{patient_lastname}}'s results` greeted a blank surname as **`Jane 's results`** |
-| 3 (current, 2026-09-21) | **both** sides → keep one space unless the next character hugs; **one** side → keep it only if losing it would run two words together | — |
+| 3 (current, 2026-09-21) | **both** sides → keep one space unless the next character hugs; **one** side → keep it only when *markup* sat on the other side **and** losing it would run two words together | leaves an invisible leading space when a token opens a `<p>` — see below |
 
 Why the split: whitespace on both sides is *two* separators with one token between them, so one leaves
 with the token and one stays. Whitespace on one side is a *single* separator, and dropping the token
@@ -522,6 +537,14 @@ have to enumerate every mark anyone might type. The one-side branch uses `WORD_S
 character after a dropped `{{patient_firstname}}` is usually the `{` of a `{{patient_lastname}}` still
 awaiting its value. Read it as punctuation and `DearDoe,` comes straight back.
 
+The "markup on the other side" half is the rest of it: the space survives only where the *editor* split
+two real neighbours, never where the template wrote them adjacent. Without it
+`{{patient_lastname}}2024` gains a space it never had (`Jane 2024`) while the same template with a
+surname renders `Jane Doe2024`. ⚠️ **Known cost:** an opening `<p>` is markup on the other side too, so
+a token that *starts* a paragraph keeps a leading space — `<p> Jane rocks</p>`. HTML collapses it, and
+telling the two apart means duplicating `EmailContent::BLOCK_TAGS` inside this function, so it is left
+and pinned by the `token opens the paragraph` data set rather than fixed.
+
 `HUGGING_PUNCTUATION` still exists but is now consulted **only** on the both-sides branch — that is what
 keeps `Dear {{patient_firstname}} {{patient_lastname}} :` from sending as `Dear Jane :`, while
 `&mdash;` with spaces around it keeps its gap (the entity is not whitespace to the pattern, so a
@@ -531,7 +554,7 @@ word-start test would have closed it up — the both-sides branch never asks).
 `DearDoe,` case is reachable from the launch URL, not theoretical. Three data-provider tests pull in
 opposite directions by design — **change one and run all three**:
 `…::test_an_unknown_surname_leaves_no_stray_space` (6), `…::test_a_blank_first_name_keeps_the_surname_spaced`
-(4), `…::test_a_dropped_surname_leaves_the_templates_own_spacing` (8, the round-3 punctuation cases).
+(4), `…::test_a_dropped_surname_leaves_the_templates_own_spacing` (10, the round-3 cases).
 
 ☠️ **Do not narrow that run back to whitespace-only.** The first cut of this matched the *pair* of
 tokens with `\s` between them, which meant the fix applied to `{{patient_firstname}} {{patient_lastname}}`
