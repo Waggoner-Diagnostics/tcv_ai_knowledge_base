@@ -18,10 +18,10 @@
 
 ---
 
-## 🚧 Patient PII is encrypted at rest on `tcv_data_migration` (unmerged)
+## ☠️ Patient PII is encrypted at rest — on `develop` since 2026-09-18 (`ws-459`, PR #255)
 
-Not on `develop` and not in `INDEXES/`, but it changes the first thing you would try, so it belongs
-here: `first_name`, `last_name`, `email`, `dob`, `zipcode` and `test_eyes` are held in the legacy
+✅ **Shipped and indexed.** This is the first thing to know before writing any patient query:
+`first_name`, `last_name`, `email`, `dob`, `zipcode` and `test_eyes` are held in the legacy
 CodeIgniter cipher with a **random IV**. No SQL comparison against those columns can match — exact
 lookups go through the keyed-md5 blind indexes (`identification`, `*_name_ident`) and substring search is
 done in PHP by `PatientNameSearch`. `patient_id` stays plaintext deliberately, which is why it is still
@@ -108,7 +108,7 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
 5. **Patients are never deduplicated.** Nothing enforces uniqueness on `email` or `patient_id`, so the
    same person invited twice becomes two `patients` rows with separate test histories.
 
-   🚧 `tcv_data_migration` (unmerged) narrows this on the **update** path only: `unique:patients,email`
+   ✅ `ws-459` (on `develop` 2026-09-18) narrows this on the **update** path only: `unique:patients,email`
    was a silent no-op once `email` became ciphertext, and it is replaced by a check through the blind
    index. Creation is unchanged and still admits duplicates, and `identification` is a plain index, not a
    unique one — so `whereEmail()` can still match several rows.

@@ -168,7 +168,7 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
 - [ ] Every sortable header on a `useServerSorting` grid sends a key the endpoint allow-lists (an
       unknown key is silently replaced by the default, so the grid shows a sort it isn't doing), and
       unsortable columns use `disableSortBy`, not `sortable: false`. A fetch that writes the grid
-      ignores out-of-date responses. [FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502-unmerged)
+      ignores out-of-date responses. [FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502)
 - [ ] `eslint src --max-warnings 0` on the PR branch reports the **same or fewer** problems as
       the same command run against `develop`. Not an absolute zero-warnings gate — `develop`
       itself has never passed `--max-warnings 0` outright (198+ pre-existing warnings, 2

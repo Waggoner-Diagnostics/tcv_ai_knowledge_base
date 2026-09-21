@@ -121,11 +121,14 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-**812 tests pass on `develop` `ff9be500`** — **2433 assertions, 0 failures**, 1 PHPUnit deprecation,
-1 min 25 s (measured 2026-09-17 with `vendor/bin/phpunit`, PHP 8.2.12, in-memory SQLite). Up from 574 on
-2026-09-09: the difference is `ws-404`'s invitation suites, `ws-449`'s IP enforcement test, and the audit
-trail's per-controller suites. A static count finds **579 `test_*` methods in 71 files** — the gap to
-812 is data providers. The Stripe SDK prints several `Undefined property of Stripe\PaymentIntent`
+**1191 tests pass on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
+2026-09-21 with `php artisan test`, PHPUnit 11.5.55, PHP 8.2.12, in-memory SQLite; exit code 0). Up from
+812 on `ff9be500`: the +379 is almost entirely **`ws-459`** (PR #255, 2026-09-18), which brought the
+legacy-migration and encryption suites — `LegacyCipherTest`, `LegacyEncrypterHardeningTest`,
+`MislabelledPatientPiiTest`, `StagingTablesAreIsolatedTest` and the `migrate:*` command coverage — plus
+`ws-502`'s tiebreak assertions, `ws-480`'s purchase-refusal suite and the audit-log export tests.
+A static count finds **723 `test_*` methods in 119 files** — the gap to 1191 is data providers.
+The Stripe SDK prints several `Undefined property of Stripe\PaymentIntent`
 notices to stderr during the run; they are noise, not failures. 📌 The
 `InvitationSendReviewFixesTest:261` quoted-printable assertion that earlier KB notes call a known failure
 **passes** on `develop`.
@@ -133,11 +136,11 @@ notices to stderr during the run; they are noise, not failures. 📌 The
 The per-branch totals this section used to track (93 on `develop`, 149 on `ws-404`, 186 on `ws-417`, 245
 on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all landed, so `develop` is
 the number that matters. Still untested: the test execution loop, resume, payments, reports,
-organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (unmerged,
-below) pins the unlimited-credit purchase refusal; nothing still covers a **successful** purchase end to
-end.
+organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (merged
+2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
+purchase end to end.
 
-### ⚠️ `ws-480` adds 6 backend tests that are not on `develop` (unmerged)
+### ✅ `ws-480` added 6 backend tests — on `develop` since 2026-09-18 (PR #254)
 
 `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`, added 2026-09-17 with the PR-review fix
 that moved the unlimited-credit refusal onto the live purchase path
@@ -153,9 +156,9 @@ is not in `8d247f8c`.
 | expired unlimited grant | `Credits::hasUnlimited()` goes through `scopeActive()`, so a lapsed `is_unlimited_credit` row does not refuse the purchase — the same boundary `CreditsExpiryBoundaryTest` pins for the balance |
 
 ☠️ The SPA half is still unpinned: no `CreditPage` or `Checkout` test, and that is the gate a customer
-actually meets ([FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged)).
+actually meets ([FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480)).
 
-### ⚠️ `ws-502` adds 17 backend tests that are not on `develop` (unmerged)
+### ✅ `ws-502` added 17 backend tests — on `develop` since 2026-09-17 (PR #253)
 
 First measured on the branch (`00d5e98f`, 2026-09-16): 15 tests, all passing. Run against the
 pre-`ws-502` code, every test in the four new files other than `DiscountCodeListSortTest` failed (11 of
@@ -187,7 +190,7 @@ that file — a real backoff there is not extra realism, it is just a slower sui
 login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
 `verify-password` remain untested.
 
-✅ **The whole suite is green on `develop` as of 2026-09-17** (812/812) — including
+✅ **The whole suite is green on `develop` as of 2026-09-21** (1191/1191) — including
 `DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which used to fail on a clean
 tree and was for a while the one expected red. If you see it fail again, that is a regression now, not
 the known-bad case.
@@ -316,12 +319,12 @@ failure with `--testPathPattern` before blaming a change.
 | `src/utils/sliderUtils.test.js` | 4 | slider helpers |
 | `src/utils/validation.test.js` | **12** | `ws-407` (on the branch only) — the shared phone helpers in `src/utils/validation.js`: blank and separator-only treated as valid, the 15-digit and 20-character caps **truncating rather than rejecting** (the frozen-field regression), `phoneForSubmit` collapsing `()` to `''`, and `validateProfile` reporting a short number. The only guard on the checkout billing gate ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |
-| `src/redux/slices/discount/discountSlice.test.js` | **2** | `ws-502` (unmerged) — an older Discount Codes list response landing last is ignored; the latest still applies |
-| `src/redux/slices/createpaginatedslice.test.js` | +**1** | `ws-502` (unmerged) — the same stale-response race through `fetchItemsPaginated`. Its three `deleteItem` tests now load the list through the thunk (`loadList`), because the strict stale check ignores a hand-dispatched `fulfilled` |
-| `src/components/table/TableWithGlobalFilter.test.js` | **3** | `ws-502` (unmerged) — a `useServerSorting` header goes asc → desc → asc and never emits a cleared sort; `currentSort` moves the header when the page's sort changes elsewhere, without emitting `onSort`; the page echoing a click back changes nothing |
-| `src/pages/Setting/RestrictedIps.test.js` | **2** | `ws-502` (unmerged) — newest IP first on load; a just-added IP becomes row 1. The first page-level RTL test with a real store and a mocked `AxiosInstance` — copy it for page tests |
-| `src/pages/Reports/UserTests.test.js` | **2** | `ws-502` (unmerged) — no error popup for a search request a newer one replaced; the current request's error still shows |
-| `src/pages/AddCredits.test.js` | **2** | `ws-502` (unmerged) — the same for a sort click on Add Credits (`latestCreditsRequest`) |
+| `src/redux/slices/discount/discountSlice.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — an older Discount Codes list response landing last is ignored; the latest still applies |
+| `src/redux/slices/createpaginatedslice.test.js` | +**1** | `ws-502` (on `develop` 2026-09-17) — the same stale-response race through `fetchItemsPaginated`. Its three `deleteItem` tests now load the list through the thunk (`loadList`), because the strict stale check ignores a hand-dispatched `fulfilled` |
+| `src/components/table/TableWithGlobalFilter.test.js` | **3** | `ws-502` (on `develop` 2026-09-17) — a `useServerSorting` header goes asc → desc → asc and never emits a cleared sort; `currentSort` moves the header when the page's sort changes elsewhere, without emitting `onSort`; the page echoing a click back changes nothing |
+| `src/pages/Setting/RestrictedIps.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — newest IP first on load; a just-added IP becomes row 1. The first page-level RTL test with a real store and a mocked `AxiosInstance` — copy it for page tests |
+| `src/pages/Reports/UserTests.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — no error popup for a search request a newer one replaced; the current request's error still shows |
+| `src/pages/AddCredits.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — the same for a sort click on Add Credits (`latestCreditsRequest`) |
 
 On the `ws-502` branch with its 2026-09-17 review fixes, a full run reads **1 failed / 17 passed,
 187/187 tests**. The one failed suite is `App.test.js`, as below. Nine of the twelve `ws-502` tests

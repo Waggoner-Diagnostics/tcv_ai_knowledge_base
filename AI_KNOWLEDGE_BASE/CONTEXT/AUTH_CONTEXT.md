@@ -75,8 +75,10 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 `401 'Authentication required.'`
 
 ### Facts
-- **All four tiers store their *session* token SHA-256 hashed** — on `tcv-backend-codefix`, which is
-  **not yet merged** (tiers 2 and 4 were migrated there; `develop` still stores them plaintext).
+- **All four tiers store their *session* token SHA-256 hashed** — ✅ **on `develop`** since
+  `tcv-backend-codefix` merged (2026-09-07; the "not yet merged" wording here was stale and was
+  corrected at the 2026-09-21 sync, verified by `FlexibleAuthMiddleware` hashing before every lookup and
+  by the hashed writes in `TestInvitationController`, `TestResumeController` and `PatientController`).
   Related: the **verification code** is no longer written to the logs either — it is the credential
   that mints a tier-2 session, and the logs are now JSON-formatted and shippable.
 - ☠️ **"A DB read no longer yields usable tokens" is not true yet — the hashing is partial.** It
@@ -127,6 +129,27 @@ POST api/login
   ├─ email_verified !== 'yes'                   → 401, sends nothing   (ws-417)
   └─ createToken(...) → { access_token, token_type, user }
 ```
+
+☠️ **`users.email` is no longer unique in the database** (`ws-459`, PR #255, on `develop` 2026-09-18).
+`2026_09_07_000001_drop_unique_index_on_users_email` replaced `users_email_unique` with a **plain**
+index, because the legacy `tcv_user` table allows one address on many rows and the unique constraint
+was forcing the migration to drop or merge real accounts. `2026_09_15_000001` then made the column
+**nullable**. The same migration adds `users.username`, which the migration command had been writing
+since its first run although no migration ever created it — it existed only where someone added it by
+hand.
+
+Three consequences, and the third is the one that bites:
+
+1. **`where('email')->first()` can now resolve the wrong account.** Order is not defined. Anything that
+   identifies a user by address alone is a coin flip between duplicates.
+2. **Nothing enforces uniqueness at the application layer either** — there is no `unique:users,email`
+   rule in the FormRequests. The constraint is simply gone, not relocated.
+3. ☠️ **Password reset had to stop using `Password::reset()` for exactly this reason.**
+   `setOrResetPassword()` resolves the account itself and then drives the broker by hand
+   (`$broker->tokenExists($user, $token)` → `forceFill` → `deleteToken`), because Laravel's
+   `Password::reset()` runs its *own* unordered `where('email')->first()` and could reset a **different
+   account** from the one the token was issued to. If you add a path that resets or verifies by address,
+   resolve the user first and pass the model — never hand an address to a broker.
 
 ☠️ **`login()` no longer mails anything** (`ws-417`, 2026-09-03). It used to mint-or-reuse a token and
 send the verification mail on every unverified login attempt; the mail now goes out at **registration**
@@ -181,7 +204,7 @@ page is therefore still accepted through the emailed reset link. See
 
 ## `verify-password` is a fourth path, and it decides nothing
 
-`POST api/verify-password` (`API-163`, `auth:sanctum`, no throttle — the only rate limit in
+`POST api/verify-password` (`API-164`, `auth:sanctum`, no throttle — the only rate limit in
 `routes/api.php` is on `/contact`) → `AuthController::verifyPassword()`: validate, `Hash::check`,
 return 200, or 422 `api.incorrect_password`. It writes **nothing** — no session flag, no token
 ability, no log line. Its only caller is the SPA's Patients-menu prompt, which treats the 200 as

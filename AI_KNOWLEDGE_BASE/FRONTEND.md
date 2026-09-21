@@ -6,7 +6,7 @@ The clinician/admin portal **and** the patient test player. Served under `/app`
 | | |
 |---|---|
 | Stack | React 18 · Redux Toolkit · React Router **v7** · Axios · Bootstrap 5 / React-Bootstrap · Formik + Yup · Stripe.js · Sass |
-| Scale | 272 source files · ~38.4k lines · 65 top-level routes · 43 Redux slices · 16 hooks |
+| Scale | 287 source files · ~41.0k lines · 65 top-level routes · 44 Redux slices · 18 hooks |
 | Env | `REACT_APP_BASE_URL`, `REACT_APP_STRIPE_PUBLIC_KEY`, `REACT_APP_TURNSTILE_SITE_KEY`, `PUBLIC_URL` |
 | Build | `react-scripts` (CRA 5) |
 
@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-163`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-164`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -157,16 +157,16 @@ Both build URLs from a `baseUrl` at runtime, which is why they show as `_scanner
 
 ☠️ **`createCrudSlice`'s `createItem` appends** (`s.list.push`), so a new row lands **last** whatever
 order the page shows. Restricted IPs (`pages/Setting/RestrictedIps.js`) therefore sorts its rows by `id`
-descending on every list change, so a just-added IP is the first row (`ws-502`, unmerged). Its API
+descending on every list change, so a just-added IP is the first row (`ws-502`, on `develop` 2026-09-17). Its API
 (`RestrictedIpController::index()` → `RestrictedIp::all()`) is still unordered. Pricing, Patients,
 Organisations and the admin slices share this factory, so **fix order per page, not in the factory**.
 
-**`createPaginatedCrudSlice` drops stale list responses (`ws-502`, unmerged).** `pending` stores
+**`createPaginatedCrudSlice` drops stale list responses (`ws-502`, on `develop` 2026-09-17).** `pending` stores
 `action.meta.requestId` in `listRequestId`; `fulfilled`/`rejected` return early unless their `requestId`
 matches. No exceptions, the same check as `discountSlice` and `discountCodesReportSlice`. So a test has
 to load a list through the thunk with a mocked `AxiosInstance` (`createpaginatedslice.test.js`'s
 `loadList`). A hand-dispatched `widgets/fetchPaginated/fulfilled` is now ignored. See
-[Server-sorted grids](#server-sorted-grids-ws-502-unmerged).
+[Server-sorted grids](#server-sorted-grids-ws-502).
 
 ☠️ **`deleteItem` in `createPaginatedCrudSlice` omitted `skipErrorPopup` until 2026-09-07.**
 `createSlice.js` passes `{ skipErrorPopup: true }` on the request; the paginated twin did not. The
@@ -312,7 +312,7 @@ clearing, because auth hydrates from `localStorage` before the Header's first fe
 logging out and back in as a **different user in the same tab** does show the placeholder and does not
 show the previous user's balance. `ws-480`'s purchase gate depends on exactly that reset — it treats
 `settled` (added on that branch, reset the same way) as "this user's balance question has been answered"
-([Credit purchase gate](#credit-purchase-gate-ws-480-unmerged)). Any field added to this slice that a gate
+([Credit purchase gate](#credit-purchase-gate-ws-480)). Any field added to this slice that a gate
 will read has to go in `initialState`, or `clearedState()` will not clear it and it will leak across
 identities.
 
@@ -472,14 +472,13 @@ Aggressive preloading far ahead of display will fetch URLs that expire before us
 
 ---
 
-## Server-sorted grids (`ws-502`, unmerged)
+## Server-sorted grids (`ws-502`)
 
-⚠️ **`ws-502` sits on a branch in both repos** (backend `00d5e98f`, frontend `a28074f`, 2026-09-16,
-plus PR-review fixes on 2026-09-17: backend `15207600`, frontend not yet committed when this was
-written) and is **not on
-`develop`**, so the generated indexes don't show it. Anything marked `ws-502` here describes that
-branch. The frontend half alone doesn't fix the ticket: rows repeating across pages is the backend's
-missing tiebreak, so the two ship together.
+✅ **`ws-502` merged into `develop` in both repos on 2026-09-17** — backend PR #253 (`820747a6`,
+carrying `00d5e98f` and the review fix `15207600`), frontend PR #390 (`9152b45`, carrying `a28074f`).
+The generated indexes now show it, and everything marked `ws-502` below describes shipped code.
+The frontend half alone never fixed the ticket: rows repeating across pages is the backend's missing
+tiebreak, which is why the two shipped together.
 
 Every admin grid that pages on the server also sorts there. `useServerSorting` on
 `TableWithGlobalFilter` sets react-table's `manualSortBy`, so **the table never reorders rows itself**.
@@ -550,11 +549,12 @@ emits `onSort` and refetches page 1.
 
 ---
 
-## Credit purchase gate (`ws-480`, unmerged)
+## Credit purchase gate (`ws-480`)
 
-⚠️ **`ws-480` sits on a branch in both repos** (backend `8d247f8c`, frontend `346efce`, both 2026-09-17,
-each merged up from `develop` the same day) and is **not on `develop`**, so the generated indexes don't
-show it. Anything marked `ws-480` here describes that branch.
+✅ **`ws-480` merged into `develop` in both repos on 2026-09-18** — backend PR #254 (`10a8ae73`),
+frontend PR #392 (`1f31854`). ⚠️ **Cite the merges, not `8d247f8c` / `346efce`**: both of those are the
+pre-review state. The review defects were fixed on the branches first (backend `b081b618`, `23d005ff`;
+frontend `e3a222e`, `2b745ce`), so what shipped is the corrected shape described below.
 
 An account holding a live unlimited grant has nothing left to buy, so the credits page must stop
 selling to it. `pages/UserPannel/CreditPage/CreditPage.js` decides that with three flags:
@@ -646,7 +646,7 @@ unstyled, the same trap as the `&--type-*` credit-history badges
 
 ☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
 landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
-`API-090`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`API-091`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
 `POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
 `services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
 `api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
@@ -672,7 +672,7 @@ usertype whose tests the modal manages.
 
 ☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
 user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
-*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-149`, 422
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-150`, 422
 `api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
 rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
 account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
@@ -691,6 +691,64 @@ stay consistent.
 (`if (! empty($unassign))` in `TestController::bulkUpdateAssignment()`), and `unassignUserTest()` refuses
 only the last remaining row. The client check is not a mirror of a rule that would otherwise catch it —
 on this path it is the rule.
+
+---
+
+## Migrated records read differently from native ones (`ws-459`)
+
+✅ **On `develop` 2026-09-18** — frontend PR #395 (`d0da885`), the client half of the `ws-459` data
+migration ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)). 8 files, ~360 lines, all in
+`pages/UserPannel/PatientTestList/`, `PatientPage/InvitedPatientsTab.js`, `ResultPage/`,
+`pages/Reports/UserTests.js` and `utils/dateUtils.js`.
+
+The theme: **a migrated row and a row created in this system are not the same shape**, and the screens
+that render both had been asserting things the legacy data does not support.
+
+☠️ **`is_email_invite` has three states, so `!is_email_invite` is wrong.**
+
+| Value | Means | In-Office tag |
+|---|---|---|
+| `true` | emailed invitation | no |
+| `false` | taken in office | **yes** |
+| `null` | the legacy record never said | **no** |
+
+Legacy had no emailed column before **2020-01-30**, so those rows' `0` meant nothing, and the backend's
+`2026_09_16_000001_make_is_email_invite_nullable_on_patient_tests` makes the column nullable to preserve
+that "unknown". `!is_email_invite` treats `null` as false and tags every pre-2020 migrated test
+**In-Office** — asserting something no row in the old database supports. Both `PatientTestList.js` and
+`ResultPage.js` now test `=== false` explicitly. Any new consumer of this flag must do the same.
+
+☠️ **Test ID on screen is `legacy_id`, not `id`.** `tests.id` is a fresh surrogate key, so the same
+test carries a different number in each system — legacy `9` "Waggoner CCVT" is `17` here. The list
+renders `pt.test?.legacy_id ?? pt.test?.id`, and `legacy_id` is `null` for anything created in this
+system. `ResultPage` has the same problem one level down: legacy's "Test/Plate ID" printed
+`tcv_assign_test.id` (the *assignment*), not the test type, so it renders
+`result.test_plate_id ?? result.test?.id` and the label was corrected from "Test ID" to **"Test/Plate
+ID"**. `test_plate_id` carries the legacy row's id for a migrated test and `patient_tests.id` for a
+native one. A `legacy_id` is the only safe thing to quote to a customer comparing the two systems.
+
+⭐ **`formatLocalDate()` is new in `utils/dateUtils.js`, and it is not a duplicate of `formatDate()`.**
+`formatDate()` matches fixed patterns and **ignores the offset**, so handed an ISO 8601 instant it
+prints the **UTC** calendar date — a day off near midnight for anyone not on UTC. Use `formatLocalDate()`
+for any timestamp that came from the API as an instant; keep `formatDate()` for date-only strings.
+Related: the audit trail's own offset handling in
+[AUDIT_TRAIL_FRONTEND_CONTEXT](CONTEXT/AUDIT_TRAIL_FRONTEND_CONTEXT.md).
+
+**Status wording mirrors the legacy Patient Test List** so a row reads the same in both systems —
+`TEST_STATUS_LABELS` in `PatientTestList.js`:
+
+| `status` | Label shown |
+|---|---|
+| `pending` | Pending |
+| `inprogress` | In Progress |
+| `completed` | Test Complete |
+| `abandoned` | **Credit Revoked** |
+
+Without the badge, two rows for one test — one taken, one never opened — render identically.
+`pending` now shares the "no result to view or download" branch with `inprogress`; it used to fall
+through and offer a result page that could only fail. That is defensive rather than load-bearing:
+`getPatientTests()` excludes `openInvitation()` rows, which is every migrated unfinished test, so
+pending rows surface on the **Invited Patients** tab instead.
 
 ---
 
@@ -732,7 +790,7 @@ Regenerated every run; the current state:
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
 - **A server-sorted column's `id` must be a key the endpoint allow-lists**, and a page that fetches into
   local state must drop out-of-date responses. See
-  [Server-sorted grids](#server-sorted-grids-ws-502-unmerged).
+  [Server-sorted grids](#server-sorted-grids-ws-502).
 - **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
   on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).
 - **State another session can change must be re-fetched, not assumed fresh.** Nothing is pushed to the

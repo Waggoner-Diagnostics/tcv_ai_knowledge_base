@@ -216,7 +216,8 @@ The SPA helper is the only guard, which is why it is shared rather than per-scre
 > 2026-09-17* below. The heading is kept because other pages link to this anchor, and the trap it names
 > is still the one to learn from: a rule on `api/stripe/*` alone binds nothing.
 
-`ws-480` (backend `8d247f8c`, 2026-09-17, **unmerged**) stops an unlimited-credit account from buying
+`ws-480` (PR #254, merge `10a8ae73`, on `develop` 2026-09-18; the sha `8d247f8c` cited here is the
+pre-review state) stops an unlimited-credit account from buying
 more credits. **As first written** the server-side half was a single early return in
 `StripePaymentController::createPaymentIntent()` — which is the trap; see *Status 2026-09-17* below for
 the shape it ended up in. The refusal itself reads:
@@ -233,12 +234,12 @@ failed"*, which reads to a customer as an outage rather than a deliberate refusa
 added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
 the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
 
-☠️ **That method is `POST api/stripe/create-payment-intent` (`API-090`) — the legacy surface, which the
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-091`) — the legacy surface, which the
 SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
 `POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **as first written
 neither had an unlimited check**. So the guard could not fire on the path that takes money: the
 enforcement a customer actually met was `CreditPage`/`Checkout` hiding the flow
-([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480-unmerged)), and a request that skipped the SPA
+([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480)), and a request that skipped the SPA
 still reached `BasePaymentProvider::createTransactionRecord()`, which wrote the grant and the
 transaction as usual.
 

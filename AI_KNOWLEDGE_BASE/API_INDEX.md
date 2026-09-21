@@ -1,8 +1,8 @@
 # API — Shape and Conventions
 
 The exhaustive table is generated: [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md)
-(**163 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
-(**17 of 163 endpoints are public**). This page is the shape.
+(**164 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
+(**17 of 164 endpoints are public**). This page is the shape.
 
 ## Base
 
@@ -21,9 +21,9 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
 | `api/organizations`, `api/organization/*` | ~12 | mixed | `verify-signature` is public |
 | `api/credits`, `api/user/credits`, `api/patient-tests/*/revoke-credit` | ~9 | `auth:sanctum` | |
 | `api/payment/*` | 5 | `auth:sanctum` | the current payment surface |
-| `api/stripe/*` | 5 | `auth:sanctum` | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md). 📌 **Not public**: all five moved into the `auth:sanctum` group on 2026-09-07 ([S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop)); this row said *public* until 2026-09-17, while [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) and the public-route audit already showed otherwise. ⭐ On the unmerged `ws-480`, `create-payment-intent` (`API-090`) and `confirm-payment` return **422** for an unlimited-credit account. ☠️ That refusal was at first *only* here, on the surface **no SPA code calls**, leaving the live `api/payment/*` purchase open; it now covers both surfaces ([BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
+| `api/stripe/*` | 5 | `auth:sanctum` | ⚠️ deprecated and broken — [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md). 📌 **Not public**: all five moved into the `auth:sanctum` group on 2026-09-07 ([S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop)); this row said *public* until 2026-09-17, while [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) and the public-route audit already showed otherwise. ⭐ Since `ws-480` (PR #254, on `develop` 2026-09-18), `create-payment-intent` (`API-091`) and `confirm-payment` return **422** for an unlimited-credit account. ☠️ That refusal was at first *only* here, on the surface **no SPA code calls**, leaving the live `api/payment/*` purchase open; it now covers both surfaces ([BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
 | `api/discount-codes/*` | 10 | `auth:sanctum` | includes `GET code-available` (inline uniqueness check; **live rows only** since `ws-392` merged — deleting a code releases its name) |
-| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design. ⭐ `send` returns **202** and no longer reports per-address delivery (`ws-404`, on `develop` since 2026-09-15). `POST test-invitations/{id}/cancel` (`API-103`) returns **409** when the row was already cancelled or expiry-refunded |
+| `api/test-invitations/*`, `api/test-invitation/*`, `api/test/*` | ~8 | mixed | `test-invitations/send` is now `auth:sanctum` — [S-13](SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time) fixed 2026-08-26. `verify-code` / `check-validity` / `test/resume` stay public by design. ⭐ `send` returns **202** and no longer reports per-address delivery (`ws-404`, on `develop` since 2026-09-15). `POST test-invitations/{id}/cancel` (`API-104`) returns **409** when the row was already cancelled or expiry-refunded |
 | `api/admin/lms/*` | 8 | `auth:sanctum` | no role check |
 | `api/reports/*`, `api/super-admin/dashboard` | 4 | `auth:sanctum` | no role check |
 | `api/dropdown/*`, `api/countries-with-states`, `api/restricted-ips`, `api/price-details` | ~12 | mixed | reference data |
@@ -41,10 +41,10 @@ non-`api/` routes in `routes/web.php`. The SPA is served at `/app`, so a full UR
   `sort_by`/`sort_order` for `discount-codes`, `credits` and both reports. The wrong spelling is ignored.
   Sort fields are allow-listed per endpoint, and an unknown key **silently falls back** to the default
   (`created_at`; `used_on` for redemptions). The one exception is `audit-logs`, whose FormRequest
-  rejects it. ⚠️ On `develop`, `reports/user-tests?patient_id=` ignores the sort pair entirely, and
-  paged lists other than `audit-logs` have **no `id` tiebreak**, so rows can repeat or go missing
-  across pages on MySQL. Both are fixed on the unmerged `ws-502` — per-endpoint table in
-  [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged).
+  rejects it. ✅ **Both of the sort defects this section used to warn about are fixed on `develop`**
+  since `ws-502` (PR #253, 2026-09-17): `reports/user-tests?patient_id=` now honours the sort pair, and
+  every paged list carries a trailing `id` tiebreak, so rows no longer repeat or go missing across pages
+  on MySQL. Per-endpoint table in [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502).
 - **Search** goes through the `Searchable` trait ([HELPERS.md](HELPERS.md)).
 
 ## Response conventions — and the eight shapes

@@ -176,8 +176,11 @@ frontend sorts the list client-side** — both render whatever order the backend
 ☠️ **The package seeds two countries under names ISO 3166-1 retired**: `iso2 = 'SZ'` as "Swaziland"
 (renamed Eswatini, 2018) and `iso2 = 'MK'` as "Macedonia" (renamed North Macedonia, 2019).
 
-🔧 **`TCV-Backend fix/countries-list-update`** (`ddbeccf6`, pushed to origin, **not yet merged into
-`develop`** — treat as unmerged until confirmed) fixes both:
+✅ **`TCV-Backend fix/countries-list-update`** (`ddbeccf6`, PR #265, merge `330cf77d`) is **on `develop`
+since 2026-09-18** — verified at the 2026-09-21 sync by finding `->orderBy('name')` in
+`DropdownValuesController::getCountriesWithStates()` and the two renames in **both**
+`database/seeders/WorldSeeder.php` and
+`database/migrations/2026_09_18_000001_update_obsolete_country_names.php`. It fixes both:
 
 - `getCountriesWithStates()` now calls `->orderBy('name')`. The list previously relied on **insertion
   order**, which only *looked* alphabetical because the package's original English names happened to be

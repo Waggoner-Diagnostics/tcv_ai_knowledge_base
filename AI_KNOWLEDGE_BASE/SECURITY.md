@@ -17,9 +17,17 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 > `ws-401` merged too — its placeholder repair is on `develop` as
 > `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`.
 >
-> ⚠️ **`ws-402` has NOT merged.** Findings and prose flagged `ws-402` — including
-> [S-19](#s-19) — still describe an unmerged branch. Never mark a finding fixed against an unmerged
+> ✅ **`ws-402` HAS merged** (PR #213, 2026-09-07). The warning here that it had not was stale and was
+> corrected at the 2026-09-21 sync, verified on `develop` `330cf77d` by finding `Credits::revokeGrant()`
+> with its `lockForUpdate()`, the `original_source` integer cast, `CreditsPolicy::delete()`'s
+> `isSuperAdmin()` gate and `SettleNegativeCreditBalances`. [S-19](#s-19) describes shipped code.
+> **The rule that produced that warning still stands:** never mark a finding fixed against an unmerged
 > branch without saying so in the same sentence.
+>
+> ☠️ **New at the 2026-09-21 sync: `ws-459` put patient PII encryption on `develop`** (PR #255,
+> 2026-09-18). That is a net security *gain* — PII that was plaintext at rest is now ciphertext — but it
+> introduces one new finding, [S-21](#s-21--the-patient-blind-indexes-are-unsalted-md5-under-a-single-global-key),
+> and makes `LEGACY_MASTER_KEY` a production secret.
 
 ---
 
@@ -708,7 +716,7 @@ of that branch. (That headline is now **16 of 162** after the Audit Trail routes
 below for the one addition.) The description below is kept for history.
 
 ⭐ **2026-09-12 — one new public endpoint, reviewed and accepted.** The `develop` merge added
-`POST api/distributor-enquiry` (`API-031` since the 2026-09-17 renumbering, `DistributorController@submit`), taking the public count
+`POST api/distributor-enquiry` (`API-032` since the 2026-09-17 renumbering, `DistributorController@submit`), taking the public count
 15 → 16. (**2026-09-17:** 16 → **17 of 163** with `GET api/access-check` from `ws-449` — see
 [S-16](#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert).) It is public by intent — a marketing enquiry form on the unauthenticated site — and it is
 built defensively: `throttle:10,1`, a `DistributorEnquiryFormRequest` for validation, and it forwards
@@ -762,6 +770,54 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 (prose said 20, the index said 15). Trust the audit only when `facts.json`'s `git` block says
 `develop`.
 
+### S-21 — The patient blind indexes are unsalted md5 under a single global key
+
+**Severity: medium.** New on `develop` **2026-09-18** with `ws-459` (PR #255). Found 2026-09-21 while
+syncing that merge; the KB's [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) pointed here
+for "the key-handling finding" before one existed. **This is a net gain, not a regression** — patient
+PII that was plaintext at rest is now ciphertext. What follows is the residue.
+
+Exact lookup on an encrypted column goes through a blind index, and
+`LegacyEncrypter::blindIndex()` builds it as:
+
+```php
+return md5(($lowercase ? mb_strtolower($value) : $value) . $this->decKey);
+```
+
+That covers `patients.identification` (email), `first_name_ident` and `last_name_ident`. Three
+properties follow, and they compound:
+
+1. **No per-row salt.** Equal values hash equally, so the index leaks equality across the whole table
+   even to someone without the key — how many patients share an address, which rows are the same person.
+2. **One global key for every row.** `LEGACY_MASTER_KEY` is the *entire* secret. A database dump plus
+   that one value confirms a guessed email or name for **every migrated patient at once**, and md5 is
+   fast enough that guessing is the cheap part.
+3. **The key must equal the legacy value**, so it cannot be rotated without rebuilding every index
+   (`patients:rebuild-email-index --apply`) — and it is the same value the legacy CodeIgniter app used,
+   so its blast radius spans both systems.
+
+☠️ **A literal default for this key was committed to `config/legacy.php` and has since been removed.
+Treat that value as burned.** It is still in this repository's history, so any environment that ever
+ran with it has blind indexes an attacker can recompute. The current code fails loudly instead —
+`blindIndex()` throws when the key is unset rather than hashing against an empty string, which would
+otherwise produce indexes that look valid and match nothing.
+
+**What is defended already** (do not "fix" these): the key has no default; `legacy.enabled` fails
+**closed**, so the empty string docker-compose passes for an unset secret keeps encryption **on** rather
+than silently writing plaintext; `master_key` accepts either `LEGACY_MASTER_KEY` or `LEGACY_DEC_KEY` via
+`?:` rather than `env()`'s default argument, so setting only the older name still works; and the
+unwrapped data key lives in a separate remote database, never in either repo.
+
+⚠️ **`legacy.enabled = false` writes patient PII as plaintext.** It is a local-debugging switch. It must
+never be set in QA or production, and turning it off after rows are encrypted does not make them
+readable — it disables the decrypt path too.
+
+**Where:** `config/legacy.php` · `app/Support/Legacy/LegacyEncrypter.php:249` ·
+`app/Models/Patient.php` (`BLIND_INDEXES`). Full mechanism:
+[DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
+
+---
+
 ## Summary table
 | ID | Finding | Severity | Where |
 |---|---|---|---|
@@ -785,6 +841,7 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 | `S-12` | Trace/message leak outside production | low | `Exceptions\Handler` |
 | `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
+| `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
 
 ---
 
@@ -802,4 +859,6 @@ the index contradicted the prose for two days. `verify.php`'s prose-count check 
 
 _Verified 2026-08-19 against `TCV-Backend` `develop` (`85586469`); findings dated 2026-09-02 re-verified
 2026-09-04 against `tcv-backend-codefix` (`f96382ea`); `S-16` re-traced 2026-09-17 against `TCV-Backend`
-`develop` (`ff9be500`) and `TCV-Frontend` `develop` (`80403e7`)._
+`develop` (`ff9be500`) and `TCV-Frontend` `develop` (`80403e7`); `S-21` added and the stale `ws-402`
+"not merged" warning corrected 2026-09-21 against `TCV-Backend` `develop` (`330cf77d`) and
+`TCV-Frontend` `develop` (`d0da885`)._

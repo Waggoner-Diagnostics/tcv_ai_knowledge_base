@@ -5,11 +5,109 @@ Class constants are this codebase's stand-in for most enums. The ones that decid
 those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 
+### `ResultJsonWithEncryptedPii` — `app/Casts/ResultJsonWithEncryptedPii.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `ENCRYPTED_KEYS` | `[…]` | [41](../../../TCV-Backend/app/Casts/ResultJsonWithEncryptedPii.php#L41) |
+
+### `BackfillMigratedPatientPii` — `app/Console/Commands/BackfillMigratedPatientPii.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `FIELDS` | `[…]` | [49](../../../TCV-Backend/app/Console/Commands/BackfillMigratedPatientPii.php#L49) |
+
+### `DropMigrationStagingTables` — `app/Console/Commands/DropMigrationStagingTables.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `STAGING_TABLES` | `[…]` | [40](../../../TCV-Backend/app/Console/Commands/DropMigrationStagingTables.php#L40) |
+
 ### `MailPreflight` — `app/Console/Commands/MailPreflight.php`
 
 | Constant | Value | Line |
 |---|---|---|
 | `APP_SEND_RATE` | — | [36](../../../TCV-Backend/app/Console/Commands/MailPreflight.php#L36) |
+
+### `MigratePatientTestResults` — `app/Console/Commands/MigratePatientTestResults.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `NOT_SHOWN` | `[…]` | [60](../../../TCV-Backend/app/Console/Commands/MigratePatientTestResults.php#L60) |
+| `REQUIRED_ANSWER_COLUMNS` | `[…]` | [66](../../../TCV-Backend/app/Console/Commands/MigratePatientTestResults.php#L66) |
+| `OPTIONAL_ANSWER_COLUMNS` | `[…]` | [74](../../../TCV-Backend/app/Console/Commands/MigratePatientTestResults.php#L74) |
+| `UNRESOLVED_REASONS` | `[…]` | [81](../../../TCV-Backend/app/Console/Commands/MigratePatientTestResults.php#L81) |
+
+### `MigratePatientTests` — `app/Console/Commands/MigratePatientTests.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `PROGRESS_KEY` | `'patient_tests'` | [54](../../../TCV-Backend/app/Console/Commands/MigratePatientTests.php#L54) |
+| `SOURCE_TABLE` | `'tcv_assign_test'` | [57](../../../TCV-Backend/app/Console/Commands/MigratePatientTests.php#L57) |
+
+### `MigrateTcvAll` — `app/Console/Commands/MigrateTcvAll.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `STEPS` | `[…]` | [73](../../../TCV-Backend/app/Console/Commands/MigrateTcvAll.php#L73) |
+
+### `MigrateTcvAssignTests` — `app/Console/Commands/MigrateTcvAssignTests.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `TABLE` | `'tcv_assign_test'` | [36](../../../TCV-Backend/app/Console/Commands/MigrateTcvAssignTests.php#L36) |
+| `REMAPPED_COLUMNS` | `[…]` | [39](../../../TCV-Backend/app/Console/Commands/MigrateTcvAssignTests.php#L39) |
+
+### `MigrateTcvTestAnswers` — `app/Console/Commands/MigrateTcvTestAnswers.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `TABLE` | `'tcv_test_answer'` | [26](../../../TCV-Backend/app/Console/Commands/MigrateTcvTestAnswers.php#L26) |
+
+### `MigrateTcvTests` — `app/Console/Commands/MigrateTcvTests.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `COLUMN_CANDIDATES` | `[…]` | [60](../../../TCV-Backend/app/Console/Commands/MigrateTcvTests.php#L60) |
+
+### `MigrateTcvUsersAndOrganizations` — `app/Console/Commands/MigrateTcvUsersAndOrganizations.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `MAX_RETRIES` | `3` | [32](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L32) |
+| `RETRY_DELAY` | `200000` | [33](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L33) |
+| `VALID_USER_TYPES` | `[…]` | [54](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L54) |
+| `MAX_CONSECUTIVE_FAILURES` | `20` | [69](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L69) |
+| `ORG_FLAG_MAP` | `[…]` | [1082](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1082) |
+| `SKIP_DOMAINS` | `[…]` | [1547](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1547) |
+| `SKIP_EMAILS` | `[…]` | [1557](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1557) |
+
+### `RebuildEmailBlindIndexes` — `app/Console/Commands/RebuildEmailBlindIndexes.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `TARGETS` | `[…]` | [42](../../../TCV-Backend/app/Console/Commands/RebuildEmailBlindIndexes.php#L42) |
+
+### `RecoverOrphanPatients` — `app/Console/Commands/RecoverOrphanPatients.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `ENCRYPTED_FIELDS` | `[…]` | [75](../../../TCV-Backend/app/Console/Commands/RecoverOrphanPatients.php#L75) |
+| `LEGACY_CONNECTION` | `'OLD_DB_CONNECTION'` | [88](../../../TCV-Backend/app/Console/Commands/RecoverOrphanPatients.php#L88) |
+| `REQUIRED_FIELDS` | `[…]` | [91](../../../TCV-Backend/app/Console/Commands/RecoverOrphanPatients.php#L91) |
+
+### `VerifyMigratedResults` — `app/Console/Commands/VerifyMigratedResults.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `NOT_SHOWN` | `[…]` | [61](../../../TCV-Backend/app/Console/Commands/VerifyMigratedResults.php#L61) |
+
+### `AuditLogCsvExport` — `app/Exports/AuditLogCsvExport.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `COLUMNS` | `[…]` | [59](../../../TCV-Backend/app/Exports/AuditLogCsvExport.php#L59) |
+| `CHUNK_SIZE` | `1000` | [82](../../../TCV-Backend/app/Exports/AuditLogCsvExport.php#L82) |
 
 ### `DiscountCodeReportExport` — `app/Exports/DiscountCodeReportExport.php`
 
@@ -25,6 +123,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `WHITE` | `'FFFFFF'` | [25](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L25) |
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
+
+### `AuditLogController` — `app/Http/Controllers/AuditLogController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `MAX_EXPORT_ROWS` | `50000` | [24](../../../TCV-Backend/app/Http/Controllers/AuditLogController.php#L24) |
 
 ### `BuildsAuditDiffs` — `app/Http/Controllers/Concerns/BuildsAuditDiffs.php`
 
@@ -71,7 +175,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `DISPATCH_QUEUE` | `'queue'` | [31](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L31) |
+| `DISPATCH_QUEUE` | `'queue'` | [34](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L34) |
 
 ### `TestResumeController` — `app/Http/Controllers/TestResumeController.php`
 
@@ -106,9 +210,15 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `CATEGORIES` | `[…]` | [15](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L15) |
-| `SENSITIVITY_LEVELS` | `[…]` | [21](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L21) |
-| `SORTABLE` | `[…]` | [24](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L24) |
+| `CATEGORIES` | `[…]` | [18](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L18) |
+| `SENSITIVITY_LEVELS` | `[…]` | [24](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L24) |
+| `SORTABLE` | `[…]` | [27](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L27) |
+
+### `ValidatesAuditDateRange` — `app/Http/Requests/Concerns/ValidatesAuditDateRange.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `MAX_DATE_RANGE_DAYS` | `31` | [33](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesAuditDateRange.php#L33) |
 
 ### `CreateTestRequest` — `app/Http/Requests/CreateTestRequest.php`
 
@@ -210,19 +320,25 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `GENDER_MALE` | `1` | [13](../../../TCV-Backend/app/Models/Patient.php#L13) |
-| `GENDER_FEMALE` | `2` | [14](../../../TCV-Backend/app/Models/Patient.php#L14) |
-| `GENDER_INTERSEX` | `3` | [15](../../../TCV-Backend/app/Models/Patient.php#L15) |
-| `GENDERS` | `[…]` | [23](../../../TCV-Backend/app/Models/Patient.php#L23) |
+| `ENCRYPTED` | `[…]` | [26](../../../TCV-Backend/app/Models/Patient.php#L26) |
+| `BLIND_INDEXES` | `[…]` | [44](../../../TCV-Backend/app/Models/Patient.php#L44) |
+| `GENDER_MALE` | `1` | [50](../../../TCV-Backend/app/Models/Patient.php#L50) |
+| `GENDER_FEMALE` | `2` | [51](../../../TCV-Backend/app/Models/Patient.php#L51) |
+| `GENDER_INTERSEX` | `3` | [52](../../../TCV-Backend/app/Models/Patient.php#L52) |
+| `GENDERS` | `[…]` | [60](../../../TCV-Backend/app/Models/Patient.php#L60) |
+| `CONDITION_MINIMAL_GLARE` | `1` | [66](../../../TCV-Backend/app/Models/Patient.php#L66) |
+| `CONDITION_PRONOUNCED_GLARE` | `2` | [67](../../../TCV-Backend/app/Models/Patient.php#L67) |
+| `CONDITION_OTHER` | `3` | [68](../../../TCV-Backend/app/Models/Patient.php#L68) |
+| `TEST_CONDITIONS` | `[…]` | [78](../../../TCV-Backend/app/Models/Patient.php#L78) |
 
 ### `PatientTest` — `app/Models/PatientTest.php`
 
 | Constant | Value | Line |
 |---|---|---|
-| `STATUS_PENDING` | `'pending'` | [14](../../../TCV-Backend/app/Models/PatientTest.php#L14) |
-| `STATUS_INPROGRESS` | `'inprogress'` | [15](../../../TCV-Backend/app/Models/PatientTest.php#L15) |
-| `STATUS_COMPLETED` | `'completed'` | [16](../../../TCV-Backend/app/Models/PatientTest.php#L16) |
-| `STATUS_ABANDONED` | `'abandoned'` | [17](../../../TCV-Backend/app/Models/PatientTest.php#L17) |
+| `STATUS_PENDING` | `'pending'` | [15](../../../TCV-Backend/app/Models/PatientTest.php#L15) |
+| `STATUS_INPROGRESS` | `'inprogress'` | [16](../../../TCV-Backend/app/Models/PatientTest.php#L16) |
+| `STATUS_COMPLETED` | `'completed'` | [17](../../../TCV-Backend/app/Models/PatientTest.php#L17) |
+| `STATUS_ABANDONED` | `'abandoned'` | [18](../../../TCV-Backend/app/Models/PatientTest.php#L18) |
 
 ### `Test` — `app/Models/Test.php`
 
@@ -236,19 +352,21 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SKIP_TIMEOUT` | `'timeout'` | [13](../../../TCV-Backend/app/Models/TestAnswer.php#L13) |
-| `SKIP_SECTION_TERMINATED` | `'section_terminated'` | [14](../../../TCV-Backend/app/Models/TestAnswer.php#L14) |
-| `SKIP_PRIOR_SECTION_PASSED` | `'prior_section_passed'` | [15](../../../TCV-Backend/app/Models/TestAnswer.php#L15) |
+| `ENCRYPTED` | `[…]` | [27](../../../TCV-Backend/app/Models/TestAnswer.php#L27) |
+| `SKIP_TIMEOUT` | `'timeout'` | [30](../../../TCV-Backend/app/Models/TestAnswer.php#L30) |
+| `SKIP_SECTION_TERMINATED` | `'section_terminated'` | [31](../../../TCV-Backend/app/Models/TestAnswer.php#L31) |
+| `SKIP_PRIOR_SECTION_PASSED` | `'prior_section_passed'` | [32](../../../TCV-Backend/app/Models/TestAnswer.php#L32) |
 
 ### `TestInvitation` — `app/Models/TestInvitation.php`
 
 | Constant | Value | Line |
 |---|---|---|
-| `INVITATION_VALIDITY_DAYS` | `7` | [12](../../../TCV-Backend/app/Models/TestInvitation.php#L12) |
-| `EMAIL_STATUS_PENDING` | `'pending'` | [15](../../../TCV-Backend/app/Models/TestInvitation.php#L15) |
-| `EMAIL_STATUS_SENDING` | `'sending'` | [25](../../../TCV-Backend/app/Models/TestInvitation.php#L25) |
-| `EMAIL_STATUS_SENT` | `'sent'` | [26](../../../TCV-Backend/app/Models/TestInvitation.php#L26) |
-| `EMAIL_STATUS_FAILED` | `'failed'` | [28](../../../TCV-Backend/app/Models/TestInvitation.php#L28) |
+| `ENCRYPTED` | `[…]` | [24](../../../TCV-Backend/app/Models/TestInvitation.php#L24) |
+| `INVITATION_VALIDITY_DAYS` | `7` | [26](../../../TCV-Backend/app/Models/TestInvitation.php#L26) |
+| `EMAIL_STATUS_PENDING` | `'pending'` | [29](../../../TCV-Backend/app/Models/TestInvitation.php#L29) |
+| `EMAIL_STATUS_SENDING` | `'sending'` | [39](../../../TCV-Backend/app/Models/TestInvitation.php#L39) |
+| `EMAIL_STATUS_SENT` | `'sent'` | [40](../../../TCV-Backend/app/Models/TestInvitation.php#L40) |
+| `EMAIL_STATUS_FAILED` | `'failed'` | [42](../../../TCV-Backend/app/Models/TestInvitation.php#L42) |
 
 ### `TestSection` — `app/Models/TestSection.php`
 
@@ -266,9 +384,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SUPER_ADMIN` | `1` | [24](../../../TCV-Backend/app/Models/User.php#L24) |
-| `CUSTOMER` | `2` | [25](../../../TCV-Backend/app/Models/User.php#L25) |
-| `ORGANIZATION` | `4` | [26](../../../TCV-Backend/app/Models/User.php#L26) |
+| `SUPER_ADMIN` | `1` | [26](../../../TCV-Backend/app/Models/User.php#L26) |
+| `CUSTOMER` | `2` | [27](../../../TCV-Backend/app/Models/User.php#L27) |
+| `ORGANIZATION` | `4` | [28](../../../TCV-Backend/app/Models/User.php#L28) |
 
 ### `UserEmailTemplate` — `app/Models/UserEmailTemplate.php`
 
@@ -282,6 +400,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `EVENTS` | `[…]` | [73](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L73) |
+| `CATEGORY_LABELS` | `[…]` | [474](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L474) |
 
 ### `AuditService` — `app/Services/Audit/AuditService.php`
 
@@ -308,6 +427,19 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `BASE_URL` | `'https://api.hubapi.com'` | [14](../../../TCV-Backend/app/Services/HubSpotService.php#L14) |
 | `SOURCE_UNSUPPORTED_KEY` | `'hubspot.ticket_source_unsupported.'` | [23](../../../TCV-Backend/app/Services/HubSpotService.php#L23) |
 | `SOURCE_UNSUPPORTED_TTL` | `86400` | [24](../../../TCV-Backend/app/Services/HubSpotService.php#L24) |
+
+### `LegacyPatientSource` — `app/Services/Migration/LegacyPatientSource.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CONNECTION` | `'OLD_DB_CONNECTION'` | [28](../../../TCV-Backend/app/Services/Migration/LegacyPatientSource.php#L28) |
+| `MIRRORED_COLUMNS` | `[…]` | [31](../../../TCV-Backend/app/Services/Migration/LegacyPatientSource.php#L31) |
+
+### `UserTestsReportService` — `app/Services/Reports/UserTestsReportService.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `PATIENT_TEST_SORTS` | `[…]` | [19](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L19) |
 
 ### `TestAssignmentService` — `app/Services/TestAssignmentService.php`
 
@@ -360,6 +492,25 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `UNPROCESSABLE` | `422` | [19](../../../TCV-Backend/app/Support/HttpStatus.php#L19) |
 | `SERVER_ERROR` | `500` | [22](../../../TCV-Backend/app/Support/HttpStatus.php#L22) |
 
+### `LegacyCipher` — `app/Support/Legacy/LegacyCipher.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `BLOCK_BYTES` | `32` | [37](../../../TCV-Backend/app/Support/Legacy/LegacyCipher.php#L37) |
+
+### `LegacyEncrypter` — `app/Support/Legacy/LegacyEncrypter.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `LEGACY_TEXT` | `'/\A[\p{L}\p{M}\p{N} .,'’\-()&\/@_+]+\z/u'` | [57](../../../TCV-Backend/app/Support/Legacy/LegacyEncrypter.php#L57) |
+| `KEY_DATABASE_RETRY_AFTER` | `60` | [60](../../../TCV-Backend/app/Support/Legacy/LegacyEncrypter.php#L60) |
+
+### `PatientNameSearch` — `app/Support/Legacy/PatientNameSearch.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `CHUNK` | `2000` | [34](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L34) |
+
 ### `TestConstants` — `app/Support/TestConstants.php`
 
 | Constant | Value | Line |
@@ -378,4 +529,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._

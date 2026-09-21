@@ -4,12 +4,16 @@
 > ~1,400 tokens. Covers how legacy TCV v2 data is pulled into this app and how patient PII is held
 > encrypted once it arrives.
 
-🚧 **Status: `TCV-Backend@tcv_data_migration`, not on `develop`, not indexed.** Every count and file in
-this pack was read from that branch by hand. The `INDEXES/` views do **not** include any of it — they
-are generated from `develop` and
-[must never be generated from a feature branch](../GUIDES/HOW_TO_REGENERATE.md). Check
-`git merge-base --is-ancestor origin/tcv_data_migration origin/develop` before believing this pack
-describes shipping code.
+✅ **Status: on `develop` and indexed.** `tcv_data_migration` merged as **`ws-459`** — backend PR #255
+(`f0541712`) and frontend PR #395 (`d0da885`), both 2026-09-18 — and the KB regenerated against it on
+2026-09-21 at `330cf77d` / `d0da885`. 182 files, ~25.3k insertions. Everything in this pack now
+describes shipping code, and `INDEXES/` shows the **post**-encryption column shape.
+
+☠️ **This is the single most load-bearing change in the KB's history for anyone writing a patient
+query.** Patient, answer and invitation PII is ciphertext at rest on `develop`; `where('email', $x)`
+against those columns can never match. Read [You cannot query an encrypted column](#-you-cannot-query-an-encrypted-column)
+before touching one. Prose elsewhere in this KB that predates 2026-09-18 and calls these columns
+plaintext is stale — this pack wins.
 
 ## Files
 | File | Role |
@@ -48,7 +52,7 @@ stored   = encode(value, data key)          # every encrypted field
 ☠️ **`master_key` has no default and must not get one.** It is the *entire* secret behind the md5 blind
 indexes (`md5(value . master_key)`), so a committed value plus a database dump is enough to confirm a
 guessed patient email or name for every migrated patient at once. A literal default was removed from
-`config/legacy.php` on this branch; the value it used to carry should be treated as burned. Missing now
+`config/legacy.php` by `ws-459`; the value it used to carry should be treated as burned. Missing now
 throws from `LegacyEncrypter::blindIndex()` rather than silently hashing against an empty key.
 
 The unwrapped data key lives in a **separate remote database**, not in either repo. `migrate:check-legacy-encryption`
@@ -90,20 +94,42 @@ can never match — not with a transformed term, not ever. Three consequences:
 
 ## The migration commands
 
-26 commands. `migrate:all-master` runs the base data in dependency order —
-`users → organizations → patients → credits → price-details → discount-codes → restricted-ips →
-user-emails → transactions` — and `migrate:tcv-all` drives the test-side ones. All extend
-`BaseMigrationCommand`, which provides staging tables, chunking and the run report.
+☠️ **The command names changed when `ws-459` merged — the old list in this pack was branch-era and is
+gone.** `migrate:all-master`, `migrate:users`, `migrate:patients`, `migrate:credits`,
+`migrate:transactions`, `migrate:check-legacy-encryption` and the rest of that vocabulary **do not exist
+on `develop`**. Verify with `php artisan list` before citing any name here.
+
+**17 commands, and `migrate:tcv-all` is the only orchestrator.** It runs **7 steps** in dependency
+order, each guarded by a precondition check on what the step before it produced, and refuses rather than
+running on incomplete input. All extend `BaseMigrationCommand`, which provides staging tables, chunking
+and the run report; progress is resumed from the `migration_progress` table.
+
+```
+migrate:tcv-all →  1 migrate:base-data
+                   2 migrate:tcv-users-orgs
+                   3 migrate:tcv-tests
+                   4 migrate:tcv-assign-tests
+                   5 migrate:patient-tests
+                   6 migrate:patient-test-results
+                   7 migrate:drop-staging-tables
+```
 
 | Group | Commands |
 |---|---|
-| Orchestrators | `migrate:all-master` · `migrate:tcv-all` |
-| Accounts & org | `migrate:users` · `migrate:tcv-users-and-organizations` · `migrate:organizations` · `migrate:user-emails` · `migrate:restricted-ips` |
-| Patients | `migrate:patients` · `migrate:lookup-fsg-to-patient` · `migrate:backfill-migrated-patient-pii` |
-| Tests | `migrate:tcv-tests` · `migrate:tcv-assign-tests` · `migrate:tcv-test-answers` · `migrate:patient-tests` · `migrate:patient-test-results` |
-| Money | `migrate:credits` · `migrate:transactions` · `migrate:price-details` · `migrate:discount-codes` |
-| Encryption | `migrate:encrypt-patient-data` · `migrate:encrypt-test-answers` · `migrate:encrypt-test-invitations` · `migrate:check-legacy-encryption` |
-| Cleanup | `migrate:drop-migration-staging-tables` |
+| Orchestrator | `migrate:tcv-all` (`--dry-run`, `--force`, single-step selection) |
+| Chain steps | `migrate:base-data` · `migrate:tcv-users-orgs` · `migrate:tcv-tests` · `migrate:tcv-assign-tests` · `migrate:patient-tests` · `migrate:patient-test-results` · `migrate:drop-staging-tables` |
+| Outside the chain | `migrate:tcv-test-answers` · `migrate:recover-orphan-patients` |
+| Encryption backfills | `patients:encrypt` · `answers:encrypt` · `invitations:encrypt` (each dry-run by default, `--apply` to write) |
+| Repair | `patients:backfill-legacy-pii` · `patients:rebuild-email-index` |
+| Diagnostics | `legacy:check-encryption` · `migration:verify-results` |
+
+⚠️ **`legacy:check-encryption` is the one to reach for first** — it tells you whether the keys you have
+configured actually decrypt the legacy rows, before any command writes anything. It takes `--value=` (a
+ciphertext from the legacy database) and `--expect=` (what it should decrypt to).
+
+⚠️ **`patients:rebuild-email-index --apply` must be run once per environment after deploying** — the
+blind index is keyed by `LEGACY_MASTER_KEY`, so an environment that gets the key later than the data
+has hashes built against the wrong key and patients are unfindable by address ([DEPLOYMENT](../DEPLOYMENT.md)).
 
 ---
 
@@ -113,7 +139,7 @@ user-emails → transactions` — and `migrate:tcv-all` drives the test-side one
    `whereNull('a.is_demo')`, which keeps only `NULL` and drops every genuine answer. The test then has no
    answers, which is **not** reported as an error — `scoreOne()` reads it as assigned-but-never-taken,
    writes no `result_json`, and `--fix-never-sat-status` rewrites a completed test to `abandoned`.
-   Fixed on this branch (`is_demo = 0 OR IS NULL`); every live query in the app uses `where('is_demo', 0)`.
+   Fixed by `ws-459` (`is_demo = 0 OR IS NULL`); every live query in the app uses `where('is_demo', 0)`.
 2. ☠️ **Never-shown plates are not passes.** The pass mark was `count($answers) - $missed`, counting
    plates the patient never saw (`patient_answer` of `-1`/`-2`) as passed — so a section abandoned after
    two plates scored `Normal` and put "Normal Color Vision" on the record. Fixed to
@@ -146,4 +172,5 @@ user-emails → transactions` — and `migrate:tcv-all` drives the test-side one
 - [PATIENT_CONTEXT](PATIENT_CONTEXT.md) — the patient subsystem these columns belong to
 - [SECURITY](../SECURITY.md) — where the key-handling finding is tracked
 - [TEST_EXECUTION_CONTEXT](TEST_EXECUTION_CONTEXT.md) — how `testanswers` is written live
-- [HOW_TO_REGENERATE](../GUIDES/HOW_TO_REGENERATE.md) — why none of this is in `INDEXES/` yet
+- [HOW_TO_REGENERATE](../GUIDES/HOW_TO_REGENERATE.md) — how `INDEXES/` is rebuilt (this pack is in it since 2026-09-21)
+- [DEPLOYMENT](../DEPLOYMENT.md) — the `LEGACY_*` env keys and the one-off post-deploy backfill

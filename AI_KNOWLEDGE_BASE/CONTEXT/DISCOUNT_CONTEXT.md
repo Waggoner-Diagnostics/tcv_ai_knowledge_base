@@ -199,7 +199,7 @@ row being edited.
 5. **Validation happens twice on different inputs.** `POST api/discount-codes/validate` validates against
    a client-supplied `amount`/`credits`; `POST api/payment/initialize` validates again with the real
    figures. Only the second one is authoritative — never grant a discount from the first call's result.
-6. **The admin list's sort order (`DiscountCodeController::index()`, `ws-502`, unmerged).** Allowed
+6. **The admin list's sort order (`DiscountCodeController::index()`, `ws-502`, on `develop` 2026-09-17).** Allowed
    `sort_by`: `code`, `type`, `expires_at`, `created_at`, `minimum_order_amount`, `is_active`. Anything
    else silently becomes `created_at`. The grid's columns send `code`, `type` (the *Discount* column)
    and `expires_at` (*Valid Until*).

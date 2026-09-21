@@ -1,17 +1,18 @@
 # TCV — AI Knowledge Base
 
 Single source of truth for **TestingColorVision** across its three repos, built so an AI assistant can
-work on the project **without rescanning ~66,100 lines across 524 source files**
-(`TCV-Backend/app` 174 · `TCV-Frontend/src` 256 · `TCV-Website` 94).
+work on the project **without rescanning ~80,800 lines across 600 source files**
+(`TCV-Backend/app` 218 · `TCV-Frontend/src` 287 · `TCV-Website` 95) — measured 2026-09-21; the backend
+grew by 44 files with `ws-459`.
 
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`, which now carries `ws-404`, `ws-449` and every audit-trail follow-up (PRs #238–#245, #251; frontend #384/#386). The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Three branches are ahead of `develop` and **not** indexed: `ws-502` (list sort tiebreaks, both repos), `ws-480` (credit purchase gate + the user modal's at-least-one-test check, both repos — [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged)) and `tcv_data_migration` (152 files — introduces patient encryption at rest, so treat every patient/answer column in `INDEXES/` as the pre-encryption shape, [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)) |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). **No branch is ahead of `develop` in this KB's scope.** |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `ff9be500` (develop) · `TCV-Frontend` `80403e7` (develop) · `TCV-Website` `cb4a1b6` (website-integration, unchanged) — generated **2026-09-17**. ⚠️ `git fetch` failed from the sync shell; SHAs match `origin/develop` as last fetched by the IDE (backend 2026-09-16 21:26, frontend 2026-09-15 16:54) |
-| **Backend scale** | 210 classes/interfaces/traits · 903 methods · 163 API endpoints · 53 tables · 131 migrations · suite **812 passed / 0 failed** |
-| **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
+| **Code state at sync** | `TCV-Backend` `330cf77d` (develop) · `TCV-Frontend` `d0da885` (develop) · `TCV-Website` `4d2c0d4` (website-integration) — generated **2026-09-21**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-18** (backend 18:27, frontend 15:39). Anything merged after that time is not here. |
+| **Backend scale** | 242 classes/interfaces/traits · 1215 methods · 164 API endpoints · 55 tables · 151 migrations · suite **1191 passed / 0 failed** |
+| **Client scale** | 65 top-level routes · 44 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -68,17 +69,30 @@ and a local `ws-400` holds one unpushed commit — the frontend and backend halv
 are not in the same state, so check per repo. Backend `ws-401` also has one commit (`af555809`) beyond
 `develop`, though its repair migration is merged.
 
-### ⚠️ `ws-480` is prose-only — added 2026-09-17, nothing regenerated
+### ✅ `ws-459`, `ws-480`, `ws-502` and the countries fix have merged — labels flipped 2026-09-21
 
-`ws-480` (unlimited-credit accounts must not be sold credits; the user modal must not save an empty test
-selection) sits on a branch in **both** code repos — backend `8d247f8c`, frontend `346efce`, each with a
-`develop` merge on top (`0dc601d4` / `77b8b09`). Neither is on `develop`, so **no index was regenerated
-for it** and `INDEXES/` still describes `develop`.
+Everything the previous sync tracked as a branch is now on `develop` and **indexed**. Merge set since
+`ff9be500` / `80403e7`, by first-parent:
 
-⚠️ **Both halves moved after those shas.** Code reviews on 2026-09-17 found a real defect in each, and
-neither fix is in the ticket's original commit. The backend fix landed as **`b081b618`** ("ws-480 PR
-review change", pushed); the **frontend fix is still uncommitted** in its working tree, so `346efce` does
-not contain it. Re-check the shas before citing them, and regenerate `INDEXES/` only once `ws-480` merges.
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| **`ws-502`** list sort tiebreaks | PR #253, `820747a6` (09-17) | PR #390, `9152b45` (09-17) | [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [API_INDEX](API_INDEX.md) · the five context packs that flagged a grid's `ORDER BY` |
+| **`ws-480`** credit purchase gate | PR #254, `10a8ae73` (09-18) | PR #392, `1f31854` (09-18) | [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480) · [BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) · [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) · `F-017` / `F-041` / `F-042` |
+| **`ws-459`** legacy migration + patient encryption at rest (was `tcv_data_migration`) | PR #255, `f0541712` (09-18) | PR #395, `d0da885` (09-18) | [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) · [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) · [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) · [DATABASE.md](DATABASE.md) · `F-090` |
+| **audit-trail CSV export** | PR #261, `07cf5b6f` (09-18) | PR #398, `432f046` (09-18) | already written up 2026-09-18; the endpoint is now **indexed** as `API-011` |
+| **countries list** | PR #265, `330cf77d` (09-18) | — | [FEATURE_INDEX](FEATURE_INDEX.md) `F-081` · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [THIRD_PARTY](THIRD_PARTY.md) |
+
+☠️ **`ws-459` is the one that changes how you read the rest of this KB.** 182 files, ~25.3k insertions.
+Patient, answer and invitation PII is now **ciphertext at rest on `develop`**, so every
+`INDEXES/` column for those tables describes the *post*-encryption shape and `where('email', $x)` can
+never match — read [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) before touching a patient
+query. It also brought 20 migrations, the `migrate:*` command family and `migration_progress`.
+
+⚠️ **The `ws-480` review defects described below were both fixed before the merge.** The backend fix is
+`b081b618` + `23d005ff`; the frontend fix is `e3a222e` + `2b745ce`. The shas `8d247f8c` / `346efce` cited
+in older passages are the *pre-review* state and no longer describe `develop`.
+
+#### What the `ws-480` review found (kept — the lesson outlives the branch)
 
 | Repo | What the review found | Where it is written up |
 |---|---|---|
@@ -89,7 +103,7 @@ The write-ups are:
 
 | Where | What it covers |
 |---|---|
-| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480-unmerged) | the three gate flags on `CreditPage`, `userCredits.settled` and why the gate cannot be derived from `error`, the separate `Checkout` guard and its `createSetupIntent()` condition, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
+| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480) | the three gate flags on `CreditPage`, `userCredits.settled` and why the gate cannot be derived from `error`, the separate `Checkout` guard and its `createSetupIntent()` condition, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
 | [CONTEXT/BILLING_CONTEXT.md trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) | the 422, why it is returned rather than thrown, the four handlers it ended up on, and `Credits::hasUnlimited()` |
 | [CONTEXT/CREDITS_CONTEXT.md trap 12](CONTEXT/CREDITS_CONTEXT.md#-traps) | what a purchase on top of an unlimited grant does to the balance once the grant lapses |
 | [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) | the blast-radius rows for both halves |
@@ -138,6 +152,46 @@ corner-clipping fix, written up in
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
 
+### What the 2026-09-21 sync changed
+
+`routes_source` stayed `artisan route:list --json`, so route figures compare directly with 2026-09-17.
+This is the largest single sync in the KB's history, and `ws-459` accounts for nearly all of it.
+
+| Count | 2026-09-17 | 2026-09-21 | Why |
+|---|---|---|---|
+| Endpoints | 163 | **164** | `GET api/audit-logs/export` (PR #261) — the only new route |
+| Public `api/*` | 17 | **17** | ✅ **unchanged, and the same 17 endpoints.** Nothing became public |
+| Classes/interfaces/traits | 210 | **242** | +32, almost all `ws-459`: the `migrate:*` command family, `Support/Legacy/*`, the three casts, `LegacyPatientSource`, `AuditLogFilter`, `AuditLogCsvExport`, `UnscoreableTestException` |
+| Methods | 903 | **1215** | +312, same cause |
+| DB tables | 53 | **55** | `migration_progress` (live) and `discount_code_usages` (**created and dropped in the same merge** — see [DATABASE.md](DATABASE.md)) |
+| Migrations | 131 | **151** | +20 — the `ws-459` set, plus `update_obsolete_country_names` (PR #265) |
+| Models | 41 | **42** | `Models/Concerns/HasLegacyEncryptedAttributes` |
+| Services | 35 | **38** | `Services/Migration/LegacyCipher`, `LegacyPatientSource`, `Services/Audit/AuditLogFilter` |
+| FormRequests | 26 | **28** | `AuditLogExportRequest`, `Requests/Concerns/ValidatesAuditDateRange` |
+| Redux slices | 43 | **44** | frontend `ws-459` / audit-export work |
+| Tests | 812 | **1191 passed, 0 failed** | 3632 assertions, measured on `330cf77d` ([TESTING.md](TESTING.md)) |
+| Everything else | — | **unchanged** | relations 70 · controllers 38 · policies 3 · middleware 4 · jobs 3 · events 3 · spa_routes 65 · spa_api_calls 88 · spa_drift 8 · website_pages 32 · website_api 5 |
+
+☠️ **`API-nnn` ids shifted by one again, from `API-011` up.** `api/audit-logs/export` sorts ahead of
+`api/audit-logs/people`, so it took `API-011` and pushed everything after it. `API-001`…`API-010` are
+unchanged. All 15 prose citations were re-resolved against the new index by endpoint, not by arithmetic
+— `verify-password` `API-163`→`API-164`, `stripe/create-payment-intent` `API-090`→`API-091`,
+`test-invitations/{id}/cancel` `API-103`→`API-104`, `user/tests/bulk-update-assignment`
+`API-149`→`API-150`, `distributor-enquiry` `API-031`→`API-032`,
+`dropdown/organization-settings-options` `API-034`→`API-035`. `TABLE-nnn` also renumbered from
+`TABLE-010`, but the two cited (`TABLE-007`, `TABLE-009`) were below the pivot and still resolve.
+
+**Derived views — all three clean.** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md): still 17
+public, the **same** 17 endpoints, id renumbering only — no route became public despite 182 files
+landing. [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md): unchanged at 8 drift rows, id renumbering only —
+no client call lost its endpoint. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md): **byte-identical
+apart from the generation date** — no page became unreachable, and the two known dead routes and three
+dead grants are the same ones.
+
+⚠️ **Fetch caveat unchanged.** `git fetch` still fails from the sync shell ("Repository not found").
+Local `develop` was verified identical to `origin/develop` in both repos, but those remote refs were
+last updated by the IDE on **2026-09-18** — anything merged after that is not in this sync.
+
 ### What the 2026-09-17 sync changed
 
 Backend `develop` advanced from `c3449270` to `ff9be500` (33 commits: `ws-404` PRs #240/#251, `ws-449`
@@ -154,13 +208,19 @@ PR #241, audit-trail PRs #242/#243/#245, and `45b53173`'s CI tweak); frontend `d
 | Methods | 863 | **903** | mostly `SendTestInvitationEmailsJob` (13 → 26), `MailPreflight` (13), `BuildsAuditDiffs` (3 → 9), `accountLockedResponse()` |
 | Migrations | 128 | **131** | `…_14_000001_add_deferred_count_to_test_invitations`, `…_15_000001_add_impersonator_to_audit_logs`, `…_15_000002_backfill_impersonator_on_audit_logs` |
 | Jobs | 2 | **3** | `SweepPendingInvitationsJob` |
-| Tests | 574 (09-09) | **812 passed, 0 failed** | measured on `ff9be500` ([TESTING.md](TESTING.md)) |
+| Tests | 812 (09-17) | **1191 passed, 0 failed** | measured on `330cf77d`, 3632 assertions ([TESTING.md](TESTING.md)) |
 | Everything else | — | **unchanged** | tables 53, relations 70, controllers 38, models 41, services 35, spa_routes 65, spa_slices 43, spa_api_calls 88, spa_drift 8, website_pages 32 |
 
 ☠️ **Every `API-nnn` id shifted by one.** `api/access-check` sorts first, so it took `API-001`. The four
 prose citations were re-resolved (two were already stale: `verify-password` is `API-163`,
 `distributor-enquiry` is `API-031`); `CMD-003`…`006` also renumbered around `MailPreflight`. See
 [HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md).
+
+> 📌 **The ids in this paragraph are the 2026-09-17 numbering and have since moved again.** The
+> 2026-09-21 sync shifted everything from `API-011` up by one more (`api/audit-logs/export` took
+> `API-011`), so `verify-password` is now `API-164` and `distributor-enquiry` is `API-032`. This block
+> is kept as the record of *that* sync; the live ids are in
+> [API_ENDPOINT_INDEX](INDEXES/API_ENDPOINT_INDEX.md).
 
 **Derived views:** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) gained exactly `api/access-check`
 (everything else renumbered only). [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) changed only in id
@@ -485,7 +545,7 @@ before writing code.
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 38 |
 | [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 26 FormRequest classes |
+| [REQUESTS.md](REQUESTS.md) | ✅ 28 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |

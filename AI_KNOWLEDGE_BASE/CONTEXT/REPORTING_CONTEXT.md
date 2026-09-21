@@ -66,7 +66,7 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
    ([FRONTEND.md](../FRONTEND.md)) — that is a UI affordance, not validation, and the same distinction
    as the `usertype` note above. A saved link, an export re-run or any non-SPA caller still gets there.
 7. **The patient drill-down pages an array, not a query, so it has to be sorted in PHP**
-   (`ws-502`, unmerged). `GET api/reports/user-tests?patient_id=` runs `buildTransformedTests()`: it
+   (`ws-502`, on `develop` 2026-09-17). `GET api/reports/user-tests?patient_id=` runs `buildTransformedTests()`: it
    loads every `patient_tests` row, groups monocular OS+OD pairs through `PatientTestTransformer`,
    filters, and `getPatientTestsForReport()` then `array_slice`s the page out. **On `develop` the
    `sort_by`/`sort_order` the SPA sends are ignored on this path**. Every header click returns
@@ -80,7 +80,7 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
    matches the screen. Guard any new sort key on this path in PHP; adding an `orderBy` to the Eloquent
    load does nothing once the transformer regroups.
 8. **Redemptions sort keys are the service's `$sortMap` keys, not the row's field names** (`ws-502`,
-   unmerged). The row carries `discount_code`, but the key is `code`. Until `ws-502` the SPA column sent
+   on `develop` 2026-09-17). The row carries `discount_code`, but the key is `code`. Until `ws-502` the SPA column sent
    `discount_code`, which `normaliseSort()` silently swapped for `used_on`. `username` now orders by
    first then last name, and every sort ends on `td.id` (one code is redeemed many times, amounts
    repeat). `company` puts a blank company last ascending. NULL and `''` both render "—", and without

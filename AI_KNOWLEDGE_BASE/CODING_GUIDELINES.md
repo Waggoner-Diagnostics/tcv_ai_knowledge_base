@@ -41,7 +41,7 @@ public function performTest(PerformTestRequest $request)          // 1. FormRequ
 - **End every paged, sortable `ORDER BY` on the primary key, in the sort direction**
   (`->orderBy('table.id', $sortOrder)`, qualified when joined). MySQL returns ties in undefined order
   under `LIMIT/OFFSET`, so without it rows repeat or vanish across pages, and SQLite tests can't show it
-  (`ws-502`, [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged)).
+  (`ws-502`, [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502)).
 - Decide where a NULL or stand-in value sorts ("Never", "No expiry", Unlimited stored as `0`) with an
   explicit `orderByRaw('col IS NULL …')` or extra key; don't inherit the engine default. Don't order by an
   **`enum`** column directly: MySQL sorts it by declared position and SQLite alphabetically. Spell the
@@ -115,7 +115,7 @@ latches ([SERVICES.md](SERVICES.md)). Avoid static mutable state.
   `disableSortBy: true` to make a column unsortable; `sortable: false` is ignored.
 - A page that fetches into local state keeps only the **latest** response (a request counter ref);
   slices compare `action.meta.requestId`. Don't show an error popup for a request a newer one replaced
-  ([FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502-unmerged)).
+  ([FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502)).
 - Import shared UI from `src/components/index.js`.
 - `eslint src --max-warnings 0` — one new warning fails the lint.
 

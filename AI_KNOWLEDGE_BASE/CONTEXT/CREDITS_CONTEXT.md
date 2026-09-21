@@ -84,7 +84,7 @@ Forget the guard and PHP coerces `'Unlimited'` to `0` in a numeric comparison �
 told they have no credits. Both `TestInvitationController` and `TestController::assignTest()` do guard;
 copy their shape.
 
-⭐ **`ws-480` (unmerged, 2026-09-17) adds a third kind of caller: one that refuses rather than adapts.**
+⭐ **`ws-480` (on `develop` since 2026-09-18, PR #254) adds a third kind of caller: one that refuses rather than adapts.**
 An unlimited grant covers every test, so there is nothing left to sell — the credits page stops offering
 the purchase flow, and all four routed purchase handlers answer **422** instead of taking the money
 (`PaymentController::initializePayment()` / `confirmPayment()`, plus the two legacy
@@ -435,7 +435,7 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     `CreditRevocationTest::test_settle_command_repairs_a_grant_spent_before_it_expired()` and
     `…_does_not_hand_back_credits_that_expired_unspent()`.
 11. **`GET api/credits` (the Add Credits grid) must not let stored stand-ins decide order** (`ws-502`,
-    unmerged). An unlimited grant is stored as `credits = 0`, and "No expiry" is `has_expiry = 0` or a
+    on `develop` 2026-09-17). An unlimited grant is stored as `credits = 0`, and "No expiry" is `has_expiry = 0` or a
     NULL `expiry_date`. Sorted naively, Unlimited mixed in with real zeros and "No expiry" came before
     every date ascending. `CreditsController::index()` now orders `credits` as `is_unlimited_credit`
     then `credits`, so Unlimited ranks above any amount, the same as the Users grid. `expiry_date` puts
@@ -447,9 +447,9 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     grant by `id` instead of reading `data.data.0`. Any new assertion on this listing should do the same.
     Pinned by `tests/Feature/Credits/CreditListSortTest.php`. ⚠️ The grid's
     All/Available/Used/Expired tabs still filter only the rows on screen
-    ([FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502-unmerged)).
-12. **An unlimited holder could be sold credits, and the purchase eaten later** — closed on `ws-480`
-    (unmerged). **Nothing in the credit *model* forbids it**, which is why this stays on the list: the
+    ([FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502)).
+12. **An unlimited holder could be sold credits, and the purchase eaten later** — closed by `ws-480`
+    (on `develop` 2026-09-18). **Nothing in the credit *model* forbids it**, which is why this stays on the list: the
     arithmetic below is still what happens if a grant reaches an unlimited account by any route the
     refusal does not cover. `BasePaymentProvider::createTransactionRecord()` writes a finite grant beside
     the unlimited one. While unlimited lives, `getAvailableCredits()` still answers `'Unlimited'`, so the
@@ -461,7 +461,7 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     ✅ `ws-480` now closes the door in the SPA (`CreditPage`, `Checkout`) **and on all four routed
     purchase handlers** — `api/payment/initialize`, `api/payment/confirm`, and both legacy
     `api/stripe/*` halves. It was for a time on the legacy surface only, which is the more useful lesson
-    ([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480-unmerged),
+    ([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480),
     [BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
     ⚠️ Still uncovered by the refusal: an **admin grant** to an unlimited account
     (`CreditsController`), and `confirmACHPayment()`, which writes a grant but is not routed.
