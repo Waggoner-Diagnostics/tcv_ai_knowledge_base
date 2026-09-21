@@ -78,6 +78,12 @@ substitute` (`ws-401`, branch not yet merged) means an organization account has 
 the sender's identity belongs. The second is an account-data fault, not a mail fault — fix the row, do
 not chase the mailer ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)).
 
+⚠️ **Count the emissions, not just the wording, when a warning sits on a per-recipient path.** That
+second line is account-level but was being written once per *recipient*, so one misconfigured
+organization sending a 500-address batch produced up to 500 identical entries — enough to bury the
+finding it exists to report. `ws-401` review round two guards it with a set keyed on the sender's id. A
+warning whose context names an account and whose emission follows an address is the pattern to look for.
+
 ⭐ **A data migration's log line is sometimes the only report that will ever exist.** `ws-401`'s
 `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` warns on each row it
 declined to repair — a subject that would outgrow its column, a bracket token no template type maps —

@@ -143,6 +143,7 @@ first (the placeholder repair migration) merged as PR #212.
 ```
 sender = User::with('organization')->find(userId)  memoised per instance   ← ws-401
 EmailTemplateService::getTemplateForUser(userId, typeForUser(sender))      ← ws-401
+   memoised per instance by user_id|type
    user_email_templates row  →  test_email_templates (admin default)  →  hard-coded fallback
  ├─ 1. str_replace the {{test_name}} {{verification_link}} {{verification_code}} {{expires_at}} … vars
  ├─ 2. restyle: preg_replace_callback rewrites <a href="{the link}"> into the blue button
@@ -482,15 +483,39 @@ logs `Organization invitation has no organization name to substitute` with the `
 recipient address**. If that line shows up in QA, the account is missing its `organizations` row; it is
 not a mail fault.
 
+⚡ **Emitted once per account, not once per recipient** — guarded by a `$missingNameWarned` set keyed on
+`$sender->id` (`ws-401` review round two). The warning sits inside `organizationVariables()`, which is
+memoised by `user_id|email`, so that memo only ever suppressed a repeat of the *same* address: one
+misconfigured organization sending a 500-address batch wrote up to 500 identical lines, while the context
+said "account-level". That is the shape of noise that gets a real warning filtered out of the stream. The
+guard is per mailer instance, the same bound as `$senders`, so the honest worst case is one line per
+account per batch rather than one for the whole send — a static latch would be once per worker *process*
+and would hide the fault from the next send too.
+`OrganizationEmailTemplateTypeTest::test_the_missing_organization_name_is_logged_once_per_account` pins it.
+
 ☠️ **Neither log line `ws-401` adds carries the invitee's address, and new ones must not either.**
 `SendTestInvitationEmailsJob::withoutAddresses()` exists precisely to strip addresses that SMTP errors
 quote ("550 5.1.1 `<jane@example.com>` …"), so putting one in a context array walks straight past that
 guard — and `test_invitations.email` / `patients.email` are encrypted at rest, which logging in
 plaintext undoes. The row is the record: `email_status`, `email_sent_at` and `email_error` carry the
-full text for the practice that typed the address. ⚠️ **Pre-existing exception:** the success-path
-`Log::info('Invitation email sent', …)` in `TestInvitationMailer::send()` still carries `email`, and so
-does the `ws-373` restyle warning above it. Both predate `ws-401` and are left alone by it — worth its
-own ticket, not a drive-by in a template PR.
+full text for the practice that typed the address.
+
+⭐ **The success-path `Log::info('Invitation email sent', …)` no longer carries one either.** It predates
+`ws-401` and round one left it alone; review round two took the address out on the reviewer's argument
+that `ws-401` was already editing that line to add `template_type`, so "pre-existing" had stopped
+applying to it. It now logs `user_id` and `template_type` only. Nothing is lost that answers a real
+question — `email_status` / `email_sent_at` on the row are what answer *"was this patient sent their
+invitation"*, and they outlive log rotation.
+
+⭐ **No exception survives: `TestInvitationMailer` now logs no recipient address at all.** The `ws-373`
+restyle warning above it (`Invitation link restyle failed, sending unstyled content`) carried one until
+review round three and no longer does. It was briefly argued as its own ticket — `ws-401` does not
+otherwise touch that line — and the counter-argument won: one address left in a file that strips them
+everywhere else is a hole whichever line it sits on, and a reviewer will keep finding it.
+
+⚡ **On that line `user_id` is the better key anyway, not merely the safer one.** What failed is the
+*template body* outgrowing the backtrack limit, and the body belongs to the account — every recipient of
+that template trips it. The address names one symptom; the account names the cause you can act on.
 
 ⚠️ **The org block's `$sender === null` branch is unreachable, and deliberately not left as a `skip`.**
 `typeForUser()` casts a null sender to `0` and `User::ORGANIZATION` is `4`, so a missing sender always
@@ -501,15 +526,23 @@ the invitation and refunding the credit; *skipping* the block mails the patient 
 `{{patient_firstname}}`. So it logs `Organization template resolved without a sender` and substitutes
 **empty** values, which strips the four tokens through the same path a blank surname takes.
 
-⚡ **Both lookups are memoised on the mailer instance** (`$senders` by user id, `$organizationValues` by
-`user_id|email`, the address lower-cased and trimmed so the memo dedupes exactly what the
-case-insensitive lookup would match). `send()` runs once per delivery *attempt*, so uncached they repeat on all three tries
-inside `SendTestInvitationEmailsJob::sendOne()`'s retry loop, and the sender's repeats for every address
-in a batch — all of which share one sender — against the 240s budget. The mailer is not a container
-singleton, so the memo's lifetime is one job. Keyed rather than single-slot because
-`SweepPendingInvitationsJob` walks several senders through one instance.
-`OrganizationEmailTemplateTypeTest::test_the_sender_and_patient_lookups_are_not_repeated` counts the
-queries and pins it.
+⚡ **All three lookups are memoised on the mailer instance** (`$senders` by user id, `$templates` by
+`user_id|type`, and `$organizationValues` by `user_id|email`, the address lower-cased and trimmed so the
+memo dedupes exactly what the case-insensitive lookup would match). `send()` runs once per delivery
+*attempt*, so uncached they repeat on all three tries inside `SendTestInvitationEmailsJob::sendOne()`'s
+retry loop, and the sender's and the template's repeat for every address in a batch — all of which share
+one sender — against the 240s budget. The mailer is not a container singleton, so the memo's lifetime is
+one job. Keyed rather than single-slot because `SweepPendingInvitationsJob` walks several senders through
+one instance. `OrganizationEmailTemplateTypeTest::test_the_per_send_lookups_are_not_repeated` counts the
+queries and pins all three.
+
+⚠️ **`$templates` is memoised on the mailer and deliberately *not* inside `EmailTemplateService`.** That
+service instance is shared with `UserEmailTemplateController`, where a save followed by a read inside one
+request has to see the row just written; caching there would serve the pre-save copy. Added in `ws-401`
+review round two, where the template lookup was the last per-address query left in `send()`. Only the
+`user_email_templates` row was ever repeating — `EmailTemplateRepository::getAdminDefaultTemplate()` has
+kept the admin default behind an hour-long `Cache::remember` all along, which is why the regression
+assertion counts that table and not `test_email_templates`.
 
 ⭐ **An empty value is not substituted — the token is *removed*, with the spacing that was only there
 to separate it.** The seeded greeting is `Dear {{patient_firstname}} {{patient_lastname}}:`, and
