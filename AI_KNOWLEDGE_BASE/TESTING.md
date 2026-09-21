@@ -140,6 +140,21 @@ organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not c
 2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
 purchase end to end.
 
+### ⏳ `ws-459` added 9 backend tests — **uncommitted on `develop`** (2026-09-21)
+
+The duplicate Add Organisation dropdown fix
+([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). Measured with the fix applied:
+**the full backend suite passes at 1200 tests / 3665 assertions**, 9 of them these two files. ⚠️ Not
+committed when measured, so it is on no SHA yet.
+
+| File | Tests | Covers |
+|---|---|---|
+| `Organizations/OrganizationLookupDuplicatesTest.php` | **6** | the unique index rejects a second `AICC/SABA`; `api/dropdown/compliances` lists each option once; duplicates collapse onto the lowest id; **every organisation row is diffed before/after** — unmerged rows byte-identical, merged rows differing in `compliance_id` and nothing else (`updated_at` included); a merge never hides a compliance that was visible; a clean database is a no-op. Needs `Sanctum::actingAs()` — the dropdown routes are inside the `auth:sanctum` group |
+| `Migration/InsertOrIgnoreNeedsUniqueConstraintTest.php` | **3** | scans `app/Console/Commands/*.php` for `->table('x')->insertOrIgnore` and fails if a target has no unique index and no documented reason. `TRACKER_GUARDED` lists the 6 that rely on `migration_tracker` instead; `patients` and `credits` are flagged there as the weakest, both carrying an unindexed `legacy_id` |
+
+☠️ The guard test is **advisory, not a gate** — CI runs no tests (see below), so the unique indexes
+themselves are the only enforcement that cannot be skipped.
+
 ### ✅ `ws-480` added 6 backend tests — on `develop` since 2026-09-18 (PR #254)
 
 `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`, added 2026-09-17 with the PR-review fix

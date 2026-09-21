@@ -210,6 +210,13 @@ check the migration list before choosing a rolling deploy.
 6. `TURNSTILE_SECRET_KEY` set, or organisation patient intake **fails closed**.
 7. Lookup tables populated (`compliances`, `privileges`, `organization_types`,
    `organization_settings_options`, `price_details`, `email_template`) — the app is unusable without them.
+   ⚠️ **On any environment that has had a data migration run**, confirm
+   `2026_09_21_000001_deduplicate_organization_lookup_tables` (`ws-459`) has applied — without it
+   `compliances` and `organization_types` hold one duplicate set per migration run and every Add
+   Organisation dropdown lists each option twice. `entrypoint.sh` continues past a failed migration, so
+   check the boot log rather than assuming ([DATABASE.md](DATABASE.md)). Verify with
+   `SELECT compliance, COUNT(*) FROM compliances GROUP BY compliance HAVING COUNT(*) > 1;` — it must
+   return nothing.
 8. **A queue worker and scheduler**, if LMS delivery or scheduled invitation recovery is expected to
    work: `COMPOSE_PROFILES=workers`. ☠️ Run the first-boot runbook above **before** enabling it on any
    environment that has been running without one.
