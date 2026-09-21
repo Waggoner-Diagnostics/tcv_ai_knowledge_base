@@ -56,6 +56,32 @@ because the migration uses the array form.
 ledger with one to stop two concurrent revokes both reading the same unspent balance. The suite cannot
 exercise that race at all — it is only really closed on MySQL (dev/QA/prod).
 
+☠️ **SQLite sorts ties stably; MySQL does not.** Rows with equal sort values come back in insertion
+order on SQLite, every time. MySQL's `ORDER BY … LIMIT/OFFSET` leaves their order undefined, so a paged
+list with no primary-key tiebreak repeats or skips rows between pages on dev/QA/prod. A test that walks
+every page and checks each row appears once **passes with or without the fix**. Assert the tiebreak
+directly instead: create rows that tie, and expect ascending id order for `asc` and descending for
+`desc`. `ws-502`'s `*ListSortTest` files are the pattern, and each notes which of its tests actually
+guards the fix.
+
+☠️ **An `enum` column sorts differently too.** MySQL orders `enum` values by their **declared position**,
+SQLite by the string, so a test asserting the order of a plain `orderBy('enum_col')` pins the SQLite
+answer. `ws-502`'s first commit fell into this. The fix is in the query, an explicit `CASE`
+([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) trap 6), not in the test.
+
+☠️ **SQLite accepts a string in an integer column; MySQL rejects it.** `tests.status` and `tests.layout`
+are `tinyint` on MySQL, so a fixture like `Test::create(['status' => 'active'])` passes the suite and
+fails on MariaDB with *Incorrect integer value*. Use `1`. `ReportListSortTest` does. The existing
+Authorization and Reports tests still pass `'active'` and would fail on MySQL.
+
+⭐ **To check a MySQL-only behaviour, run the tests against a throwaway MariaDB.** XAMPP ships
+MariaDB 10.4 (`C:\xampp\mysql\bin`). Start `mysqld` on a spare port (e.g. 3399) with
+`--skip-grant-tables` and a `--datadir` in a temp folder, and create an empty database in it. Then
+prefix one run with the connection:
+`DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3399 DB_DATABASE=<scratch> DB_USERNAME=root DB_PASSWORD= php artisan test <files>`.
+Shut it down and delete the folder afterwards. Your XAMPP data is never touched. `ws-502` used this to
+prove the enum and tiebreak fixes.
+
 ☠️ **`QUEUE_CONNECTION=sync` in tests.** `ProcessLmsDeliveryJob` runs inline, so the delivery tests
 never exercise the fact that **a deployment without `COMPOSE_PROFILES=workers` has no queue worker at
 all** — the default ([QUEUES.md](QUEUES.md)). Nor can they see `database.retry_after` re-reserving a
@@ -95,11 +121,14 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-**812 tests pass on `develop` `ff9be500`** — **2433 assertions, 0 failures**, 1 PHPUnit deprecation,
-1 min 25 s (measured 2026-09-17 with `vendor/bin/phpunit`, PHP 8.2.12, in-memory SQLite). Up from 574 on
-2026-09-09: the difference is `ws-404`'s invitation suites, `ws-449`'s IP enforcement test, and the audit
-trail's per-controller suites. A static count finds **579 `test_*` methods in 71 files** — the gap to
-812 is data providers. The Stripe SDK prints several `Undefined property of Stripe\PaymentIntent`
+**1191 tests pass on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
+2026-09-21 with `php artisan test`, PHPUnit 11.5.55, PHP 8.2.12, in-memory SQLite; exit code 0). Up from
+812 on `ff9be500`: the +379 is almost entirely **`ws-459`** (PR #255, 2026-09-18), which brought the
+legacy-migration and encryption suites — `LegacyCipherTest`, `LegacyEncrypterHardeningTest`,
+`MislabelledPatientPiiTest`, `StagingTablesAreIsolatedTest` and the `migrate:*` command coverage — plus
+`ws-502`'s tiebreak assertions, `ws-480`'s purchase-refusal suite and the audit-log export tests.
+A static count finds **723 `test_*` methods in 119 files** — the gap to 1191 is data providers.
+The Stripe SDK prints several `Undefined property of Stripe\PaymentIntent`
 notices to stderr during the run; they are noise, not failures. 📌 The
 `InvitationSendReviewFixesTest:261` quoted-printable assertion that earlier KB notes call a known failure
 **passes** on `develop`.
@@ -107,7 +136,51 @@ notices to stderr during the run; they are noise, not failures. 📌 The
 The per-branch totals this section used to track (93 on `develop`, 149 on `ws-404`, 186 on `ws-417`, 245
 on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all landed, so `develop` is
 the number that matters. Still untested: the test execution loop, resume, payments, reports,
-organisations, and anything nginx does.
+organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (merged
+2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
+purchase end to end.
+
+### ✅ `ws-480` added 6 backend tests — on `develop` since 2026-09-18 (PR #254)
+
+`tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`, added 2026-09-17 with the PR-review fix
+that moved the unlimited-credit refusal onto the live purchase path
+([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
+Measured on the branch with the fix applied: **the full backend suite passes at 837 tests / 2572
+assertions**, 6 of them this file. ⚠️ The fix was **uncommitted in the working tree** when measured, so it
+is not in `8d247f8c`.
+
+| Case | Covers |
+|---|---|
+| 4 refusal cases | 422 from `api/payment/initialize`, `api/payment/confirm`, `api/stripe/create-payment-intent` and `api/stripe/confirm-payment`. The two `api/payment/*` cases inject a `PaymentProviderInterface` mock with `shouldNotReceive()`, so the test fails if the refusal lands *after* any Stripe work rather than before it |
+| ordinary account not refused | a finite grant with a balance still reaches `initializePayment()` — the guard keys off an unlimited grant, not off having credits |
+| expired unlimited grant | `Credits::hasUnlimited()` goes through `scopeActive()`, so a lapsed `is_unlimited_credit` row does not refuse the purchase — the same boundary `CreditsExpiryBoundaryTest` pins for the balance |
+
+☠️ The SPA half is still unpinned: no `CreditPage` or `Checkout` test, and that is the gate a customer
+actually meets ([FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480)).
+
+### ✅ `ws-502` added 17 backend tests — on `develop` since 2026-09-17 (PR #253)
+
+First measured on the branch (`00d5e98f`, 2026-09-16): 15 tests, all passing. Run against the
+pre-`ws-502` code, every test in the four new files other than `DiscountCodeListSortTest` failed (11 of
+11), as did 3 of that file's 4. The 2026-09-17 PR-review fixes (`15207600`) added 2
+report tests and extended 2 others. Each new or extended assertion fails against `00d5e98f` and passes
+with the fix. After them, the **full backend suite passes, 829 tests on SQLite**, and all 17 sort tests
+pass on MariaDB 10.4 (see the ⭐ above).
+
+| File | Tests | Covers |
+|---|---|---|
+| `DiscountCodes/DiscountCodeListSortTest.php` | **4** | Discount column = fixed before percentage, then value, on every engine; "Never" expiry last ascending; tied rows in id order both directions; every code exactly once across pages (passes without the fix too — see the SQLite trap above) |
+| `Users/UserListSortTest.php` | **2** | Country by name with an unmatched `country_id` last; ties in id order for `full_name`, `account_status`, `created_at`, `country_id`, `credits` |
+| `Organizations/OrganizationListSortTest.php` | **2** | ties in id order for name, status, compliance, credits; no compliance last ascending. Needs `Sanctum::actingAs(…, ['view-organizations'])` |
+| `Credits/CreditListSortTest.php` | **3** | Unlimited above every amount; no expiry last ascending; ties in id order |
+| `Reports/ReportListSortTest.php` | **6** | redemptions by first then last name; blank company (NULL and `''`) last ascending; tied redemptions in `td.id` order (rows carry no id, so each is marked by `price_per_credit`); patient drill-down honours `sort_by` and still defaults to newest first; Test IDs (UUIDs) sort as plain text, not naturally; its pages hold tied rows without repeats |
+
+`Credits/CreditRevocationTest.php` also changed on `ws-502`:
+`test_credits_an_admin_took_back_are_not_reported_as_user_usage` now finds the grant by id instead of
+reading row 0, and asserts the row is there before reading it
+([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) trap 11). With the review fixes,
+`tests/Feature/{Users,Organizations,Credits,Reports,DiscountCodes}` pass at **127 tests, 648
+assertions**.
 
 ⭐ **`phpunit.xml` sets `MAIL_CONNECTION_RETRY_DELAY=0`.** The connection-failure tests exhaust every
 retry on purpose; without it they would spend about a minute of the suite asleep. Keep it when adding to
@@ -117,7 +190,7 @@ that file — a real backoff there is not extra realism, it is just a slower sui
 login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
 `verify-password` remain untested.
 
-✅ **The whole suite is green on `develop` as of 2026-09-17** (812/812) — including
+✅ **The whole suite is green on `develop` as of 2026-09-21** (1191/1191) — including
 `DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which used to fail on a clean
 tree and was for a while the one expected red. If you see it fail again, that is a regression now, not
 the known-bad case.
@@ -218,7 +291,18 @@ local run reads **1 failed / 8 passed, 117/117 tests passing**. Read the test co
 counts.
 
 On `ws-407` (not yet on `develop`) that becomes **1 failed / 9 passed, 129/129** — the branch adds
-`src/utils/validation.test.js`. ⚠️ In a **full** run on that branch, `DiscountCodeModal.test.js` is
+`src/utils/validation.test.js`.
+
+On `ws-480` (not yet on `develop`, measured 2026-09-17 with the review fix in the working tree) a full run
+reads **1 failed / 17 passed, 191/191 tests passing** — still the same single `App.test.js` suite failure,
+confirmed pre-existing by stashing the branch's own changes and re-running. The branch adds **4 tests** to
+`src/redux/slices/userCredits/userCreditSlice.test.js`, a `settled` block covering the purchase gate:
+`settled` false until a read finishes then true on success; **true after a failure carrying no error
+message** (a network error, where the thunk rejects with `undefined` — the case that pinned the credits
+page on `Loading credits…` indefinitely); still true while a later poll's `pending` has cleared `error`;
+and reset when a different user signs in. See
+[FRONTEND.md](FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only).
+⚠️ The SPA gate itself is still unpinned — there is no `CreditPage` or `Checkout` test. ⚠️ In a **full** run on that branch, `DiscountCodeModal.test.js` is
 sometimes reported as a failed *suite* with all 55 of its tests passing, on a post-teardown `act()`
 warning from Formik; it passes in isolation and imports nothing `ws-407` touches. Confirm a suspected
 failure with `--testPathPattern` before blaming a change.
@@ -235,6 +319,26 @@ failure with `--testPathPattern` before blaming a change.
 | `src/utils/sliderUtils.test.js` | 4 | slider helpers |
 | `src/utils/validation.test.js` | **12** | `ws-407` (on the branch only) — the shared phone helpers in `src/utils/validation.js`: blank and separator-only treated as valid, the 15-digit and 20-character caps **truncating rather than rejecting** (the frozen-field regression), `phoneForSubmit` collapsing `()` to `''`, and `validateProfile` reporting a short number. The only guard on the checkout billing gate ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
 | `src/App.test.js` | 0 | the CRA "renders without crashing" stub — **fails to run**, see below |
+| `src/redux/slices/discount/discountSlice.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — an older Discount Codes list response landing last is ignored; the latest still applies |
+| `src/redux/slices/createpaginatedslice.test.js` | +**1** | `ws-502` (on `develop` 2026-09-17) — the same stale-response race through `fetchItemsPaginated`. Its three `deleteItem` tests now load the list through the thunk (`loadList`), because the strict stale check ignores a hand-dispatched `fulfilled` |
+| `src/components/table/TableWithGlobalFilter.test.js` | **3** | `ws-502` (on `develop` 2026-09-17) — a `useServerSorting` header goes asc → desc → asc and never emits a cleared sort; `currentSort` moves the header when the page's sort changes elsewhere, without emitting `onSort`; the page echoing a click back changes nothing |
+| `src/pages/Setting/RestrictedIps.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — newest IP first on load; a just-added IP becomes row 1. The first page-level RTL test with a real store and a mocked `AxiosInstance` — copy it for page tests |
+| `src/pages/Reports/UserTests.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — no error popup for a search request a newer one replaced; the current request's error still shows |
+| `src/pages/AddCredits.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — the same for a sort click on Add Credits (`latestCreditsRequest`) |
+
+On the `ws-502` branch with its 2026-09-17 review fixes, a full run reads **1 failed / 17 passed,
+187/187 tests**. The one failed suite is `App.test.js`, as below. Nine of the twelve `ws-502` tests
+fail against the code they fix. The other three are controls that pass either way: `discountSlice`'s
+"still applies the latest response", and the two "still reports an error for the current request".
+
+⭐ **Page-test pattern (`ws-502`).** A page that imports `react-router-dom` can't load under Jest (see
+`App.test.js` below), so mock it **virtually**:
+`jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn(), useLocation: … }), { virtual: true })`.
+Use a real store with just the reducers the page selects, and mock `AxiosInstance`. The paginated
+factory calls it as a function when `fetchConfig.buildRequest` is set, and as `.get` otherwise. Mock
+`showPopup` to assert on errors. ⚠️ One full run on 2026-09-17 failed a `RestrictedIps` test once, and
+8 more full runs (two of them concurrent) didn't reproduce it. The likeliest cause is RTL's 1s default
+wait under a loaded parallel run, so the three page tests set `configure({ asyncUtilTimeout: 3000 })`.
 
 Everything outside those files is still untested: auth, the test player, patients, reports.
 

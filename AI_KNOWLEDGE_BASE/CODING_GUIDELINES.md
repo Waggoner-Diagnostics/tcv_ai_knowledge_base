@@ -38,6 +38,14 @@ public function performTest(PerformTestRequest $request)          // 1. FormRequ
 - Lock rows you are about to mutate under contention: `->lockForUpdate()` inside `DB::transaction`.
 - Eager-load: `->with(['patient', 'test'])`. The plate loop is N+1-prone without it.
 - Reuse the `Searchable` trait for `?search=`.
+- **End every paged, sortable `ORDER BY` on the primary key, in the sort direction**
+  (`->orderBy('table.id', $sortOrder)`, qualified when joined). MySQL returns ties in undefined order
+  under `LIMIT/OFFSET`, so without it rows repeat or vanish across pages, and SQLite tests can't show it
+  (`ws-502`, [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502)).
+- Decide where a NULL or stand-in value sorts ("Never", "No expiry", Unlimited stored as `0`) with an
+  explicit `orderByRaw('col IS NULL …')` or extra key; don't inherit the engine default. Don't order by an
+  **`enum`** column directly: MySQL sorts it by declared position and SQLite alphabetically. Spell the
+  order out with a `CASE`, as Discount Codes' `type` sort does.
 - Truncate secrets in logs: `substr($token, 0, 10) . '...'`.
 
 ## Don't
@@ -103,6 +111,11 @@ latches ([SERVICES.md](SERVICES.md)). Avoid static mutable state.
   ([FRONTEND.md](FRONTEND.md)).
 - Lazy imports via `lazyWithRetry`.
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice`.
+- On a server-sorted grid, a column's `id` must be a key the endpoint allow-lists. Use
+  `disableSortBy: true` to make a column unsortable; `sortable: false` is ignored.
+- A page that fetches into local state keeps only the **latest** response (a request counter ref);
+  slices compare `action.meta.requestId`. Don't show an error popup for a request a newer one replaced
+  ([FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502)).
 - Import shared UI from `src/components/index.js`.
 - `eslint src --max-warnings 0` — one new warning fails the lint.
 

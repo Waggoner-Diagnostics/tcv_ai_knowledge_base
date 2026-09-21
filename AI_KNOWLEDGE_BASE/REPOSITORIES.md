@@ -23,7 +23,7 @@ creates a second competing pattern rather than consistency ([ARCHITECTURE_REALIT
 | Location | Example |
 |---|---|
 | **Service** — the right place for anything non-trivial | `TestExecutionService::getSessionDetails()`'s aggregate + `havingRaw` |
-| **Model static** | `Credits::getTotalUserCredit()` · `Credits::getAvailableCredits()` · `CreditConsume::getTotalConsumed()` |
+| **Model static** | `Credits::getTotalUserCredit()` · `Credits::getAvailableCredits()` · `Credits::hasUnlimited()` (`ws-480`, on `develop` 2026-09-18) · `CreditConsume::getTotalConsumed()` |
 | **Model scope** | `PatientTest::scopeInProgress/Completed/Pending()` · the `Searchable` trait's `scopeSearch()` |
 | **Controller** | list endpoints (`CreditsController::index()`, `PatientController::index()`) |
 

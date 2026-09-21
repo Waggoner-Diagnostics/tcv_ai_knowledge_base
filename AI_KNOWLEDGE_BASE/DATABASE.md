@@ -1,15 +1,31 @@
 # Database
 
-MySQL, **53 tables**, reconstructed from 131 migrations — the indexed snapshot, taken from
-`TCV-Backend@develop` at `ff9be500` (2026-09-17 sync; `ws-404`, `ws-449` and the audit impersonation
-work merged — new since 2026-09-14: `test_invitations.deferred_count` and five `audit_logs.impersonator_*`
-columns plus their backfill). Full column detail:
-[INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
+MySQL, **55 tables**, reconstructed from 151 migrations — the indexed snapshot, taken from
+`TCV-Backend@develop` at `330cf77d` (2026-09-21 sync). The jump of 20 migrations is almost all
+`ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
+**patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
+Full column detail: [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
 > appears. `DESCRIBE` is the only authority before you write a migration.
 
-## What the 53 include
+☠️ **One of the two new tables is a phantom — `discount_code_usages` is not live** (`ws-459`).
+`2026_09_10_000001_create_discount_code_usages_table` created it for a legacy redemption log
+(`tcv_discount_code_usage`) that turned out not to exist, and `2026_09_18_000001_drop_unused_discount_code_usages_table`
+drops it again in the same merge. It never held a row and nothing reads it — discount usage is derived
+from migrated credits and transactions instead ([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md)). It is
+in the index only because the index unions migrations. **`migration_progress` is the one genuinely new
+live table** (`table_name` unique + `last_processed_id`), the resume cursor every `migrate:*` command
+chunks against. The rest of that migration —`transactions.legacy_id` — does matter and stands.
+
+⚠️ **`ws-459` also reshaped columns you may have cached.** `users.email` lost its unique index
+(`2026_09_07_000001`) and became nullable (`2026_09_15_000001`); `patient_tests.is_email_invite` became
+nullable; `legacy_id` was added to `users`, `patients`, `credits`, `tests`, `patient_tests` and
+`transactions`. The patient/answer/invitation PII columns now hold **ciphertext**, with keyed-md5 blind
+indexes beside them — see [What is encrypted](CONTEXT/DATA_MIGRATION_CONTEXT.md#what-is-encrypted)
+before writing any `where()` against them.
+
+## What the 55 include
 
 | Group | Tables |
 |---|---|
@@ -24,7 +40,9 @@ columns plus their backfill). Full column detail:
 | Email | `email_template`, `user_email_templates`, `test_email_templates` |
 | Assignment | `user_assigned_tests`, `user_hidden_tests` |
 | Audit | `pricing_audit_logs`, `audit_logs` (general audit trail, on `develop` since 2026-09-09 — see SERVICES.md) |
+| Migration | `migration_progress` (resume cursor for `migrate:*`, on `develop` since 2026-09-18 / `ws-459`) |
 | **Historical names** | `user_emails`, `admin_settings`, `user_email_settings`, `discount_code_user` — see below |
+| **Phantom** | `discount_code_usages` — created and dropped by `ws-459`; in the index, not in the database |
 
 ---
 

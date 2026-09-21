@@ -1,6 +1,6 @@
 # Database Table Index
 
-**53 tables**, reconstructed from 131 migrations.
+**55 tables**, reconstructed from 151 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -15,52 +15,54 @@ the only authority before you write a migration against a column.
 | `TABLE-005` | `cache_locks` | 3 | `0001_01_01_000001_create_cache_table.php` | 2 |
 | `TABLE-006` | `compliances` | 2 | `2025_06_23_093258_create_compliances_table.php` | 2 |
 | `TABLE-007` | `credit_consume` | 4 | `2026_05_04_090222_create_credit_consume_table.php` | 2 |
-| `TABLE-008` | `credits` | 11 | `2025_10_15_123918_create_credits_table.php` | 8 |
+| `TABLE-008` | `credits` | 12 | `2025_10_15_123918_create_credits_table.php` | 10 |
 | `TABLE-009` | `discount_code_price_tiers` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
-| `TABLE-010` | `discount_code_user` | 2 | `2025_06_26_092920_create_discount_code_user_table.php` | 3 |
-| `TABLE-011` | `discount_code_users` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
-| `TABLE-012` | `discount_codes` | 25 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 17 |
-| `TABLE-013` | `email_template` | 6 | `2026_03_09_090021_create_email_template_table.php` | 2 |
-| `TABLE-014` | `failed_jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
-| `TABLE-015` | `job_batches` | 10 | `0001_01_01_000002_create_jobs_table.php` | 2 |
-| `TABLE-016` | `jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
-| `TABLE-017` | `lms_delivery_queue` | 16 | `2026_05_08_000004_create_lms_delivery_queue_table.php` | 5 |
-| `TABLE-018` | `lms_delivery_tokens` | 5 | `2026_05_08_000003_create_lms_delivery_tokens_table.php` | 2 |
-| `TABLE-019` | `lms_provider_configs` | 5 | `2026_05_08_000001_create_lms_provider_configs_table.php` | 2 |
-| `TABLE-020` | `lms_sessions` | 14 | `2026_05_08_000002_create_lms_sessions_table.php` | 2 |
-| `TABLE-021` | `organization_configs` | 10 | `2026_03_29_054559_create_organization_configs_table.php` | 4 |
-| `TABLE-022` | `organization_patient_sessions` | 9 | `2026_03_24_124245_create_organization_patient_sessions_table.php` | 2 |
-| `TABLE-023` | `organization_settings_options` | 1 | `2026_04_28_092714_create_organization_settings_options_table.php` | 2 |
-| `TABLE-024` | `organization_types` | 5 | `2025_06_19_104359_create_organization_types_table.php` | 2 |
-| `TABLE-025` | `organizations` | 33 | `2025_06_19_104358_create_organizations.php` | 5 |
-| `TABLE-026` | `password_reset_tokens` | 3 | `0001_01_01_000001_create_users_table.php` | 2 |
-| `TABLE-027` | `patient_tests` | 21 | `2025_06_23_131210_create_patient_tests_table.php` | 20 |
-| `TABLE-028` | `patients` | 19 | `2025_06_23_085520_create_patients_table.php` | 8 |
-| `TABLE-029` | `personal_access_tokens` | 5 | `2025_06_09_101232_create_personal_access_tokens_table.php` | 2 |
-| `TABLE-030` | `price_details` | 3 | `2025_06_24_100030_create_price_details_table.php` | 2 |
-| `TABLE-031` | `pricing_audit_logs` | 6 | `2026_01_27_112600_create_pricing_audit_logs_table.php` | 2 |
-| `TABLE-032` | `privileges` | 2 | `2025_06_23_103451_create_privileges_table.php` | 2 |
-| `TABLE-033` | `prolific_ids` | 5 | `2026_03_29_054643_create_prolific_ids_table.php` | 2 |
-| `TABLE-034` | `restricted_ips` | 1 | `2025_06_18_064142_restricted_ip.php` | 2 |
-| `TABLE-035` | `sessions` | 6 | `0001_01_01_000001_create_users_table.php` | 2 |
-| `TABLE-036` | `test_conditions` | 4 | `2025_06_20_071025_create_test_conditions_table.php` | 2 |
-| `TABLE-037` | `test_email_templates` | 0 | _altered only_ | 3 |
-| `TABLE-038` | `test_invitations` | 13 | `2026_02_26_084221_create_test_invitations_table.php` | 10 |
-| `TABLE-039` | `test_resume_tokens` | 5 | `2026_05_25_000002_create_test_resume_tokens_table.php` | 2 |
-| `TABLE-040` | `test_section_plates` | 6 | `2025_06_20_071402_create_test_section_plates_table.php` | 2 |
-| `TABLE-041` | `test_sections` | 22 | `2025_06_20_071148_create_test_sections_table.php` | 8 |
-| `TABLE-042` | `test_sessions` | 8 | `2026_03_02_180000_create_test_sessions_table.php` | 8 |
-| `TABLE-043` | `testanswers` | 17 | `2025_06_20_070717_create_test_answers_table.php` | 16 |
-| `TABLE-044` | `tests` | 8 | `2025_06_20_070605_create_test_table_table.php` | 6 |
-| `TABLE-045` | `transaction_details` | 12 | `2025_10_15_123744_create_transaction_details_table.php` | 8 |
-| `TABLE-046` | `transactions` | 9 | `2025_07_08_082801_create_transactions_table.php` | 6 |
-| `TABLE-047` | `user_assigned_tests` | 2 | `2026_04_24_000001_create_user_assigned_tests_table.php` | 2 |
-| `TABLE-048` | `user_email_settings` | 4 | `2025_10_15_124114_create_user_email_settings_table.php` | 3 |
-| `TABLE-049` | `user_email_templates` | 0 | _altered only_ | 3 |
-| `TABLE-050` | `user_emails` | 4 | `2025_07_02_070723_create_user_emails_table.php` | 3 |
-| `TABLE-051` | `user_hidden_tests` | 2 | `2026_04_01_122406_create_user_hidden_tests_table.php` | 3 |
-| `TABLE-052` | `user_stripe_details` | 3 | `2026_02_12_145901_create_user_stripe_details_table.php` | 2 |
-| `TABLE-053` | `users` | 35 | `0001_01_01_000001_create_users_table.php` | 24 |
+| `TABLE-010` | `discount_code_usages` | 10 | `2026_09_10_000001_create_discount_code_usages_table.php` | 3 |
+| `TABLE-011` | `discount_code_user` | 2 | `2025_06_26_092920_create_discount_code_user_table.php` | 3 |
+| `TABLE-012` | `discount_code_users` | 2 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 3 |
+| `TABLE-013` | `discount_codes` | 31 | `2026_04_17_000001_rebuild_discount_codes_system.php` | 23 |
+| `TABLE-014` | `email_template` | 6 | `2026_03_09_090021_create_email_template_table.php` | 2 |
+| `TABLE-015` | `failed_jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
+| `TABLE-016` | `job_batches` | 10 | `0001_01_01_000002_create_jobs_table.php` | 2 |
+| `TABLE-017` | `jobs` | 6 | `0001_01_01_000002_create_jobs_table.php` | 2 |
+| `TABLE-018` | `lms_delivery_queue` | 16 | `2026_05_08_000004_create_lms_delivery_queue_table.php` | 5 |
+| `TABLE-019` | `lms_delivery_tokens` | 5 | `2026_05_08_000003_create_lms_delivery_tokens_table.php` | 2 |
+| `TABLE-020` | `lms_provider_configs` | 5 | `2026_05_08_000001_create_lms_provider_configs_table.php` | 2 |
+| `TABLE-021` | `lms_sessions` | 14 | `2026_05_08_000002_create_lms_sessions_table.php` | 2 |
+| `TABLE-022` | `migration_progress` | 2 | `2026_03_30_085716_create_migration_progress_table.php` | 2 |
+| `TABLE-023` | `organization_configs` | 11 | `2026_03_29_054559_create_organization_configs_table.php` | 6 |
+| `TABLE-024` | `organization_patient_sessions` | 9 | `2026_03_24_124245_create_organization_patient_sessions_table.php` | 2 |
+| `TABLE-025` | `organization_settings_options` | 1 | `2026_04_28_092714_create_organization_settings_options_table.php` | 2 |
+| `TABLE-026` | `organization_types` | 5 | `2025_06_19_104359_create_organization_types_table.php` | 2 |
+| `TABLE-027` | `organizations` | 33 | `2025_06_19_104358_create_organizations.php` | 5 |
+| `TABLE-028` | `password_reset_tokens` | 3 | `0001_01_01_000001_create_users_table.php` | 2 |
+| `TABLE-029` | `patient_tests` | 24 | `2025_06_23_131210_create_patient_tests_table.php` | 24 |
+| `TABLE-030` | `patients` | 28 | `2025_06_23_085520_create_patients_table.php` | 15 |
+| `TABLE-031` | `personal_access_tokens` | 5 | `2025_06_09_101232_create_personal_access_tokens_table.php` | 2 |
+| `TABLE-032` | `price_details` | 3 | `2025_06_24_100030_create_price_details_table.php` | 2 |
+| `TABLE-033` | `pricing_audit_logs` | 8 | `2026_01_27_112600_create_pricing_audit_logs_table.php` | 4 |
+| `TABLE-034` | `privileges` | 2 | `2025_06_23_103451_create_privileges_table.php` | 2 |
+| `TABLE-035` | `prolific_ids` | 5 | `2026_03_29_054643_create_prolific_ids_table.php` | 2 |
+| `TABLE-036` | `restricted_ips` | 1 | `2025_06_18_064142_restricted_ip.php` | 2 |
+| `TABLE-037` | `sessions` | 6 | `0001_01_01_000001_create_users_table.php` | 2 |
+| `TABLE-038` | `test_conditions` | 4 | `2025_06_20_071025_create_test_conditions_table.php` | 2 |
+| `TABLE-039` | `test_email_templates` | 0 | _altered only_ | 3 |
+| `TABLE-040` | `test_invitations` | 16 | `2026_02_26_084221_create_test_invitations_table.php` | 15 |
+| `TABLE-041` | `test_resume_tokens` | 5 | `2026_05_25_000002_create_test_resume_tokens_table.php` | 2 |
+| `TABLE-042` | `test_section_plates` | 6 | `2025_06_20_071402_create_test_section_plates_table.php` | 2 |
+| `TABLE-043` | `test_sections` | 22 | `2025_06_20_071148_create_test_sections_table.php` | 8 |
+| `TABLE-044` | `test_sessions` | 8 | `2026_03_02_180000_create_test_sessions_table.php` | 8 |
+| `TABLE-045` | `testanswers` | 20 | `2025_06_20_070717_create_test_answers_table.php` | 19 |
+| `TABLE-046` | `tests` | 9 | `2025_06_20_070605_create_test_table_table.php` | 8 |
+| `TABLE-047` | `transaction_details` | 12 | `2025_10_15_123744_create_transaction_details_table.php` | 8 |
+| `TABLE-048` | `transactions` | 12 | `2025_07_08_082801_create_transactions_table.php` | 10 |
+| `TABLE-049` | `user_assigned_tests` | 2 | `2026_04_24_000001_create_user_assigned_tests_table.php` | 2 |
+| `TABLE-050` | `user_email_settings` | 4 | `2025_10_15_124114_create_user_email_settings_table.php` | 3 |
+| `TABLE-051` | `user_email_templates` | 0 | _altered only_ | 3 |
+| `TABLE-052` | `user_emails` | 4 | `2025_07_02_070723_create_user_emails_table.php` | 3 |
+| `TABLE-053` | `user_hidden_tests` | 2 | `2026_04_01_122406_create_user_hidden_tests_table.php` | 3 |
+| `TABLE-054` | `user_stripe_details` | 3 | `2026_02_12_145901_create_user_stripe_details_table.php` | 2 |
+| `TABLE-055` | `users` | 42 | `0001_01_01_000001_create_users_table.php` | 36 |
 
 ---
 
@@ -159,9 +161,10 @@ the only authority before you write a migration against a column.
 | `coupon_code` | string | `2025_10_15_123918_create_credits_table.php` |
 | `source` | unsignedTinyInteger | `2026_02_26_110941_add_columns_to_credits_table.php` |
 | `credited_by` | unsignedBigInteger | `2026_02_26_110941_add_columns_to_credits_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_05_25_000001_add_legacy_id_to_users_patients_credits.php` |
 | `original_source` | unsignedTinyInteger | `2026_09_03_140000_add_original_source_to_credits_table.php` |
 
-_Dropped later by a migration (may still be listed above): `original_source`._
+_Dropped later by a migration (may still be listed above): `legacy_id`, `original_source`._
 
 ### `discount_code_price_tiers` — `TABLE-009`
 
@@ -170,21 +173,36 @@ _Dropped later by a migration (may still be listed above): `original_source`._
 | `discount_code_id` | foreignId | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `price_detail_id` | foreignId | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 
-### `discount_code_user` — `TABLE-010`
+### `discount_code_usages` — `TABLE-010`
+
+| Column | Type | Defined in |
+|---|---|---|
+| `legacy_id` | unsignedBigInteger | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `discount_code_id` | foreignId | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `discount_code` | string | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `user_id` | foreignId | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `price_detail_id` | unsignedBigInteger | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `plan_price` | decimal | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `discount_amount` | decimal | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `commission` | decimal | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `status` | string | `2026_09_10_000001_create_discount_code_usages_table.php` |
+| `used_at` | timestamp | `2026_09_10_000001_create_discount_code_usages_table.php` |
+
+### `discount_code_user` — `TABLE-011`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `discount_code_id` | foreignId | `2025_06_26_092920_create_discount_code_user_table.php` |
 | `user_id` | foreignId | `2025_06_26_092920_create_discount_code_user_table.php` |
 
-### `discount_code_users` — `TABLE-011`
+### `discount_code_users` — `TABLE-012`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `discount_code_id` | foreignId | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `user_id` | foreignId | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 
-### `discount_codes` — `TABLE-012`
+### `discount_codes` — `TABLE-013`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -199,6 +217,7 @@ _Dropped later by a migration (may still be listed above): `original_source`._
 | `expiry_date` | timestamp | `2025_06_26_092636_create_discount_code_table.php` |
 | `usage` | integer | `2025_10_15_064715_add_usage_to_discount_codes_table.php` |
 | `plan_id` | json | `2025_12_03_104431_change_plan_id_to_json_in_discount_codes_table.php` |
+| `expiry_date` | dateTime | `2026_04_08_170032_change_expiry_date_to_datetime_in_discount_codes.php` |
 | `description` | string | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `type` | enum | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `value` | decimal | `2026_04_17_000001_rebuild_discount_codes_system.php` |
@@ -210,10 +229,12 @@ _Dropped later by a migration (may still be listed above): `original_source`._
 | `expires_at` | timestamp | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `created_by` | foreignId | `2026_04_17_000001_rebuild_discount_codes_system.php` |
 | `max_uses_per_user` | integer | `2026_04_23_135313_modify_max_uses_per_user_nullable_on_discount_codes_table.php` |
+| `expires_at` | dateTime | `2026_05_04_120820_modify_discount_codes_table.php` |
+| `created_by` | unsignedBigInteger | `2026_05_04_120820_modify_discount_codes_table.php` |
 
 _Dropped later by a migration (may still be listed above): `usage`._
 
-### `email_template` — `TABLE-013`
+### `email_template` — `TABLE-014`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -224,7 +245,7 @@ _Dropped later by a migration (may still be listed above): `usage`._
 | `footer` | text | `2026_03_09_090021_create_email_template_table.php` |
 | `status` | enum | `2026_03_09_090021_create_email_template_table.php` |
 
-### `failed_jobs` — `TABLE-014`
+### `failed_jobs` — `TABLE-015`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -235,7 +256,7 @@ _Dropped later by a migration (may still be listed above): `usage`._
 | `exception` | longText | `0001_01_01_000002_create_jobs_table.php` |
 | `failed_at` | timestamp | `0001_01_01_000002_create_jobs_table.php` |
 
-### `job_batches` — `TABLE-015`
+### `job_batches` — `TABLE-016`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -250,7 +271,7 @@ _Dropped later by a migration (may still be listed above): `usage`._
 | `created_at` | integer | `0001_01_01_000002_create_jobs_table.php` |
 | `finished_at` | integer | `0001_01_01_000002_create_jobs_table.php` |
 
-### `jobs` — `TABLE-016`
+### `jobs` — `TABLE-017`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -261,7 +282,7 @@ _Dropped later by a migration (may still be listed above): `usage`._
 | `available_at` | unsignedInteger | `0001_01_01_000002_create_jobs_table.php` |
 | `created_at` | unsignedInteger | `0001_01_01_000002_create_jobs_table.php` |
 
-### `lms_delivery_queue` — `TABLE-017`
+### `lms_delivery_queue` — `TABLE-018`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -284,7 +305,7 @@ _Dropped later by a migration (may still be listed above): `usage`._
 
 _Dropped later by a migration (may still be listed above): `context`._
 
-### `lms_delivery_tokens` — `TABLE-018`
+### `lms_delivery_tokens` — `TABLE-019`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -294,7 +315,7 @@ _Dropped later by a migration (may still be listed above): `context`._
 | `expires_at` | timestamp | `2026_05_08_000003_create_lms_delivery_tokens_table.php` |
 | `scopes` | json | `2026_05_08_000003_create_lms_delivery_tokens_table.php` |
 
-### `lms_provider_configs` — `TABLE-019`
+### `lms_provider_configs` — `TABLE-020`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -304,7 +325,7 @@ _Dropped later by a migration (may still be listed above): `context`._
 | `config` | text | `2026_05_08_000001_create_lms_provider_configs_table.php` |
 | `signing_key` | string | `2026_05_08_000001_create_lms_provider_configs_table.php` |
 
-### `lms_sessions` — `TABLE-020`
+### `lms_sessions` — `TABLE-021`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -323,7 +344,14 @@ _Dropped later by a migration (may still be listed above): `context`._
 | `reported_at` | timestamp | `2026_05_08_000002_create_lms_sessions_table.php` |
 | `ip_address` | string | `2026_05_08_000002_create_lms_sessions_table.php` |
 
-### `organization_configs` — `TABLE-021`
+### `migration_progress` — `TABLE-022`
+
+| Column | Type | Defined in |
+|---|---|---|
+| `table_name` | string | `2026_03_30_085716_create_migration_progress_table.php` |
+| `last_processed_id` | unsignedBigInteger | `2026_03_30_085716_create_migration_progress_table.php` |
+
+### `organization_configs` — `TABLE-023`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -337,10 +365,11 @@ _Dropped later by a migration (may still be listed above): `context`._
 | `fields` | json | `2026_03_29_054559_create_organization_configs_table.php` |
 | `notes` | text | `2026_03_29_054559_create_organization_configs_table.php` |
 | `logo` | string | `2026_04_30_000001_add_logo_to_organization_configs_table.php` |
+| `subdomain_url` | string | `2026_05_26_000001_add_subdomain_url_to_organization_configs_table.php` |
 
-_Dropped later by a migration (may still be listed above): `logo`._
+_Dropped later by a migration (may still be listed above): `logo`, `subdomain_url`._
 
-### `organization_patient_sessions` — `TABLE-022`
+### `organization_patient_sessions` — `TABLE-024`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -354,13 +383,13 @@ _Dropped later by a migration (may still be listed above): `logo`._
 | `status` | enum | `2026_03_24_124245_create_organization_patient_sessions_table.php` |
 | `expires_at` | timestamp | `2026_03_24_124245_create_organization_patient_sessions_table.php` |
 
-### `organization_settings_options` — `TABLE-023`
+### `organization_settings_options` — `TABLE-025`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `name` | string | `2026_04_28_092714_create_organization_settings_options_table.php` |
 
-### `organization_types` — `TABLE-024`
+### `organization_types` — `TABLE-026`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -370,7 +399,7 @@ _Dropped later by a migration (may still be listed above): `logo`._
 | `active` | boolean | `2025_06_19_104359_create_organization_types_table.php` |
 | `is_deleted` | boolean | `2025_06_19_104359_create_organization_types_table.php` |
 
-### `organizations` — `TABLE-025`
+### `organizations` — `TABLE-027`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -405,7 +434,7 @@ _Dropped later by a migration (may still be listed above): `logo`._
 | `allowed_redirect_url` | string | `2025_10_15_122456_add_multiple_fields_in_organizations_table.php` |
 | `logo_url` | string | `2025_10_15_122456_add_multiple_fields_in_organizations_table.php` |
 
-### `password_reset_tokens` — `TABLE-026`
+### `password_reset_tokens` — `TABLE-028`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -413,7 +442,7 @@ _Dropped later by a migration (may still be listed above): `logo`._
 | `token` | string | `0001_01_01_000001_create_users_table.php` |
 | `created_at` | timestamp | `0001_01_01_000001_create_users_table.php` |
 
-### `patient_tests` — `TABLE-027`
+### `patient_tests` — `TABLE-029`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -435,10 +464,11 @@ _Dropped later by a migration (may still be listed above): `logo`._
 | `occupation_contact_email` | string | `2026_04_29_000001_add_occupation_fields_to_patient_tests_table.php` |
 | `test_invitation_id` | unsignedBigInteger | `2026_05_05_000001_add_test_invitation_id_to_patient_tests_table.php` |
 | `resend_count` | unsignedInteger | `2026_05_06_140922_add_resend_count_to_patient_tests_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_09_16_000002_add_legacy_id_to_patient_tests_table.php` |
 
-_Dropped later by a migration (may still be listed above): `eye_tested`, `condition`, `parent_test_id`, `is_email_invite`, `ip_address`, `test_invitation_id`, `resend_count`._
+_Dropped later by a migration (may still be listed above): `eye_tested`, `condition`, `parent_test_id`, `is_email_invite`, `ip_address`, `test_invitation_id`, `resend_count`, `legacy_id`._
 
-### `patients` — `TABLE-028`
+### `patients` — `TABLE-030`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -457,8 +487,13 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `identification` | string | `2025_10_15_095040_add_fields_to_patients_table.php` |
 | `is_encrypted` | boolean | `2025_10_15_095040_add_fields_to_patients_table.php` |
 | `csod_token` | string | `2025_10_15_095040_add_fields_to_patients_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_05_25_000001_add_legacy_id_to_users_patients_credits.php` |
+| `first_name_ident` | string | `2026_09_10_000001_encrypt_patient_pii_columns.php` |
+| `last_name_ident` | string | `2026_09_10_000001_encrypt_patient_pii_columns.php` |
 
-### `personal_access_tokens` — `TABLE-029`
+_Dropped later by a migration (may still be listed above): `legacy_id`._
+
+### `personal_access_tokens` — `TABLE-031`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -468,7 +503,7 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `last_used_at` | timestamp | `2025_06_09_101232_create_personal_access_tokens_table.php` |
 | `expires_at` | timestamp | `2025_06_09_101232_create_personal_access_tokens_table.php` |
 
-### `price_details` — `TABLE-030`
+### `price_details` — `TABLE-032`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -476,7 +511,7 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `to` | integer | `2025_06_24_100030_create_price_details_table.php` |
 | `price_per_credit` | decimal | `2025_06_24_100030_create_price_details_table.php` |
 
-### `pricing_audit_logs` — `TABLE-031`
+### `pricing_audit_logs` — `TABLE-033`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -487,14 +522,14 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `new_values` | json | `2026_01_27_112600_create_pricing_audit_logs_table.php` |
 | `created_at` | timestamp | `2026_01_27_112600_create_pricing_audit_logs_table.php` |
 
-### `privileges` — `TABLE-032`
+### `privileges` — `TABLE-034`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `privilege` | string | `2025_06_23_103451_create_privileges_table.php` |
 | `active` | boolean | `2025_06_23_103451_create_privileges_table.php` |
 
-### `prolific_ids` — `TABLE-033`
+### `prolific_ids` — `TABLE-035`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -504,13 +539,13 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `used_at` | timestamp | `2026_03_29_054643_create_prolific_ids_table.php` |
 | `patient_id` | unsignedBigInteger | `2026_03_29_054643_create_prolific_ids_table.php` |
 
-### `restricted_ips` — `TABLE-034`
+### `restricted_ips` — `TABLE-036`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `ip_address` | string | `2025_06_18_064142_restricted_ip.php` |
 
-### `sessions` — `TABLE-035`
+### `sessions` — `TABLE-037`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -521,7 +556,7 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `payload` | longText | `0001_01_01_000001_create_users_table.php` |
 | `last_activity` | integer | `0001_01_01_000001_create_users_table.php` |
 
-### `test_conditions` — `TABLE-036`
+### `test_conditions` — `TABLE-038`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -530,11 +565,11 @@ _Dropped later by a migration (may still be listed above): `eye_tested`, `condit
 | `cond_status` | string | `2025_06_20_071025_create_test_conditions_table.php` |
 | `cond_section_next` | string | `2025_06_20_071025_create_test_conditions_table.php` |
 
-### `test_email_templates` — `TABLE-037`
+### `test_email_templates` — `TABLE-039`
 
 _No columns detected (index/constraint-only migrations)._
 
-### `test_invitations` — `TABLE-038`
+### `test_invitations` — `TABLE-040`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -550,11 +585,13 @@ _No columns detected (index/constraint-only migrations)._
 | `email_status` | string | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
 | `email_sent_at` | timestamp | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
 | `email_error` | text | `2026_09_01_000001_add_email_delivery_status_to_test_invitations_table.php` |
+| `email_ident` | string | `2026_09_10_000004_encrypt_test_invitation_email.php` |
+| `is_encrypted` | boolean | `2026_09_10_000004_encrypt_test_invitation_email.php` |
 | `deferred_count` | unsignedInteger | `2026_09_14_000001_add_deferred_count_to_test_invitations_table.php` |
 
 _Dropped later by a migration (may still be listed above): `is_revoked`, `resend_count`, `deferred_count`._
 
-### `test_resume_tokens` — `TABLE-039`
+### `test_resume_tokens` — `TABLE-041`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -564,7 +601,7 @@ _Dropped later by a migration (may still be listed above): `is_revoked`, `resend
 | `token` | string | `2026_05_25_000002_create_test_resume_tokens_table.php` |
 | `expires_at` | timestamp | `2026_05_25_000002_create_test_resume_tokens_table.php` |
 
-### `test_section_plates` — `TABLE-040`
+### `test_section_plates` — `TABLE-042`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -575,7 +612,7 @@ _Dropped later by a migration (may still be listed above): `is_revoked`, `resend
 | `answer` | text | `2025_06_20_071402_create_test_section_plates_table.php` |
 | `is_demo` | boolean | `2025_06_20_071402_create_test_section_plates_table.php` |
 
-### `test_sections` — `TABLE-041`
+### `test_sections` — `TABLE-043`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -604,7 +641,7 @@ _Dropped later by a migration (may still be listed above): `is_revoked`, `resend
 
 _Dropped later by a migration (may still be listed above): `is_active`, `skip_if_section_passed`._
 
-### `test_sessions` — `TABLE-042`
+### `test_sessions` — `TABLE-044`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -618,7 +655,7 @@ _Dropped later by a migration (may still be listed above): `is_active`, `skip_if
 
 _Dropped later by a migration (may still be listed above): `invalidated_reason`, `patient_id`._
 
-### `testanswers` — `TABLE-043`
+### `testanswers` — `TABLE-045`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -637,10 +674,13 @@ _Dropped later by a migration (may still be listed above): `invalidated_reason`,
 | `is_demo` | tinyInteger | `2025_10_15_101139_add_multiple_fields_in_testanswers_table.php` |
 | `display_order` | unsignedInteger | `2026_03_24_103149_add_display_order_to_test_answers.php` |
 | `skip_reason` | enum | `2026_03_26_113100_add_skip_reason_to_testanswers_table.php` |
+| `patient_answer` | string | `2026_09_10_000003_encrypt_test_answer_values.php` |
+| `correct` | string | `2026_09_10_000003_encrypt_test_answer_values.php` |
+| `is_encrypted` | boolean | `2026_09_10_000003_encrypt_test_answer_values.php` |
 
-_Dropped later by a migration (may still be listed above): `display_order`, `skip_reason`._
+_Dropped later by a migration (may still be listed above): `display_order`, `skip_reason`, `is_encrypted`._
 
-### `tests` — `TABLE-044`
+### `tests` — `TABLE-046`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -652,10 +692,11 @@ _Dropped later by a migration (may still be listed above): `display_order`, `ski
 | `image` | string | `2025_06_20_070605_create_test_table_table.php` |
 | `user_ids` | text | `2025_10_15_100538_add_user_ids_to_test_table.php` |
 | `slug` | string | `2026_05_08_000005_add_slug_to_tests_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_09_10_000002_add_legacy_id_to_tests_table.php` |
 
-_Dropped later by a migration (may still be listed above): `user_ids`, `slug`._
+_Dropped later by a migration (may still be listed above): `user_ids`, `slug`, `legacy_id`._
 
-### `transaction_details` — `TABLE-045`
+### `transaction_details` — `TABLE-047`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -674,7 +715,7 @@ _Dropped later by a migration (may still be listed above): `user_ids`, `slug`._
 
 _Dropped later by a migration (may still be listed above): `original_amount`, `payment_method_type`._
 
-### `transactions` — `TABLE-046`
+### `transactions` — `TABLE-048`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -687,17 +728,18 @@ _Dropped later by a migration (may still be listed above): `original_amount`, `p
 | `currency` | string | `2025_07_08_082801_create_transactions_table.php` |
 | `status` | string | `2025_07_08_082801_create_transactions_table.php` |
 | `ref_id` | foreignId | `2026_02_26_143534_add_column_to_transactions_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_09_10_000001_create_discount_code_usages_table.php` |
 
-_Dropped later by a migration (may still be listed above): `ref_id`._
+_Dropped later by a migration (may still be listed above): `ref_id`, `legacy_id`._
 
-### `user_assigned_tests` — `TABLE-047`
+### `user_assigned_tests` — `TABLE-049`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `user_id` | foreignId | `2026_04_24_000001_create_user_assigned_tests_table.php` |
 | `test_id` | foreignId | `2026_04_24_000001_create_user_assigned_tests_table.php` |
 
-### `user_email_settings` — `TABLE-048`
+### `user_email_settings` — `TABLE-050`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -706,11 +748,11 @@ _Dropped later by a migration (may still be listed above): `ref_id`._
 | `body` | longText | `2025_10_15_124114_create_user_email_settings_table.php` |
 | `type` | string | `2025_10_15_124114_create_user_email_settings_table.php` |
 
-### `user_email_templates` — `TABLE-049`
+### `user_email_templates` — `TABLE-051`
 
 _No columns detected (index/constraint-only migrations)._
 
-### `user_emails` — `TABLE-050`
+### `user_emails` — `TABLE-052`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -719,14 +761,14 @@ _No columns detected (index/constraint-only migrations)._
 | `body` | longText | `2025_07_02_070723_create_user_emails_table.php` |
 | `type` | string | `2025_07_02_070723_create_user_emails_table.php` |
 
-### `user_hidden_tests` — `TABLE-051`
+### `user_hidden_tests` — `TABLE-053`
 
 | Column | Type | Defined in |
 |---|---|---|
 | `user_id` | foreignId | `2026_04_01_122406_create_user_hidden_tests_table.php` |
 | `test_id` | foreignId | `2026_04_01_122406_create_user_hidden_tests_table.php` |
 
-### `user_stripe_details` — `TABLE-052`
+### `user_stripe_details` — `TABLE-054`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -734,7 +776,7 @@ _No columns detected (index/constraint-only migrations)._
 | `stripe_customer_id` | string | `2026_02_12_145901_create_user_stripe_details_table.php` |
 | `payment_method_id` | string | `2026_02_12_145901_create_user_stripe_details_table.php` |
 
-### `users` — `TABLE-053`
+### `users` — `TABLE-055`
 
 | Column | Type | Defined in |
 |---|---|---|
@@ -766,11 +808,16 @@ _No columns detected (index/constraint-only migrations)._
 | `hide_tests` | text | `2025_10_15_100326_add_additional_fields_to_users_table.php` |
 | `both_eyes` | tinyInteger | `2025_10_15_100326_add_additional_fields_to_users_table.php` |
 | `remote_addr` | string | `2025_10_15_100326_add_additional_fields_to_users_table.php` |
+| `migrated_user_email` | string | `2026_04_01_145832_add_new_columns_to_users_table.php` |
+| `migrated_username` | string | `2026_04_01_145832_add_new_columns_to_users_table.php` |
+| `is_migrated_user` | unsignedTinyInteger | `2026_04_01_145832_add_new_columns_to_users_table.php` |
 | `email_verification_expires_at` | timestamp | `2026_04_14_000001_add_email_verification_expires_at_to_users_table.php` |
 | `phone_no` | string | `2026_04_20_160452_add_phone_no_to_users_table.php` |
+| `legacy_id` | unsignedBigInteger | `2026_05_25_000001_add_legacy_id_to_users_patients_credits.php` |
+| `username` | string | `2026_09_07_000001_drop_unique_index_on_users_email.php` |
 
-_Dropped later by a migration (may still be listed above): `usertype`, `includeWaggnorCCVT`, `includeColorVisionTesting`, `includeOlderChildrenCCVT`, `includeWaggnorCCVT10Sec`, `name`, `email_verification_expires_at`, `phone_no`._
+_Dropped later by a migration (may still be listed above): `usertype`, `includeWaggnorCCVT`, `includeColorVisionTesting`, `includeOlderChildrenCCVT`, `includeWaggnorCCVT10Sec`, `name`, `email_verification_expires_at`, `phone_no`, `legacy_id`._
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-17. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._

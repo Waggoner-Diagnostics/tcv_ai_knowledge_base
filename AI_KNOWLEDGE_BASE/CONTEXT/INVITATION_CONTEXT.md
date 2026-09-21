@@ -668,7 +668,7 @@ checks neither against the caller's session** — [S-03](../SECURITY.md#s-03--se
 
 ## Cancelling
 
-`POST api/test-invitations/{id}/cancel` (`auth:sanctum`, `API-103`):
+`POST api/test-invitations/{id}/cancel` (`auth:sanctum`, `API-104`):
 - selects only `user_id = auth()->id()`, `is_used = false`, `is_revoked = false` — anyone else's
   invitation is a not-found,
 - ⭐ **claims** the row: `UPDATE … SET is_revoked = true, expires_at = now() WHERE id = ? AND

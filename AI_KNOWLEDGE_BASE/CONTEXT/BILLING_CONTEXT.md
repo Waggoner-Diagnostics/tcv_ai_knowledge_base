@@ -45,6 +45,11 @@ routing level rather than by adding a null check per method — follow that shap
 
 Treat `api/stripe/*` as the deprecated surface regardless; build on `api/payment/*`.
 
+⚠️ **That split is why `ws-480`'s unlimited-credit refusal first did not bite.** It was added to
+`StripePaymentController::createPaymentIntent()` alone, on the surface nothing calls; it now sits on all
+four routed handlers across both surfaces — trap 9 below. **Any rule that has to hold server-side on the
+purchase path needs a copy on each surface**, and on both the initialize and confirm halves of `api/payment/*`.
+
 `app/Services/PaymentProviders/` also carries commented-out routes for `partialRefund` / `refund` in
 `routes/api.php` — refunds exist in the controller but are **not routed**.
 
@@ -204,6 +209,87 @@ sync in trap 9 of [AUTH_CONTEXT](AUTH_CONTEXT.md#-traps) matters here.
 Nothing on the backend enforces a phone **format** on either path: `UpdateProfileRequest` has
 `['nullable', 'string', 'max:20']` and no format rule, and the payment path never reads `phone` at all.
 The SPA helper is the only guard, which is why it is shared rather than per-screen.
+
+### 9. ☠️ The unlimited-purchase refusal is on the deprecated surface (`ws-480`)
+
+> ✅ **Closed 2026-09-17** — the refusal now covers all four routed purchase handlers; see *Status
+> 2026-09-17* below. The heading is kept because other pages link to this anchor, and the trap it names
+> is still the one to learn from: a rule on `api/stripe/*` alone binds nothing.
+
+`ws-480` (PR #254, merge `10a8ae73`, on `develop` 2026-09-18; the sha `8d247f8c` cited here is the
+pre-review state) stops an unlimited-credit account from buying
+more credits. **As first written** the server-side half was a single early return in
+`StripePaymentController::createPaymentIntent()` — which is the trap; see *Status 2026-09-17* below for
+the shape it ended up in. The refusal itself reads:
+
+```php
+if (Credits::hasUnlimited($user->id)) {
+    Log::info('Blocked credit purchase for unlimited-credit account', ['user_id' => $user->id]);
+    return response()->json(['message' => 'Your account has unlimited credits, …'], 422);
+}
+```
+
+**Returned, not thrown** — deliberately. The method's `catch` turns any exception into a 500 *"Payment
+failed"*, which reads to a customer as an outage rather than a deliberate refusal. Any other refusal
+added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
+the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
+
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-091`) — the legacy surface, which the
+SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
+`POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **as first written
+neither had an unlimited check**. So the guard could not fire on the path that takes money: the
+enforcement a customer actually met was `CreditPage`/`Checkout` hiding the flow
+([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480)), and a request that skipped the SPA
+still reached `BasePaymentProvider::createTransactionRecord()`, which wrote the grant and the
+transaction as usual.
+
+### Status 2026-09-17 — closed on the branch; the refusal now covers all four routed money paths
+
+Found in review of `ws-480` and fixed on the same branch as **`b081b618`** ("ws-480 PR review change",
+pushed to `origin/ws-480`). The shape is now:
+
+| Handler | Route | Why it needs its own copy |
+|---|---|---|
+| `PaymentController::initializePayment()` | `POST api/payment/initialize` | the live purchase path — this is the one the SPA calls |
+| `PaymentController::confirmPayment()` | `POST api/payment/confirm` | separate request; **only confirm writes the grant**, via `BasePaymentProvider::createTransactionRecord()` |
+| `StripePaymentController::createPaymentIntent()` | `POST api/stripe/create-payment-intent` | legacy, no SPA caller, still routed under `auth:sanctum` |
+| `StripePaymentController::confirmPayment()` | `POST api/stripe/confirm-payment` | legacy, still routed, calls `Credits::addCreditsToUser()` directly |
+
+Three points carried out of that fix:
+
+**The predicate is now `Credits::hasUnlimited(int $userId): bool`**, not a `=== 'Unlimited'` comparison at
+each call site. It wraps the `is_unlimited_credit` + `scopeActive()` query that `getTotalUserCredit()`
+already ran, and `getTotalUserCredit()` now calls it too. Use it for any new "is this account unlimited?"
+decision — four hand-rolled copies of a "does this grant count?" test is precisely the arrangement that
+let `scopeActive()` and `hasExpired()` drift apart ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#-traps)). The
+string comparison is still the rule for anything reading `getAvailableCredits()` itself
+([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
+
+**Both `confirm` copies log at `warning`, not `info`, and carry the `payment_intent_id`.** Reaching a
+confirm handler means the intent may already have succeeded at Stripe, so a refusal there can leave a
+charge with no credits granted against it — the narrow race where an admin grants unlimited mid-checkout.
+Refusing is still right (the credits would be meaningless), but the charge has to be findable for a
+refund, hence the intent id in the log line.
+
+**The `api/payment/confirm` guard sits ahead of the discount re-validation**, so a refused purchase does
+not also write `billing.checkout_discount_*` audit rows for a checkout that never happened.
+
+⚠️ **`StripePaymentController::confirmACHPayment()` is deliberately *not* guarded.** It writes a grant,
+but it is **not registered in `routes/api.php`** — unreachable dead code. If it is ever routed, it needs
+the same copy or it reopens the hole.
+
+✅ The webhook is not a hole: `StripeProvider::handleWebhook()` only logs the event, it never grants.
+
+☠️ **The sibling gate was left open.** `CreditPage`/`Checkout` block purchasing while **impersonating**
+as well as for unlimited grants, and that half is still client-side only — no payment handler, route or
+middleware checks impersonation, so an impersonating admin can still drive a real purchase on the
+impersonated account. Same shape as the bug fixed above, different flag; out of scope for `ws-480`.
+
+✅ Now tested: `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php` covers all four routed
+handlers, asserts via a mocked `PaymentProviderInterface` that the provider is **never reached** (the
+refusal must land before any Stripe work), and pins two negative cases — an ordinary account with a
+balance is still allowed to buy, and an *expired* unlimited grant does not refuse. The SPA still has no
+`CreditPage` or `Checkout` test.
 
 ---
 

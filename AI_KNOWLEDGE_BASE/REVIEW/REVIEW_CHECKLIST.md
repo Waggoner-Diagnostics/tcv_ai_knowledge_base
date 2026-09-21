@@ -56,6 +56,12 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
 
 - [ ] `getAvailableCredits()` / `getTotalUserCredit()` results are guarded with `!== 'Unlimited'`
       **before any arithmetic**. [CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md)
+- [ ] A yes/no "is this account unlimited?" test calls `Credits::hasUnlimited($userId)` rather than
+      adding another `=== 'Unlimited'` comparison against a fresh call.
+- [ ] A rule that must hold on the purchase path is on **all four** routed handlers:
+      `PaymentController::initializePayment()` + `confirmPayment()` (only `confirm` writes the grant) and
+      both `StripePaymentController` halves.
+      [BILLING trap 9](../CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)
 - [ ] No double-charge: the `if (!$isEmailInvite)` condition in `assignTest()` is the entire guard, and
       it depends on `test_invitation_id` being merged by `FlexibleAuthMiddleware`.
 - [ ] A refund credits the **owner**, not `auth()->user()`, unless the query is scoped to the caller's own
@@ -94,6 +100,9 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
       and a join **through** one silently drops rows.
 - [ ] Table name verified against the model's `$table` — `testanswers`, `credit_consume`,
       `email_template` don't follow convention.
+- [ ] A paged, sortable query **ends its `ORDER BY` on the primary key** in the sort direction, and any
+      NULL/stand-in value ("Never", Unlimited-as-0) has a deliberate position. A test proving it must
+      assert tied rows come back in id order. A page-walk test passes on SQLite either way. (`ws-502`)
 
 ### 6a. Data migrations (a migration that writes rows, not schema)
 
@@ -143,8 +152,23 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
       `publicRoutes.js` — otherwise the first 401 destroys the session mid-test.
 - [ ] New API calls hit endpoints that exist ([CONTRACT_DRIFT.md](../INDEXES/CONTRACT_DRIFT.md)).
 - [ ] Lazy imports use `lazyWithRetry`.
+- [ ] A "has this loaded yet?" gate is **not** derived from a slice's `error`. `pending` clears `error`,
+      so the gate flickers on every poll, and a thunk rejecting with `err.response?.data?.message` leaves
+      it `undefined` on a network error or an HTML 502 — a gate meant to fall open pins itself shut.
+      Use a forward-only flag set on both outcomes, like `userCredits.settled`. Check what the gate hides:
+      if it covers content that does not depend on the pending read, it is hiding too much.
+- [ ] Anything gated on such a flag has a **bounded** read behind it. `axiosInstance` sets no global
+      timeout, so a request that hangs rather than fails never settles and the gate never opens — set a
+      per-request `timeout` on that call. Ask of every readiness flag: does success, failure **and a
+      hang** all reach it? Gating checkout on an unbounded read once made paying depend on the credits
+      endpoint.
+      [FRONTEND.md](../FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only)
 - [ ] No client logic that branches on a **403** — the backend returns 500 for those.
 - [ ] Paginated tables use `createPaginatedCrudSlice`.
+- [ ] Every sortable header on a `useServerSorting` grid sends a key the endpoint allow-lists (an
+      unknown key is silently replaced by the default, so the grid shows a sort it isn't doing), and
+      unsortable columns use `disableSortBy`, not `sortable: false`. A fetch that writes the grid
+      ignores out-of-date responses. [FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502)
 - [ ] `eslint src --max-warnings 0` on the PR branch reports the **same or fewer** problems as
       the same command run against `develop`. Not an absolute zero-warnings gate — `develop`
       itself has never passed `--max-warnings 0` outright (198+ pre-existing warnings, 2

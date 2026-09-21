@@ -199,3 +199,26 @@ row being edited.
 5. **Validation happens twice on different inputs.** `POST api/discount-codes/validate` validates against
    a client-supplied `amount`/`credits`; `POST api/payment/initialize` validates again with the real
    figures. Only the second one is authoritative — never grant a discount from the first call's result.
+6. **The admin list's sort order (`DiscountCodeController::index()`, `ws-502`, on `develop` 2026-09-17).** Allowed
+   `sort_by`: `code`, `type`, `expires_at`, `created_at`, `minimum_order_amount`, `is_active`. Anything
+   else silently becomes `created_at`. The grid's columns send `code`, `type` (the *Discount* column)
+   and `expires_at` (*Valid Until*).
+   - **`type` was missing from that list before `ws-502`**, so sorting *Discount* returned newest-first
+     in both directions. It now groups by type, then orders by `value`, because comparing 10% with
+     $10.00 means nothing. The group order is spelled out,
+     `orderByRaw("CASE WHEN type = 'fixed' THEN 0 ELSE 1 END …")`, so ascending lists *fixed* first
+     on every engine. ☠️ **Don't simplify it to `orderBy('type')`.** `type` is
+     `enum('percentage','fixed')` on MySQL (rebuild migration `2026_04_17_000001`), and MySQL orders an
+     enum by **declared position** (*percentage* first), while SQLite stores a plain string and orders it
+     alphabetically (*fixed* first). The first `ws-502` commit did exactly that, and its SQLite test pinned
+     the opposite order to dev/QA. Fixed in the 2026-09-17 review round, checked on MariaDB 10.4: the
+     `CASE` passes `DiscountCodeListSortTest` there and the plain column fails it.
+   - **`expires_at` NULL means "Never"**, so it sorts after every date ascending and before every date
+     descending (`orderByRaw('expires_at IS NULL …')`). MySQL's default puts NULLs *first* ascending.
+     Expiries are stored at `endOfDay()`, so codes expiring the same day tie exactly.
+   - **Every sort ends on `id`**, because `LIMIT/OFFSET` over ties is non-deterministic on MySQL.
+     `code` alone never ties among live rows (the unique index above), but the rest do.
+   Pinned by `tests/Feature/DiscountCodes/DiscountCodeListSortTest.php`. Its page-walk test passes even
+   without the tiebreak (SQLite sorts ties stably); the id-order test is the one that guards it. The
+   **redemptions report** had its own sort-key bug, in
+   [REPORTING_CONTEXT](REPORTING_CONTEXT.md) trap 8.

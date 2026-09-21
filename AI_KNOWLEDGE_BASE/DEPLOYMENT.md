@@ -222,6 +222,17 @@ check the migration list before choosing a rolling deploy.
     ([S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)).
 11. The SPA and website are **separate deployments** with their own nginx configs
     (`TCV-Frontend/nginx.conf`, `nginx.integration.conf`).
+12. ☠️ **`LEGACY_*` key material set — new and required since `ws-459`** (PR #255, on `develop`
+    2026-09-18). Patient PII is encrypted at rest, so `LEGACY_MASTER_KEY` (or `LEGACY_DEC_KEY`) plus
+    `LEGACY_ENC_KEY` (or `LEGACY_DATA_KEY`) must be present, and the master key must **match the legacy
+    value exactly**. Missing, `LegacyEncrypter::blindIndex()` throws rather than hashing against an empty
+    key. Full list and the traps in [ENVIRONMENT.md](ENVIRONMENT.md); the risk in
+    [S-21](SECURITY.md#s-21--the-patient-blind-indexes-are-unsalted-md5-under-a-single-global-key).
+13. ⚠️ **Then run `php artisan patients:rebuild-email-index --apply` once per environment.** Blind
+    indexes built before the correct key was in place match nothing, and the symptom is silent —
+    patients simply stop being findable by email. Verify the keys first with
+    `php artisan legacy:check-encryption --value=<ciphertext> --expect=<plaintext>`, which reports
+    whether what you configured actually decrypts legacy rows.
 
 ## Rollback notes
 

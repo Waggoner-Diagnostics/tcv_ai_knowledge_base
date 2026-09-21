@@ -6,7 +6,7 @@ The clinician/admin portal **and** the patient test player. Served under `/app`
 | | |
 |---|---|
 | Stack | React 18 · Redux Toolkit · React Router **v7** · Axios · Bootstrap 5 / React-Bootstrap · Formik + Yup · Stripe.js · Sass |
-| Scale | 272 source files · ~38.4k lines · 65 top-level routes · 43 Redux slices · 16 hooks |
+| Scale | 287 source files · ~41.0k lines · 65 top-level routes · 44 Redux slices · 18 hooks |
 | Env | `REACT_APP_BASE_URL`, `REACT_APP_STRIPE_PUBLIC_KEY`, `REACT_APP_TURNSTILE_SITE_KEY`, `PUBLIC_URL` |
 | Build | `react-scripts` (CRA 5) |
 
@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-163`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-164`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -154,6 +154,19 @@ section while the header still thinks they are outside it, and the prompt comes 
 
 Both build URLs from a `baseUrl` at runtime, which is why they show as `_scanner limit_` rows in
 [CONTRACT_DRIFT.md](INDEXES/CONTRACT_DRIFT.md) — that is expected, not a finding.
+
+☠️ **`createCrudSlice`'s `createItem` appends** (`s.list.push`), so a new row lands **last** whatever
+order the page shows. Restricted IPs (`pages/Setting/RestrictedIps.js`) therefore sorts its rows by `id`
+descending on every list change, so a just-added IP is the first row (`ws-502`, on `develop` 2026-09-17). Its API
+(`RestrictedIpController::index()` → `RestrictedIp::all()`) is still unordered. Pricing, Patients,
+Organisations and the admin slices share this factory, so **fix order per page, not in the factory**.
+
+**`createPaginatedCrudSlice` drops stale list responses (`ws-502`, on `develop` 2026-09-17).** `pending` stores
+`action.meta.requestId` in `listRequestId`; `fulfilled`/`rejected` return early unless their `requestId`
+matches. No exceptions, the same check as `discountSlice` and `discountCodesReportSlice`. So a test has
+to load a list through the thunk with a mocked `AxiosInstance` (`createpaginatedslice.test.js`'s
+`loadList`). A hand-dispatched `widgets/fetchPaginated/fulfilled` is now ignored. See
+[Server-sorted grids](#server-sorted-grids-ws-502).
 
 ☠️ **`deleteItem` in `createPaginatedCrudSlice` omitted `skipErrorPopup` until 2026-09-07.**
 `createSlice.js` passes `{ skipErrorPopup: true }` on the request; the paginated twin did not. The
@@ -284,16 +297,24 @@ It is not real time; do not describe it as such in release notes.
 `slices/userCredits/userCreditSlice.js`, which skips flipping `loading` so the header keeps showing the
 last known number instead of its `—` placeholder while the poll is in flight.
 
-☠️ **`initialized` latches true and nothing ever resets it.** `loading` therefore goes true **exactly
-once per page load** — the first non-background fetch. Every consumer of `state.userCredits.loading`
+**`initialized` latches true for as long as one identity holds the tab.** `loading` therefore goes true
+**once per page load** — the first non-background fetch. Every consumer of `state.userCredits.loading`
 (the header's `—`, `HomePage/Home.js`, `CreditPage/CreditPage.js`, `Setting/Profile.js`) shows its
 placeholder only on that first fetch and never again. A spinner that "stopped working" here is this,
 not a broken request.
 
-☠️ **Nothing clears the credits slice on logout.** `useLogOut` dispatches `logoutSuccess` and clears
-storage, but the store is never reset and there is no page reload. Log out and back in as a **different
-user in the same tab** and the header shows the *previous* user's balance until the new fetch resolves —
-with no placeholder, because `initialized` is still true. A hard refresh is what clears it.
+📌 **Corrected 2026-09-17.** This page used to say `initialized` is never reset and that nothing clears
+the credits slice on logout. Both stopped being true on 2026-08-31, in `ws-397`'s own follow-ups
+(`400cf66`, on `develop`): `clearedState()` rebuilds the slice from `initialState` — `initialized` back
+to `false` included — on `logoutSuccess`, and on `loginSuccess`/`setImpersonationUser` whenever the
+payload's user id differs from the stored `ownerId` (first sight of an owner is adopted without
+clearing, because auth hydrates from `localStorage` before the Header's first fetch resolves). So
+logging out and back in as a **different user in the same tab** does show the placeholder and does not
+show the previous user's balance. `ws-480`'s purchase gate depends on exactly that reset — it treats
+`settled` (added on that branch, reset the same way) as "this user's balance question has been answered"
+([Credit purchase gate](#credit-purchase-gate-ws-480)). Any field added to this slice that a gate
+will read has to go in `initialState`, or `clearedState()` will not clear it and it will leak across
+identities.
 
 ☠️ **The effect order inside the hook is load-bearing.** The mount effect is declared *before* the
 `location.pathname` effect, and both run on mount; the mount effect stamps `lastFetchedAt`, so the 5 s
@@ -451,6 +472,286 @@ Aggressive preloading far ahead of display will fetch URLs that expire before us
 
 ---
 
+## Server-sorted grids (`ws-502`)
+
+✅ **`ws-502` merged into `develop` in both repos on 2026-09-17** — backend PR #253 (`820747a6`,
+carrying `00d5e98f` and the review fix `15207600`), frontend PR #390 (`9152b45`, carrying `a28074f`).
+The generated indexes now show it, and everything marked `ws-502` below describes shipped code.
+The frontend half alone never fixed the ticket: rows repeating across pages is the backend's missing
+tiebreak, which is why the two shipped together.
+
+Every admin grid that pages on the server also sorts there. `useServerSorting` on
+`TableWithGlobalFilter` sets react-table's `manualSortBy`, so **the table never reorders rows itself**.
+A header click only calls `onSort(columnId, 'asc' | 'desc')` and the page refetches. The column's `id`
+(or string `accessor`) **is** the sort key sent to the API.
+
+| Grid | Page | Endpoint · param names | Keys the API accepts | Order beyond the column itself |
+|---|---|---|---|---|
+| Users / Super Admins | `pages/users/Users.js` · `pages/Admin/Admin.js` | `GET api/users/type/{usertype}` · `sortBy`/`sortOrder` | `full_name` `account_status` `country_id` `credits` `created_at` (+ `id` `name` `first_name` `last_name` `email` `updated_at`) | Country by **`countries.name`**, not id; unmatched id ("—") last ascending (`ws-502`). Credits: Unlimited above any number. Its clamp is `GREATEST` on MySQL and multi-argument `MAX` on SQLite (picked by `DB::getDriverName()`, as Organizations does). Before `ws-502`, a test sorting Users by credits was a 500 on SQLite |
+| Organizations | `pages/Organisation/Organisation.js` | `GET api/organizations` · `sortBy`/`sortOrder` | `organization_name` `account_status` `test_url` `compliance` `credits` | Compliance by name; none ("-") last ascending (`ws-502`) |
+| Discount Codes | `pages/DiscountCodes/DiscountCodes.jsx` | `GET api/discount-codes` · `sort_by`/`sort_order` | `code` `type` `expires_at` (+ `created_at` `minimum_order_amount` `is_active`) | Discount (`type`) = fixed before percentage ascending (explicit `CASE`, not the enum), then value; Valid Until "Never" last ascending (`ws-502`) |
+| Add Credits | `pages/AddCredits.js` | `GET api/credits` · `sort_by`/`sort_order` | `credits` `created_at` `expiry_date` | Unlimited above any amount; "No expiry" last ascending (`ws-502`) |
+| Discount Code Redemptions | `pages/Reports/DiscountCode.js` | `GET api/reports/discount-codes` · `sort_by`/`sort_order` | `code` `username` `email` `company` `total_credits` `discount_amount` `original_amount` `paid_amount` `used_on` | User = first then last name; a blank company (NULL or `''`, both shown "—") last ascending (`ws-502`) |
+| User Tests → patient detail | `pages/Reports/UserTestDetail.js` | `GET api/reports/user-tests?patient_id=` · `sort_by`/`sort_order` | `unique_test_id` `test_name` `created_at` `status` (mapped by the page's `sortFieldMap`) | sorted in PHP, not SQL — [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) trap 7 |
+| Audit Trail | `pages/AuditTrail/AuditTrail.js` | `GET api/audit-logs` · `sortBy`/`sortOrder` | `audit_id` `category` `created_at` `status` | the only one that **rejects** an unknown key (`AuditLogIndexRequest`); had an `id` tiebreak before `ws-502` |
+
+Note the two parameter spellings: `sortBy`/`sortOrder` versus `sort_by`/`sort_order`. Sending the wrong
+one is silently ignored.
+
+☠️ **Three rules, all learned from `ws-502` ("sort order not kept across pages"):**
+
+1. **Every paged `ORDER BY` ends on the primary key, in the sort direction.** Status has two values,
+   most users share a country, and dates tie to the second. MySQL leaves tie order undefined under
+   `LIMIT/OFFSET`, so a row can appear on page 1 *and* page 2, or on neither. Before `ws-502` only Audit
+   Trail and the Users *Credits* sort had a tiebreak. ☠️ **The suite cannot catch a missing one**,
+   because SQLite sorts ties stably ([TESTING.md](TESTING.md)).
+2. **A header whose key isn't on the endpoint's allow-list sorts by nothing, silently.** Most list
+   endpoints swap an unknown key for their default (`created_at`, or `used_on` for redemptions) and
+   return 200, so the arrow flips and the rows don't move. `ws-502` found two: Discount Codes'
+   *Discount* column (`type`, now allowed) and Redemptions' *Discount Code* column (`discount_code`, now
+   `id: 'code'`). ☠️ **`sortable: true/false` in a column file does nothing.** react-table v7 ignores it,
+   and `disableSortBy: true` is what hides a header's sort control.
+3. **Only the latest request may write the grid.** Sort clicks aren't debounced, and the
+   Users/Admins/Organizations search fires on every keystroke. An older response landing last used to
+   overwrite the newer one: rows in one order, the arrow and every later page in another. `ws-502`
+   guards every server grid. The four pages that hold rows in local state (Users, Admin, Organisation,
+   AuditTrail) use a `latestRequest` ref counter. `discountSlice`, `discountCodesReportSlice` and
+   `createPaginatedCrudSlice` store a `listRequestId` and compare it with `action.meta.requestId`, which
+   covers Add Credits and the report drill-down too. **A replaced request's error is dropped the same
+   way.** User Tests and User Test detail skip their error popup once the fetch effect's cleanup has
+   cleared `isActive`, and Add Credits checks a `latestCreditsRequest` counter in `fetchCreditsPage`.
+   The Axios interceptor's own popup still fires for any failed GET without `skipErrorPopup`, as it does
+   everywhere in the app.
+
+**A server-sorted header toggles asc ↔ desc only (`ws-502`).** `TableWithGlobalFilter` passes
+`disableSortRemove: disableSortRemove || useServerSorting`. Before, a third click cleared the arrow but
+the rows stayed in the last server order, because nothing tells the page the sort was removed.
+Client-sorted grids (Tests, Public Pages, Page Categories, Profile Summary) keep the three-state cycle.
+Covered by `components/table/TableWithGlobalFilter.test.js`.
+
+**`currentSort` keeps a header in step with the page's sort (`ws-502`).** Each `TableWithGlobalFilter`
+is its own react-table instance with its own `sortBy` state, and the page never used to tell it the
+sort. Redemptions renders the grid **twice**: inline, and again in the fullscreen portal. A sort picked
+in fullscreen left the inline arrow on the old column after closing. The optional
+`currentSort={{ id, order }}` prop now syncs the header whenever the page's sort changes.
+`lastEmittedSortRef` is the sort the table and page last agreed on, so the page echoing a click back
+changes nothing, and a sort adopted from the page is never reported as a click. Redemptions passes
+`sortState`, so Date Used also shows ↓ on first load. **The other grids don't pass it yet**, so their
+arrow starts blank while the API applies `created_at desc`. To wire one up, pass its sort state. Don't
+seed react-table's `initialState.sortBy` without seeding `lastEmittedSortRef` too, or the mount itself
+emits `onSort` and refetches page 1.
+
+**Redemptions now returns to page 1 on sort** (`ws-502`), like every other grid. It used to re-fetch the
+*current* page in the new order.
+
+⚠️ **Seen, not fixed:** Add Credits' All/Available/Used/Expired tabs and its search box filter
+`filteredTableData` client-side, **over the 10 rows on screen**, not the user's whole grant list.
+
+---
+
+## Credit purchase gate (`ws-480`)
+
+✅ **`ws-480` merged into `develop` in both repos on 2026-09-18** — backend PR #254 (`10a8ae73`),
+frontend PR #392 (`1f31854`). ⚠️ **Cite the merges, not `8d247f8c` / `346efce`**: both of those are the
+pre-review state. The review defects were fixed on the branches first (backend `b081b618`, `23d005ff`;
+frontend `e3a222e`, `2b745ce`), so what shipped is the corrected shape described below.
+
+An account holding a live unlimited grant has nothing left to buy, so the credits page must stop
+selling to it. `pages/UserPannel/CreditPage/CreditPage.js` decides that with three flags:
+
+| Flag | Value | Decides |
+|---|---|---|
+| `hasUnlimitedCredits` | `String(userCredits).toLowerCase() === "unlimited"` | the hero subtitle, the balance readout, the notice |
+| `purchaseAllowed` | `!isImpersonating && !hasUnlimitedCredits` | the tab strip, the Purchase tab, the empty-history CTA, and which tab `?tab=` may select |
+| `purchaseGateResolved` | `isImpersonating \|\| creditsSettled` | whether the **Purchase** tab may paint yet |
+
+**The balance is a string, so the client compares it as one.** `Credits::getAvailableCredits()` returns
+`int|string` and `'Unlimited'` is the string ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). The header
+chip (`UserPannel/Header/Header.js`), `SendTestModal`, the credits page and the checkout page all do the
+same lower-cased string compare — four call sites, one rule. A numeric comparison coerces
+`'Unlimited'` to `0` and re-opens the purchase flow for exactly the accounts that must not see it.
+
+**`purchaseAllowed` merges two rules that used to be one.** Hiding the purchase flow while a Super Admin
+impersonates the account predates this ticket; `ws-480` folds the unlimited case into the same flag, so
+the read-only balance block, the hidden tab strip and the suppressed empty-state CTA now cover both.
+`?tab=purchase` is forced to `TABS.HISTORY` whenever `purchaseAllowed` is false — a URL or a stale
+history entry cannot reopen the flow either way.
+
+☠️ **The two rules are not knowable at the same moment, which is why the third flag exists.** Auth state
+answers impersonation on the first paint; the unlimited grant is only knowable once `GET api/user/credits`
+has come back. Painting the purchase tab before then flashes it in front of the accounts it is meant to
+be hidden from — a direct load of `/user-panel/credit?tab=purchase` is the reported repro. Until
+`purchaseGateResolved`, the page renders a `Loading credits…` line in place of the Purchase tab. A failed
+read **falls open** rather than trapping a paying customer behind an unrelated outage.
+
+### ☠️ `settled`, not `initialized || !!error` — the gate has to key off something forward-only
+
+The gate was first written as `creditsInitialized || !!creditsError`, and a code review on 2026-09-17
+found that expression fails in both directions. `userCredits.settled` was added to the slice to replace
+it, set in **both** `fetchUserCredits.fulfilled` and `.rejected` (after the staleness guard) and reset
+only by `clearedState`. Read it for any "has the balance question been answered?" gate; `initialized`
+still means specifically *a read succeeded*, which is the right test when you need the number itself.
+
+| What goes wrong with `initialized \|\| !!error` | Why |
+|---|---|
+| ☠️ Gate never resolves — `Loading credits…` forever | The thunk rejects with `error.response?.data?.message`, so `error` is left **`undefined`** whenever the failure carried no JSON `message`: offline, server unreachable, or an nginx HTML 502. `initialized` is false too, so the gate that was meant to fall open pinned itself shut instead — the exact opposite of the intent. Pinned by `userCreditSlice.test.js` |
+| ⚠️ Gate un-resolves on every retry | `fetchUserCredits.pending` clears `error` unconditionally, including for background polls, so the page flipped back to `Loading credits…` and returned when the request rejected again. `useCreditsSync`'s backoff spaced that up to 8 minutes apart (`POLL_INTERVAL_MS` × `2 ** consecutiveFailures`, capped at 8) |
+
+### ☠️ Anything that waits on `settled` needs the read to be **bounded**
+
+`axiosInstance` sets **no global timeout**, deliberately — bulk invitation sends and report exports
+legitimately run for minutes. So a request that *hangs* rather than fails never rejects, and a gate
+waiting on `settled` never resolves. A second review round caught this: gating `Checkout`'s
+`createSetupIntent()` on `settled` had made **paying** depend on `GET api/user/credits` answering, so a
+stalled FPM pool would have stopped checkout for everyone — a worse failure than the stray SetupIntent
+that gate was added to prevent.
+
+The fix is a **per-request** timeout on the balance read (`CREDITS_REQUEST_TIMEOUT_MS`, 15s, inside
+`fetchUserCredits`), not a global one. It is under `useCreditsSync`'s 60s poll so a timed-out read is
+retried by the next tick. A timeout carries no `status`, so the response interceptor cannot mistake it for
+a 401 and nobody is logged out; it does reach the global error popup, but only for the one *foreground*
+read per session (`useCreditsSync` passes `background: initialized`), which is an accepted trade against
+a silent stall. `userCreditSlice.test.js` pins both the timeout's presence and that a timeout still sets
+`settled`.
+
+⚠️ **The general rule:** a readiness flag is only as good as the slowest path that sets it. Before making
+anything wait on one, check that every path — success, failure **and hang** — reaches it.
+
+📌 **Credit history no longer waits on the gate at all.** It has its own thunk and its own loading state
+and nothing on it depends on the balance, so gating it too only meant a credits outage took the history
+away as well — the one thing still worth reading when the balance will not load. The `Loading credits…`
+placeholder is scoped to `activeTab === TABS.PURCHASE` for the same reason; without that scoping it would
+render *alongside* the history rather than instead of it.
+
+**`/user-panel/checkout` is guarded separately, and on a different condition.** `CheckOutPage/Checkout.js`
+is reachable by URL and by browser history, so hiding the tab is not a guard. Its
+`blockedFromCheckout = isImpersonating || (creditsInitialized && hasUnlimitedCredits)` redirects to
+`/user-panel/credit`. Note the asymmetry with the credits page: here an **unread** balance lets the page
+through (`creditsInitialized &&`), because bouncing a paying user off their own checkout on a slow read is
+the worse failure. The credits page holds its paint instead — it has something to show while it waits, and
+checkout does not.
+
+⚠️ **The `createSetupIntent()` dispatch needs `creditsSettled` on top of that**, and did not have it until
+the 2026-09-17 review. Blocking requires a *successful* read, so on a cold load `blockedFromCheckout` is
+still false while the balance is in flight, and an unlimited account opening `/user-panel/checkout`
+directly set up a Stripe payment method in the moment before the redirect fired. It waits for `settled`
+rather than `initialized` deliberately: gating on `initialized` would close that hole but block checkout
+for **everyone** whenever the credits endpoint is down, which is the worse trade.
+
+**The unlimited notice reuses the header chip's green** — `cp-alert--info` in `CreditPage.scss`
+(`#F0FDF4` / `#86EFAC` / `#166534`, darker text than the chip's `#16A34A` because this is body copy on a
+pale ground, not a large label). A new `cp-alert--*` modifier needs its own rule here or it renders
+unstyled, the same trap as the `&--type-*` credit-history badges
+([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)).
+
+☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
+landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
+`API-091`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
+`services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
+`api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
+
+✅ **Fixed on the branch (2026-09-17).** `PaymentController::initializePayment()` and `confirmPayment()`
+now carry the same refusal, as does the legacy `StripePaymentController::confirmPayment()`. Both `confirm`
+handlers matter on their own: `confirm` is where `BasePaymentProvider::createTransactionRecord()` writes
+the `SOURCE_PURCHASE` grant, so a caller skipping the SPA cannot run `initialize` and then `confirm` past
+the gate.
+[BILLING_CONTEXT trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)
+has the detail, including why the backend now calls `Credits::hasUnlimited()` rather than comparing
+against the string.
+
+⚠️ **The SPA half is still unpinned.** `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`
+covers the four backend handlers, but there is still no `CreditPage` or `Checkout` test — the frontend
+gate passes whether it works or not, and it is the gate a customer actually meets.
+
+### The user modal's at-least-one-test pre-check (same ticket)
+
+`ws-480` also puts a client-side check in front of **Assigned Tests** in `components/NewUserModal.js`,
+which the ticket bundles with the purchase gate. It only applies to `USER_ROLES.CUSTOMER` rows, the only
+usertype whose tests the modal manages.
+
+☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
+user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-150`, 422
+`api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
+rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
+account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
+message on screen. The pre-check returns before `createUser`/`updateUser` is dispatched at all, so the two
+stay consistent.
+
+| Piece | Detail |
+|---|---|
+| The condition | `shouldManageTests && allTests.length > 0 && assignedTests.length === 0` |
+| Why `allTests.length` gates it | list still loading or failed ⇒ no checkbox to tick and no assignment call either, and the backend's own default assignment leaves the account valid. Blocking there would be a dead end |
+| On failure | sets `testError`, scrolls the group into view through `assignedTestsRef`, `setSubmitting(false)`, returns |
+| Clearing | an effect clears `testError` as soon as `assignedTests` is non-empty again, and the show/`initialData` effect clears it when the modal opens |
+| Label | *Assigned Tests* now carries a red `*` |
+
+⚠️ **The backend only enforces the invariant when the payload actually unassigns something**
+(`if (! empty($unassign))` in `TestController::bulkUpdateAssignment()`), and `unassignUserTest()` refuses
+only the last remaining row. The client check is not a mirror of a rule that would otherwise catch it —
+on this path it is the rule.
+
+---
+
+## Migrated records read differently from native ones (`ws-459`)
+
+✅ **On `develop` 2026-09-18** — frontend PR #395 (`d0da885`), the client half of the `ws-459` data
+migration ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)). 8 files, ~360 lines, all in
+`pages/UserPannel/PatientTestList/`, `PatientPage/InvitedPatientsTab.js`, `ResultPage/`,
+`pages/Reports/UserTests.js` and `utils/dateUtils.js`.
+
+The theme: **a migrated row and a row created in this system are not the same shape**, and the screens
+that render both had been asserting things the legacy data does not support.
+
+☠️ **`is_email_invite` has three states, so `!is_email_invite` is wrong.**
+
+| Value | Means | In-Office tag |
+|---|---|---|
+| `true` | emailed invitation | no |
+| `false` | taken in office | **yes** |
+| `null` | the legacy record never said | **no** |
+
+Legacy had no emailed column before **2020-01-30**, so those rows' `0` meant nothing, and the backend's
+`2026_09_16_000001_make_is_email_invite_nullable_on_patient_tests` makes the column nullable to preserve
+that "unknown". `!is_email_invite` treats `null` as false and tags every pre-2020 migrated test
+**In-Office** — asserting something no row in the old database supports. Both `PatientTestList.js` and
+`ResultPage.js` now test `=== false` explicitly. Any new consumer of this flag must do the same.
+
+☠️ **Test ID on screen is `legacy_id`, not `id`.** `tests.id` is a fresh surrogate key, so the same
+test carries a different number in each system — legacy `9` "Waggoner CCVT" is `17` here. The list
+renders `pt.test?.legacy_id ?? pt.test?.id`, and `legacy_id` is `null` for anything created in this
+system. `ResultPage` has the same problem one level down: legacy's "Test/Plate ID" printed
+`tcv_assign_test.id` (the *assignment*), not the test type, so it renders
+`result.test_plate_id ?? result.test?.id` and the label was corrected from "Test ID" to **"Test/Plate
+ID"**. `test_plate_id` carries the legacy row's id for a migrated test and `patient_tests.id` for a
+native one. A `legacy_id` is the only safe thing to quote to a customer comparing the two systems.
+
+⭐ **`formatLocalDate()` is new in `utils/dateUtils.js`, and it is not a duplicate of `formatDate()`.**
+`formatDate()` matches fixed patterns and **ignores the offset**, so handed an ISO 8601 instant it
+prints the **UTC** calendar date — a day off near midnight for anyone not on UTC. Use `formatLocalDate()`
+for any timestamp that came from the API as an instant; keep `formatDate()` for date-only strings.
+Related: the audit trail's own offset handling in
+[AUDIT_TRAIL_FRONTEND_CONTEXT](CONTEXT/AUDIT_TRAIL_FRONTEND_CONTEXT.md).
+
+**Status wording mirrors the legacy Patient Test List** so a row reads the same in both systems —
+`TEST_STATUS_LABELS` in `PatientTestList.js`:
+
+| `status` | Label shown |
+|---|---|
+| `pending` | Pending |
+| `inprogress` | In Progress |
+| `completed` | Test Complete |
+| `abandoned` | **Credit Revoked** |
+
+Without the badge, two rows for one test — one taken, one never opened — render identically.
+`pending` now shares the "no result to view or download" branch with `inprogress`; it used to fall
+through and offer a result page that could only fail. That is defensive rather than load-bearing:
+`getPatientTests()` excludes `openInvitation()` rows, which is every migrated unfinished test, so
+pending rows surface on the **Invited Patients** tab instead.
+
+---
+
 ## ☠️ Known drift and dead code
 
 Regenerated every run; the current state:
@@ -487,6 +788,9 @@ Regenerated every run; the current state:
   existed only inside `Checkout.js`'s change handler, which is how the pre-filled value reached Stripe
   unvalidated ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md) trap 8).
 - Prefer `createPaginatedCrudSlice` over `createCrudSlice` for anything paginated.
+- **A server-sorted column's `id` must be a key the endpoint allow-lists**, and a page that fetches into
+  local state must drop out-of-date responses. See
+  [Server-sorted grids](#server-sorted-grids-ws-502).
 - **A slice that renders its own errors must pass `skipErrorPopup: true`**, or the interceptor popups
   on top of it. Field errors belong inline via a `fieldErrors` key, not in a modal (see above).
 - **State another session can change must be re-fetched, not assumed fresh.** Nothing is pushed to the

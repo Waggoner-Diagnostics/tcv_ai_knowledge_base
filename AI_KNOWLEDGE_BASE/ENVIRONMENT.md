@@ -37,7 +37,37 @@ same warning at boot.
 | Stripe | `STRIPE_KEY` `STRIPE_SECRET` `STRIPE_WEBHOOK_SECRET` |
 | HubSpot | `HUBSPOT_ACCESS_TOKEN` |
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
+| **Legacy source DB** (`ws-459`) | `OLD_DB_CONNECTION` `OLD_DB_HOST` `OLD_DB_PORT` `OLD_DB_DATABASE` `OLD_DB_USERNAME` `OLD_DB_PASSWORD` |
+| **Legacy encryption** (`ws-459`) | **`LEGACY_MASTER_KEY`** (or `LEGACY_DEC_KEY`) `LEGACY_ENC_KEY` `LEGACY_DATA_KEY` · `LEGACY_ENCRYPTION_ENABLED` (deliberately **not** in compose) |
+| **Legacy key DB** (`ws-459`) | `ENC_DB_HOST` `ENC_DB_PORT` `ENC_DB_DATABASE` `ENC_DB_USERNAME` `ENC_DB_PASSWORD` `ENC_DB_SSL_CA` |
 | Deploy | `IMAGE_TAG_BACKEND` |
+
+☠️ **The `LEGACY_*` block is required on `develop` since `ws-459` merged (PR #255, 2026-09-18)** —
+added to both compose files by `ee60d0cf` and `c7a45a17`. Patient PII is encrypted at rest, so an
+environment without the key material does not degrade gracefully:
+
+- **`LEGACY_MASTER_KEY` has no default and must not get one.** It keys every blind index
+  (`md5(value . master_key)`), so `LegacyEncrypter::blindIndex()` **throws** when it is unset rather
+  than hashing against an empty string — [S-21](SECURITY.md#s-21--the-patient-blind-indexes-are-unsalted-md5-under-a-single-global-key).
+  It must match the legacy value **exactly**, or migrated patients are not findable by email.
+- **`LEGACY_MASTER_KEY` and `LEGACY_DEC_KEY` are the same secret under two names** — the two branches
+  named it differently. `config/legacy.php` resolves it with `?:`, not `env()`'s default argument,
+  precisely because compose substitutes `""` for an unset host variable and `env()` treats `""` as a
+  value; the `?:` lets an empty `LEGACY_MASTER_KEY` fall through to `LEGACY_DEC_KEY`.
+- **Set `LEGACY_ENC_KEY` (or `LEGACY_DATA_KEY`) in every deployed environment.** Leaving both empty
+  makes the app fetch the wrapped project key from the legacy key database — the `ENC_DB_*` connection —
+  **on every request**. Those variables are the fallback path, not the normal one.
+- **`LEGACY_ENCRYPTION_ENABLED` is left out of compose on purpose, and fails closed.** Only an explicit
+  `false`/`0`/`off`/`no` disables encryption; the empty string an unset compose variable produces keeps
+  it **on**. `env()`'s own cast would have read `""` as false and quietly written plaintext PII. Never
+  set it in QA or production.
+- ⚠️ **After deploying to a new environment, run `php artisan patients:rebuild-email-index --apply`
+  once.** Blind indexes built before the right key was in place match nothing.
+
+⚠️ **`LEGACY_DEC_KEY` and `LEGACY_ENC_KEY` are each listed twice in the same `environment:` block** of
+`docker-compose.yml` (lines 63–64 and again at 120–121). Both occurrences expand the same variable, so
+it is harmless today — but they are duplicate keys in one YAML mapping, and the **last one wins**. Edit
+the wrong copy and the change silently does nothing.
 
 ☠️ **`TRUSTED_PROXIES` — the fail-closed default is gone (`ws-449`, 2026-09-14).**
 `bootstrap/app.php` now calls `trustProxies()` on every boot. Unset (or empty, which is what compose
@@ -53,8 +83,9 @@ nginx files trust every peer; they are the fix. Read [S-16 *Status 2026-09-17*](
 before changing either.
 
 It **is** wired up now: `TRUSTED_PROXIES: ${TRUSTED_PROXIES}` is in the `environment:` block of both
-compose files. Compose passes an **explicit allowlist** — `KEY: ${KEY}`, **59** entries on `develop`
-(`TRUSTED_PROXIES` and `MAIL_INVITATION_DISPATCH` are the two newest) — so a variable absent from that
+compose files. Compose passes an **explicit allowlist** — `KEY: ${KEY}`, **78** entries in the `backend-tcv` block on
+`develop` at `330cf77d` (up from 59 at the 2026-09-17 sync; the +19 is the `ws-459` `LEGACY_*` /
+`OLD_DB_*` / `ENC_DB_*` set above) — so a variable absent from that
 block never reaches the container whatever an env file says. Supplying a value per environment is
 DevOps' step.
 

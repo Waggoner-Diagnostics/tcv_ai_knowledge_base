@@ -164,6 +164,46 @@ Per-organisation, configured in `lms_provider_configs` and dispatched through `L
 `verifySignature()` prefers it in its sort but no provider is registered
 ([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).
 
+## Country and state reference data (nnjeim/world)
+
+`nnjeim/world` seeds the `countries` / `states` tables behind `DropdownValuesController::getCountriesWithStates()`
+(F-081, `GET api/countries-with-states`) — the one source for every country/state dropdown in the
+product: the website's distributor-enquiry form (`DistributorSignupClient.jsx`) and `AuthModal.jsx`
+sign-up modal, plus `TCV-Frontend`'s Register, Checkout, `NewUserModal`, `OrganisationModal`,
+Profile/Settings and Admin user tables (all via `loginSlice.js`'s `fetchCountries` thunk). **Neither
+frontend sorts the list client-side** — both render whatever order the backend returns.
+
+☠️ **The package seeds two countries under names ISO 3166-1 retired**: `iso2 = 'SZ'` as "Swaziland"
+(renamed Eswatini, 2018) and `iso2 = 'MK'` as "Macedonia" (renamed North Macedonia, 2019).
+
+✅ **`TCV-Backend fix/countries-list-update`** (`ddbeccf6`, PR #265, merge `330cf77d`) is **on `develop`
+since 2026-09-18** — verified at the 2026-09-21 sync by finding `->orderBy('name')` in
+`DropdownValuesController::getCountriesWithStates()` and the two renames in **both**
+`database/seeders/WorldSeeder.php` and
+`database/migrations/2026_09_18_000001_update_obsolete_country_names.php`. It fixes both:
+
+- `getCountriesWithStates()` now calls `->orderBy('name')`. The list previously relied on **insertion
+  order**, which only *looked* alphabetical because the package's original English names happened to be
+  seeded that way — renaming "Swaziland"→"Eswatini" and "Macedonia"→"North Macedonia" in place, without
+  an explicit sort, left them under **S** and **M** instead of **E** and **N**.
+- `2026_09_18_000001_update_obsolete_country_names.php` backfills already-seeded databases, matched by
+  `iso2` (not the old `name`, so it's immune to any spelling/casing drift in a future package version).
+- ☠️ **The migration alone does not survive a reseed.** `WorldSeeder::run()` calls the package's
+  `SeedAction`, which **truncates and reinserts all ~250 country rows** from its bundled data on every
+  run. Laravel runs migrations before seeders and never re-runs a migration already recorded as applied
+  — so on a fresh environment, or any `php artisan migrate:fresh --seed`, the migration's `UPDATE`s would
+  no-op against the still-empty table, then the seeder would silently restore "Swaziland"/"Macedonia"
+  with no error and no way to detect it. Fixed by re-applying the same two-row correction **inside
+  `WorldSeeder::run()`, immediately after `SeedAction::class`**, so it re-lands every time seeding runs
+  regardless of order. Verified by re-running `WorldSeeder` directly (a full reseed of all 250 rows) and
+  confirming both `iso2` rows stayed corrected afterward.
+- Production is not exposed to the reseed gap today — [DEPLOYMENT.md](DEPLOYMENT.md) shows deploys only
+  run `php artisan migrate --force`, never seed — but any fresh local/staging database built the normal
+  Laravel way (`migrate --seed` / `migrate:fresh --seed`) was.
+
+Once merged: regenerate and expect `INDEXES/DATABASE_TABLE_INDEX.md`'s migration count to move by one;
+no route, endpoint or table count changes otherwise.
+
 ---
 
 ## Failure modes at a glance
