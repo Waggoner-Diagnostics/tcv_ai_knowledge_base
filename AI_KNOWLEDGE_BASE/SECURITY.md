@@ -346,6 +346,16 @@ For `TYPE_CORNERSTONE` that JSON holds `client_id`, `client_secret`, `token_url`
 `signing_key` column is likewise a plain `Str::random(128)`. `LmsAdminController::revealSigningKey()`
 returns it to any `auth:sanctum` caller — with **no policy check** on that route.
 
+🚧 **Access half addressed on branch `ws-460` — NOT fixed, not on `develop` (2026-09-23).** `ws-460` puts
+`super.admin` (`EnsureSuperAdmin`) on the whole `api/admin/lms` group, closing both halves of the
+exposure: reading any org's signing key (→ minting its launch URLs) and **rewriting its `hacp_url` /
+`completion_url` to a server you control** (→ receiving its learners' results). Do not mark this fixed
+until it merges, and even then only the *access* half: storage is unchanged — `signing_key` is still a
+plain column, and `buildDefaultConfig()` still writes plain JSON (the admin upsert and `ws-460`'s
+`lms:provision-healthstream` encrypt; `getDecodedConfig()` accepts both). ☠️ Also bounded by
+[S-22](#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid): a
+role gate means nothing while any account can grant itself the role.
+
 ### S-07 — `login()` short-circuits on a Bearer token, skipping every account gate
 
 **Severity: medium.**
@@ -883,7 +893,7 @@ hold real migrated accounts.
 | `S-20` | `api/qa/*` — six unauthenticated account-takeover helpers, registered only when `APP_ENV` ∈ (`qa`, `testing`). Deliberate and double-gated, but invisible to the generated route indexes | **high** (contained) | `Qa/QaAutomationController` · `routes/api.php` |
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
-| `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
+| `S-06` | LMS provider secrets stored plaintext; signing key readable. 🚧 `ws-460` (branch, unmerged) gates `api/admin/lms/*` to super admins — access half only, and see `S-22` | medium | `LmsLaunchService` · `LmsAdminController` |
 | `S-07` | `login()` Bearer short-circuit skips account gates | medium | `AuthController::login()` |
 | `S-08` | `email_verified` vs `email_verified_at` disagree — ✅ **fixed `ws-417`**, columns not collapsed | medium | `User` · `AuthController` |
 | `S-15` | Terminal LMS tokens keep **read** access by design; mutations 409 via `lms.status` | low | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware` |

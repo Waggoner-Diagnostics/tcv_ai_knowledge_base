@@ -50,7 +50,8 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
 - [ ] Authorisation failure returns an **explicit** `ApiResponse::error(HttpStatus::FORBIDDEN, …)`.
       Relying on `authorize()` yields a **500**, not a 403. [ERROR_HANDLING.md](../ERROR_HANDLING.md)
 - [ ] Admin-only surfaces actually check the role. `api/admin/lms/*`, `api/reports/*` and
-      `super-admin/dashboard` currently have **none** — don't add a sixth.
+      `super-admin/dashboard` currently have **none** on `develop` — don't add a sixth. For a whole group,
+      the `super.admin` alias (`EnsureSuperAdmin`, 🚧 branch `ws-460`) is the pattern to copy once merged.
 
 ## 4. Credits & money
 

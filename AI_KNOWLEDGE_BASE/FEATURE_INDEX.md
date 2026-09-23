@@ -34,8 +34,8 @@ commits can reference a feature without restating it.
 | **F-051** | Org Test URL & signature | `POST api/organization/verify-signature` | `Organization::generateTestUrl()` · `OrganizationTestUrlNotification` | `organizations`, `lms_provider_configs`, `lms_sessions` | [ORG](CONTEXT/ORGANIZATION_CONTEXT.md) |
 | **F-052** | Org privileges / redirect | `GET api/organization/{privileges,redirect-url,tests/default}` | `OrganizationController` | `privileges`, `allowed_tests` | [ORG](CONTEXT/ORGANIZATION_CONTEXT.md) |
 | **F-060** | LMS launch & session | via F-051 | `LmsLaunchService` · `FlexibleAuthMiddleware` tier 3 · `LmsSessionStatusMiddleware` | `lms_sessions`, `lms_provider_configs` | [LMS](CONTEXT/LMS_CONTEXT.md) |
-| **F-061** | LMS delivery | (event-driven) | `LmsDeliveryService` · `ProcessLmsDeliveryJob` · `Cornerstone`/`GenericWebhook` providers · `XapiStatementBuilder` | `lms_delivery_queue`, `lms_delivery_tokens` | [LMS](CONTEXT/LMS_CONTEXT.md) |
-| **F-062** | LMS admin | `api/admin/lms/*` | `LmsAdminController` | `lms_provider_configs`, `lms_delivery_queue` | [LMS](CONTEXT/LMS_CONTEXT.md) |
+| **F-061** | LMS delivery | (event-driven) | `LmsDeliveryService` · `ProcessLmsDeliveryJob` · `Cornerstone`/`GenericWebhook` providers · `XapiStatementBuilder` · 🚧 `ws-460`: `HealthStream` provider, `lms:deliver-pending`, `lms:provision-healthstream`, `config/lms.php` | `lms_delivery_queue`, `lms_delivery_tokens` | [LMS](CONTEXT/LMS_CONTEXT.md) |
+| **F-062** | LMS admin | `api/admin/lms/*` (🚧 `super.admin` on `ws-460`) | `LmsAdminController` | `lms_provider_configs`, `lms_delivery_queue` | [LMS](CONTEXT/LMS_CONTEXT.md) |
 | **F-070** | Reports | `api/reports/*` | `ReportController` · `Services/Reports/*` · `Exports/*` | many | [REPORTING](CONTEXT/REPORTING_CONTEXT.md) |
 | **F-071** | Super-admin dashboard | `GET api/super-admin/dashboard` | `SuperAdminDashboardController` | many | [REPORTING](CONTEXT/REPORTING_CONTEXT.md) |
 | **F-080** | Contact / enquiry | `POST api/contact` | `ContactController` · `HubSpotService` | — | [THIRD_PARTY](THIRD_PARTY.md) |

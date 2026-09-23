@@ -69,7 +69,8 @@ writable — `user_id` included, which reassigns ownership. Block.
   it fails for super admins (explicit 9-item list) and passes for customers (`['*']`).
   [POLICIES.md](../POLICIES.md)
 - A new admin surface with only `auth:sanctum` is reachable by every role. `api/admin/lms/*`,
-  `api/reports/*` and `super-admin/dashboard` already are — don't extend the pattern.
+  `api/reports/*` and `super-admin/dashboard` already are — don't extend the pattern. (🚧 `ws-460`
+  gates `api/admin/lms/*` with `super.admin`; not on `develop` yet.)
 
 ### 7. Injection & data exposure
 

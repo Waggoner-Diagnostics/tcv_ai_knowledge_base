@@ -78,7 +78,7 @@ further check:
 
 | Surface | Guard | Consequence |
 |---|---|---|
-| `api/admin/lms/*` (8 endpoints) | `auth:sanctum` | any user reads/rotates any org's signing key ([S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)) |
+| `api/admin/lms/*` (8 endpoints) | `auth:sanctum` | any user reads/rotates any org's signing key ([S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)). 🚧 `ws-460` (unmerged) gates the group with `super.admin` |
 | `api/super-admin/dashboard` | `auth:sanctum` | any user sees the admin dashboard |
 | `api/reports/*` | `auth:sanctum` | any user runs cross-tenant reports |
 | `api/test-session/*`, `api/test-result/*`, `api/tests/perform` | `FlexibleAuthMiddleware` | any session touches any test ([S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)) — `test-result/{id}/download-pdf` is now scoped, the rest are not |

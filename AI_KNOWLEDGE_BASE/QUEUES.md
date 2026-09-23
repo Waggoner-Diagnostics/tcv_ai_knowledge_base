@@ -20,7 +20,7 @@ shows entries stuck at `pending` — that is the diagnostic.
 | Service | Command | Exists for |
 |---|---|---|
 | `backend-queue` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384` | `ProcessLmsDeliveryJob` (the LMS backlog above) and invitation batches once `MAIL_INVITATION_DISPATCH=queue` |
-| `backend-scheduler` | `schedule:work` | The one scheduled task, `invitations:send-pending` — the foreground equivalent of a crontab entry, so the image still needs no cron daemon |
+| `backend-scheduler` | `schedule:work` | The one scheduled task, `invitations:send-pending` — the foreground equivalent of a crontab entry, so the image still needs no cron daemon. 🚧 Branch `ws-460` adds a second, `lms:deliver-pending` every five minutes — the **only** LMS retry path in `after_response` mode ([below](#the-lms-job)) |
 
 ☠️ **Enabling the profile drains the backlog immediately** — every LMS delivery queued while no worker
 existed goes out, and the first scheduled `invitations:send-pending` resends or refunds every stranded
@@ -149,8 +149,32 @@ It re-implements retry itself so the schedule and the dead-letter state live in
 
 ```
 pending → in_flight → delivered
-                    ↘ release(backoff)  ×5  → dead_letter
+                    ↘ re-dispatch ->delay(backoff)  ×5  → dead_letter
 ```
+
+(The class comment still says "via `release()`"; the code re-dispatches so the queue row, not the
+`jobs` row, is authoritative.)
+
+### 🚧 `ws-460`: LMS delivery gets the invitations' dispatch switch (branch, not on `develop`)
+
+`config/lms.php` → `delivery_dispatch` (`LMS_DELIVERY_DISPATCH`), defaulting to **`after_response`**
+because no environment consumes the `lms` queue. `LmsDeliveryService::dispatchDelivery()` is the single
+fork for completion, section progress and dead-letter replay.
+
+| | `after_response` (default) | `queue` |
+|---|---|---|
+| First attempt | web process, after the response | `backend-queue`, `afterCommit()` |
+| Retry | ☠️ **none from the job** — row stays `pending` + `next_retry_at` | delayed re-dispatch |
+| Who retries | `lms:deliver-pending` (scheduled 5 min, `withoutOverlapping(10)`; or by hand, `--limit=50`, `--dry-run`) | the job; the command is then a safety net |
+
+☠️ **Same shape as invitations, same catch: the scheduler is behind the `workers` profile too.** Without
+it the first attempt happens and retries don't — rows sit `pending` with `next_retry_at` in the past.
+That, not "stuck at `pending` with a null `next_retry_at`", is the new signature of a missing scheduler.
+The command also picks up rows whose after-response run never happened (FPM recycled, deploy mid-request).
+
+⚠️ `LMS_DELIVERY_DISPATCH` is passed into the backend `environment:` block by `ws-460` in both compose
+files; before that it never reached the container. `phpunit.xml` pins it to `queue` (see
+[CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).
 
 `handle()` opens with `LmsDeliveryQueue::lockForUpdate()->find(...)` inside a transaction, and returns
 early for `delivered` (idempotent re-dispatch guard) and `dead_letter` (only an explicit admin replay
@@ -190,6 +214,7 @@ inside the password-set request.
 
 **One** scheduled task (`invitations:send-pending`, every ten minutes), registered in
 `bootstrap/app.php` since 2026-09-15 and run only by `backend-scheduler` under the `workers` profile.
+(Two on branch `ws-460`, which adds `lms:deliver-pending` every five minutes.)
 `routes/console.php` defines only the stock `inspire` command.
 
 There is still **no** cleanup of expired sessions, invitations, resume tokens, or stale

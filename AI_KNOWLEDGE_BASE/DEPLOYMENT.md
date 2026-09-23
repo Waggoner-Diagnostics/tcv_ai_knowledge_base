@@ -52,8 +52,8 @@ sit behind a profile:
 |---|---|---|
 | `backend-tcv` (`backend-app-tcv`) | ✅ | php-fpm; every setting arrives as an env var; `restart: unless-stopped`; `RUN_INIT: "true"` |
 | `backend-nginx` (`backend-nginx-tcv`) | ✅ | `nginx:1.25-alpine`, host **8080** → 80, mounts `./nginx.conf` and `./public`. Forwards `X-Forwarded-For`/`-Proto`/`X-Real-IP` to php-fpm since `ws-449` ([S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert)) |
-| `backend-queue` (`backend-queue-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384`. Drains the LMS backlog; also runs invitation batches when `MAIL_INVITATION_DISPATCH=queue` |
-| `backend-scheduler` (`backend-scheduler-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `schedule:work` — runs the one scheduled task (`invitations:send-pending`, every 10 min). Foreground, so the image needs no cron daemon. **Single replica by design** |
+| `backend-queue` (`backend-queue-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `queue:work --queue=lms,default --tries=1 --timeout=300 --max-time=3600 --memory=384`. Drains the LMS backlog; also runs invitation batches when `MAIL_INVITATION_DISPATCH=queue` (and 🚧 LMS deliveries when `LMS_DELIVERY_DISPATCH=queue`, `ws-460`) |
+| `backend-scheduler` (`backend-scheduler-tcv`) | ☠️ **no** — `profiles: ["workers"]` | `schedule:work` — runs the one scheduled task (`invitations:send-pending`, every 10 min; 🚧 plus `lms:deliver-pending` every 5 min on `ws-460`). Foreground, so the image needs no cron daemon. **Single replica by design** |
 
 Volumes: `/var/www/html/storage/logs` bind-mounted from the host, and `./public` shared with nginx.
 MySQL is external — there is no database service.
@@ -247,6 +247,12 @@ check the migration list before choosing a rolling deploy.
     patients simply stop being findable by email. Verify the keys first with
     `php artisan legacy:check-encryption --value=<ciphertext> --expect=<plaintext>`, which reports
     whether what you configured actually decrypts legacy rows.
+14. 🚧 **HealthStream (`ws-460`, only once merged).** Leave `LMS_DELIVERY_DISPATCH` unset
+    (`after_response`) unless `backend-queue` runs. Either way, **LMS retries need `backend-scheduler`**
+    (`lms:deliver-pending`) — without the `workers` profile, schedule or run it by hand. Then, per HealthStream
+    org: `php artisan lms:provision-healthstream --dry-run`, then without `--dry-run`, and give
+    HealthStream the printed launch URL as the AU URL. Never `--rotate-key` a live org casually — it
+    breaks every URL HealthStream holds ([LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md#healthstream--aicc-ws-460-branch-only)).
 
 ## Rollback notes
 

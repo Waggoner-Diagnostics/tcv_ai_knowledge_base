@@ -155,14 +155,17 @@ Per-organisation, configured in `lms_provider_configs` and dispatched through `L
 |---|---|---|
 | `generic_webhook` | ✅ live | POST to `completion_url` |
 | `cornerstone` | ✅ live | OAuth token → xAPI statements to an LRS |
-| `healthstream` | ❌ constant + default config only, provider registration commented out | — |
+| `healthstream` | ❌ on `develop` (constant + default config only). 🚧 **implemented on branch `ws-460`** | AICC HACP v4 `GetParam` / `PutParam` form-POST to the org's `hacp_url` ([LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md#healthstream--aicc-ws-460-branch-only)) |
 | `scorm` | ❌ constant only | — |
 
 ☠️ Provider config — including Cornerstone's `client_secret` — is stored as **plain JSON**
 ([S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)).
 ☠️ An org can be configured for `healthstream` and launch successfully, then fail at delivery, because
 `verifySignature()` prefers it in its sort but no provider is registered
-([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).
+([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)). Closed by `ws-460` once it merges.
+☠️ HealthStream HACP has **no authentication** — the `AICC_SID` is the whole credential — and a
+successful HTTP 200 can still carry `error_num != 0`. `ws-460` checks the body; the legacy integration
+discarded it, so learners could show passed in TCV and incomplete in HealthStream.
 
 ## Country and state reference data (nnjeim/world)
 

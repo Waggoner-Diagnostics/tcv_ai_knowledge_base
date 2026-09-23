@@ -65,7 +65,8 @@ It covers `org_id` **and nothing else** — no nonce, no timestamp, no expiry. W
 mint unlimited sessions forever. Rotating the provider config's `signing_key`
 (`POST api/admin/lms/provider-configs/{id}/rotate-key`) is the **only** revocation, and it invalidates
 the stored `test_url` at the same time — so rotation must be followed by regenerating and re-mailing the
-URL. See [S-05](../SECURITY.md#s-05--organisation-launch-signatures-are-static-permanent-bearer-credentials).
+URL. (🚧 `ws-460`'s `lms:provision-healthstream` regenerates `test_url` itself, and keeps the key unless
+`--rotate-key` is passed.) See [S-05](../SECURITY.md#s-05--organisation-launch-signatures-are-static-permanent-bearer-credentials).
 
 ### ☠️ The `APP_KEY` fallback never closes
 `generateTestUrl()` and `verifySignature()` both fall back to `config('app.key')` when no active
@@ -86,6 +87,12 @@ Two entry points, both `FlexibleAuthMiddleware` + `lms.status:launched,identity_
 | `POST api/organization/patient/prolific` | Prolific research panel — identity is a `prolific_id` |
 
 Both advance the LMS session's status. Remember the status gate only bites for tier-3 sessions.
+
+🚧 **`ws-460` (branch, not on `develop`):** `getPatientForm()` also returns `prefill` — the learner name
+HealthStream's `GetParam` supplied at launch, as `{first_name, last_name}`, or `[]` for any non-LMS tier.
+`VerifiedDefaultUser.js` uses it only to fill fields the org's own verification data left empty. And
+`OrganizationPatient.js` reads `AICC_SID` / `AICC_URL` from the test URL case-insensitively before
+posting them to `verify-signature` ([LMS_CONTEXT](LMS_CONTEXT.md#healthstream--aicc-ws-460-branch-only)).
 
 ---
 

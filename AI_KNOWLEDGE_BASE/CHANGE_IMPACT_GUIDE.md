@@ -117,6 +117,25 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
+## LMS / HealthStream (🚧 `ws-460`, branch only — not on `develop`, 2026-09-23)
+
+| Change | Also check |
+|---|---|
+| `HealthStreamProvider::deliver()` / `fetchIdentity()` URL | ☠️ Must stay the org's `hacp_url`. Reading `AICC_URL` from the launch makes TCV POST scores wherever a crafted URL says |
+| HACP success check (`error_num === 0`) | HTTP 200 is not success. Loosening it re-creates the legacy bug: passed in TCV, incomplete in HealthStream |
+| `provider_ref_id` truncation (255) | Written *after* HealthStream accepted the score; an overflow there fails the job post-delivery and the retry reports twice |
+| `NO_SID_PREFIX` / `buildCompletionPayload()` throw | The throw is what dead-letters SID-less sessions at once instead of burning 5 retries |
+| `lessonStatus()` / `report_pass_fail` | Default `completed` is deliberate (HealthStream applies its own mastery cutoff); asserting pass/fail changes every learner's transcript |
+| `config/lms.php` `delivery_dispatch` / `LmsDeliveryService::dispatchDelivery()` | All three enqueue paths go through it. In `after_response` the job must **not** re-dispatch on failure — only `lms:deliver-pending` retries. Remove that schedule entry and retries stop silently |
+| `lms:deliver-pending` query (`pending` + due) | Must not select `in_flight`/`dead_letter`; the job's row lock and early returns are what make it safe beside a real worker |
+| `OrganizationController::lmsPrefill()` ↔ `VerifiedDefaultUser.js` | Two-repo contract: `prefill.first_name` / `last_name`, split on the **first** whitespace. Prefill must never override the org's verification data |
+| `OrganizationPatient.js` AICC param read | Case-insensitive on purpose. An exact-case read drops HealthStream's `AICC_SID` and every result dead-letters |
+| `lms:provision-healthstream` | Rewrites `organizations.test_url`. `--rotate-key` breaks every launch URL HealthStream holds |
+| `super.admin` on `api/admin/lms` | ☠️ Removing it re-exposes every org's signing key and delivery URLs to any account. `EnsureSuperAdmin` must run after `auth:sanctum` |
+| `redirectGuestsTo(fn () => null)` in `bootstrap/app.php` | Removing it turns every guest request without `Accept: application/json` back into a 500 with a trace |
+
+---
+
 ## Admin grids — sorting and paging (`ws-502`, on `develop` 2026-09-17)
 
 | Change | Also check |

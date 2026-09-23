@@ -123,6 +123,13 @@ All on `develop` since `ws-404` merged (2026-09-15):
   a *current* image, not just an old one. Rows stay `pending`, so the sweep and the scheduled command
   are the backstop.
 
+🚧 **`LMS_DELIVERY_DISPATCH` — branch `ws-460`, not on `develop` (2026-09-23).** Default
+`after_response`; `queue` hands `ProcessLmsDeliveryJob` to `backend-queue`. `ws-460` adds it to the
+compose `environment:` block of both files (the second allowlisted dispatch switch). ☠️ Unlike invitations,
+LMS has no sweep riding on web traffic: in `after_response` mode, retries happen **only** via
+`lms:deliver-pending` on `backend-scheduler`. `phpunit.xml` pins it to `queue`
+([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md#dispatch-mode-ws-460-branch-only)).
+
 **Deployment / process switches** (new with `ws-404`):
 
 | Variable | Where | Meaning |

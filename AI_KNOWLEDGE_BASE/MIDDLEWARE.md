@@ -10,6 +10,20 @@ are aliased.**
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
 | `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request. Since `ws-449` also the whole of `GET api/access-check` |
 
+🚧 **Branch `ws-460` (not on `develop`, 2026-09-23) adds a fifth**: `EnsureSuperAdmin`, alias
+`super.admin`, applied to the `api/admin/lms` group. Returns 403 `api.forbidden` unless
+`isSuperAdmin()`. It must stay **behind** `auth:sanctum`, never replace it — a guest must get the
+guard's 401, not this 403. It gets an `MW-` id only when the KB regenerates after the merge.
+☠️ Worth only as much as `usertype` integrity — see
+[S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid).
+
+🚧 **`ws-460` also sets `$middleware->redirectGuestsTo(fn () => null)`.** On `develop`, Laravel's
+default redirects guests to `route('login')`, which doesn't exist in this API: any unauthenticated
+request **without `Accept: application/json`** throws `RouteNotFoundException` inside
+`Authenticate::unauthenticated()` and comes back a **500 with a debug trace** instead of the handler's
+401 ([ERROR_HANDLING.md](ERROR_HANDLING.md)). The SPA always sends the header, so it only bites curl,
+webhooks, monitors and LMS callbacks. Don't remove the line when it merges.
+
 📌 `EnsureTokenIsValid` (dead, never aliased) was **deleted** when `tcv-backend-codefix` merged; its old
 `MW-001` slot is now `AddRequestId`. Earlier text here saying it was "still present on `develop`" was stale.
 

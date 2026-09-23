@@ -25,6 +25,12 @@ public function render($request, Throwable $exception)
 
 Two exception types are handled. **Everything else becomes a 500.**
 
+☠️ **On `develop` even the 401 isn't reliable.** A guest request *without* `Accept: application/json`
+never reaches the `AuthenticationException` branch: Laravel's default guest redirect calls
+`route('login')`, there is no such route, and the resulting `RouteNotFoundException` is a 500 with a
+trace. Branch `ws-460` fixes it with `redirectGuestsTo(fn () => null)` in `bootstrap/app.php`
+([MIDDLEWARE.md](MIDDLEWARE.md)) — not yet merged, 2026-09-23.
+
 ### The status codes that get thrown away
 
 | Thrown | Correct status | What the client actually receives |

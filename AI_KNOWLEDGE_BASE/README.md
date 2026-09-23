@@ -8,7 +8,7 @@ grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). **No branch is ahead of `develop` in this KB's scope.** |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). **No indexed branch is ahead of `develop`.** 🚧 `ws-460` (HealthStream AICC) is documented as **prose only** — see [below](#-ws-460-healthstream-aicc--prose-only-not-indexed). |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `0197fd1b` (develop) · `TCV-Frontend` `22e5332` (develop) · `TCV-Website` `6dc5223` (website-integration) — generated **2026-09-23**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-22** (both tips are the `ws-459` merges of 20:54 / 20:57). Anything merged after that time is not here. |
 | **Backend scale** | 245 classes/interfaces/traits · 1249 methods · 164 API endpoints · 55 tables · 156 migrations · suite ☠️ **1317 passed / 1 failed** on `0197fd1b` — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
@@ -201,6 +201,31 @@ commit (`02f8c5d8`) put both columns in `User::$hidden`. Every endpoint those sc
 | `ws-401-stale-template-test` | backend | `b2541667` | the one red test ([TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test)) |
 | `ws-459-legacy-location-visible` | backend | `b3506b2c` | `makeVisible()` on the two admin grids (super admin only) |
 | `ws-459-legacy-location-visible` | frontend | `c1dd22a` | `mapOrganisationToFormData()` carries `legacy_*` through |
+
+### 🚧 `ws-460` HealthStream AICC — prose only, not indexed
+
+Branch `ws-460`, **not merged** as of 2026-09-23: backend `918b0bd4` (20 files, +2291/−33, includes the
+`ws-459` merge), frontend `8ea38de` (2 files). Local refs only — `git fetch` fails from this shell, so
+these are what the IDE last fetched (2026-09-22). **Not regenerated**: `INDEXES/*` still show `develop`,
+so no HealthStream provider, no `super.admin` on `api/admin/lms/*`, and the old console-command /
+middleware counts. Regenerate only after the merge.
+
+What it changes, and where it is written up:
+
+- `HealthStreamProvider` (AICC HACP `GetParam` / `PutParam`), name prefill, case-insensitive
+  `AICC_SID` — [LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md#healthstream--aicc-ws-460-branch-only) ·
+  [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [THIRD_PARTY](THIRD_PARTY.md)
+- `LMS_DELIVERY_DISPATCH` (default `after_response`) + scheduled `lms:deliver-pending` —
+  [QUEUES](QUEUES.md#-ws-460-lms-delivery-gets-the-invitations-dispatch-switch-branch-not-on-develop) ·
+  [ENVIRONMENT](ENVIRONMENT.md) · [DEPLOYMENT](DEPLOYMENT.md)
+- `super.admin` on `api/admin/lms/*` — [S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)
+  (access half; **not** marked fixed) · [MIDDLEWARE](MIDDLEWARE.md)
+- `redirectGuestsTo(fn () => null)` — guest requests without `Accept: application/json` stop 500-ing
+  ([ERROR_HANDLING](ERROR_HANDLING.md))
+- Traps for all of it: [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md#lms--healthstream--ws-460-branch-only--not-on-develop-2026-09-23)
+
+☠️ **The biggest operational trap:** in the default mode the first delivery needs no worker, but
+**retries need `backend-scheduler`**, which is off without `COMPOSE_PROFILES=workers`.
 
 ☠️ **Found while fixing that: [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid), critical and still open.**
 `UserController` has no authorization, and a plain customer promotes itself to super admin with
