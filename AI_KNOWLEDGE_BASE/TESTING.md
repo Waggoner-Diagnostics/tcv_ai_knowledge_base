@@ -161,7 +161,28 @@ on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all
 the number that matters. Still untested: the test execution loop, resume, payments, reports,
 organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (merged
 2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
-purchase end to end.
+Stripe purchase end to end. `ws-451` (unmerged, below) covers a successful **$0** order, which never
+reaches Stripe.
+
+### ⚠️ `ws-451` adds 9 backend tests — on the branch only (`584eb335`), not on `develop`
+
+`tests/Feature/Credits/FreeOrderCheckoutTest.php` covers the $0-order path,
+`POST api/payment/complete-free-order`
+([BILLING trap 10](CONTEXT/BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
+Measured 2026-09-23: the file passes 9/9, and `tests/Feature/Credits` + `tests/Feature/DiscountCodes`
+pass 95 tests / 401 assertions. The full suite was not run.
+
+| Case | Covers |
+|---|---|
+| unauthenticated | 401 — the route sits in the `auth:sanctum` group |
+| 100% code, 750 credits | grant of 750 with `SOURCE_PURCHASE`, a $0 `succeeded` transaction with a `free_` id, and `original_amount` 6637.50 **priced on the server**; `countUses()` goes to 1 |
+| fixed $50 code, 750 credits | 422 and no grant — the server price leaves an amount due |
+| fixed $100 code, 3 credits | accepted — $88.50 is fully covered |
+| `max_uses_per_user = 1` | the second order gets a 400 and only one grant is written |
+| unknown code / credits outside every tier / unlimited account | 404 / 422 / 422 |
+| credit history | the grant shows as `type: purchase`, `payment_method_type: discount_code` |
+
+☠️ The SPA half (`PaymentForm`'s `isFreeOrder` / `isBelowMinimum` branches) has no test.
 
 ### ✅ `ws-459` added 9 backend tests — on `develop` since 2026-09-21 (PR #271, `2fb62959`)
 

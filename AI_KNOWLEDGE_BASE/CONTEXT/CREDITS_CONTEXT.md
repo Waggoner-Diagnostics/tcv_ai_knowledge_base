@@ -463,6 +463,9 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     `api/stripe/*` halves. It was for a time on the legacy surface only, which is the more useful lesson
     ([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480),
     [BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
+    `ws-451` (unmerged) adds a fifth grant-writing handler, `api/payment/complete-free-order` for $0
+    orders. It carries its own copy of the refusal
+    ([BILLING_CONTEXT trap 10](BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
     ⚠️ Still uncovered by the refusal: an **admin grant** to an unlimited account
     (`CreditsController`), and `confirmACHPayment()`, which writes a grant but is not routed.
     ⚠️ **Undoing such a purchase is not a code path that exists**: `refund()` / `partialRefund()` are

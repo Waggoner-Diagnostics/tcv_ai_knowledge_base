@@ -66,6 +66,7 @@ POST api/payment/initialize  {provider, amount, credits, discount_code?, …}
 POST api/payment/confirm     {provider, …}
         └─ provider->confirmPayment()     → on success: Transaction + Credits grant (SOURCE_PURCHASE)
 POST api/payment/webhook/{provider}      → provider->handleWebhook()
+POST api/payment/complete-free-order     → $0 orders only, no Stripe  (ws-451, unmerged — trap 10)
 ```
 
 `StripeService::createOrGetCustomer()` is also called on **every successful login**
@@ -290,6 +291,67 @@ handlers, asserts via a mocked `PaymentProviderInterface` that the provider is *
 refusal must land before any Stripe work), and pins two negative cases — an ordinary account with a
 balance is still allowed to buy, and an *expired* unlimited grant does not refuse. The SPA still has no
 `CreditPage` or `Checkout` test.
+
+⚠️ **`ws-451` adds a fifth handler that writes a purchase grant**, `PaymentController::completeFreeOrder()`
+(trap 10). It carries its own `Credits::hasUnlimited()` refusal, returned as a 422, but it is **not** in
+`UnlimitedCreditPurchaseRefusedTest`. Its own test file covers that case.
+
+### 10. A 100% discount code cannot go through Stripe (`ws-451`, unmerged)
+
+> ⚠️ **On `ws-451` only**: backend `584eb335`, frontend `d8b2435`, both pushed to `origin/ws-451`,
+> **not on `develop`** as of 2026-09-23. The generated indexes do not list the new route yet. Do not
+> regenerate from the branch.
+
+**The bug.** `initialize` and `confirm` both validate `amount => min:1`, and Stripe will not create a
+$0 intent. When a code covered the whole order, *Total Due* read `$0.00`, the SPA still offered
+`Pay $0.00`, and the click failed with *"The amount field must be at least 1."* No credits were granted.
+
+**The fix is a separate path, not a $0 intent:**
+
+```
+POST api/payment/complete-free-order  {credits, discount_code}   (auth:sanctum)
+        └─ PaymentController::completeFreeOrder()
+             ├─ Credits::hasUnlimited()  → 422
+             ├─ price from price_details (tier where from <= credits <= to) → 422 if no tier
+             ├─ DB::transaction + lockForUpdate() on the discount_codes row
+             │    ├─ DiscountCodeService::validate($user, $code, $serverSubtotal, $credits)
+             │    ├─ final_amount > 0  → 422 "This order still requires payment."
+             │    ├─ Credits::addCreditsToUser(… amount 0, SOURCE_PURCHASE)
+             │    └─ Transaction::saveUserTransaction(… id 'free_<uuid>', amount 0, status 'succeeded')
+             └─ audit: billing.checkout_discount_applied + billing.payment_succeeded
+```
+
+☠️ **The subtotal is priced on the server, and that is the point of the design.** `confirmPayment()`
+re-validates the discount against the **client's** `original_amount`. That is survivable there because
+Stripe really charges the card. On a path that charges nothing, a client could claim a $10 subtotal for
+750 credits and redeem a `$10 off` code for free credits. `completeFreeOrder()` takes only `credits` and
+`discount_code`, and it reads the price from `price_details`, the same tiers `CreditPage` shows. Do not
+add an `amount` or `original_amount` parameter to it.
+
+- **The record has to look like a paid order.** `status = 'succeeded'` and
+  `transaction_details.discount_code_id` are what `DiscountCode::countUses()` counts, so a free order
+  uses up `max_uses` / `max_uses_per_user` exactly as a paid one does. `payment_method_type` is
+  `'discount_code'`. `CreditPage`'s `formatPaymentMethod()` has no label for it and its fallback renders
+  it as *Discount Code*. `stripe_transaction_id` is `free_<uuid>` because the column is unique.
+- **The code row is locked** (`lockForUpdate()` inside the transaction, before `validate()`), so two
+  concurrent free orders cannot both pass the last remaining use. This covers the free path only.
+  [DISCOUNT_CONTEXT trap 3](DISCOUNT_CONTEXT.md#-traps) still applies to the Stripe path.
+- A credit count that falls outside every tier is refused (422). `CreditPage` falls back to the first
+  tier's price in that case. The server does not.
+
+**SPA (`components/PaymentForm/PaymentForm.js`):**
+- `isFreeOrder = Boolean(appliedDiscount) && Number(amount) <= 0`. The button reads **Complete Order**
+  and calls `completeFreeOrder` (`slices/payment/paymentSlice.js`) instead of `createPaymentIntent`.
+  The saved-card and `PaymentElement` sections are hidden. On success the form dispatches
+  `fetchUserCredits()` and navigates to `/user-panel/credit` with `{paymentSuccess: true, credits}`,
+  which is the same landing state `PaymentStatus` uses. `PaymentStatus` is not involved.
+- `isBelowMinimum` (`0 < amount < MIN_CHARGE_AMOUNT`, which is `1` and mirrors the backend rule)
+  **disables** the button and shows *"The minimum card payment is $1.00."* A code that leaves only cents
+  due has no path at all: Stripe cannot take it and the free path refuses it.
+- The `isBillingComplete` gate (trap 8) **still applies** to a free order, even though no billing field
+  is sent anywhere on that path.
+
+✅ Tested: `tests/Feature/Credits/FreeOrderCheckoutTest.php`, 9 tests ([TESTING.md](../TESTING.md)).
 
 ---
 
