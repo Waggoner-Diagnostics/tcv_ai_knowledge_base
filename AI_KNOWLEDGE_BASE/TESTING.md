@@ -164,13 +164,17 @@ organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not c
 Stripe purchase end to end. `ws-451` (unmerged, below) covers a successful **$0** order, which never
 reaches Stripe.
 
-### ⚠️ `ws-451` adds 9 backend tests — on the branch only (`584eb335`), not on `develop`
+### ⚠️ `ws-451` adds 10 backend tests — on the branch only (`584eb335` + PR-review fixes), not on `develop`
 
 `tests/Feature/Credits/FreeOrderCheckoutTest.php` covers the $0-order path,
 `POST api/payment/complete-free-order`
 ([BILLING trap 10](CONTEXT/BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
 Measured 2026-09-23: the file passes 9/9, and `tests/Feature/Credits` + `tests/Feature/DiscountCodes`
-pass 95 tests / 401 assertions. The full suite was not run.
+pass 95 tests / 401 assertions. The `ws-451` PR review later the same day added the rollback test, and
+the file now passes 10/10. The full backend suite ran on SQLite: 1,327 tests, 1 failure. That failure is
+`NormalizeLegacyBracketPlaceholdersMigrationTest` › *a row already using canonical tokens is left
+untouched*, and `ws-451` does not touch that code. `php artisan test --parallel` does not run here,
+because ParaTest is not installed.
 
 | Case | Covers |
 |---|---|
@@ -181,6 +185,7 @@ pass 95 tests / 401 assertions. The full suite was not run.
 | `max_uses_per_user = 1` | the second order gets a 400 and only one grant is written |
 | unknown code / credits outside every tier / unlimited account | 404 / 422 / 422 |
 | credit history | the grant shows as `type: purchase`, `payment_method_type: discount_code` |
+| failure after the grant is written (`transaction_details` dropped) | 500, **no** credit or transaction row survives, and a `billing.payment_failed` audit row is written (ws-451 PR review) |
 
 ☠️ The SPA half (`PaymentForm`'s `isFreeOrder` / `isBelowMinimum` branches) has no test.
 

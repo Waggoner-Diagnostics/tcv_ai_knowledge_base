@@ -318,7 +318,8 @@ POST api/payment/complete-free-order  {credits, discount_code}   (auth:sanctum)
              │    ├─ final_amount > 0  → 422 "This order still requires payment."
              │    ├─ Credits::addCreditsToUser(… amount 0, SOURCE_PURCHASE)
              │    └─ Transaction::saveUserTransaction(… id 'free_<uuid>', amount 0, status 'succeeded')
-             └─ audit: billing.checkout_discount_applied + billing.payment_succeeded
+             ├─ audit: billing.checkout_discount_applied + billing.payment_succeeded
+             └─ any exception → rolled back, 500, audit billing.payment_failed (ws-451 PR review)
 ```
 
 ☠️ **The subtotal is priced on the server, and that is the point of the design.** `confirmPayment()`
@@ -351,7 +352,12 @@ add an `amount` or `original_amount` parameter to it.
 - The `isBillingComplete` gate (trap 8) **still applies** to a free order, even though no billing field
   is sent anywhere on that path.
 
-✅ Tested: `tests/Feature/Credits/FreeOrderCheckoutTest.php`, 9 tests ([TESTING.md](../TESTING.md)).
+- The `ws-451` PR review added the `billing.payment_failed` row on an unexpected failure, which matches
+  what `StripeProvider::confirmPayment()` writes. Before that, a failed free order appeared only in
+  `laravel.log`. The review found no gap in pricing, locking or grant parity with the paid path.
+  Refunds are not a risk for `free_` rows, because the refund routes are commented out.
+
+✅ Tested: `tests/Feature/Credits/FreeOrderCheckoutTest.php`, 10 tests ([TESTING.md](../TESTING.md)).
 
 ---
 
