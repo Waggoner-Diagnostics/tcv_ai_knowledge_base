@@ -704,6 +704,16 @@ migration ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md)). 8 files
 The theme: **a migrated row and a row created in this system are not the same shape**, and the screens
 that render both had been asserting things the legacy data does not support.
 
+☠️ **Legacy country/state fallback (frontend PR #414, `22e5332`, 2026-09-22): merged but inert.** The
+Users grid's Country cell (`userManagementColumns.js`, `um-country--legacy`, which also now compares ids
+with `Number()`) and a "Previously recorded as …" hint in `NewUserModal` / `OrganisationModal` read
+`legacy_country` / `legacy_state` off the payload. The backend hides both fields in `User::$hidden`
+(backend PR #282), so they never arrive and none of the three renders. `mapOrganisationToFormData()`
+also dropped them before `OrganisationModal` could see them. Both halves are fixed on branch
+`ws-459-legacy-location-visible` (backend `b3506b2c`, frontend `c1dd22a`), **not yet merged**. Read
+[DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#-the-frontend-half-of-the-fallback-is-dead-on-arrival)
+before "fixing" it on the client.
+
 ☠️ **`is_email_invite` has three states, so `!is_email_invite` is wrong.**
 
 | Value | Means | In-Office tag |

@@ -1,6 +1,6 @@
 # File Index
 
-**242 PHP files** containing classes, under `app/` + `database/`.
+**245 PHP files** containing classes, under `app/` + `database/`.
 
 | File | Classes | Methods |
 |---|---|---|
@@ -8,6 +8,7 @@
 | [`app/Casts/LegacyEncryptedInteger.php`](../../../TCV-Backend/app/Casts/LegacyEncryptedInteger.php) | LegacyEncryptedInteger | 2 |
 | [`app/Casts/ResultJsonWithEncryptedPii.php`](../../../TCV-Backend/app/Casts/ResultJsonWithEncryptedPii.php) | ResultJsonWithEncryptedPii | 5 |
 | [`app/Console/Commands/BackfillMigratedPatientPii.php`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedPatientPii.php) | BackfillMigratedPatientPii | 2 |
+| [`app/Console/Commands/BackfillMigratedUserLocation.php`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedUserLocation.php) | BackfillMigratedUserLocation | 3 |
 | [`app/Console/Commands/BackfillStripeSourceApp.php`](../../../TCV-Backend/app/Console/Commands/BackfillStripeSourceApp.php) | BackfillStripeSourceApp | 1 |
 | [`app/Console/Commands/BaseMigrationCommand.php`](../../../TCV-Backend/app/Console/Commands/BaseMigrationCommand.php) | BaseMigrationCommand | 16 |
 | [`app/Console/Commands/CheckEmailTemplatePlaceholders.php`](../../../TCV-Backend/app/Console/Commands/CheckEmailTemplatePlaceholders.php) | CheckEmailTemplatePlaceholders | 2 |
@@ -24,7 +25,7 @@
 | [`app/Console/Commands/MigrateTcvAssignTests.php`](../../../TCV-Backend/app/Console/Commands/MigrateTcvAssignTests.php) | MigrateTcvAssignTests | 9 |
 | [`app/Console/Commands/MigrateTcvTestAnswers.php`](../../../TCV-Backend/app/Console/Commands/MigrateTcvTestAnswers.php) | MigrateTcvTestAnswers | 6 |
 | [`app/Console/Commands/MigrateTcvTests.php`](../../../TCV-Backend/app/Console/Commands/MigrateTcvTests.php) | MigrateTcvTests | 11 |
-| [`app/Console/Commands/MigrateTcvUsersAndOrganizations.php`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php) | MigrateTcvUsersAndOrganizations | 54 |
+| [`app/Console/Commands/MigrateTcvUsersAndOrganizations.php`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php) | MigrateTcvUsersAndOrganizations | 55 |
 | [`app/Console/Commands/RebuildEmailBlindIndexes.php`](../../../TCV-Backend/app/Console/Commands/RebuildEmailBlindIndexes.php) | RebuildEmailBlindIndexes | 1 |
 | [`app/Console/Commands/RecoverOrphanPatients.php`](../../../TCV-Backend/app/Console/Commands/RecoverOrphanPatients.php) | RecoverOrphanPatients | 5 |
 | [`app/Console/Commands/SendPendingInvitations.php`](../../../TCV-Backend/app/Console/Commands/SendPendingInvitations.php) | SendPendingInvitations | 3 |
@@ -51,6 +52,7 @@
 | [`app/Http/Controllers/Auth/VerificationController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php) | VerificationController | 1 |
 | [`app/Http/Controllers/AuthController.php`](../../../TCV-Backend/app/Http/Controllers/AuthController.php) | AuthController | 19 |
 | [`app/Http/Controllers/Concerns/BuildsAuditDiffs.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php) | BuildsAuditDiffs | 9 |
+| [`app/Http/Controllers/Concerns/FormatsLocationLabels.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/FormatsLocationLabels.php) | FormatsLocationLabels | 1 |
 | [`app/Http/Controllers/ContactController.php`](../../../TCV-Backend/app/Http/Controllers/ContactController.php) | ContactController | 2 |
 | [`app/Http/Controllers/Controller.php`](../../../TCV-Backend/app/Http/Controllers/Controller.php) | Controller | 0 |
 | [`app/Http/Controllers/CreditsController.php`](../../../TCV-Backend/app/Http/Controllers/CreditsController.php) | CreditsController | 7 |
@@ -159,7 +161,7 @@
 | [`app/Models/TestSession.php`](../../../TCV-Backend/app/Models/TestSession.php) | TestSession | 2 |
 | [`app/Models/Transaction.php`](../../../TCV-Backend/app/Models/Transaction.php) | Transaction | 4 |
 | [`app/Models/TransactionDetail.php`](../../../TCV-Backend/app/Models/TransactionDetail.php) | TransactionDetail | 2 |
-| [`app/Models/User.php`](../../../TCV-Backend/app/Models/User.php) | User | 17 |
+| [`app/Models/User.php`](../../../TCV-Backend/app/Models/User.php) | User | 20 |
 | [`app/Models/UserEmailTemplate.php`](../../../TCV-Backend/app/Models/UserEmailTemplate.php) | UserEmailTemplate | 2 |
 | [`app/Models/UserStripeDetail.php`](../../../TCV-Backend/app/Models/UserStripeDetail.php) | UserStripeDetail | 1 |
 | [`app/Notifications/OrganizationTestUrlNotification.php`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php) | OrganizationTestUrlNotification | 4 |
@@ -194,6 +196,7 @@
 | [`app/Services/Lms/Providers/GenericWebhookProvider.php`](../../../TCV-Backend/app/Services/Lms/Providers/GenericWebhookProvider.php) | GenericWebhookProvider | 6 |
 | [`app/Services/Lms/XapiStatementBuilder.php`](../../../TCV-Backend/app/Services/Lms/XapiStatementBuilder.php) | XapiStatementBuilder | 12 |
 | [`app/Services/Migration/LegacyCipher.php`](../../../TCV-Backend/app/Services/Migration/LegacyCipher.php) | LegacyCipher | 5 |
+| [`app/Services/Migration/LegacyLocationResolver.php`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php) | LegacyLocationResolver | 21 |
 | [`app/Services/Migration/LegacyPatientSource.php`](../../../TCV-Backend/app/Services/Migration/LegacyPatientSource.php) | LegacyPatientSource | 3 |
 | [`app/Services/PatientTestTransformer.php`](../../../TCV-Backend/app/Services/PatientTestTransformer.php) | PatientTestTransformer | 5 |
 | [`app/Services/PaymentManager.php`](../../../TCV-Backend/app/Services/PaymentManager.php) | PaymentManager | 6 |
@@ -206,7 +209,7 @@
 | [`app/Services/StripeService.php`](../../../TCV-Backend/app/Services/StripeService.php) | StripeService | 14 |
 | [`app/Services/TestAssignmentService.php`](../../../TCV-Backend/app/Services/TestAssignmentService.php) | TestAssignmentService | 9 |
 | [`app/Services/TestExecutionService.php`](../../../TCV-Backend/app/Services/TestExecutionService.php) | TestExecutionService | 8 |
-| [`app/Services/TestInvitationMailer.php`](../../../TCV-Backend/app/Services/TestInvitationMailer.php) | TestInvitationMailer | 2 |
+| [`app/Services/TestInvitationMailer.php`](../../../TCV-Backend/app/Services/TestInvitationMailer.php) | TestInvitationMailer | 7 |
 | [`app/Services/TestResultService.php`](../../../TCV-Backend/app/Services/TestResultService.php) | TestResultService | 2 |
 | [`app/Services/TestSectionProgressionService.php`](../../../TCV-Backend/app/Services/TestSectionProgressionService.php) | TestSectionProgressionService | 3 |
 | [`app/Services/TestSectionTerminationService.php`](../../../TCV-Backend/app/Services/TestSectionTerminationService.php) | TestSectionTerminationService | 4 |
@@ -249,4 +252,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._

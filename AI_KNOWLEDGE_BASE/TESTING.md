@@ -109,10 +109,10 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/ProfileStateValidationTest.php` | 1 | **3** | `UpdateProfileRequest` — `state_id` required only for countries that have states |
 | `tests/Unit/` | 1 | 1 | Laravel's stock `ExampleTest` |
 | `tests/Unit/EmailContentTest.php` | 1 | **20** | `EmailContent::linkify()` + `anchorPlaceholders()` — entity handling, attributes, `<style>` blocks, unclosed anchors, idempotence (`ws-373`, merged into `ws-404`) |
-| `tests/Feature/TestInvitations/` — `BatchedInvitationSendTest` (31) · `InvitationSendReviewFixesTest` (31) · `InvitationSendRaceTest` (10) · `MailPreflightTest` (6) · `EmailTemplatePlaceholderValidationTest` (14) · `OrganizationEmailTemplateTypeTest` (31) · 3 audit files (10) | 9 (+ the migration test below) | **133** | `ws-404`, on `develop` since 2026-09-15 — batched send + 202, after-response vs queue dispatch (and the queue batch budget resolving at run time), the defer/fail taxonomy (connect failure, SMTP 4xx, sender-quota 550, SES errors, post-DATA errors *failing*), the deferral cap and its `>` boundary, the claim-held write-off ordering, expiry refunds and their double-refund guard, `credited_by = null`, orphan-page starvation, the cancel 409 race, `mail:preflight`, placeholder validation, and the `ws-373` linkify guard. ⚠️ The last two counts are **on branch `ws-401`, not `develop`** — round 2 took `OrganizationEmailTemplateTypeTest` from 8 to 31 (the org send path, its escaping and URL-anchor guard, the greeting spacing, the seeded body, and the per-send query cost). Counts are static `test_*` method counts, so PHPUnit reports 150 for these nine: three methods are data providers, 20 cases between them. ⚠️ Counts re-verified against an actual run on 2026-09-21 (`ws-401` review round three) — the previous 128/136 had already drifted before that round touched anything |
+| `tests/Feature/TestInvitations/` — `BatchedInvitationSendTest` (31) · `InvitationSendReviewFixesTest` (31) · `InvitationSendRaceTest` (10) · `MailPreflightTest` (6) · `EmailTemplatePlaceholderValidationTest` (14) · `OrganizationEmailTemplateTypeTest` (31) · 3 audit files (10) | 9 (+ the migration test below) | **133** | `ws-404`, on `develop` since 2026-09-15 — batched send + 202, after-response vs queue dispatch (and the queue batch budget resolving at run time), the defer/fail taxonomy (connect failure, SMTP 4xx, sender-quota 550, SES errors, post-DATA errors *failing*), the deferral cap and its `>` boundary, the claim-held write-off ordering, expiry refunds and their double-refund guard, `credited_by = null`, orphan-page starvation, the cancel 409 race, `mail:preflight`, placeholder validation, and the `ws-373` linkify guard. ✅ The last two counts are **on `develop` since 2026-09-21** (`ws-401` PR #252). Round 2 took `OrganizationEmailTemplateTypeTest` from 8 to 31 (the org send path, its escaping and URL-anchor guard, the greeting spacing, the seeded body, and the per-send query cost). Counts are static `test_*` method counts, so PHPUnit reports 150 for these nine: three methods are data providers, 20 cases between them. ⚠️ Counts re-verified against an actual run on 2026-09-21 (`ws-401` review round three) — the previous 128/136 had already drifted before that round touched anything |
 | `tests/Feature/Settings/RestrictedIpEnforcementTest.php` | 1 | **6** | `ws-449` — the first test that `restricted_ips` actually blocks anyone: a listed IP as the direct peer, and as `X-Forwarded-For` behind a trusted `172.18.0.4` proxy. ⚠️ It proves Laravel's half; it cannot see nginx, so it says nothing about [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)'s forgery path |
 | `tests/Feature/Auth/AuditedImpersonationTest.php` · `ImpersonatorBackfillTest.php` | 2 | **15** | Audit impersonation (PR #245) — both identities recorded, admin-action flag, IP on the impersonator card, the `FlexibleAuthMiddleware` route group, and the backfill's session-key reconstruction, idempotence and `down()` |
-| `tests/Feature/TestInvitations/NormalizeLegacyBracketPlaceholdersMigrationTest.php` | 1 | **13** | `ws-401` (merged) — the legacy `[bracket]` → `{{token}}` repair migration: the rewrite itself, `[link]` → an anchored Start Test button, subjects rewritten *without* anchoring, and the four ways it must hold back — a token the row's `type` does not render, a row whose type has no vocabulary at all, a subject that would outgrow its column, and `<style>` block contents. Also pins that `email_template` is untouched, that a canonical row is byte-identical afterwards, and that a second `migrate` is a no-op |
+| `tests/Feature/TestInvitations/NormalizeLegacyBracketPlaceholdersMigrationTest.php` | 1 | **13** | `ws-401` (merged) — the legacy `[bracket]` → `{{token}}` repair migration: the rewrite itself, `[link]` → an anchored Start Test button, subjects rewritten *without* anchoring, and the four ways it must hold back — a token the row's `type` does not render, a row whose type has no vocabulary at all, a subject that would outgrow its column, and `<style>` block contents. Also pins that `email_template` is untouched, that a canonical row is byte-identical afterwards (☠️ **failing since 2026-09-22**, [stale fixture](#-develop-is-red-since-2026-09-22-one-stale-ws-401-test)), and that a second `migrate` is a no-op |
 | `tests/Feature/RegistrationVerificationEmailTest.php` | 1 | **15** | `ws-417` (merged) — the verification mail fires at registration and *not* at login, the 24 h window is anchored to signup and login cannot move it, expired-token resend, and the untouched login paths (verified user, super admin, wrong password, suspended) |
 | `tests/Feature/EmailSubjectPrefixTest.php` | 1 | **10** | `ws-417` — subject branding across raw/`MailMessage`/DB-template sends, idempotence, casing, empty subject |
 | `tests/Feature/EmailBodyHasNoBrandingHeaderTest.php` | 1 | **6** | `ws-417` — seeder and migration leave no branding header; `down()` does not re-brand blank rows; three real mail bodies verified |
@@ -121,7 +121,30 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-**1191 tests pass on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
+☠️ **`develop` `0197fd1b`: 1317 passed, 1 failed** (4058 assertions, 96 s, `php artisan test`, in-memory
+SQLite, exit code 1, measured 2026-09-23). The +127 since `330cf77d` is the five PRs of the 2026-09-23
+sync: `ws-459` dedup (`OrganizationLookupDuplicatesTest`, `InsertOrIgnoreNeedsUniqueConstraintTest`),
+`ws-459` location (`LegacyLocationResolverTest`, `BackfillMigratedUserLocationTest`,
+`LegacyLocationDisplayTest`), and `ws-401` (`OrganizationEmailTemplateTypeTest` +~800 lines,
+`EmailTemplatePlaceholderValidationTest`). The failure is below.
+
+#### ☠️ `develop` is red since 2026-09-22, one stale `ws-401` test
+
+`NormalizeLegacyBracketPlaceholdersMigrationTest::test_a_row_already_using_canonical_tokens_is_left_untouched`
+(line 320). Its `reapplyOver()` helper rolls back **every** migration from `2026_09_03_000002` onward and
+then runs `migrate` again. Since PR #278 that re-run includes
+`2026_09_22_000003_backfill_verification_code_and_expiry_in_org_test_link_templates`, which inserts the
+verification-code block after the `Start Test` anchor of any `org_test_link` row that lacks the token.
+The fixture row is exactly that shape, so the body is no longer byte-identical. **The migration under test
+is fine. The assertion is stale.** Fix the test, either by putting `{{verification_code}}` in the fixture
+or by rolling back only the migration under test, and do not weaken `000003`. It went unnoticed because
+CI runs no tests (see below). Found at the 2026-09-23 KB sync.
+⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`, not yet merged): the fixture now carries
+the verification-code/expiry block, as a canonical `org_test_link` body does, and all 13 tests in the file
+pass. With that and the `ws-459-legacy-location-visible` branch together, nothing else in the suite fails:
+1321 passed on the second branch, and its one failure is this test.
+
+The previous measurement, for history: **1191 tests passed on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
 2026-09-21 with `php artisan test`, PHPUnit 11.5.55, PHP 8.2.12, in-memory SQLite; exit code 0). Up from
 812 on `ff9be500`: the +379 is almost entirely **`ws-459`** (PR #255, 2026-09-18), which brought the
 legacy-migration and encryption suites — `LegacyCipherTest`, `LegacyEncrypterHardeningTest`,
@@ -140,12 +163,11 @@ organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not c
 2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
 purchase end to end.
 
-### ⏳ `ws-459` added 9 backend tests — **uncommitted on `develop`** (2026-09-21)
+### ✅ `ws-459` added 9 backend tests — on `develop` since 2026-09-21 (PR #271, `2fb62959`)
 
 The duplicate Add Organisation dropdown fix
-([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). Measured with the fix applied:
-**the full backend suite passes at 1200 tests / 3665 assertions**, 9 of them these two files. ⚠️ Not
-committed when measured, so it is on no SHA yet.
+([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). When it was measured before merge,
+the full suite passed at 1200 tests / 3665 assertions, and 9 of those tests are in these two files.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -205,10 +227,11 @@ that file — a real backoff there is not extra realism, it is just a slower sui
 login's verification gate, and the mail paths. Impersonation, password set/reset, the token brokers and
 `verify-password` remain untested.
 
-✅ **The whole suite is green on `develop` as of 2026-09-21** (1191/1191) — including
-`DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which used to fail on a clean
-tree and was for a while the one expected red. If you see it fail again, that is a regression now, not
-the known-bad case.
+⚠️ **The suite was green on `develop` on 2026-09-21** (1191/1191) and **is not as of 2026-09-22**: one
+stale `ws-401` test, [above](#-develop-is-red-since-2026-09-22-one-stale-ws-401-test).
+`DiscountCodeIndexMigrationTest > the pair rolls back and reapplies`, which used to fail on a clean tree
+and was for a while the one expected red, still passes. If it fails again, that is a regression, not the
+known-bad case.
 
 ☠️ **Still uncovered on that branch, and "the suite passes" is not evidence for any of it:** the
 session-token hashing migration, the `session_superseded` / `test_completed` middleware branches,

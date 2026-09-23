@@ -1,17 +1,17 @@
 # TCV — AI Knowledge Base
 
 Single source of truth for **TestingColorVision** across its three repos, built so an AI assistant can
-work on the project **without rescanning ~80,800 lines across 600 source files**
-(`TCV-Backend/app` 218 · `TCV-Frontend/src` 287 · `TCV-Website` 95) — measured 2026-09-21; the backend
-grew by 44 files with `ws-459`.
+work on the project **without rescanning ~82,800 lines across 603 source files**
+(`TCV-Backend/app` 221 · `TCV-Frontend/src` 287 · `TCV-Website` 95) — measured 2026-09-23; the backend
+grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up (PR #282).
 
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). **No branch is ahead of `develop` in this KB's scope.** |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). **No branch is ahead of `develop` in this KB's scope.** |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `330cf77d` (develop) · `TCV-Frontend` `d0da885` (develop) · `TCV-Website` `4d2c0d4` (website-integration) — generated **2026-09-21**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-18** (backend 18:27, frontend 15:39). Anything merged after that time is not here. |
-| **Backend scale** | 242 classes/interfaces/traits · 1215 methods · 164 API endpoints · 55 tables · 151 migrations · suite **1191 passed / 0 failed** |
+| **Code state at sync** | `TCV-Backend` `0197fd1b` (develop) · `TCV-Frontend` `22e5332` (develop) · `TCV-Website` `6dc5223` (website-integration) — generated **2026-09-23**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-22** (both tips are the `ws-459` merges of 20:54 / 20:57). Anything merged after that time is not here. |
+| **Backend scale** | 245 classes/interfaces/traits · 1249 methods · 164 API endpoints · 55 tables · 156 migrations · suite ☠️ **1317 passed / 1 failed** on `0197fd1b` — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
 | **Client scale** | 65 top-level routes · 44 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -151,6 +151,60 @@ corner-clipping fix, written up in
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
+
+### What the 2026-09-23 sync changed
+
+Backend `develop` `330cf77d` → **`0197fd1b`**, frontend `d0da885` → **`22e5332`**, website
+`4d2c0d4` → **`6dc5223`** (one cosmetic commit, `AuthModal.jsx` gradient removed, no routes).
+`routes_source` stayed `artisan route:list --json`. Merge set by first-parent:
+
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| **`ws-459`** compliance dedup | PR #271, `2fb62959` (09-21) | — | `2026_09_21_000001_deduplicate_organization_lookup_tables` is **merged**, no longer "pending". [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) · [DATABASE.md](DATABASE.md) · [DEPLOYMENT.md](DEPLOYMENT.md) |
+| **`ws-401`** round 2 (org placeholders, template type follows sender) | PR #252, `345459fc` (09-21) | — | every "`ws-401` second round, not merged" label flipped. [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) · [SECURITY.md](SECURITY.md) · [LOGGING.md](LOGGING.md) · [DATABASE.md](DATABASE.md) |
+| **`ws-401`** `org_test_link` gets code + expiry | PRs #276 `d39c81e1`, #278 `8657e85c` (09-22) | — | three template migrations, `2026_09_22_000001`…`000003`. [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#org_test_link-carries-the-verification-code-and-expiry-ws-401-2026-09-22) |
+| **`ws-459`** legacy country/state | PR #282, `0197fd1b` (09-22) | PR #414, `22e5332` (09-22) | `LegacyLocationResolver`, `users:backfill-legacy-location`, `users.legacy_country/legacy_state`. [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#legacy-countrystate-resolution-ws-459-pr-282) · [DEPLOYMENT.md](DEPLOYMENT.md) |
+| button hover / password eye | — | PRs #409 `3f8caa2`, #405 `f02aeae` | cosmetic: `transform: translateY(-2px)` removed from primary/secondary hover; `ResetPassword`/`SetPassword` reformatted. No behaviour change |
+
+| Count | 2026-09-21 | 2026-09-23 | Why |
+|---|---|---|---|
+| Endpoints / public `api/*` | 164 / 17 | **164 / 17** | no route added, removed or re-guarded |
+| Classes/interfaces/traits | 242 | **245** | `LegacyLocationResolver`, `BackfillMigratedUserLocation`, `Controllers/Concerns/FormatsLocationLabels` |
+| Methods | 1215 | **1249** | same cause, plus `User::displayCountry()/displayState()` and the migration command's lookup helpers |
+| Migrations | 151 | **156** | dedup (#271), three `org_test_link` template migrations (#276/#278), `add_legacy_location_text_to_users_table` (#282) |
+| Controllers / services | 38 / 38 | **39 / 39** | the location trait counts as a controller (it lives in `Controllers/Concerns`), the resolver as a service |
+| `users` columns | 42 | **44** | `legacy_country`, `legacy_state` |
+| Tests | 1191 / 0 failed | ☠️ **1317 passed / 1 failed** | 4058 assertions — [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| Everything else | — | **unchanged** | tables 55 · models 42 · requests 28 · relations 70 · spa_routes 65 · spa_api_calls 88 · spa_drift 8 · spa_slices 44 · website 32 / 5 |
+
+**No `API-nnn` or `TABLE-nnn` renumbering this time**, because no route and no table was added. Class ids
+*did* shift: `FormatsLocationLabels` took `CTRL-012`, `LegacyLocationResolver` took `SVC-015`, and
+`BackfillMigratedUserLocation` moved the `CMD-nnn` ids after it. The only prose citing those families is
+historical sync notes (and the generic `SVC-012` example in the id table), so there was nothing to
+re-resolve.
+
+**Derived views — all three clean, byte-identical apart from the generation date.**
+[PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) is still the same 17 public endpoints.
+[CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) still has 8 rows. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md)
+lost no page.
+
+☠️ **But the contract did drift, below the level `CONTRACT_DRIFT` can see.** That view matches URLs.
+Frontend PR #414 reads `legacy_country` / `legacy_state` off user rows, and backend PR #282's last review
+commit (`02f8c5d8`) put both columns in `User::$hidden`. Every endpoint those screens call serializes a
+`User` model, so the fields never arrive and **none of the three frontend fallbacks can render**. Details in
+[DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#-the-frontend-half-of-the-fallback-is-dead-on-arrival).
+
+⏳ **Fix branches, not merged, so not indexed** (created 2026-09-23 from local `develop`):
+
+| Branch | Repo | Commit | Fixes |
+|---|---|---|---|
+| `ws-401-stale-template-test` | backend | `b2541667` | the one red test ([TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test)) |
+| `ws-459-legacy-location-visible` | backend | `b3506b2c` | `makeVisible()` on the two admin grids (super admin only) |
+| `ws-459-legacy-location-visible` | frontend | `c1dd22a` | `mapOrganisationToFormData()` carries `legacy_*` through |
+
+☠️ **Found while fixing that: [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid), critical and still open.**
+`UserController` has no authorization, and a plain customer promotes itself to super admin with
+`PUT api/users/{own id}`. This was reproduced.
 
 ### What the 2026-09-21 sync changed
 

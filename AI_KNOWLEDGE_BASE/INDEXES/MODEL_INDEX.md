@@ -46,10 +46,10 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-037` | `TestSession` | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | — | `testInvitation`→TestInvitation, `patient`→Patient | 2 |
 | `MODEL-038` | `Transaction` | [app/Models/Transaction.php:8](../../../TCV-Backend/app/Models/Transaction.php#L8) | `HasFactory` | `user`→User, `details`→TransactionDetail, `credits`→Credits | 4 |
 | `MODEL-039` | `TransactionDetail` | [app/Models/TransactionDetail.php:8](../../../TCV-Backend/app/Models/TransactionDetail.php#L8) | `HasFactory` | `transaction`→Transaction, `discountCode`→DiscountCode | 2 |
-| `MODEL-040` | `User` | [app/Models/User.php:17](../../../TCV-Backend/app/Models/User.php#L17) | `HasApiTokens`, `Notifiable`, `HasFactory`, `SoftDeletes`, `Searchable` | `stripeDetail`→UserStripeDetail, `assignedTests`→Test, `organization`→Organization, `country`→Country | 17 |
+| `MODEL-040` | `User` | [app/Models/User.php:18](../../../TCV-Backend/app/Models/User.php#L18) | `HasApiTokens`, `HasFactory`, `Notifiable`, `Searchable`, `SoftDeletes` | `stripeDetail`→UserStripeDetail, `assignedTests`→Test, `organization`→Organization, `country`→Country | 20 |
 | `MODEL-041` | `UserEmailTemplate` | [app/Models/UserEmailTemplate.php:9](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L9) | `HasFactory` | `user`→User | 2 |
 | `MODEL-042` | `UserStripeDetail` | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | `HasFactory` | `user`→User | 1 |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._

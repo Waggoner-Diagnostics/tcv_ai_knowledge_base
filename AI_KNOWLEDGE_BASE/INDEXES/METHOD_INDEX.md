@@ -1,6 +1,6 @@
 # Method Index
 
-**1215 methods across 242 classes.**
+**1249 methods across 245 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -37,6 +37,14 @@ method — several controllers here run 400–900 lines.
 |---|---|---|---|---|---|
 | BackfillMigratedPatientPii | [`handle()`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedPatientPii.php#L63) | 63 | public | `LegacyEncrypter $encrypter` | int |
 | BackfillMigratedPatientPii | [`readLegacyPii()`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedPatientPii.php#L208) | 208 | private | `LegacyEncrypter $encrypter`, `?string $value`, `bool $isEncrypted` | ?string |
+
+### `app/Console/Commands/BackfillMigratedUserLocation.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| BackfillMigratedUserLocation | [`handle()`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedUserLocation.php#L151) | 151 | public | — | int |
+| BackfillMigratedUserLocation | [`resolveUpdates()`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedUserLocation.php#L254) | 254 | private | `LegacyLocationResolver $resolver`, `object $user`, `object $row` | array |
+| BackfillMigratedUserLocation | [`printReport()`](../../../TCV-Backend/app/Console/Commands/BackfillMigratedUserLocation.php#L358) | 358 | private | `LegacyLocationResolver $resolver`, `bool $apply` | void |
 
 ### `app/Console/Commands/BackfillStripeSourceApp.php`
 
@@ -251,60 +259,61 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| MigrateTcvUsersAndOrganizations | [`handle()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L123) | 123 | public | — | int |
-| MigrateTcvUsersAndOrganizations | [`markUserGraph()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L329) | 329 | private | `int $legacyUserId`, `bool $complete` | void |
-| MigrateTcvUsersAndOrganizations | [`deduplicateTransactionDetails()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L353) | 353 | private | — | void |
-| MigrateTcvUsersAndOrganizations | [`confirmWipe()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L388) | 388 | private | — | bool |
-| MigrateTcvUsersAndOrganizations | [`performFreshReset()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L417) | 417 | private | — | void |
-| MigrateTcvUsersAndOrganizations | [`truncateIfExists()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L484) | 484 | private | `string $table`, `?callable $using = null` | void |
-| MigrateTcvUsersAndOrganizations | [`resetAutoIncrement()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L503) | 503 | private | `string $table` | void |
-| MigrateTcvUsersAndOrganizations | [`loadLookupCaches()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L522) | 522 | private | — | void |
-| MigrateTcvUsersAndOrganizations | [`legacyIdSet()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L583) | 583 | private | `string $table`, `string $column` | array |
-| MigrateTcvUsersAndOrganizations | [`loadDiscountCodesByUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L605) | 605 | private | — | void |
-| MigrateTcvUsersAndOrganizations | [`runPreMigrationSetup()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L636) | 636 | private | `bool $isDryRun` | void |
-| MigrateTcvUsersAndOrganizations | [`getLastId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L718) | 718 | private | `string $table`, `int $legacyEntityId = 0` | int |
-| MigrateTcvUsersAndOrganizations | [`saveTracker()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L727) | 727 | private | `string $table`, `int $lastId`, `int $legacyEntityId = 0`, `int $newEntityId = 0` | void |
-| MigrateTcvUsersAndOrganizations | [`markCompleted()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L746) | 746 | private | `string $table`, `int $legacyEntityId = 0` | void |
-| MigrateTcvUsersAndOrganizations | [`getMappedUserId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L754) | 754 | private | `int $legacyUserId` | ?int |
-| MigrateTcvUsersAndOrganizations | [`withRetry()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L765) | 765 | private | `callable $fn`, `string $table`, `int $recordId`, `int $legacyEntityId = 0` | bool |
-| MigrateTcvUsersAndOrganizations | [`logFailure()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L792) | 792 | private | `string $table`, `int $recordId`, `string $error`, `int $legacyEntityId = 0`, `array $context = []` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L819) | 819 | private | `object $user` | ?int |
-| MigrateTcvUsersAndOrganizations | [`insertUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L881) | 881 | private | `object $user`, `?int $forcedId` | int |
-| MigrateTcvUsersAndOrganizations | [`isDuplicateKey()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L960) | 960 | private | `QueryException $e` | bool |
-| MigrateTcvUsersAndOrganizations | [`resolveUserType()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L973) | 973 | private | `object $user` | int |
-| MigrateTcvUsersAndOrganizations | [`clip()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L987) | 987 | private | `$value`, `int $max` | string |
-| MigrateTcvUsersAndOrganizations | [`clipOrNull()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L993) | 993 | private | `$value`, `int $max` | ?string |
-| MigrateTcvUsersAndOrganizations | [`migrateOrganizations()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1004) | 1004 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`generateOrganizationTestUrl()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1059) | 1059 | private | `int $orgId` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateOrganizationConfigs()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1094) | 1094 | private | `object $org` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateLmsProviderConfig()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1143) | 1143 | private | `object $org` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateCredits()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1184) | 1184 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`migratePatients()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1273) | 1273 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateTransactions()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1353) | 1353 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`migrateUserEmails()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1458) | 1458 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`syncUserAssignedTests()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1484) | 1484 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`syncUserDiscountCodes()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1505) | 1505 | private | `int $legacyUserId`, `int $targetUserId` | void |
-| MigrateTcvUsersAndOrganizations | [`dryRunUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1534) | 1534 | private | `object $user` | void |
-| MigrateTcvUsersAndOrganizations | [`isSkippableDomain()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1561) | 1561 | private | `string $email` | bool |
-| MigrateTcvUsersAndOrganizations | [`resolvePatientOwner()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1581) | 1581 | private | `object $patient`, `int $legacyUserId`, `int $targetUserId` | int |
-| MigrateTcvUsersAndOrganizations | [`resolveDiscountCodeId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1600) | 1600 | private | `$code` | ?int |
-| MigrateTcvUsersAndOrganizations | [`buildPatientRow()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1644) | 1644 | protected | `object $patient`, `int $ownerId` | array |
-| MigrateTcvUsersAndOrganizations | [`prepareLegacyCipher()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1710) | 1710 | private | — | bool |
-| MigrateTcvUsersAndOrganizations | [`decryptLegacyPii()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1761) | 1761 | private | `?string $value`, `bool $isEncrypted` | ?string |
-| MigrateTcvUsersAndOrganizations | [`resolvePatientId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1821) | 1821 | private | `$value` | ?string |
-| MigrateTcvUsersAndOrganizations | [`mapGender()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1830) | 1830 | private | `$gender` | int |
-| MigrateTcvUsersAndOrganizations | [`mapTestEye()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1835) | 1835 | private | `$testEye` | ?string |
-| MigrateTcvUsersAndOrganizations | [`mapTestCondition()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1840) | 1840 | private | `$condition` | ?int |
-| MigrateTcvUsersAndOrganizations | [`extractTransactionAmount()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1845) | 1845 | private | `$rawOutgoing` | float |
-| MigrateTcvUsersAndOrganizations | [`maskCardNumber()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1852) | 1852 | private | `$rawOutgoing` | string |
-| MigrateTcvUsersAndOrganizations | [`resolveStateId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1867) | 1867 | private | `?string $stateName` | int |
-| MigrateTcvUsersAndOrganizations | [`resolveCountryId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1873) | 1873 | private | `?string $countryName` | int |
-| MigrateTcvUsersAndOrganizations | [`resolveOrgTypeId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1881) | 1881 | private | `string $type` | ?int |
-| MigrateTcvUsersAndOrganizations | [`resolveComplianceId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1887) | 1887 | private | `string $compliance` | ?int |
-| MigrateTcvUsersAndOrganizations | [`castRegistrationFee()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1893) | 1893 | private | `string $value` | float |
-| MigrateTcvUsersAndOrganizations | [`resolvePrivilegeIds()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1905) | 1905 | private | `string $value` | ?string |
-| MigrateTcvUsersAndOrganizations | [`castToJson()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1936) | 1936 | private | `string $value` | ?string |
-| MigrateTcvUsersAndOrganizations | [`printSummary()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1949) | 1949 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`handle()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L133) | 133 | public | — | int |
+| MigrateTcvUsersAndOrganizations | [`markUserGraph()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L346) | 346 | private | `int $legacyUserId`, `bool $complete` | void |
+| MigrateTcvUsersAndOrganizations | [`deduplicateTransactionDetails()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L370) | 370 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`confirmWipe()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L405) | 405 | private | — | bool |
+| MigrateTcvUsersAndOrganizations | [`performFreshReset()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L434) | 434 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`truncateIfExists()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L501) | 501 | private | `string $table`, `?callable $using = null` | void |
+| MigrateTcvUsersAndOrganizations | [`resetAutoIncrement()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L520) | 520 | private | `string $table` | void |
+| MigrateTcvUsersAndOrganizations | [`loadLookupCaches()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L539) | 539 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`legacyIdSet()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L597) | 597 | private | `string $table`, `string $column` | array |
+| MigrateTcvUsersAndOrganizations | [`loadDiscountCodesByUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L619) | 619 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`runPreMigrationSetup()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L650) | 650 | private | `bool $isDryRun` | void |
+| MigrateTcvUsersAndOrganizations | [`importLookupValues()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L738) | 738 | private | `string $table`, `string $column`, `iterable $values`, `bool $isDryRun`, `string $label`, `array $columns = []` | void |
+| MigrateTcvUsersAndOrganizations | [`warnIfNotUniqueConstrained()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L789) | 789 | private | `string $table`, `string $column` | void |
+| MigrateTcvUsersAndOrganizations | [`getLastId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L813) | 813 | private | `string $table`, `int $legacyEntityId = 0` | int |
+| MigrateTcvUsersAndOrganizations | [`saveTracker()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L822) | 822 | private | `string $table`, `int $lastId`, `int $legacyEntityId = 0`, `int $newEntityId = 0` | void |
+| MigrateTcvUsersAndOrganizations | [`markCompleted()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L841) | 841 | private | `string $table`, `int $legacyEntityId = 0` | void |
+| MigrateTcvUsersAndOrganizations | [`getMappedUserId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L849) | 849 | private | `int $legacyUserId` | ?int |
+| MigrateTcvUsersAndOrganizations | [`withRetry()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L860) | 860 | private | `callable $fn`, `string $table`, `int $recordId`, `int $legacyEntityId = 0` | bool |
+| MigrateTcvUsersAndOrganizations | [`logFailure()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L887) | 887 | private | `string $table`, `int $recordId`, `string $error`, `int $legacyEntityId = 0`, `array $context = []` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L914) | 914 | private | `object $user` | ?int |
+| MigrateTcvUsersAndOrganizations | [`insertUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L976) | 976 | private | `object $user`, `?int $forcedId` | int |
+| MigrateTcvUsersAndOrganizations | [`isDuplicateKey()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1072) | 1072 | private | `QueryException $e` | bool |
+| MigrateTcvUsersAndOrganizations | [`resolveUserType()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1085) | 1085 | private | `object $user` | int |
+| MigrateTcvUsersAndOrganizations | [`clip()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1099) | 1099 | private | `$value`, `int $max` | string |
+| MigrateTcvUsersAndOrganizations | [`clipOrNull()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1105) | 1105 | private | `$value`, `int $max` | ?string |
+| MigrateTcvUsersAndOrganizations | [`migrateOrganizations()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1116) | 1116 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`generateOrganizationTestUrl()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1171) | 1171 | private | `int $orgId` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateOrganizationConfigs()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1206) | 1206 | private | `object $org` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateLmsProviderConfig()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1255) | 1255 | private | `object $org` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateCredits()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1296) | 1296 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`migratePatients()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1385) | 1385 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateTransactions()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1465) | 1465 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`migrateUserEmails()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1570) | 1570 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`syncUserAssignedTests()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1596) | 1596 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`syncUserDiscountCodes()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1617) | 1617 | private | `int $legacyUserId`, `int $targetUserId` | void |
+| MigrateTcvUsersAndOrganizations | [`dryRunUser()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1646) | 1646 | private | `object $user` | void |
+| MigrateTcvUsersAndOrganizations | [`isSkippableDomain()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1678) | 1678 | private | `string $email` | bool |
+| MigrateTcvUsersAndOrganizations | [`resolvePatientOwner()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1698) | 1698 | private | `object $patient`, `int $legacyUserId`, `int $targetUserId` | int |
+| MigrateTcvUsersAndOrganizations | [`resolveDiscountCodeId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1717) | 1717 | private | `$code` | ?int |
+| MigrateTcvUsersAndOrganizations | [`buildPatientRow()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1761) | 1761 | protected | `object $patient`, `int $ownerId` | array |
+| MigrateTcvUsersAndOrganizations | [`prepareLegacyCipher()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1827) | 1827 | private | — | bool |
+| MigrateTcvUsersAndOrganizations | [`decryptLegacyPii()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1878) | 1878 | private | `?string $value`, `bool $isEncrypted` | ?string |
+| MigrateTcvUsersAndOrganizations | [`resolvePatientId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1938) | 1938 | private | `$value` | ?string |
+| MigrateTcvUsersAndOrganizations | [`mapGender()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1947) | 1947 | private | `$gender` | int |
+| MigrateTcvUsersAndOrganizations | [`mapTestEye()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1952) | 1952 | private | `$testEye` | ?string |
+| MigrateTcvUsersAndOrganizations | [`mapTestCondition()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1957) | 1957 | private | `$condition` | ?int |
+| MigrateTcvUsersAndOrganizations | [`extractTransactionAmount()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1962) | 1962 | private | `$rawOutgoing` | float |
+| MigrateTcvUsersAndOrganizations | [`maskCardNumber()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1969) | 1969 | private | `$rawOutgoing` | string |
+| MigrateTcvUsersAndOrganizations | [`resolveOrgTypeId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1984) | 1984 | private | `string $type` | ?int |
+| MigrateTcvUsersAndOrganizations | [`resolveComplianceId()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1990) | 1990 | private | `string $compliance` | ?int |
+| MigrateTcvUsersAndOrganizations | [`castRegistrationFee()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L1996) | 1996 | private | `string $value` | float |
+| MigrateTcvUsersAndOrganizations | [`resolvePrivilegeIds()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L2008) | 2008 | private | `string $value` | ?string |
+| MigrateTcvUsersAndOrganizations | [`castToJson()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L2039) | 2039 | private | `string $value` | ?string |
+| MigrateTcvUsersAndOrganizations | [`printLocationReport()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L2066) | 2066 | private | — | void |
+| MigrateTcvUsersAndOrganizations | [`printSummary()`](../../../TCV-Backend/app/Console/Commands/MigrateTcvUsersAndOrganizations.php#L2116) | 2116 | private | — | void |
 
 ### `app/Console/Commands/RebuildEmailBlindIndexes.php`
 
@@ -542,6 +551,12 @@ method — several controllers here run 400–900 lines.
 | BuildsAuditDiffs | [`auditFieldLabel()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L203) | 203 | private | `string $field` | string |
 | BuildsAuditDiffs | [`resolveAuditRelation()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L216) | 216 | private | `string $field`, `$value` | — |
 
+### `app/Http/Controllers/Concerns/FormatsLocationLabels.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| FormatsLocationLabels | [`locationLabel()`](../../../TCV-Backend/app/Http/Controllers/Concerns/FormatsLocationLabels.php#L28) | 28 | private | `array $label` | ?string |
+
 ### `app/Http/Controllers/ContactController.php`
 
 | Class | Method | Line | Vis | Params | Returns |
@@ -623,25 +638,25 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| OrganizationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L72) | 72 | public | `LmsLaunchService $launchService`, `LmsProviderRegistry $providerRegistry`, `AuditService $auditService` | — |
-| OrganizationController | [`organizationExtraDetails()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L85) | 85 | private | `Organization $organization` | array |
-| OrganizationController | [`orgConfigOptionGroups()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L107) | 107 | private | `Organization $organization` | array |
-| OrganizationController | [`organizationCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L138) | 138 | private | `Organization $organization`, `User $user` | array |
-| OrganizationController | [`orgRelationSnapshot()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L172) | 172 | private | `Organization $organization` | array |
-| OrganizationController | [`index()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L186) | 186 | public | `Request $request` | — |
-| OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L336) | 336 | public | `OrganizationRequest $request` | — |
-| OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L420) | 420 | public | `$id` | — |
-| OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L434) | 434 | public | `OrganizationRequest $request`, `$id` | — |
-| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L614) | 614 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L641) | 641 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L695) | 695 | public | `Request $request` | — |
-| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L755) | 755 | public | `Request $request` | — |
-| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L884) | 884 | private | `$organizationId` | — |
-| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L960) | 960 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1008) | 1008 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1047) | 1047 | public | `Request $request` | — |
-| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1081) | 1081 | private | `$orgCollection` | Collection |
-| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1127) | 1127 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
+| OrganizationController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L74) | 74 | public | `LmsLaunchService $launchService`, `LmsProviderRegistry $providerRegistry`, `AuditService $auditService` | — |
+| OrganizationController | [`organizationExtraDetails()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L87) | 87 | private | `Organization $organization` | array |
+| OrganizationController | [`orgConfigOptionGroups()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L109) | 109 | private | `Organization $organization` | array |
+| OrganizationController | [`organizationCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L140) | 140 | private | `Organization $organization`, `User $user` | array |
+| OrganizationController | [`orgRelationSnapshot()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L178) | 178 | private | `Organization $organization` | array |
+| OrganizationController | [`index()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L192) | 192 | public | `Request $request` | — |
+| OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L342) | 342 | public | `OrganizationRequest $request` | — |
+| OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L426) | 426 | public | `$id` | — |
+| OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L440) | 440 | public | `OrganizationRequest $request`, `$id` | — |
+| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L620) | 620 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L647) | 647 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L701) | 701 | public | `Request $request` | — |
+| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L761) | 761 | public | `Request $request` | — |
+| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L890) | 890 | private | `$organizationId` | — |
+| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L966) | 966 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1014) | 1014 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1053) | 1053 | public | `Request $request` | — |
+| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1087) | 1087 | private | `$orgCollection` | Collection |
+| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1133) | 1133 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
 
 ### `app/Http/Controllers/OrganizationPatientController.php`
 
@@ -888,17 +903,17 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L51) | 51 | public | `AuditService $auditService` | — |
-| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L64) | 64 | private | `User $user` | array |
-| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L89) | 89 | public | `Request $request` | — |
-| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L109) | 109 | public | `UserRequest $request` | — |
-| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L201) | 201 | public | `string $id` | — |
-| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L210) | 210 | public | `UserRequest $request`, `$id` | — |
-| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L324) | 324 | public | — | — |
-| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L341) | 341 | public | `Request $request`, `string $id` | — |
-| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L381) | 381 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L522) | 522 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L540) | 540 | private | `$userCollection` | — |
+| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L53) | 53 | public | `AuditService $auditService` | — |
+| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L66) | 66 | private | `User $user` | array |
+| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L93) | 93 | public | `Request $request` | — |
+| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L113) | 113 | public | `UserRequest $request` | — |
+| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L205) | 205 | public | `string $id` | — |
+| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L214) | 214 | public | `UserRequest $request`, `$id` | — |
+| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L328) | 328 | public | — | — |
+| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L345) | 345 | public | `Request $request`, `string $id` | — |
+| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L385) | 385 | public | `Request $request`, `$usertype` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L526) | 526 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L544) | 544 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -1600,23 +1615,26 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L74) | 74 | public | — | — |
-| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L84) | 84 | protected | — | array |
-| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L102) | 102 | public | `?string $plain` | bool |
-| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L139) | 139 | public | — | bool |
-| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L160) | 160 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
-| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L176) | 176 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
-| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L181) | 181 | public | — | bool |
-| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L186) | 186 | public | — | — |
-| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L203) | 203 | public | — | — |
-| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L208) | 208 | public | — | — |
-| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L213) | 213 | public | — | bool |
-| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L218) | 218 | public | — | bool |
-| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L223) | 223 | public | `User $target` | — |
-| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L237) | 237 | public | — | — |
-| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L242) | 242 | public | — | — |
-| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L251) | 251 | public | — | — |
-| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L256) | 256 | public | — | — |
+| User | [`displayCountry()`](../../../TCV-Backend/app/Models/User.php#L102) | 102 | public | — | array |
+| User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L121) | 121 | public | — | array |
+| User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L135) | 135 | private | `?string $mapped`, `?string $legacy` | array |
+| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L148) | 148 | public | — | — |
+| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L158) | 158 | protected | — | array |
+| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L176) | 176 | public | `?string $plain` | bool |
+| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L213) | 213 | public | — | bool |
+| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L234) | 234 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
+| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L250) | 250 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
+| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L255) | 255 | public | — | bool |
+| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L260) | 260 | public | — | — |
+| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L277) | 277 | public | — | — |
+| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L282) | 282 | public | — | — |
+| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L287) | 287 | public | — | bool |
+| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L292) | 292 | public | — | bool |
+| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L297) | 297 | public | `User $target` | — |
+| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L311) | 311 | public | — | — |
+| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L316) | 316 | public | — | — |
+| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L326) | 326 | public | — | — |
+| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L331) | 331 | public | — | — |
 
 ### `app/Models/UserEmailTemplate.php`
 
@@ -1955,6 +1973,32 @@ method — several controllers here run 400–900 lines.
 | LegacyCipher | [`decrypt()`](../../../TCV-Backend/app/Services/Migration/LegacyCipher.php#L86) | 86 | public | `?string $value` | ?string |
 | LegacyCipher | [`decryptsToEmpty()`](../../../TCV-Backend/app/Services/Migration/LegacyCipher.php#L95) | 95 | public | `?string $value` | bool |
 
+### `app/Services/Migration/LegacyLocationResolver.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| LegacyLocationResolver | [`__construct()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L279) | 279 | public | `?string $connection = null` | — |
+| LegacyLocationResolver | [`load()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L282) | 282 | public | — | void |
+| LegacyLocationResolver | [`resolveLocation()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L342) | 342 | public | `?string $country`, `?string $state`, `?string $city = null` | array |
+| LegacyLocationResolver | [`countryFromState()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L399) | 399 | public | `?string $stateName` | ?int |
+| LegacyLocationResolver | [`stateFromCity()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L419) | 419 | public | `?string $cityName`, `int $countryId` | ?int |
+| LegacyLocationResolver | [`countriesFromState()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L446) | 446 | public | — | int |
+| LegacyLocationResolver | [`statesFromCity()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L458) | 458 | public | — | int |
+| LegacyLocationResolver | [`isDigits()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L467) | 467 | private | `?string $value` | bool |
+| LegacyLocationResolver | [`resolveLegacyPair()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L482) | 482 | public | `?string $countryName`, `?string $stateName` | ?array |
+| LegacyLocationResolver | [`pairSubstitutions()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L511) | 511 | public | — | int |
+| LegacyLocationResolver | [`resolveCountryId()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L519) | 519 | public | `?string $countryName` | int |
+| LegacyLocationResolver | [`resolveStateId()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L566) | 566 | public | `?string $stateName`, `int $countryId`, `bool $tally = true` | ?int |
+| LegacyLocationResolver | [`forgetUnresolvedState()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L616) | 616 | public | `?string $stateName` | void |
+| LegacyLocationResolver | [`forget()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L628) | 628 | private | `array $tally`, `?string $value` | void |
+| LegacyLocationResolver | [`countryIdOfState()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L648) | 648 | public | `?int $stateId` | ?int |
+| LegacyLocationResolver | [`unresolvedCountries()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L660) | 660 | public | — | array |
+| LegacyLocationResolver | [`unresolvedStates()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L668) | 668 | public | — | array |
+| LegacyLocationResolver | [`blankCountries()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L675) | 675 | public | — | int |
+| LegacyLocationResolver | [`blankStates()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L680) | 680 | public | — | int |
+| LegacyLocationResolver | [`resetCounters()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L685) | 685 | public | — | void |
+| LegacyLocationResolver | [`key()`](../../../TCV-Backend/app/Services/Migration/LegacyLocationResolver.php#L700) | 700 | private | `string $value` | string |
+
 ### `app/Services/Migration/LegacyPatientSource.php`
 
 | Class | Method | Line | Vis | Params | Returns |
@@ -2107,8 +2151,13 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| TestInvitationMailer | [`__construct()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L21) | 21 | public | `EmailTemplateService $emailTemplateService` | — |
-| TestInvitationMailer | [`send()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L29) | 29 | public | `string $email`, `Test $test`, `string $token`, `string $verificationCode`, `$expiresAt`, `int $userId` | void |
+| TestInvitationMailer | [`__construct()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L98) | 98 | public | `EmailTemplateService $emailTemplateService` | — |
+| TestInvitationMailer | [`send()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L106) | 106 | public | `string $email`, `Test $test`, `string $token`, `string $verificationCode`, `$expiresAt`, `int $userId` | void |
+| TestInvitationMailer | [`template()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L304) | 304 | private | `int $userId`, `string $type` | array |
+| TestInvitationMailer | [`sender()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L328) | 328 | private | `int $userId` | ?User |
+| TestInvitationMailer | [`organizationVariables()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L362) | 362 | private | `User $sender`, `string $email` | array |
+| TestInvitationMailer | [`fillOrganizationPlaceholders()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L456) | 456 | private | `string $text`, `array $values`, `bool $html` | string |
+| TestInvitationMailer | [`removeEmptyToken()`](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L489) | 489 | private static | `string $text`, `string $token` | string |
 
 ### `app/Services/TestResultService.php`
 
@@ -2433,4 +2482,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._

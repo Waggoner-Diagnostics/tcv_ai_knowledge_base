@@ -66,14 +66,15 @@ bodies (`Log::info('Performing test.', ['request' => $request->all()])`,
 
 `Log::info` dominates — including for routine successes, which makes the file noisy at
 `LOG_LEVEL=debug`. `Log::error` for failures, `Log::warning` in `SecureImageService`,
-`ProcessLmsDeliveryJob`, `TestInvitationMailer` (two lines, below) and — on `ws-401` — the
-bracket-placeholder repair migration.
+`ProcessLmsDeliveryJob`, `TestInvitationMailer` (two lines, below) and the `ws-401`
+bracket-placeholder repair migration. `ws-401`'s `2026_09_22_000003` logs one `info` per
+`org_test_link` body it repaired (`table`, `id`), and a `warning` if it cannot clear the cached default.
 
 ⭐ **`TestInvitationMailer`'s two warnings both mean "the mail went out, but wrong".** Neither fails the
 send, so the log line is the only report that exists — the same shape as the migration note below.
 `Invitation link restyle failed, sending unstyled content` (`ws-373`) means PCRE gave up on a long body
 and the Start Test button shipped unstyled. `Organization invitation has no organization name to
-substitute` (`ws-401`, branch not yet merged) means an organization account has neither an
+substitute` (`ws-401`, on `develop` since 2026-09-21) means an organization account has neither an
 `organizations` row nor a `company_name`, so the invitation's sign-off went out with a blank line where
 the sender's identity belongs. The second is an account-data fault, not a mail fault — fix the row, do
 not chase the mailer ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)).

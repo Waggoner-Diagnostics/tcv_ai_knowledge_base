@@ -25,6 +25,8 @@ plaintext is stale — this pack wins.
 | `app/Casts/LegacyEncrypted.php` · `LegacyEncryptedInteger.php` | Transparent column casts |
 | `app/Casts/ResultJsonWithEncryptedPii.php` | Encrypts the PII embedded inside `patient_tests.result_json` |
 | `app/Console/Commands/BaseMigrationCommand.php` | Shared staging/chunking/reporting base for all migrate:* commands |
+| `app/Services/Migration/LegacyLocationResolver.php` | Legacy country/state text → `countries`/`states` ids (`ws-459` PR #282). Shared by `migrate:tcv-users-orgs` and the backfill below. [Section](#legacy-countrystate-resolution-ws-459-pr-282) |
+| `app/Console/Commands/BackfillMigratedUserLocation.php` | `users:backfill-legacy-location`: re-resolves already-migrated users (`ws-459` PR #282). Dry run by default |
 | `config/legacy.php` | Key material and the `legacy.enabled` switch |
 
 ## Tables
@@ -176,8 +178,8 @@ has hashes built against the wrong key and patients are unfindable by address ([
    value and **last-row-wins**, so all **63** migrated organisations bound to the duplicate rather than
    the seeded row — and because `validations.js` hardcodes `compliance_id === "1"` as AICC/SABA, all
    **57** AICC/SABA orgs were being asked for a Static IP they should never need
-   ([ORGANIZATION trap 8](ORGANIZATION_CONTEXT.md)). Fixed by `ws-459` (**pending on `develop`,
-   uncommitted as of 2026-09-21**): `2026_09_21_000001_deduplicate_organization_lookup_tables` merges
+   ([ORGANIZATION trap 8](ORGANIZATION_CONTEXT.md)). ✅ Fixed by `ws-459` (**merged 2026-09-21, PR #271,
+   `2fb62959`**): `2026_09_21_000001_deduplicate_organization_lookup_tables` merges
    each value onto its **lowest** id — repointing `organizations` **before** deleting, since neither
    column has an FK and the Organisations grid left-joins, so a dangling id reads as *no compliance at
    all* — and adds the two missing unique indexes; `importLookupValues()` replaces both `insertOrIgnore`
@@ -189,6 +191,97 @@ has hashes built against the wrong key and patients are unfindable by address ([
    `deduplicateTransactionDetails()`). Pinned by
    `tests/Feature/Migration/InsertOrIgnoreNeedsUniqueConstraintTest.php`, which fails if a new
    `insertOrIgnore` targets an unconstrained table.
+
+---
+
+## Legacy country/state resolution (`ws-459`, PR #282)
+
+Merged 2026-09-22 (backend `0197fd1b`, frontend `22e5332`). Legacy `tcv_user.country` / `.state` are free
+text (`VARCHAR(100)`), filled from two hardcoded picklists in the old helper. The new system stores
+ids into the nnjeim/world `countries` / `states` tables. The old migration used a bare name lookup with
+one special case ("United States Of America"), so it silently wrote `0` for everything else that did not
+match exactly.
+
+**`LegacyLocationResolver::resolveLocation($country, $state, $city)`** is the single entry point. Both
+commands call it, so they behave identically. Its order is fixed:
+
+1. `PAIR_SUBSTITUTIONS` wins outright. The only entry is `'0'|'0'` → United States / Alabama.
+2. The country resolves by name, then `COUNTRY_ALIASES` (34 retired ISO spellings, e.g. "Russian
+   Federation", "Swaziland", "Hong Kong"), then iso2/iso3. Codes are tried only for a value that is
+   nothing but 2–3 letters.
+3. If that fails and the country column is **digits**, the country comes from the state name, but only
+   when exactly one country uses that state name.
+4. The state resolves **scoped to that country**, then through `STATE_ALIASES` (US postal codes, the
+   `'rhode'` / `'island'` picklist typo, German state names).
+5. If that fails and the state is a word, it is tried as a **city** in that country (a unique match only).
+6. If the state is digits, the legacy **city** column is used to find the state instead.
+
+Returns `['country_id' => int, 'state_id' => ?int]`. `country_id` falls back to `NO_COUNTRY = 0` because the
+column is NOT NULL. ⚠️ An unresolved **state is now `null`, not `0`** as the old `resolveStateId()` wrote.
+
+### ☠️ Traps
+1. **The `'0'|'0'` substitution invents data, and is the only rule that does.** It is there on the
+   client's instruction, so the new screens show what the old ones displayed: `drawDD()` had no
+   placeholder, so every off-list value rendered as the first option, United States / Alabama. After
+   the backfill those accounts are **indistinguishable by id from genuine Alabama accounts**.
+   `users.legacy_country` / `legacy_state` still hold the original `'0'`, and they are the only way back.
+   Country `'1'` (281 accounts) and states `'5'`/`'10'`/`'34'`/`'44'` are deliberately **not** substituted.
+2. **Legacy admin screens are not evidence of what was stored.** Because of the same `drawDD()` fallback,
+   a blank, an `'US'` and a `'Rhode Island'` all *displayed* as the first option. Verify against
+   `tcv_user` with SQL. The migration's report prints blanks ("empty there too — nothing lost")
+   separately from unresolved values, which are missing aliases.
+3. **ISO codes are accepted, so `'NA'` resolves to Namibia and `'NO'` to Norway.** This was taken on
+   purpose after `tcv_user` 40167 turned out to store `'US'`.
+4. **Re-running `migrate:tcv-users-orgs` does not fix migrated users.** It skips `completed` tracker rows
+   and only ever inserts. Use **`php artisan users:backfill-legacy-location`**, which is a dry run until
+   you pass `--apply`. It reads `OLD_DB_CONNECTION` by `users.legacy_id`. It fills only a **missing**
+   country/state and never overwrites a value set since the migration, except for a state seated in
+   the wrong country (migration damage, because the form cannot produce that pair). Opt-in flags:
+   `--infer-country-from-state` writes a country the legacy row never held, and
+   `--clear-wrong-country-states` nulls a stored id. Both are operator decisions, so neither is on by
+   default. Also `--user-id=`, `--email=`, `--chunk=500`.
+5. **`users.legacy_country` / `legacy_state`** (`2026_09_22_000004`, `string(100)`, nullable) hold the raw
+   legacy text. **NULL means "not a migrated account"**. They are not in `$fillable`, so no request can
+   set them, and only the two commands above write them. Once the legacy DB is retired they are the only
+   surviving copy. The migration was **renumbered** from `000001` (a clash with the `ws-401` template
+   migration), and each column is `hasColumn`-guarded so an environment that ran the old name is a no-op.
+6. **Display fallback lives on the model.** `User::displayCountry()` / `displayState()` return
+   `{value, verified}`. The mapped name wins, then the legacy text with `verified = false`, then `null`.
+   `Controllers/Concerns/FormatsLocationLabels::locationLabel()` suffixes the unverified value with
+   **"(as migrated, unverified)"** on both the `UserController` and `OrganizationController` detail views.
+   An organisation's Country/State are its owner user's.
+
+### ☠️ The frontend half of the fallback is dead on arrival
+Frontend PR #414 adds three fallbacks, all reading `legacy_country` / `legacy_state` off the API payload:
+
+- the User Management grid's Country cell (`userManagementColumns.js`, class `um-country--legacy`)
+- the "Previously recorded as …" hint under the Country/State selects in `NewUserModal.js`
+- the same hint in `OrganisationModal.js` (reading `initialData.user.*`)
+
+Backend PR #282's last review commit, `02f8c5d8`, then added both columns to **`User::$hidden`**, so that
+login and profile responses would not leak raw legacy text. But every endpoint behind those screens
+serializes a `User` model: `UserController::userWithType()` (the grids, paginated `toArray()`),
+`UserController::edit()` (`GET api/users/{id}`, `response()->json($user)`), and
+`OrganizationController::index()`, which eager-loads `user` for the Organisations grid that
+`OrganisationModal` is opened from. **None of them calls `makeVisible()`**, so the fields never arrive and the grid shows `—`, and the modals show nothing, for a
+migrated account whose value did not map. Only the backend detail views (trap 6) show the legacy text.
+`CONTRACT_DRIFT` cannot catch this, because it matches URLs, not fields. Found at the 2026-09-23 KB sync.
+
+⏳ **Fixed on branches, not yet merged (2026-09-23):**
+- **Backend `ws-459-legacy-location-visible`** (`b3506b2c`) adds
+  `User::LEGACY_LOCATION_FIELDS` and calls `makeVisible()` in `OrganizationController::index()` for each
+  row's owner (already super-admin only through `OrgPolicy::viewAny`). It also calls it in
+  `UserController::userWithType()`, but **only for a super admin**, because that route checks nothing
+  beyond `auth:sanctum` ([S-22](../SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid)).
+  `edit()` is untouched: the user modals are filled from the grid row, and `edit()` also serves the
+  signed-in user's own profile fetch. `$hidden` stays the default. Pinned by
+  `tests/Feature/Migration/LegacyLocationAdminPayloadTest.php`. Its two reveal cases fail without the fix,
+  and its two withhold cases pass either way.
+- **Frontend `ws-459-legacy-location-visible`** (`c1dd22a`). There was a **second** break the backend fix
+  alone would not have cured: `mapOrganisationToFormData()` (`utils/organisationUtils.js`) rebuilds
+  `user` field by field and dropped both values, so `OrganisationModal` still saw nothing. It now carries
+  them through. The create/update payloads in `Organisation.js` list their fields explicitly, so the
+  values are display-only and are never sent back. Pinned by `src/utils/organisationUtils.test.js`.
 
 ---
 

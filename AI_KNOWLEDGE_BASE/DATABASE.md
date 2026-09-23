@@ -1,9 +1,11 @@
 # Database
 
-MySQL, **55 tables**, reconstructed from 151 migrations — the indexed snapshot, taken from
-`TCV-Backend@develop` at `330cf77d` (2026-09-21 sync). The jump of 20 migrations is almost all
-`ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
+MySQL, **55 tables**, reconstructed from 156 migrations — the indexed snapshot, taken from
+`TCV-Backend@develop` at `0197fd1b` (2026-09-23 sync). The jump of 20 migrations at the 2026-09-21 sync
+was almost all `ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
 **patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
+The 2026-09-23 sync added five: the `ws-459` lookup dedup and `users.legacy_country/legacy_state`, plus
+three `ws-401` `org_test_link` template migrations.
 Full column detail: [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
@@ -142,8 +144,7 @@ recreates them. **Only `discount_code_users` is live.**
   be populated for the app to be usable.
 - ☠️ **Lookup tables that the migration also writes need a unique index, or every run duplicates them.**
   `compliances.compliance` and `organization_types.name` are unique as of
-  `2026_09_21_000001_deduplicate_organization_lookup_tables` (`ws-459`, **pending on `develop`,
-  uncommitted 2026-09-21**). They are seeded *and* filled from legacy data by `migrate:tcv-users-orgs`,
+  `2026_09_21_000001_deduplicate_organization_lookup_tables` (`ws-459`, **merged 2026-09-21**, PR #271). They are seeded *and* filled from legacy data by `migrate:tcv-users-orgs`,
   which used `insertOrIgnore` — a plain INSERT without a constraint to ignore against — so QA carried two
   of each compliance and six duplicate org types, one extra set per run
   ([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). `countries`, `states`,
@@ -168,6 +169,15 @@ recreates them. **Only `discount_code_users` is live.**
   enforce column types, and a one-off production data normalization has nothing to normalize in an
   empty test database. Adding such a guard to a migration that has **already run** in production is
   safe — it will not re-execute, and the MySQL path is unchanged.
+- ☠️ **Never match a template migration on a verbatim fragment of stored HTML.** `ws-401`'s
+  `2026_09_22_000001` / `000002` did, and they became silent no-ops wherever Quill had re-saved the
+  row (`<br />` → `<p><br></p>`). They were still recorded as run, so `migrate` never retries them.
+  `2026_09_22_000003` had to follow, anchored on the `{{verification_link}}` placeholder instead
+  ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#org_test_link-carries-the-verification-code-and-expiry-ws-401-2026-09-22)).
+- **`users.legacy_country` / `users.legacy_state`** (`2026_09_22_000004`, `ws-459` PR #282) hold the
+  raw legacy text behind `country_id` / `state_id`. NULL means the account was created in the new
+  system. Both are in `User::$hidden`
+  ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#legacy-countrystate-resolution-ws-459-pr-282)).
 - `Schema::defaultStringLength(191)` is set in `AppServiceProvider::boot()` — a legacy MySQL index-length
   workaround. A `string` column is 191 chars unless you say otherwise.
 - **Data migrations that edit seeded content must match on the old value, not overwrite.** `email_template`
@@ -188,7 +198,7 @@ recreates them. **Only `discount_code_users` is live.**
 - ☠️ **A data migration answers to no validator, so it has to enforce their rules itself.** Nothing
   between `DB::table()->update()` and the column checks what a FormRequest would have rejected, and an
   irreversible migration has no way back once it has written. `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`
-  (`ws-401`, **not merged**) is the reference for both halves of that: it scopes the tokens it writes to the row's own template
+  (`ws-401` round 1, merged as PR #212) is the reference for both halves of that: it scopes the tokens it writes to the row's own template
   type (a placeholder valid for one type is a hard 422 for the other — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)),
   and it refuses a rewrite that would outgrow the column instead of letting the driver decide.
 - ⚠️ **A rewrite that lengthens a string needs its own width check — the tests cannot fail on this.**

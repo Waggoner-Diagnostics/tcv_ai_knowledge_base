@@ -1,21 +1,21 @@
 {
-    "generated_at": "2026-09-21T08:44:04+02:00",
+    "generated_at": "2026-09-23T08:47:20+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "330cf77d",
+            "sha": "0197fd1b",
             "branch": "develop",
-            "date": "2026-09-18"
+            "date": "2026-09-22"
         },
         "frontend": {
-            "sha": "d0da885",
+            "sha": "22e5332",
             "branch": "develop",
-            "date": "2026-09-18"
+            "date": "2026-09-22"
         },
         "website": {
-            "sha": "4d2c0d4",
+            "sha": "6dc5223",
             "branch": "website-integration",
-            "date": "2026-09-16"
+            "date": "2026-09-18"
         }
     },
     "classes": [
@@ -333,6 +333,112 @@
                     "line": 49
                 }
             ],
+            "relations": []
+        },
+        {
+            "name": "BackfillMigratedUserLocation",
+            "fqcn": "App\\Console\\Commands\\BackfillMigratedUserLocation",
+            "kind": "class",
+            "file": "app/Console/Commands/BackfillMigratedUserLocation.php",
+            "line": 70,
+            "end_line": 451,
+            "extends": "Command",
+            "implements": [],
+            "traits": [],
+            "doc": "Refills users.country_id / users.state_id for accounts the first migration run left",
+            "methods": [
+                {
+                    "name": "handle",
+                    "line": 151,
+                    "end_line": 244,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": [
+                        "DB::disableQueryLog",
+                        "option",
+                        "load",
+                        "orderBy",
+                        "where",
+                        "whereNotNull",
+                        "select",
+                        "DB::table",
+                        "orWhereNotExists",
+                        "orWhereNull",
+                        "orWhere",
+                        "whereNull",
+                        "whereColumn",
+                        "from",
+                        "DB::raw",
+                        "count",
+                        "line",
+                        "info",
+                        "createProgressBar",
+                        "start",
+                        "chunkById",
+                        "keyBy",
+                        "get",
+                        "whereIn",
+                        "table",
+                        "DB::connection",
+                        "all",
+                        "pluck",
+                        "advance",
+                        "resolveUpdates",
+                        "update",
+                        "finish",
+                        "newLine",
+                        "printReport"
+                    ]
+                },
+                {
+                    "name": "resolveUpdates",
+                    "line": 254,
+                    "end_line": 356,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "LegacyLocationResolver $resolver",
+                        "object $user",
+                        "object $row"
+                    ],
+                    "returns": "array",
+                    "doc": "The columns to write for one user, which is [] when the legacy row offers nothing",
+                    "calls": [
+                        "resolveLocation",
+                        "resolveStateId",
+                        "forgetUnresolvedState",
+                        "countryIdOfState"
+                    ]
+                },
+                {
+                    "name": "printReport",
+                    "line": 358,
+                    "end_line": 450,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "LegacyLocationResolver $resolver",
+                        "bool $apply"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "pairSubstitutions",
+                        "countriesFromState",
+                        "statesFromCity",
+                        "line",
+                        "unresolvedCountries",
+                        "unresolvedStates",
+                        "newLine",
+                        "warn",
+                        "comment"
+                    ]
+                }
+            ],
+            "constants": [],
             "relations": []
         },
         {
@@ -3301,8 +3407,8 @@
             "fqcn": "App\\Console\\Commands\\MigrateTcvUsersAndOrganizations",
             "kind": "class",
             "file": "app/Console/Commands/MigrateTcvUsersAndOrganizations.php",
-            "line": 17,
-            "end_line": 2043,
+            "line": 19,
+            "end_line": 2212,
             "extends": "BaseMigrationCommand",
             "implements": [],
             "traits": [],
@@ -3310,8 +3416,8 @@
             "methods": [
                 {
                     "name": "handle",
-                    "line": 123,
-                    "end_line": 326,
+                    "line": 133,
+                    "end_line": 343,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -3325,6 +3431,8 @@
                         "confirmWipe",
                         "performFreshReset",
                         "runPreMigrationSetup",
+                        "load",
+                        "line",
                         "loadLookupCaches",
                         "deduplicateTransactionDetails",
                         "prepareLegacyCipher",
@@ -3366,8 +3474,8 @@
                 },
                 {
                     "name": "markUserGraph",
-                    "line": 329,
-                    "end_line": 335,
+                    "line": 346,
+                    "end_line": 352,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3385,8 +3493,8 @@
                 },
                 {
                     "name": "deduplicateTransactionDetails",
-                    "line": 353,
-                    "end_line": 374,
+                    "line": 370,
+                    "end_line": 391,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3402,8 +3510,8 @@
                 },
                 {
                     "name": "confirmWipe",
-                    "line": 388,
-                    "end_line": 415,
+                    "line": 405,
+                    "end_line": 432,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3422,8 +3530,8 @@
                 },
                 {
                     "name": "performFreshReset",
-                    "line": 417,
-                    "end_line": 471,
+                    "line": 434,
+                    "end_line": 488,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3441,8 +3549,8 @@
                 },
                 {
                     "name": "truncateIfExists",
-                    "line": 484,
-                    "end_line": 494,
+                    "line": 501,
+                    "end_line": 511,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3462,8 +3570,8 @@
                 },
                 {
                     "name": "resetAutoIncrement",
-                    "line": 503,
-                    "end_line": 516,
+                    "line": 520,
+                    "end_line": 533,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3482,8 +3590,8 @@
                 },
                 {
                     "name": "loadLookupCaches",
-                    "line": 522,
-                    "end_line": 580,
+                    "line": 539,
+                    "end_line": 594,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3491,6 +3599,7 @@
                     "doc": "",
                     "calls": [
                         "get",
+                        "orderBy",
                         "table",
                         "DB::connection",
                         "pluck",
@@ -3502,8 +3611,8 @@
                 },
                 {
                     "name": "legacyIdSet",
-                    "line": 583,
-                    "end_line": 595,
+                    "line": 597,
+                    "end_line": 609,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3522,8 +3631,8 @@
                 },
                 {
                     "name": "loadDiscountCodesByUser",
-                    "line": 605,
-                    "end_line": 630,
+                    "line": 619,
+                    "end_line": 644,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -3538,8 +3647,8 @@
                 },
                 {
                     "name": "runPreMigrationSetup",
-                    "line": 636,
-                    "end_line": 712,
+                    "line": 650,
+                    "end_line": 714,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3556,14 +3665,57 @@
                         "where",
                         "whereNotNull",
                         "table",
-                        "insertOrIgnore",
+                        "importLookupValues",
                         "info"
                     ]
                 },
                 {
+                    "name": "importLookupValues",
+                    "line": 738,
+                    "end_line": 775,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $table",
+                        "string $column",
+                        "iterable $values",
+                        "bool $isDryRun",
+                        "string $label",
+                        "array $columns = []"
+                    ],
+                    "returns": "void",
+                    "doc": "Add the legacy values missing from a dropdown lookup table, and only those.",
+                    "calls": [
+                        "warnIfNotUniqueConstrained",
+                        "pluck",
+                        "table",
+                        "DB::connection",
+                        "insertOrIgnore",
+                        "line"
+                    ]
+                },
+                {
+                    "name": "warnIfNotUniqueConstrained",
+                    "line": 789,
+                    "end_line": 807,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $table",
+                        "string $column"
+                    ],
+                    "returns": "void",
+                    "doc": "Say so when the constraint that makes this table safe is not actually there.",
+                    "calls": [
+                        "getIndexes",
+                        "Schema::connection",
+                        "warn"
+                    ]
+                },
+                {
                     "name": "getLastId",
-                    "line": 718,
-                    "end_line": 725,
+                    "line": 813,
+                    "end_line": 820,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3581,8 +3733,8 @@
                 },
                 {
                     "name": "saveTracker",
-                    "line": 727,
-                    "end_line": 744,
+                    "line": 822,
+                    "end_line": 839,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3601,8 +3753,8 @@
                 },
                 {
                     "name": "markCompleted",
-                    "line": 746,
-                    "end_line": 752,
+                    "line": 841,
+                    "end_line": 847,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3620,8 +3772,8 @@
                 },
                 {
                     "name": "getMappedUserId",
-                    "line": 754,
-                    "end_line": 763,
+                    "line": 849,
+                    "end_line": 858,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3638,8 +3790,8 @@
                 },
                 {
                     "name": "withRetry",
-                    "line": 765,
-                    "end_line": 790,
+                    "line": 860,
+                    "end_line": 885,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3657,8 +3809,8 @@
                 },
                 {
                     "name": "logFailure",
-                    "line": 792,
-                    "end_line": 813,
+                    "line": 887,
+                    "end_line": 908,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3679,8 +3831,8 @@
                 },
                 {
                     "name": "migrateUser",
-                    "line": 819,
-                    "end_line": 872,
+                    "line": 914,
+                    "end_line": 967,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3705,8 +3857,8 @@
                 },
                 {
                     "name": "insertUser",
-                    "line": 881,
-                    "end_line": 954,
+                    "line": 976,
+                    "end_line": 1066,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3716,10 +3868,9 @@
                     "returns": "int",
                     "doc": "Insert one legacy user and return the id it landed on.",
                     "calls": [
+                        "resolveLocation",
                         "clip",
                         "clipOrNull",
-                        "resolveStateId",
-                        "resolveCountryId",
                         "transformDateTime",
                         "resolveUserType",
                         "insertGetId",
@@ -3731,8 +3882,8 @@
                 },
                 {
                     "name": "isDuplicateKey",
-                    "line": 960,
-                    "end_line": 963,
+                    "line": 1072,
+                    "end_line": 1075,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3744,8 +3895,8 @@
                 },
                 {
                     "name": "resolveUserType",
-                    "line": 973,
-                    "end_line": 984,
+                    "line": 1085,
+                    "end_line": 1096,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3757,8 +3908,8 @@
                 },
                 {
                     "name": "clip",
-                    "line": 987,
-                    "end_line": 990,
+                    "line": 1099,
+                    "end_line": 1102,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3771,8 +3922,8 @@
                 },
                 {
                     "name": "clipOrNull",
-                    "line": 993,
-                    "end_line": 998,
+                    "line": 1105,
+                    "end_line": 1110,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3785,8 +3936,8 @@
                 },
                 {
                     "name": "migrateOrganizations",
-                    "line": 1004,
-                    "end_line": 1047,
+                    "line": 1116,
+                    "end_line": 1159,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3814,8 +3965,8 @@
                 },
                 {
                     "name": "generateOrganizationTestUrl",
-                    "line": 1059,
-                    "end_line": 1072,
+                    "line": 1171,
+                    "end_line": 1184,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3834,8 +3985,8 @@
                 },
                 {
                     "name": "migrateOrganizationConfigs",
-                    "line": 1094,
-                    "end_line": 1141,
+                    "line": 1206,
+                    "end_line": 1253,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3852,8 +4003,8 @@
                 },
                 {
                     "name": "migrateLmsProviderConfig",
-                    "line": 1143,
-                    "end_line": 1178,
+                    "line": 1255,
+                    "end_line": 1290,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3873,8 +4024,8 @@
                 },
                 {
                     "name": "migrateCredits",
-                    "line": 1184,
-                    "end_line": 1267,
+                    "line": 1296,
+                    "end_line": 1379,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3903,8 +4054,8 @@
                 },
                 {
                     "name": "migratePatients",
-                    "line": 1273,
-                    "end_line": 1347,
+                    "line": 1385,
+                    "end_line": 1459,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3935,8 +4086,8 @@
                 },
                 {
                     "name": "migrateTransactions",
-                    "line": 1353,
-                    "end_line": 1452,
+                    "line": 1465,
+                    "end_line": 1564,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3968,8 +4119,8 @@
                 },
                 {
                     "name": "migrateUserEmails",
-                    "line": 1458,
-                    "end_line": 1478,
+                    "line": 1570,
+                    "end_line": 1590,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -3992,8 +4143,8 @@
                 },
                 {
                     "name": "syncUserAssignedTests",
-                    "line": 1484,
-                    "end_line": 1499,
+                    "line": 1596,
+                    "end_line": 1611,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4010,8 +4161,8 @@
                 },
                 {
                     "name": "syncUserDiscountCodes",
-                    "line": 1505,
-                    "end_line": 1528,
+                    "line": 1617,
+                    "end_line": 1640,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4031,8 +4182,8 @@
                 },
                 {
                     "name": "dryRunUser",
-                    "line": 1534,
-                    "end_line": 1541,
+                    "line": 1646,
+                    "end_line": 1658,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4046,13 +4197,14 @@
                         "count",
                         "where",
                         "table",
-                        "DB::connection"
+                        "DB::connection",
+                        "resolveLocation"
                     ]
                 },
                 {
                     "name": "isSkippableDomain",
-                    "line": 1561,
-                    "end_line": 1570,
+                    "line": 1678,
+                    "end_line": 1687,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4064,8 +4216,8 @@
                 },
                 {
                     "name": "resolvePatientOwner",
-                    "line": 1581,
-                    "end_line": 1590,
+                    "line": 1698,
+                    "end_line": 1707,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4081,8 +4233,8 @@
                 },
                 {
                     "name": "resolveDiscountCodeId",
-                    "line": 1600,
-                    "end_line": 1618,
+                    "line": 1717,
+                    "end_line": 1735,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4099,8 +4251,8 @@
                 },
                 {
                     "name": "buildPatientRow",
-                    "line": 1644,
-                    "end_line": 1695,
+                    "line": 1761,
+                    "end_line": 1812,
                     "visibility": "protected",
                     "static": false,
                     "params": [
@@ -4126,8 +4278,8 @@
                 },
                 {
                     "name": "prepareLegacyCipher",
-                    "line": 1710,
-                    "end_line": 1750,
+                    "line": 1827,
+                    "end_line": 1867,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -4145,8 +4297,8 @@
                 },
                 {
                     "name": "decryptLegacyPii",
-                    "line": 1761,
-                    "end_line": 1819,
+                    "line": 1878,
+                    "end_line": 1936,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4161,8 +4313,8 @@
                 },
                 {
                     "name": "resolvePatientId",
-                    "line": 1821,
-                    "end_line": 1828,
+                    "line": 1938,
+                    "end_line": 1945,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4174,8 +4326,8 @@
                 },
                 {
                     "name": "mapGender",
-                    "line": 1830,
-                    "end_line": 1833,
+                    "line": 1947,
+                    "end_line": 1950,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4187,8 +4339,8 @@
                 },
                 {
                     "name": "mapTestEye",
-                    "line": 1835,
-                    "end_line": 1838,
+                    "line": 1952,
+                    "end_line": 1955,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4200,8 +4352,8 @@
                 },
                 {
                     "name": "mapTestCondition",
-                    "line": 1840,
-                    "end_line": 1843,
+                    "line": 1957,
+                    "end_line": 1960,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4213,8 +4365,8 @@
                 },
                 {
                     "name": "extractTransactionAmount",
-                    "line": 1845,
-                    "end_line": 1850,
+                    "line": 1962,
+                    "end_line": 1967,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4228,8 +4380,8 @@
                 },
                 {
                     "name": "maskCardNumber",
-                    "line": 1852,
-                    "end_line": 1861,
+                    "line": 1969,
+                    "end_line": 1978,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4242,35 +4394,9 @@
                     ]
                 },
                 {
-                    "name": "resolveStateId",
-                    "line": 1867,
-                    "end_line": 1871,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "?string $stateName"
-                    ],
-                    "returns": "int",
-                    "doc": "",
-                    "calls": []
-                },
-                {
-                    "name": "resolveCountryId",
-                    "line": 1873,
-                    "end_line": 1879,
-                    "visibility": "private",
-                    "static": false,
-                    "params": [
-                        "?string $countryName"
-                    ],
-                    "returns": "int",
-                    "doc": "",
-                    "calls": []
-                },
-                {
                     "name": "resolveOrgTypeId",
-                    "line": 1881,
-                    "end_line": 1885,
+                    "line": 1984,
+                    "end_line": 1988,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4282,8 +4408,8 @@
                 },
                 {
                     "name": "resolveComplianceId",
-                    "line": 1887,
-                    "end_line": 1891,
+                    "line": 1990,
+                    "end_line": 1994,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4295,8 +4421,8 @@
                 },
                 {
                     "name": "castRegistrationFee",
-                    "line": 1893,
-                    "end_line": 1896,
+                    "line": 1996,
+                    "end_line": 1999,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4308,8 +4434,8 @@
                 },
                 {
                     "name": "resolvePrivilegeIds",
-                    "line": 1905,
-                    "end_line": 1934,
+                    "line": 2008,
+                    "end_line": 2037,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4321,8 +4447,8 @@
                 },
                 {
                     "name": "castToJson",
-                    "line": 1936,
-                    "end_line": 1943,
+                    "line": 2039,
+                    "end_line": 2046,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -4333,9 +4459,31 @@
                     "calls": []
                 },
                 {
+                    "name": "printLocationReport",
+                    "line": 2066,
+                    "end_line": 2114,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "What became of the legacy country/state values.",
+                    "calls": [
+                        "unresolvedCountries",
+                        "unresolvedStates",
+                        "newLine",
+                        "line",
+                        "blankCountries",
+                        "blankStates",
+                        "pairSubstitutions",
+                        "countriesFromState",
+                        "statesFromCity",
+                        "warn"
+                    ]
+                },
+                {
                     "name": "printSummary",
-                    "line": 1949,
-                    "end_line": 2042,
+                    "line": 2116,
+                    "end_line": 2211,
                     "visibility": "private",
                     "static": false,
                     "params": [],
@@ -4344,6 +4492,7 @@
                     "calls": [
                         "option",
                         "line",
+                        "printLocationReport",
                         "newLine",
                         "info",
                         "error",
@@ -4355,37 +4504,37 @@
                 {
                     "name": "MAX_RETRIES",
                     "value": "3",
-                    "line": 32
+                    "line": 34
                 },
                 {
                     "name": "RETRY_DELAY",
                     "value": "200000",
-                    "line": 33
+                    "line": 35
                 },
                 {
                     "name": "VALID_USER_TYPES",
                     "value": "[…]",
-                    "line": 54
+                    "line": 56
                 },
                 {
                     "name": "MAX_CONSECUTIVE_FAILURES",
                     "value": "20",
-                    "line": 69
+                    "line": 71
                 },
                 {
                     "name": "ORG_FLAG_MAP",
                     "value": "[…]",
-                    "line": 1082
+                    "line": 1194
                 },
                 {
                     "name": "SKIP_DOMAINS",
                     "value": "[…]",
-                    "line": 1547
+                    "line": 1664
                 },
                 {
                     "name": "SKIP_EMAILS",
                     "value": "[…]",
-                    "line": 1557
+                    "line": 1674
                 }
             ],
             "relations": []
@@ -6914,6 +7063,35 @@
             "relations": []
         },
         {
+            "name": "FormatsLocationLabels",
+            "fqcn": "App\\Http\\Controllers\\Concerns\\FormatsLocationLabels",
+            "kind": "trait",
+            "file": "app/Http/Controllers/Concerns/FormatsLocationLabels.php",
+            "line": 16,
+            "end_line": 36,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Renders User::displayCountry() / displayState() into the one string a detail view shows,",
+            "methods": [
+                {
+                    "name": "locationLabel",
+                    "line": 28,
+                    "end_line": 35,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $label"
+                    ],
+                    "returns": "?string",
+                    "doc": "One Country/State line.",
+                    "calls": []
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
             "name": "ContactController",
             "fqcn": "App\\Http\\Controllers\\ContactController",
             "kind": "class",
@@ -7878,19 +8056,20 @@
             "fqcn": "App\\Http\\Controllers\\OrganizationController",
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
-            "line": 36,
-            "end_line": 1149,
+            "line": 37,
+            "end_line": 1155,
             "extends": "Controller",
             "implements": [],
             "traits": [
-                "BuildsAuditDiffs"
+                "BuildsAuditDiffs",
+                "FormatsLocationLabels"
             ],
             "doc": "",
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 72,
-                    "end_line": 76,
+                    "line": 74,
+                    "end_line": 78,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -7904,8 +8083,8 @@
                 },
                 {
                     "name": "organizationExtraDetails",
-                    "line": 85,
-                    "end_line": 92,
+                    "line": 87,
+                    "end_line": 94,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -7922,8 +8101,8 @@
                 },
                 {
                     "name": "orgConfigOptionGroups",
-                    "line": 107,
-                    "end_line": 130,
+                    "line": 109,
+                    "end_line": 132,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -7939,8 +8118,8 @@
                 },
                 {
                     "name": "organizationCreateDetails",
-                    "line": 138,
-                    "end_line": 164,
+                    "line": 140,
+                    "end_line": 170,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -7954,15 +8133,16 @@
                         "all",
                         "pluck",
                         "Privilege::whereIn",
-                        "Country::find",
-                        "State::find",
+                        "locationLabel",
+                        "displayCountry",
+                        "displayState",
                         "Test::whereIn"
                     ]
                 },
                 {
                     "name": "orgRelationSnapshot",
-                    "line": 172,
-                    "end_line": 184,
+                    "line": 178,
+                    "end_line": 190,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -7982,8 +8162,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 186,
-                    "end_line": 334,
+                    "line": 192,
+                    "end_line": 340,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8026,8 +8206,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 336,
-                    "end_line": 418,
+                    "line": 342,
+                    "end_line": 424,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8069,8 +8249,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 420,
-                    "end_line": 432,
+                    "line": 426,
+                    "end_line": 438,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8089,8 +8269,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 434,
-                    "end_line": 612,
+                    "line": 440,
+                    "end_line": 618,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8142,8 +8322,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 614,
-                    "end_line": 639,
+                    "line": 620,
+                    "end_line": 645,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8167,8 +8347,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 641,
-                    "end_line": 689,
+                    "line": 647,
+                    "end_line": 695,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8197,8 +8377,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 695,
-                    "end_line": 749,
+                    "line": 701,
+                    "end_line": 755,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8225,8 +8405,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 755,
-                    "end_line": 879,
+                    "line": 761,
+                    "end_line": 885,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8258,8 +8438,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 884,
-                    "end_line": 953,
+                    "line": 890,
+                    "end_line": 959,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8277,8 +8457,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 960,
-                    "end_line": 1001,
+                    "line": 966,
+                    "end_line": 1007,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8303,8 +8483,8 @@
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 1008,
-                    "end_line": 1040,
+                    "line": 1014,
+                    "end_line": 1046,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8322,8 +8502,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 1047,
-                    "end_line": 1068,
+                    "line": 1053,
+                    "end_line": 1074,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8343,8 +8523,8 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 1081,
-                    "end_line": 1122,
+                    "line": 1087,
+                    "end_line": 1128,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8373,8 +8553,8 @@
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 1127,
-                    "end_line": 1148,
+                    "line": 1133,
+                    "end_line": 1154,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8396,32 +8576,32 @@
                 {
                     "name": "USER_AUDIT_FIELDS",
                     "value": "[…]",
-                    "line": 41
+                    "line": 43
                 },
                 {
                     "name": "USER_AUDIT_BOOLEAN_FIELDS",
                     "value": "[…]",
-                    "line": 48
+                    "line": 50
                 },
                 {
                     "name": "ORG_AUDIT_FIELDS",
                     "value": "[…]",
-                    "line": 55
+                    "line": 57
                 },
                 {
                     "name": "ORG_AUDIT_BOOLEAN_FIELDS",
                     "value": "[…]",
-                    "line": 67
+                    "line": 69
                 },
                 {
                     "name": "DISPLAY_BRANDING_OPTIONS",
                     "value": "[…]",
-                    "line": 96
+                    "line": 98
                 },
                 {
                     "name": "HIDDEN_SETTINGS_OPTIONS",
                     "value": "[…]",
-                    "line": 99
+                    "line": 101
                 }
             ],
             "relations": []
@@ -11977,19 +12157,20 @@
             "fqcn": "App\\Http\\Controllers\\UserController",
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
-            "line": 27,
-            "end_line": 579,
+            "line": 28,
+            "end_line": 583,
             "extends": "Controller",
             "implements": [],
             "traits": [
-                "BuildsAuditDiffs"
+                "BuildsAuditDiffs",
+                "FormatsLocationLabels"
             ],
             "doc": "",
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 51,
-                    "end_line": 54,
+                    "line": 53,
+                    "end_line": 56,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12001,8 +12182,8 @@
                 },
                 {
                     "name": "accountCreateDetails",
-                    "line": 64,
-                    "end_line": 84,
+                    "line": 66,
+                    "end_line": 88,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12011,8 +12192,9 @@
                     "returns": "array",
                     "doc": "Ordered account detail rows for a create/registration audit event, following the",
                     "calls": [
-                        "Country::find",
-                        "State::find",
+                        "locationLabel",
+                        "displayCountry",
+                        "displayState",
                         "all",
                         "pluck",
                         "assignedTests"
@@ -12020,8 +12202,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 89,
-                    "end_line": 104,
+                    "line": 93,
+                    "end_line": 108,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12043,8 +12225,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 109,
-                    "end_line": 196,
+                    "line": 113,
+                    "end_line": 200,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12082,8 +12264,8 @@
                 },
                 {
                     "name": "edit",
-                    "line": 201,
-                    "end_line": 207,
+                    "line": 205,
+                    "end_line": 211,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12100,8 +12282,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 210,
-                    "end_line": 321,
+                    "line": 214,
+                    "end_line": 325,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12137,8 +12319,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 324,
-                    "end_line": 336,
+                    "line": 328,
+                    "end_line": 340,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12155,8 +12337,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 341,
-                    "end_line": 373,
+                    "line": 345,
+                    "end_line": 377,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12181,8 +12363,8 @@
                 },
                 {
                     "name": "userWithType",
-                    "line": 381,
-                    "end_line": 520,
+                    "line": 385,
+                    "end_line": 524,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12228,8 +12410,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 522,
-                    "end_line": 535,
+                    "line": 526,
+                    "end_line": 539,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12245,8 +12427,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 540,
-                    "end_line": 578,
+                    "line": 544,
+                    "end_line": 582,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -12274,12 +12456,12 @@
                 {
                     "name": "AUDIT_FIELDS",
                     "value": "[…]",
-                    "line": 37
+                    "line": 39
                 },
                 {
                     "name": "AUDIT_BOOLEAN_FIELDS",
                     "value": "[…]",
-                    "line": 47
+                    "line": 49
                 }
             ],
             "relations": []
@@ -18782,25 +18964,67 @@
             "fqcn": "App\\Models\\User",
             "kind": "class",
             "file": "app/Models/User.php",
-            "line": 17,
-            "end_line": 261,
+            "line": 18,
+            "end_line": 335,
             "extends": "Authenticatable",
             "implements": [
                 "MustVerifyEmail"
             ],
             "traits": [
                 "HasApiTokens",
-                "Notifiable",
                 "HasFactory",
-                "SoftDeletes",
-                "Searchable"
+                "Notifiable",
+                "Searchable",
+                "SoftDeletes"
             ],
             "doc": "",
             "methods": [
                 {
+                    "name": "displayCountry",
+                    "line": 102,
+                    "end_line": 108,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "The country to show for this account, and whether it is a mapped value.",
+                    "calls": [
+                        "resolveLocationLabel",
+                        "Country::find"
+                    ]
+                },
+                {
+                    "name": "displayState",
+                    "line": 121,
+                    "end_line": 127,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "The state to show for this account, on the same terms as displayCountry().",
+                    "calls": [
+                        "resolveLocationLabel",
+                        "State::find"
+                    ]
+                },
+                {
+                    "name": "resolveLocationLabel",
+                    "line": 135,
+                    "end_line": 146,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?string $mapped",
+                        "?string $legacy"
+                    ],
+                    "returns": "array",
+                    "doc": "A mapped name wins; failing that the legacy text, marked unverified; failing that",
+                    "calls": []
+                },
+                {
                     "name": "getEmailForVerification",
-                    "line": 74,
-                    "end_line": 77,
+                    "line": 148,
+                    "end_line": 151,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18810,8 +19034,8 @@
                 },
                 {
                     "name": "casts",
-                    "line": 84,
-                    "end_line": 91,
+                    "line": 158,
+                    "end_line": 165,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -18821,8 +19045,8 @@
                 },
                 {
                     "name": "checkPassword",
-                    "line": 102,
-                    "end_line": 132,
+                    "line": 176,
+                    "end_line": 206,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -18842,8 +19066,8 @@
                 },
                 {
                     "name": "hasLegacyMd5Password",
-                    "line": 139,
-                    "end_line": 142,
+                    "line": 213,
+                    "end_line": 216,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18853,8 +19077,8 @@
                 },
                 {
                     "name": "candidatesForEmail",
-                    "line": 160,
-                    "end_line": 173,
+                    "line": 234,
+                    "end_line": 247,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -18876,8 +19100,8 @@
                 },
                 {
                     "name": "primaryForEmail",
-                    "line": 176,
-                    "end_line": 179,
+                    "line": 250,
+                    "end_line": 253,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -18893,8 +19117,8 @@
                 },
                 {
                     "name": "isActiveAccount",
-                    "line": 181,
-                    "end_line": 184,
+                    "line": 255,
+                    "end_line": 258,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18904,8 +19128,8 @@
                 },
                 {
                     "name": "markEmailAsVerified",
-                    "line": 186,
-                    "end_line": 201,
+                    "line": 260,
+                    "end_line": 275,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18919,8 +19143,8 @@
                 },
                 {
                     "name": "hasVerifiedEmail",
-                    "line": 203,
-                    "end_line": 206,
+                    "line": 277,
+                    "end_line": 280,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18930,8 +19154,8 @@
                 },
                 {
                     "name": "isSuperAdmin",
-                    "line": 208,
-                    "end_line": 211,
+                    "line": 282,
+                    "end_line": 285,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18941,8 +19165,8 @@
                 },
                 {
                     "name": "canImpersonate",
-                    "line": 213,
-                    "end_line": 216,
+                    "line": 287,
+                    "end_line": 290,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18952,8 +19176,8 @@
                 },
                 {
                     "name": "canBeImpersonated",
-                    "line": 218,
-                    "end_line": 221,
+                    "line": 292,
+                    "end_line": 295,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18963,8 +19187,8 @@
                 },
                 {
                     "name": "canImpersonateUser",
-                    "line": 223,
-                    "end_line": 235,
+                    "line": 297,
+                    "end_line": 309,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -18978,8 +19202,8 @@
                 },
                 {
                     "name": "stripeDetail",
-                    "line": 237,
-                    "end_line": 240,
+                    "line": 311,
+                    "end_line": 314,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18991,8 +19215,8 @@
                 },
                 {
                     "name": "assignedTests",
-                    "line": 242,
-                    "end_line": 245,
+                    "line": 316,
+                    "end_line": 319,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19004,8 +19228,8 @@
                 },
                 {
                     "name": "organization",
-                    "line": 251,
-                    "end_line": 254,
+                    "line": 326,
+                    "end_line": 329,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19017,8 +19241,8 @@
                 },
                 {
                     "name": "country",
-                    "line": 256,
-                    "end_line": 259,
+                    "line": 331,
+                    "end_line": 334,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19033,17 +19257,17 @@
                 {
                     "name": "SUPER_ADMIN",
                     "value": "1",
-                    "line": 26
+                    "line": 28
                 },
                 {
                     "name": "CUSTOMER",
                     "value": "2",
-                    "line": 27
+                    "line": 30
                 },
                 {
                     "name": "ORGANIZATION",
                     "value": "4",
-                    "line": 28
+                    "line": 32
                 }
             ],
             "relations": [
@@ -19051,25 +19275,25 @@
                     "method": "stripeDetail",
                     "type": "hasOne",
                     "target": "UserStripeDetail",
-                    "line": 237
+                    "line": 311
                 },
                 {
                     "method": "assignedTests",
                     "type": "belongsToMany",
                     "target": "Test",
-                    "line": 242
+                    "line": 316
                 },
                 {
                     "method": "organization",
                     "type": "hasOne",
                     "target": "Organization",
-                    "line": 251
+                    "line": 326
                 },
                 {
                     "method": "country",
                     "type": "belongsTo",
                     "target": "Country",
-                    "line": 256
+                    "line": 331
                 }
             ]
         },
@@ -22459,6 +22683,346 @@
             "relations": []
         },
         {
+            "name": "LegacyLocationResolver",
+            "fqcn": "App\\Services\\Migration\\LegacyLocationResolver",
+            "kind": "class",
+            "file": "app/Services/Migration/LegacyLocationResolver.php",
+            "line": 54,
+            "end_line": 704,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Turns a legacy tcv_user.country / tcv_user.state string into an id in `countries`",
+            "methods": [
+                {
+                    "name": "__construct",
+                    "line": 279,
+                    "end_line": 279,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $connection = null"
+                    ],
+                    "returns": "",
+                    "doc": "null uses the default, which is what the test suite",
+                    "calls": []
+                },
+                {
+                    "name": "load",
+                    "line": 282,
+                    "end_line": 308,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "Read both lookup tables into memory. Idempotent; roughly 5,300 rows.",
+                    "calls": [
+                        "DB::connection",
+                        "get",
+                        "table",
+                        "key"
+                    ]
+                },
+                {
+                    "name": "resolveLocation",
+                    "line": 342,
+                    "end_line": 391,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $country",
+                        "?string $state",
+                        "?string $city = null"
+                    ],
+                    "returns": "array",
+                    "doc": "Everything the legacy address columns resolve to, with the recovery rules applied in",
+                    "calls": [
+                        "load",
+                        "resolveLegacyPair",
+                        "resolveCountryId",
+                        "isDigits",
+                        "countryFromState",
+                        "forget",
+                        "resolveStateId",
+                        "stateFromCity"
+                    ]
+                },
+                {
+                    "name": "countryFromState",
+                    "line": 399,
+                    "end_line": 408,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $stateName"
+                    ],
+                    "returns": "?int",
+                    "doc": "The country that owns this state name, when exactly one country in the world uses it.",
+                    "calls": [
+                        "load",
+                        "key"
+                    ]
+                },
+                {
+                    "name": "stateFromCity",
+                    "line": 419,
+                    "end_line": 443,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $cityName",
+                        "int $countryId"
+                    ],
+                    "returns": "?int",
+                    "doc": "The state a city sits in, within a given country.",
+                    "calls": [
+                        "key",
+                        "pluck",
+                        "distinct",
+                        "whereNotNull",
+                        "whereRaw",
+                        "where",
+                        "table",
+                        "DB::connection",
+                        "count",
+                        "first"
+                    ]
+                },
+                {
+                    "name": "countriesFromState",
+                    "line": 446,
+                    "end_line": 449,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "How many countries were identified from the state name (step 3).",
+                    "calls": []
+                },
+                {
+                    "name": "statesFromCity",
+                    "line": 458,
+                    "end_line": 461,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "How many states were identified through the `cities` table rather than by state name.",
+                    "calls": []
+                },
+                {
+                    "name": "isDigits",
+                    "line": 467,
+                    "end_line": 470,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "?string $value"
+                    ],
+                    "returns": "bool",
+                    "doc": "Nothing but digits, which is what the legacy columns hold where a write path put a",
+                    "calls": []
+                },
+                {
+                    "name": "resolveLegacyPair",
+                    "line": 482,
+                    "end_line": 508,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $countryName",
+                        "?string $stateName"
+                    ],
+                    "returns": "?array",
+                    "doc": "The ids for a legacy pair that PAIR_SUBSTITUTIONS replaces outright, or null when",
+                    "calls": [
+                        "load",
+                        "key"
+                    ]
+                },
+                {
+                    "name": "pairSubstitutions",
+                    "line": 511,
+                    "end_line": 514,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "How many rows took a PAIR_SUBSTITUTIONS replacement rather than a real mapping.",
+                    "calls": []
+                },
+                {
+                    "name": "resolveCountryId",
+                    "line": 519,
+                    "end_line": 550,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $countryName"
+                    ],
+                    "returns": "int",
+                    "doc": "The id of the legacy country name, or NO_COUNTRY when there is nothing to resolve.",
+                    "calls": [
+                        "load",
+                        "key"
+                    ]
+                },
+                {
+                    "name": "resolveStateId",
+                    "line": 566,
+                    "end_line": 606,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $stateName",
+                        "int $countryId",
+                        "bool $tally = true"
+                    ],
+                    "returns": "?int",
+                    "doc": "The id of the legacy state name within $countryId, or null.",
+                    "calls": [
+                        "load",
+                        "key"
+                    ]
+                },
+                {
+                    "name": "forgetUnresolvedState",
+                    "line": 616,
+                    "end_line": 619,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?string $stateName"
+                    ],
+                    "returns": "void",
+                    "doc": "Take one row back off the unresolved-state tally.",
+                    "calls": [
+                        "forget"
+                    ]
+                },
+                {
+                    "name": "forget",
+                    "line": 628,
+                    "end_line": 639,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $tally",
+                        "?string $value"
+                    ],
+                    "returns": "void",
+                    "doc": "Drop one row from an unresolved tally, removing the value once no rows are left",
+                    "calls": []
+                },
+                {
+                    "name": "countryIdOfState",
+                    "line": 648,
+                    "end_line": 657,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "?int $stateId"
+                    ],
+                    "returns": "?int",
+                    "doc": "The country that owns a state row, or null when the id matches no state.",
+                    "calls": [
+                        "load"
+                    ]
+                },
+                {
+                    "name": "unresolvedCountries",
+                    "line": 660,
+                    "end_line": 665,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "unresolvedStates",
+                    "line": 668,
+                    "end_line": 673,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "blankCountries",
+                    "line": 675,
+                    "end_line": 678,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "blankStates",
+                    "line": 680,
+                    "end_line": 683,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "int",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "resetCounters",
+                    "line": 685,
+                    "end_line": 694,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "key",
+                    "line": 700,
+                    "end_line": 703,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $value"
+                    ],
+                    "returns": "string",
+                    "doc": "mb_strtolower, not strtolower: \"Cote D'Ivoire (Ivory Coast)\" and \"Córdoba\" carry",
+                    "calls": []
+                }
+            ],
+            "constants": [
+                {
+                    "name": "NO_COUNTRY",
+                    "value": "0",
+                    "line": 57
+                },
+                {
+                    "name": "COUNTRY_ALIASES",
+                    "value": "[…]",
+                    "line": 70
+                },
+                {
+                    "name": "STATE_ALIASES",
+                    "value": "[…]",
+                    "line": 126
+                },
+                {
+                    "name": "PAIR_SUBSTITUTIONS",
+                    "value": "[…]",
+                    "line": 227
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "LegacyPatientSource",
             "fqcn": "App\\Services\\Migration\\LegacyPatientSource",
             "kind": "class",
@@ -24276,8 +24840,8 @@
             "fqcn": "App\\Services\\TestInvitationMailer",
             "kind": "class",
             "file": "app/Services/TestInvitationMailer.php",
-            "line": 19,
-            "end_line": 111,
+            "line": 22,
+            "end_line": 570,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -24285,8 +24849,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 21,
-                    "end_line": 24,
+                    "line": 98,
+                    "end_line": 101,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24298,8 +24862,8 @@
                 },
                 {
                     "name": "send",
-                    "line": 29,
-                    "end_line": 110,
+                    "line": 106,
+                    "end_line": 281,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24313,19 +24877,132 @@
                     "returns": "void",
                     "doc": "",
                     "calls": [
-                        "getTemplateForUser",
+                        "sender",
+                        "EmailTemplateService::typeForUser",
+                        "template",
                         "format",
                         "Carbon::parse",
                         "Log::warning",
                         "EmailContent::linkify",
+                        "organizationVariables",
+                        "fillOrganizationPlaceholders",
                         "Mail::send",
                         "subject",
                         "to",
                         "Log::info"
                     ]
+                },
+                {
+                    "name": "template",
+                    "line": 304,
+                    "end_line": 313,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "int $userId",
+                        "string $type"
+                    ],
+                    "returns": "array",
+                    "doc": "The template this account sends, resolved once per account and type.",
+                    "calls": [
+                        "getTemplateForUser"
+                    ]
+                },
+                {
+                    "name": "sender",
+                    "line": 328,
+                    "end_line": 335,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "int $userId"
+                    ],
+                    "returns": "?User",
+                    "doc": "The account an invitation is sent on behalf of.",
+                    "calls": [
+                        "find",
+                        "User::with"
+                    ]
+                },
+                {
+                    "name": "organizationVariables",
+                    "line": 362,
+                    "end_line": 437,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $sender",
+                        "string $email"
+                    ],
+                    "returns": "array",
+                    "doc": "Values for the four placeholders only `org_test_link` carries.",
+                    "calls": [
+                        "first",
+                        "orderBy",
+                        "where",
+                        "Patient::whereEmail",
+                        "Log::warning"
+                    ]
+                },
+                {
+                    "name": "fillOrganizationPlaceholders",
+                    "line": 456,
+                    "end_line": 473,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "string $text",
+                        "array $values",
+                        "bool $html"
+                    ],
+                    "returns": "string",
+                    "doc": "Substitute the organization placeholders into a body ($html) or a subject.",
+                    "calls": [
+                        "self::removeEmptyToken"
+                    ]
+                },
+                {
+                    "name": "removeEmptyToken",
+                    "line": 489,
+                    "end_line": 569,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $text",
+                        "string $token"
+                    ],
+                    "returns": "string",
+                    "doc": "Drop a placeholder with no value, along with the spacing that was only there",
+                    "calls": []
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "UNKNOWN_PATIENT_NAME",
+                    "value": "'Patient'",
+                    "line": 25
+                },
+                {
+                    "name": "SPACING_OR_TAG",
+                    "value": "'(?:\\s|&nbsp;|&#160;|<[^<>]*>)'",
+                    "line": 34
+                },
+                {
+                    "name": "HUGGING_PUNCTUATION",
+                    "value": "'.,;:!?)]}'",
+                    "line": 44
+                },
+                {
+                    "name": "WORD_START",
+                    "value": "'/^[\\p{L}\\p{N}\\{]/u'",
+                    "line": 60
+                },
+                {
+                    "name": "ORGANIZATION_PLACEHOLDERS",
+                    "value": "[…]",
+                    "line": 71
+                }
+            ],
             "relations": []
         },
         {
@@ -27417,6 +28094,16 @@
                     "name": "email",
                     "type": "string",
                     "migration": "database/migrations/2026_09_15_000001_make_users_email_nullable.php"
+                },
+                {
+                    "name": "legacy_country",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_22_000004_add_legacy_location_text_to_users_table.php"
+                },
+                {
+                    "name": "legacy_state",
+                    "type": "string",
+                    "migration": "database/migrations/2026_09_22_000004_add_legacy_location_text_to_users_table.php"
                 }
             ],
             "foreign_keys": [],
@@ -27667,6 +28354,16 @@
                     "file": "database/migrations/2026_09_15_000001_make_users_email_nullable.php",
                     "op": "table",
                     "line": 46
+                },
+                {
+                    "file": "database/migrations/2026_09_22_000004_add_legacy_location_text_to_users_table.php",
+                    "op": "table",
+                    "line": 39
+                },
+                {
+                    "file": "database/migrations/2026_09_22_000004_add_legacy_location_text_to_users_table.php",
+                    "op": "table",
+                    "line": 61
                 }
             ]
         },
@@ -34734,6 +35431,6 @@
             "line": 178
         }
     ],
-    "migration_count": 151,
+    "migration_count": 156,
     "routes_source": "artisan route:list --json"
 }

@@ -16,7 +16,7 @@ Findings carry stable `S-nn` IDs so other docs can point at them without restati
 >
 > `ws-401`'s **first round** merged too — its placeholder repair is on `develop` as
 > `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`. ⚠️ The ticket's
-> **second round has not** (branch `ws-401`): it gives `org_test_link` a renderer and puts
+> **second round merged 2026-09-21** (PR #252, `ws-401`): it gives `org_test_link` a renderer and puts
 > user-typed organization and patient names into the invitation body, HTML-escaped there and left raw
 > in the subject — safe only while `emails.dynamic-template` renders the subject through Blade's
 > `{{ }}` ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). No `S-nn` either way; noted because
@@ -833,6 +833,41 @@ readable — it disables the decrypt path too.
 `app/Models/Patient.php` (`BLIND_INDEXES`). Full mechanism:
 [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
 
+### S-22 — Any signed-in account can promote itself to super admin through `PUT api/users/{id}`
+
+**Severity: critical.** Open on `develop` `0197fd1b`. Found 2026-09-23 while fixing the `ws-459` legacy
+location payloads. **Reproduced** against `develop` with a throwaway feature test (not committed), acting
+as a plain customer through Sanctum:
+
+| Call | Result |
+|---|---|
+| `GET api/users/type/2` | **200**, every customer's row |
+| `GET api/users/{someone else's id}` | **200**, their whole record |
+| `PUT api/users/{own id}` with `usertype: 1` | **200**, and `usertype` is now **1** (super admin) |
+
+**Why.** The whole `UserController` resource (`index`, `store`, `update`, `destroy`, plus `edit` re-exposed
+as `GET api/users/{id}` and `userWithType`) sits in the plain `auth:sanctum` group, with no role
+middleware. There is no policy for `User` (only `CreditsPolicy`, `OrgPolicy` and `TestPolicy` exist), no
+`authorize()` call in the controller, and `UserRequest::authorize()` returns `true`. `UserRequest`
+accepts `usertype` ∈ {1, 2, 4}, and `update()` writes the validated value for **any** `{id}`, so the
+target does not even have to be the caller. By the same reading, `POST api/users` and
+`DELETE api/users/{id}` are equally open. Those two were not probed.
+
+**Why the fix is not a one-liner.** The SPA's own profile screen saves through the same route
+(`Profile.js:78` → `PATCH api/users/{id}` → `UserController@update`), and `loginSlice.js:223` reads the
+signed-in user through `GET api/users/{id}`. A blanket super-admin gate would break Settings ▸ Profile.
+The shape needed is:
+- super admin: anything
+- anyone else: only their own `{id}`, and never `usertype`, `account_status`, `email_verified` or credit
+  and test-assignment fields
+- `index`, `userWithType`, `store` and `destroy`: super admin only
+
+Add a `UserPolicy` and pin every one of these cases with a test. Not live in production, but dev and QA
+hold real migrated accounts.
+
+**Where:** `routes/api.php:171-174` · `app/Http/Controllers/UserController.php` ·
+`app/Http/Requests/UserRequest.php:15`.
+
 ---
 
 ## Summary table
@@ -859,6 +894,7 @@ readable — it disables the decrypt path too.
 | `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 | `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
+| `S-22` | ☠️ **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
 
 ---
 

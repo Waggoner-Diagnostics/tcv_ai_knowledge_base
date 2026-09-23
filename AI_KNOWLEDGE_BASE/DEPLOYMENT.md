@@ -217,6 +217,13 @@ check the migration list before choosing a rolling deploy.
    check the boot log rather than assuming ([DATABASE.md](DATABASE.md)). Verify with
    `SELECT compliance, COUNT(*) FROM compliances GROUP BY compliance HAVING COUNT(*) > 1;` — it must
    return nothing.
+   ⚠️ **Same environments, after `ws-459` PR #282 (merged 2026-09-22):** migrated users keep the
+   country/state ids the old name lookup gave them until you run
+   `php artisan users:backfill-legacy-location`. It is a dry run by default. Read its report, then
+   re-run it with `--apply`. It needs `OLD_DB_CONNECTION`, and it also fills
+   `users.legacy_country/legacy_state`, which is the only copy once the legacy DB is retired. Leave
+   `--infer-country-from-state` / `--clear-wrong-country-states` off unless someone has decided to use
+   them ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#legacy-countrystate-resolution-ws-459-pr-282)).
 8. **A queue worker and scheduler**, if LMS delivery or scheduled invitation recovery is expected to
    work: `COMPOSE_PROFILES=workers`. ☠️ Run the first-boot runbook above **before** enabling it on any
    environment that has been running without one.

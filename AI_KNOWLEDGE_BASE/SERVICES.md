@@ -1,6 +1,6 @@
 # Services
 
-**38 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
+**39 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
 controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`SVC-nnn`).
 
 ## By subsystem
@@ -15,6 +15,7 @@ controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_
 | **Audit** (`Audit/`) | `AuditLogger` · `PricingAuditService` |
 | **Email** | `EmailTemplateService`, `TestInvitationMailer` (`ws-404` — renders and sends one invitation; the queue job and the resend path share it) — plus `App\Support\EmailContent` / `EmailSignature`, which are **not** services: static, dependency-free string helpers shared by the controllers, the notification, the seeder and three data migrations (`ws-373`) |
 | **Integrations** | `HubSpotService` · `TurnstileService` |
+| **Legacy migration** (`Migration/`) | `LegacyCipher` · `LegacyPatientSource` · `LegacyLocationResolver` (`ws-459` PR #282: legacy country/state text → `countries`/`states` ids, shared by `migrate:tcv-users-orgs` and `users:backfill-legacy-location`). See [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) |
 
 ## Instantiation patterns — three of them
 

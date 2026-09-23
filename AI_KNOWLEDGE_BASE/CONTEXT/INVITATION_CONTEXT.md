@@ -26,13 +26,13 @@
 | `components/richTextEditor/emailPlaceholders.js` *(TCV-Frontend)* | ⭐ Stored HTML ⇄ editor HTML; renders system values as read-only chips (`ws-400`) |
 | `components/richTextEditor/RichTextEditor.js` *(TCV-Frontend)* | The shared Quill wrapper; `lockPlaceholders` turns the chip behaviour on (`ws-400`) |
 
-> ⚠️ **`ws-401`'s second round is NOT on `develop`** — it is on `TCV-Backend@ws-401`, in PR review
-> since 2026-09-17 (no SHA named here: the branch has taken review-fix commits since, and this pack
-> describes its **head**, including the review round that moved the org substitution after `linkify()`).
-> It is what gives `org_test_link` a renderer, so every statement in
-> this pack about an organization's invitation using its own template describes that branch, not
-> `develop`. On `develop` the send path still pins `test_link`. The ticket's first round (the
-> `2026_09_03_000002` placeholder-repair migration) merged earlier as PR #212 and *is* on `develop`.
+> ✅ **`ws-401`'s second round merged into `develop` on 2026-09-21** (PR #252, `345459fc`, branch head
+> `2759d251`), which is the head this pack described, including the review round that moved the org
+> substitution after `linkify()`. It is what gives `org_test_link` a renderer, so statements here about an
+> organization's invitation using its own template now describe `develop`. Two follow-ups merged
+> 2026-09-22 (PRs #276/#278) and put `{{verification_code}}` / `{{expires_at}}` into the `org_test_link`
+> bodies. See [below](#org_test_link-carries-the-verification-code-and-expiry-ws-401-2026-09-22). The
+> ticket's first round (the `2026_09_03_000002` placeholder-repair migration) merged earlier as PR #212.
 > The `INDEXES/*` were not regenerated for this, deliberately — indexing a feature branch hides live
 > holes.
 
@@ -137,8 +137,8 @@ with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = aut
 survives as a one-line delegate for the resend path. Both the batch job and the resend now go through
 the same passes — see the merge note below.) ⚠️ **`ws-401` added a fourth pass for the org placeholders
 and made the template type follow the sender** — the first line below read `TYPE_TEST_LINK`, pinned,
-until then. **On branch `ws-401`, not yet merged to `develop`**; this is the ticket's second round, its
-first (the placeholder repair migration) merged as PR #212.
+until then. **On `develop` since 2026-09-21** (PR #252). This was the ticket's second round; its first
+(the placeholder repair migration) merged as PR #212.
 
 ```
 sender = User::with('organization')->find(userId)  memoised per instance   ← ws-401
@@ -399,9 +399,9 @@ sync with the `$variables` map in `TestInvitationMailer::send()`, **per type** �
 for `org_test_link` (`ws-401`). Until the second one landed, nothing had ever checked the org vocabulary
 against a renderer, which is how the gap below went unnoticed for six weeks.
 
-✅ **`org_test_link` has a renderer as of `ws-401`** (branch `ws-401`, **not yet merged**; PR review
-round 3 on 2026-09-21 is the first pass that ran the suite against a database, and it moved the code —
-see the `whereEmail` and spacing-rule traps below, either of which would have shipped otherwise).
+✅ **`org_test_link` has a renderer as of `ws-401`** (**merged 2026-09-21**, PR #252. PR review
+round 3 that day was the first pass that ran the suite against a database, and it moved the code.
+See the `whereEmail` and spacing-rule traps below, either of which would have shipped otherwise).
 `send()` derives the type with `EmailTemplateService::typeForUser($sender)` instead of pinning
 `TYPE_TEST_LINK`, and fills all four org-only placeholders, so what an organization edits under Settings
 > Email Configuration is what the patient receives. QA's report is what reopened it: the editor showed
@@ -681,6 +681,38 @@ placeholder being edited into a broken half-token in the editor; this validation
 arrives broken anyway — from the API directly, from a template saved before `ws-400`, or from a paste.
 Keep both: the chips are the ergonomics, the validation is the guarantee. Neither repairs rows already
 in the database — that is what the scanner command is for.
+
+### `org_test_link` carries the verification code and expiry (`ws-401`, 2026-09-22)
+
+The seeded `org_test_link` body had no `{{verification_code}}` or `{{expires_at}}`, although `test_link`
+did and the mailer already substituted both for either type. Once `ws-401` round 2 made organisations
+send their own template, their patients received a link with **no code to enter at
+`POST api/test-invitation/verify-code`**. Three migrations fix it, plus `AdminSettingsSeeder` (id 2)
+for fresh databases. The block sits **below** the Start Test button:
+
+| Migration | PR | What it does |
+|---|---|---|
+| `2026_09_22_000001_add_verification_code_and_expiry_to_org_test_link_template` | #276 `d39c81e1` | Exact-fragment `LIKE` replace on the admin default (`test_email_templates`) only |
+| `2026_09_22_000002_move_verification_code_and_expiry_below_start_test_button` | #276 | Same technique, moves the block below the button |
+| `2026_09_22_000003_backfill_verification_code_and_expiry_in_org_test_link_templates` | #278 `8657e85c` | The real fix: anchors on the `{{verification_link}}` `<a>` (or the bare token) and inserts after it, in **both** `test_email_templates` **and** `user_email_templates` |
+
+☠️ **`000001` and `000002` are silent no-ops wherever an admin has opened the default in the editor.**
+Quill rewrites `<p><br />…` into `<p><br></p><p>…`, so their ~150-character verbatim fragment matched
+nothing. `up()` still returned cleanly and the migrations were recorded as run, and `migrate` will
+never retry them. `000003` exists because of that. **Never write another template migration that
+matches a fragment of stored HTML verbatim.** Anchor on a placeholder instead, because the editor
+leaves placeholders intact.
+
+- `000003` is idempotent. A body already containing either token is skipped, and a body with no link to
+  anchor on is left alone rather than guessed at.
+- It **does** touch organisations' own copies, unlike the two before it, which left customised copies
+  alone because they were wording changes. An org copy without the code sends an invitation nobody can
+  complete, so it is repaired the same way as `2026_08_31_000001_anchor_bare_link_placeholders_in_email_templates`.
+- It bumps `updated_at` and calls `Cache::forget('test_email_templates_org_test_link')`, because
+  `EmailTemplateRepository::getAdminDefaultTemplate()` caches for an hour. A deploy clears the cache in
+  `entrypoint.sh` anyway. A **manual** run on a live container would otherwise keep sending the old body
+  for up to an hour.
+- ☠️ It broke one older test. See [TESTING.md](../TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test).
 
 ## Redeem flow
 

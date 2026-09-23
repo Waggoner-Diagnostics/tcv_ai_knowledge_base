@@ -1,6 +1,6 @@
 # Database Table Index
 
-**55 tables**, reconstructed from 151 migrations.
+**55 tables**, reconstructed from 156 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -62,7 +62,7 @@ the only authority before you write a migration against a column.
 | `TABLE-052` | `user_emails` | 4 | `2025_07_02_070723_create_user_emails_table.php` | 3 |
 | `TABLE-053` | `user_hidden_tests` | 2 | `2026_04_01_122406_create_user_hidden_tests_table.php` | 3 |
 | `TABLE-054` | `user_stripe_details` | 3 | `2026_02_12_145901_create_user_stripe_details_table.php` | 2 |
-| `TABLE-055` | `users` | 42 | `0001_01_01_000001_create_users_table.php` | 36 |
+| `TABLE-055` | `users` | 44 | `0001_01_01_000001_create_users_table.php` | 38 |
 
 ---
 
@@ -815,9 +815,11 @@ _No columns detected (index/constraint-only migrations)._
 | `phone_no` | string | `2026_04_20_160452_add_phone_no_to_users_table.php` |
 | `legacy_id` | unsignedBigInteger | `2026_05_25_000001_add_legacy_id_to_users_patients_credits.php` |
 | `username` | string | `2026_09_07_000001_drop_unique_index_on_users_email.php` |
+| `legacy_country` | string | `2026_09_22_000004_add_legacy_location_text_to_users_table.php` |
+| `legacy_state` | string | `2026_09_22_000004_add_legacy_location_text_to_users_table.php` |
 
 _Dropped later by a migration (may still be listed above): `usertype`, `includeWaggnorCCVT`, `includeColorVisionTesting`, `includeOlderChildrenCCVT`, `includeWaggnorCCVT10Sec`, `name`, `email_verification_expires_at`, `phone_no`, `legacy_id`._
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-21. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._
