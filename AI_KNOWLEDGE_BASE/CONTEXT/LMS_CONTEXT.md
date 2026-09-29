@@ -226,6 +226,11 @@ the launch's `AICC_SID` is the only session key.
   is **not** a convenience: `storeDefaultPatient()` always overwrites `patient_id` with it, and the SPA
   shows the field read-only (`lockedFields` on `PatientFormFields`). Legacy's form made it `readonly`
   and looked results up by it.
+- ☠️ **`usePatientForm().populateForm()` takes API-shaped snake_case keys** (`first_name`, `patient_id`,
+  `zipcode`, raw `gender`) and maps them onto the form itself. `VerifiedDefaultUser.js` passed the form's
+  camelCase keys (on `develop` since February), so every field came out blank: the HealthStream prefill
+  reached the browser (`data.prefill` present in the `patientForm` response) and was dropped at this
+  last step. Fixed on `ws-460`. When a prefill "doesn't work", check the network response first.
 - **Patient save is the ordinary one.** `storeDefaultPatient()` merges the launch name / `student_id`
   into `$patientData` (only where the form left the field blank; server-side session, never the request)
   and then calls the same `Patient::create()` as every other org patient — so the name, email, DOB, zip
