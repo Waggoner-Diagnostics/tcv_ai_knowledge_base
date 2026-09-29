@@ -113,6 +113,13 @@ it exists.
 **30 s → 2 m → 10 m → 1 h → 6 h**. After the last step the row becomes `dead_letter`, which the job then
 refuses to touch until an admin replays it.
 
+**Claim (`ws-460`).** The job starts with one conditional update — `pending → in_flight`,
+`attempt_count + 1` — and returns if zero rows changed. Only one runner can win it, so a queue worker and
+`lms:deliver-pending` cannot both deliver the same row (HACP has no idempotency key, so that would be a
+second completion on the transcript). `delivered`, `dead_letter`, dismissed `failed` and an already
+`in_flight` row all fall out at the claim. On `develop` it is still `lockForUpdate()` in a transaction
+that commits before the status check — the lock is released before it protects anything.
+
 ### Dispatch mode (`ws-460`, branch only)
 On `develop` every enqueue goes to the `lms` queue, so without the `workers` profile **nothing is ever
 delivered** ([QUEUES.md](../QUEUES.md)). `ws-460` routes all three enqueue paths (completion, section
@@ -135,8 +142,9 @@ missing from their transcript, with the row sitting at `pending` forever. Run
 `environment:` block of **both** compose files. Setting it in a deploy `.env` on `develop` does nothing.
 
 ⚠️ After-response delivery holds a php-fpm child for the outbound call, which is why the HealthStream
-defaults cap `delivery_timeout_seconds` at 30. `lms:deliver-pending` is safe beside a real worker: the
-job row-locks and short-circuits `delivered` / `dead_letter`.
+defaults cap `delivery_timeout_seconds` at 30. `lms:deliver-pending` is safe beside a real worker because
+of the claim above. ⚠️ A row stuck `in_flight` (job died mid-delivery) is never picked up again by
+either path — watch `stuck_in_flight` on `delivery-status` and replay it by hand.
 
 **Idempotency** is enforced at enqueue time, not delivery time: `enqueueCompletion()` refuses a second
 row for the same session + event, and `enqueueSectionProgress()` derives a deterministic key from
@@ -191,7 +199,19 @@ the launch's `AICC_SID` is the only session key.
   `result_json.summary` summed across paired eyes — **not** `result_json['score']`, which doesn't exist;
   omitted when there are no plates), `time` (real `HH:MM:SS`; legacy hardcoded `00:00:00`) and
   `lesson_status`. `lesson_status` is **`completed`** by default — HealthStream applies its own mastery
-  cutoff — unless the org sets `report_pass_fail`.
+  cutoff — unless the org sets `report_pass_fail`. Score and `[CORE]` block match the legacy
+  `website/Organization.php` PutParam (`round(correct / plates × 100)`, `lesson_location=page_1`).
+- **`report_pass_fail` verdicts (`ws-460`).** `resultVerdict()` matches `diagnosis.final_conclusion`
+  against what `ColorVisionDiagnosisService` actually writes — pass: exactly `Normal Color Vision` or
+  `PASS`; fail: `FAIL` or a word `deficient`/`deficiency`/`protan`/`deutan`/`tritan`. Any other wording
+  (migrated free-text admin overrides, `No data available`, a missing diagnosis) → **`completed`**, never a
+  guessed pass. ☠️ Never go back to substring matching: `"Abnormal"` contains `"normal"`, and HACP has
+  no retraction.
+- **HACP has no mid-test report (`ws-460`).** `buildCompletionPayload()` throws for any in-flight entry
+  whose `event_type` is not `test_completed` (→ `PAYLOAD_BUILD_ERROR` dead letter), and
+  `HandleLmsSectionProgressOnCompletion` never enqueues `section_progress` for a HealthStream config.
+  Without both, `emit_section_progress` set through the admin API would post `lesson_status=completed`
+  with a partial score mid-test.
 - **Success is `error_num=0` in the body**, not HTTP 200. Anything else fails as `HACP_<n>` /
   `HACP_NO_STATUS` and enters the retry ladder. `provider_ref_id` = the SID, truncated to 255 so a column
   overflow can't fail the job *after* HealthStream accepted the score (→ double report on retry).
@@ -201,18 +221,38 @@ the launch's `AICC_SID` is the only session key.
 - **Name prefill.** The `GetParam` name lands in `lms_context['external_user_name']`;
   `getPatientForm()` returns it as `prefill: {first_name, last_name}` (split on the **first** whitespace
   only, so "van der Berg" survives; `[]` for every non-LMS tier). The SPA uses it only where the org's
-  own verification data left the field empty. A convenience, never an identity claim.
+  own verification data left the field empty. A convenience, never an identity claim. For HealthStream
+  `learnerDetails()` also returns `patient_id` = the AICC `student_id`, as legacy stored it.
+- **Patient save is the ordinary one.** `storeDefaultPatient()` merges the launch name / `student_id`
+  into `$patientData` (only where the form left the field blank; server-side session, never the request)
+  and then calls the same `Patient::create()` as every other org patient — so the name, email, DOB, zip
+  and test eyes are stored **encrypted in the legacy format with blind indexes** before the test starts,
+  and `patient_id` stays plaintext exactly as in legacy. Pinned by
+  `test_healthstream_patient_is_stored_encrypted_like_any_other_patient`.
 - **Frontend (`ws-460`).** `OrganizationPatient.js` now reads `AICC_SID` / `AICC_URL` **case-
   insensitively** — HealthStream sends upper, the AICC spec writes lower. Reading one spelling loses the
   SID silently: the learner passes and the result dead-letters. `VerifiedDefaultUser.js` merges
   `response.data.prefill` into the form.
 
-**Provisioning** — `php artisan lms:provision-healthstream [--org=] [--hacp-url=] [--ttl=180]
+**Provisioning** — `php artisan lms:provision-healthstream [--org=] [--hacp-url=] [--ttl=]
 [--rotate-key] [--show-key] [--dry-run]`. Auto-detects the org from `organization_configs.is_healthstream`
 when exactly one has it. Refuses if the org has no **active** `organization_configs` row (the launch would
 404) or no `allowed_tests`. Upserts the `lms_provider_configs` row with **encrypted** config, keeps the
 existing `signing_key` unless `--rotate-key`, and **rewrites `organizations.test_url`** — that URL is the
 AU URL HealthStream is given. ☠️ `--rotate-key` breaks every launch URL HealthStream already holds.
+`ws-460` makes a re-run safe: the new config is **merged over** the stored one (admin-API keys such as
+`report_pass_fail`, `lesson_location` and the timeouts survive), and an omitted `--hacp-url` / `--ttl`
+keeps the stored value rather than resetting it to HealthStream's shared endpoint / 180.
+
+⚠️ **HealthStream's AU URL has to change at cutover.** Legacy's is `…/v2/healthstream?AICC_SID=…`
+(`v2/application/controllers/Healthstream.php`): unsigned, hardcoded to legacy **user** 3148 and test 29.
+Nothing in the new system answers that path, and deliberately no compatibility route: it would be an
+unsigned launch. HealthStream must be given the new signed URL. Legacy's
+`/v2/healthstream/results?AICC_SID=` (look up by `student_id`, redirect to the result) has no equivalent
+either; its caller was never identified. The migration marks the HealthStream org with
+`$org->id === 3148` (`MigrateTcvUsersAndOrganizations::migrateOrganizationConfigs`) while legacy keys it
+on `tcv_organization.user_id` — confirm the two match before relying on `is_healthstream` auto-detection;
+`--org=` works either way.
 
 ---
 
@@ -223,7 +263,9 @@ AU URL HealthStream is given. ☠️ `--rotate-key` breaks every launch URL Heal
 3. **The nonce is consumed at creation** — no replay protection.
 4. **Provider config is stored as plain JSON**, including Cornerstone's `client_secret`; `signing_key` is
    a plain column. [S-06](../SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext).
-5. **The launch signature is static and permanent**, with an unconditional `APP_KEY` fallback.
+5. **The launch signature is static and permanent**, with an unconditional `APP_KEY` fallback. Kept on
+   `ws-460` on purpose: orgs whose `test_url` was signed with `APP_KEY` before they got a config row
+   (Cornerstone credentials moved by migration `000006`) would lose their live launch URLs.
    [S-05](../SECURITY.md#s-05--organisation-launch-signatures-are-static-permanent-bearer-credentials).
 6. **Nothing runs the queue by default.** `QUEUE_CONNECTION=database`; the worker exists in both compose
    files but only under `COMPOSE_PROFILES=workers` (`ws-404`). On `develop` enqueued deliveries sit in

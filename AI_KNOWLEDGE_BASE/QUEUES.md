@@ -176,9 +176,11 @@ The command also picks up rows whose after-response run never happened (FPM recy
 files; before that it never reached the container. `phpunit.xml` pins it to `queue` (see
 [CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).
 
-`handle()` opens with `LmsDeliveryQueue::lockForUpdate()->find(...)` inside a transaction, and returns
-early for `delivered` (idempotent re-dispatch guard) and `dead_letter` (only an explicit admin replay
-may revive it).
+On `develop`, `handle()` opens with `LmsDeliveryQueue::lockForUpdate()->find(...)` inside a transaction
+that commits before the status checks, so the lock protects nothing. `ws-460` replaces it with a
+conditional claim (`pending → in_flight` in one `UPDATE`, return when zero rows change): only `pending`
+rows are ever delivered, and two runners cannot both win the same row. `dead_letter` still needs an
+explicit admin replay to go back to `pending`.
 
 Dead letters are managed through `api/admin/lms/dead-letters` — list, `replay`, `dismiss`
 ([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).

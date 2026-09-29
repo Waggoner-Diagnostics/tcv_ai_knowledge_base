@@ -125,12 +125,13 @@ Read the row for the thing you are about to change **before** you change it.
 | HACP success check (`error_num === 0`) | HTTP 200 is not success. Loosening it re-creates the legacy bug: passed in TCV, incomplete in HealthStream |
 | `provider_ref_id` truncation (255) | Written *after* HealthStream accepted the score; an overflow there fails the job post-delivery and the retry reports twice |
 | `NO_SID_PREFIX` / `buildCompletionPayload()` throw | The throw is what dead-letters SID-less sessions at once instead of burning 5 retries |
-| `lessonStatus()` / `report_pass_fail` | Default `completed` is deliberate (HealthStream applies its own mastery cutoff); asserting pass/fail changes every learner's transcript |
+| `lessonStatus()` / `resultVerdict()` / `report_pass_fail` | Default `completed` is deliberate (HealthStream applies its own mastery cutoff). With `report_pass_fail` on, verdicts come from exact `ColorVisionDiagnosisService` wording; unrecognised wording must stay `completed`. Changing the diagnosis wording changes what HealthStream is told |
+| HealthStream `event_type` guard (provider + `HandleLmsSectionProgressOnCompletion`) | HACP has no mid-test report; removing either lets `emit_section_progress` mark a learner complete mid-test |
 | `config/lms.php` `delivery_dispatch` / `LmsDeliveryService::dispatchDelivery()` | All three enqueue paths go through it. In `after_response` the job must **not** re-dispatch on failure — only `lms:deliver-pending` retries. Remove that schedule entry and retries stop silently |
-| `lms:deliver-pending` query (`pending` + due) | Must not select `in_flight`/`dead_letter`; the job's row lock and early returns are what make it safe beside a real worker |
+| `lms:deliver-pending` query (`pending` + due) / `ProcessLmsDeliveryJob` claim | The job's conditional `pending → in_flight` update is what makes the command safe beside a real worker. Going back to a lock-then-update double-reports to HealthStream |
 | `OrganizationController::lmsPrefill()` ↔ `VerifiedDefaultUser.js` | Two-repo contract: `prefill.first_name` / `last_name`, split on the **first** whitespace. Prefill must never override the org's verification data |
 | `OrganizationPatient.js` AICC param read | Case-insensitive on purpose. An exact-case read drops HealthStream's `AICC_SID` and every result dead-letters |
-| `lms:provision-healthstream` | Rewrites `organizations.test_url`. `--rotate-key` breaks every launch URL HealthStream holds |
+| `lms:provision-healthstream` | Rewrites `organizations.test_url`. `--rotate-key` breaks every launch URL HealthStream holds. Merges over the stored config; omitted options keep stored values |
 | `super.admin` on `api/admin/lms` | ☠️ Removing it re-exposes every org's signing key and delivery URLs to any account. `EnsureSuperAdmin` must run after `auth:sanctum` |
 | `redirectGuestsTo(fn () => null)` in `bootstrap/app.php` | Removing it turns every guest request without `Accept: application/json` back into a 500 with a trace |
 
