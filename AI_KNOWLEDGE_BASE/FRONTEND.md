@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-164`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-165`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -646,7 +646,7 @@ unstyled, the same trap as the `&--type-*` credit-history badges
 
 ☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
 landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
-`API-091`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`API-092`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
 `POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
 `services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
 `api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
@@ -672,7 +672,7 @@ usertype whose tests the modal manages.
 
 ☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
 user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
-*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-150`, 422
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-151`, 422
 `api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
 rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
 account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
@@ -708,9 +708,11 @@ that render both had been asserting things the legacy data does not support.
 Users grid's Country cell (`userManagementColumns.js`, `um-country--legacy`, which also now compares ids
 with `Number()`) and a "Previously recorded as …" hint in `NewUserModal` / `OrganisationModal` read
 `legacy_country` / `legacy_state` off the payload. The backend hides both fields in `User::$hidden`
-(backend PR #282), so they never arrive and none of the three renders. `mapOrganisationToFormData()`
-also dropped them before `OrganisationModal` could see them. Both halves are fixed on branch
-`ws-459-legacy-location-visible` (backend `b3506b2c`, frontend `c1dd22a`), **not yet merged**. Read
+(backend PR #282), so they never arrived and none of the three rendered. `mapOrganisationToFormData()`
+also dropped them before `OrganisationModal` could see them. ✅ The backend half of the fix
+(`makeVisible()` for a super admin, branch `ws-459-legacy-location-visible`) merged as **PR #284**
+(2026-09-23), so the grid cell and `NewUserModal` hint now render. ⏳ The frontend half (`c1dd22a`, same
+branch name) is **still not on `develop`** at the 2026-09-29 sync, so `OrganisationModal` stays blank. Read
 [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#-the-frontend-half-of-the-fallback-is-dead-on-arrival)
 before "fixing" it on the client.
 

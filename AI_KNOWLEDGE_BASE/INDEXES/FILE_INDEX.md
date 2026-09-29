@@ -64,7 +64,7 @@
 | [`app/Http/Controllers/OrganizationPatientController.php`](../../../TCV-Backend/app/Http/Controllers/OrganizationPatientController.php) | OrganizationPatientController | 4 |
 | [`app/Http/Controllers/PasswordController.php`](../../../TCV-Backend/app/Http/Controllers/PasswordController.php) | PasswordController | 2 |
 | [`app/Http/Controllers/PatientController.php`](../../../TCV-Backend/app/Http/Controllers/PatientController.php) | PatientController | 10 |
-| [`app/Http/Controllers/PaymentController.php`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php) | PaymentController | 8 |
+| [`app/Http/Controllers/PaymentController.php`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php) | PaymentController | 11 |
 | [`app/Http/Controllers/PriceDetailController.php`](../../../TCV-Backend/app/Http/Controllers/PriceDetailController.php) | PriceDetailController | 8 |
 | [`app/Http/Controllers/ProfileController.php`](../../../TCV-Backend/app/Http/Controllers/ProfileController.php) | ProfileController | 3 |
 | [`app/Http/Controllers/Qa/QaAutomationController.php`](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php) | QaAutomationController | 10 |
@@ -206,7 +206,7 @@
 | [`app/Services/Reports/DiscountCodeReportService.php`](../../../TCV-Backend/app/Services/Reports/DiscountCodeReportService.php) | DiscountCodeReportService | 4 |
 | [`app/Services/Reports/UserTestsReportService.php`](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php) | UserTestsReportService | 10 |
 | [`app/Services/SecureImageService.php`](../../../TCV-Backend/app/Services/SecureImageService.php) | SecureImageService | 5 |
-| [`app/Services/StripeService.php`](../../../TCV-Backend/app/Services/StripeService.php) | StripeService | 14 |
+| [`app/Services/StripeService.php`](../../../TCV-Backend/app/Services/StripeService.php) | StripeService | 15 |
 | [`app/Services/TestAssignmentService.php`](../../../TCV-Backend/app/Services/TestAssignmentService.php) | TestAssignmentService | 9 |
 | [`app/Services/TestExecutionService.php`](../../../TCV-Backend/app/Services/TestExecutionService.php) | TestExecutionService | 8 |
 | [`app/Services/TestInvitationMailer.php`](../../../TCV-Backend/app/Services/TestInvitationMailer.php) | TestInvitationMailer | 7 |
@@ -252,4 +252,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._

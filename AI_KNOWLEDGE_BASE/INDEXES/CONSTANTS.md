@@ -387,6 +387,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `SUPER_ADMIN` | `1` | [28](../../../TCV-Backend/app/Models/User.php#L28) |
 | `CUSTOMER` | `2` | [30](../../../TCV-Backend/app/Models/User.php#L30) |
 | `ORGANIZATION` | `4` | [32](../../../TCV-Backend/app/Models/User.php#L32) |
+| `LEGACY_LOCATION_FIELDS` | `[…]` | [89](../../../TCV-Backend/app/Models/User.php#L89) |
 
 ### `UserEmailTemplate` — `app/Models/UserEmailTemplate.php`
 
@@ -548,4 +549,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._

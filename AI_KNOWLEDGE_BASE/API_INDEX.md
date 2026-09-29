@@ -1,8 +1,8 @@
 # API — Shape and Conventions
 
 The exhaustive table is generated: [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md)
-(**164 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
-(**17 of 164 endpoints are public**). This page is the shape.
+(**165 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
+(**17 of 165 endpoints are public**). This page is the shape.
 
 ## Base
 

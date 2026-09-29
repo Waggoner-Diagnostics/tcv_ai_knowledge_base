@@ -1,6 +1,6 @@
 # Method Index
 
-**1249 methods across 245 classes.**
+**1253 methods across 245 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -644,19 +644,19 @@ method — several controllers here run 400–900 lines.
 | OrganizationController | [`organizationCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L140) | 140 | private | `Organization $organization`, `User $user` | array |
 | OrganizationController | [`orgRelationSnapshot()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L178) | 178 | private | `Organization $organization` | array |
 | OrganizationController | [`index()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L192) | 192 | public | `Request $request` | — |
-| OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L342) | 342 | public | `OrganizationRequest $request` | — |
-| OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L426) | 426 | public | `$id` | — |
-| OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L440) | 440 | public | `OrganizationRequest $request`, `$id` | — |
-| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L620) | 620 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L647) | 647 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L701) | 701 | public | `Request $request` | — |
-| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L761) | 761 | public | `Request $request` | — |
-| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L890) | 890 | private | `$organizationId` | — |
-| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L966) | 966 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1014) | 1014 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1053) | 1053 | public | `Request $request` | — |
-| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1087) | 1087 | private | `$orgCollection` | Collection |
-| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1133) | 1133 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
+| OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L349) | 349 | public | `OrganizationRequest $request` | — |
+| OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L433) | 433 | public | `$id` | — |
+| OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L447) | 447 | public | `OrganizationRequest $request`, `$id` | — |
+| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L627) | 627 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L654) | 654 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L708) | 708 | public | `Request $request` | — |
+| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L768) | 768 | public | `Request $request` | — |
+| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L897) | 897 | private | `$organizationId` | — |
+| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L973) | 973 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1021) | 1021 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1060) | 1060 | public | `Request $request` | — |
+| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1094) | 1094 | private | `$orgCollection` | Collection |
+| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1140) | 1140 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
 
 ### `app/Http/Controllers/OrganizationPatientController.php`
 
@@ -693,14 +693,17 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PaymentController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L17) | 17 | public | `DiscountCodeService $discountCodeService`, `AuditService $auditService` | — |
-| PaymentController | [`getProviders()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L19) | 19 | public | — | — |
-| PaymentController | [`createSetupIntent()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L35) | 35 | public | `Request $request` | — |
-| PaymentController | [`initializePayment()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L58) | 58 | public | `Request $request` | — |
-| PaymentController | [`confirmPayment()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L119) | 119 | public | `Request $request` | — |
-| PaymentController | [`handleWebhook()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L249) | 249 | public | `Request $request`, `string $provider` | — |
-| PaymentController | [`getTransactions()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L270) | 270 | public | — | — |
-| PaymentController | [`getCreditHistory()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L309) | 309 | public | — | JsonResponse |
+| PaymentController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L21) | 21 | public | `DiscountCodeService $discountCodeService`, `AuditService $auditService` | — |
+| PaymentController | [`getProviders()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L23) | 23 | public | — | — |
+| PaymentController | [`createSetupIntent()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L39) | 39 | public | `Request $request` | — |
+| PaymentController | [`initializePayment()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L62) | 62 | public | `Request $request` | — |
+| PaymentController | [`confirmPayment()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L123) | 123 | public | `Request $request` | — |
+| PaymentController | [`completeFreeOrder()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L271) | 271 | public | `Request $request` | JsonResponse |
+| PaymentController | [`freeOrderReplay()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L476) | 476 | private | `Transaction $transaction`, `int $userId`, `int $credits`, `string $code` | JsonResponse |
+| PaymentController | [`freeOrderCompleted()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L489) | 489 | private | `Transaction $transaction` | JsonResponse |
+| PaymentController | [`handleWebhook()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L499) | 499 | public | `Request $request`, `string $provider` | — |
+| PaymentController | [`getTransactions()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L520) | 520 | public | — | — |
+| PaymentController | [`getCreditHistory()`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L560) | 560 | public | — | JsonResponse |
 
 ### `app/Http/Controllers/PriceDetailController.php`
 
@@ -912,8 +915,8 @@ method — several controllers here run 400–900 lines.
 | UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L328) | 328 | public | — | — |
 | UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L345) | 345 | public | `Request $request`, `string $id` | — |
 | UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L385) | 385 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L526) | 526 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L544) | 544 | private | `$userCollection` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L534) | 534 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L552) | 552 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -1615,26 +1618,26 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| User | [`displayCountry()`](../../../TCV-Backend/app/Models/User.php#L102) | 102 | public | — | array |
-| User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L121) | 121 | public | — | array |
-| User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L135) | 135 | private | `?string $mapped`, `?string $legacy` | array |
-| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L148) | 148 | public | — | — |
-| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L158) | 158 | protected | — | array |
-| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L176) | 176 | public | `?string $plain` | bool |
-| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L213) | 213 | public | — | bool |
-| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L234) | 234 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
-| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L250) | 250 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
-| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L255) | 255 | public | — | bool |
-| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L260) | 260 | public | — | — |
-| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L277) | 277 | public | — | — |
-| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L282) | 282 | public | — | — |
-| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L287) | 287 | public | — | bool |
-| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L292) | 292 | public | — | bool |
-| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L297) | 297 | public | `User $target` | — |
-| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L311) | 311 | public | — | — |
-| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L316) | 316 | public | — | — |
-| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L326) | 326 | public | — | — |
-| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L331) | 331 | public | — | — |
+| User | [`displayCountry()`](../../../TCV-Backend/app/Models/User.php#L107) | 107 | public | — | array |
+| User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L126) | 126 | public | — | array |
+| User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L140) | 140 | private | `?string $mapped`, `?string $legacy` | array |
+| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L153) | 153 | public | — | — |
+| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L163) | 163 | protected | — | array |
+| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L181) | 181 | public | `?string $plain` | bool |
+| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L218) | 218 | public | — | bool |
+| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L239) | 239 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
+| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L255) | 255 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
+| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L260) | 260 | public | — | bool |
+| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L265) | 265 | public | — | — |
+| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L282) | 282 | public | — | — |
+| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L287) | 287 | public | — | — |
+| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L292) | 292 | public | — | bool |
+| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L297) | 297 | public | — | bool |
+| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L302) | 302 | public | `User $target` | — |
+| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L316) | 316 | public | — | — |
+| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L321) | 321 | public | — | — |
+| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L331) | 331 | public | — | — |
+| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L336) | 336 | public | — | — |
 
 ### `app/Models/UserEmailTemplate.php`
 
@@ -1715,10 +1718,10 @@ method — several controllers here run 400–900 lines.
 | AppServiceProvider | [`boot()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L51) | 51 | public | — | void |
 | AppServiceProvider | [`configureMigrationHealthCheck()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L74) | 74 | protected | — | void |
 | AppServiceProvider | [`configureRateLimiting()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L93) | 93 | protected | — | void |
-| AppServiceProvider | [`accountLockedResponse()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L173) | 173 | public | `Request $request`, `array $headers` | JsonResponse |
-| AppServiceProvider | [`formatRetryAfter()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L227) | 227 | private | `int $seconds` | string |
-| AppServiceProvider | [`callerKey()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L265) | 265 | private | `Request $request`, `string|int|null $identifier` | string |
-| AppServiceProvider | [`warnIfFrontendAppUrlLooksInvalid()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L284) | 284 | protected | — | void |
+| AppServiceProvider | [`accountLockedResponse()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L180) | 180 | public | `Request $request`, `array $headers` | JsonResponse |
+| AppServiceProvider | [`formatRetryAfter()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L234) | 234 | private | `int $seconds` | string |
+| AppServiceProvider | [`callerKey()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L272) | 272 | private | `Request $request`, `string|int|null $identifier` | string |
+| AppServiceProvider | [`warnIfFrontendAppUrlLooksInvalid()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L291) | 291 | protected | — | void |
 
 ### `app/Providers/AuthServiceProvider.php`
 
@@ -2105,20 +2108,21 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| StripeService | [`__construct()`](../../../TCV-Backend/app/Services/StripeService.php#L22) | 22 | public | `?Stripe\StripeClient $stripe = null` | — |
-| StripeService | [`appSource()`](../../../TCV-Backend/app/Services/StripeService.php#L50) | 50 | public static | — | string |
-| StripeService | [`describePaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L70) | 70 | public static | `?PaymentMethod $paymentMethod` | ?string |
-| StripeService | [`getStripeClient()`](../../../TCV-Backend/app/Services/StripeService.php#L91) | 91 | public | — | — |
-| StripeService | [`createOrGetCustomer()`](../../../TCV-Backend/app/Services/StripeService.php#L99) | 99 | public | `User $user` | Customer |
-| StripeService | [`getCustomerPaymentMethods()`](../../../TCV-Backend/app/Services/StripeService.php#L203) | 203 | public | `User $user` | array |
-| StripeService | [`paymentMethodExists()`](../../../TCV-Backend/app/Services/StripeService.php#L240) | 240 | public | `User $user`, `string $paymentMethodId` | bool |
-| StripeService | [`createStripePaymentIntent()`](../../../TCV-Backend/app/Services/StripeService.php#L268) | 268 | public | `User $user`, `float $amount`, `int $credits`, `string $paymentMethod`, `array $billingInfo` | PaymentIntent |
-| StripeService | [`createACHPaymentIntent()`](../../../TCV-Backend/app/Services/StripeService.php#L311) | 311 | public | `User $user`, `float $amount`, `int $credits`, `array $billingInfo` | PaymentIntent |
-| StripeService | [`createBankTransferTransaction()`](../../../TCV-Backend/app/Services/StripeService.php#L339) | 339 | public | `User $user`, `float $amount`, `int $credits`, `array $billingInfo` | array |
-| StripeService | [`getPaymentMethods()`](../../../TCV-Backend/app/Services/StripeService.php#L385) | 385 | public | `User $user` | array |
-| StripeService | [`setDefaultPaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L393) | 393 | public | `User $user`, `string $paymentMethodId` | bool |
-| StripeService | [`removePaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L423) | 423 | public | `User $user`, `string $paymentMethodId` | bool |
-| StripeService | [`attachPaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L445) | 445 | public | `$customerId`, `$paymentMethodId` | — |
+| StripeService | [`__construct()`](../../../TCV-Backend/app/Services/StripeService.php#L23) | 23 | public | `?Stripe\StripeClient $stripe = null` | — |
+| StripeService | [`appSource()`](../../../TCV-Backend/app/Services/StripeService.php#L51) | 51 | public static | — | string |
+| StripeService | [`describePaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L71) | 71 | public static | `?PaymentMethod $paymentMethod` | ?string |
+| StripeService | [`getStripeClient()`](../../../TCV-Backend/app/Services/StripeService.php#L92) | 92 | public | — | — |
+| StripeService | [`createOrGetCustomer()`](../../../TCV-Backend/app/Services/StripeService.php#L100) | 100 | public | `User $user` | Customer |
+| StripeService | [`getCustomerPaymentMethods()`](../../../TCV-Backend/app/Services/StripeService.php#L204) | 204 | public | `User $user` | array |
+| StripeService | [`paymentMethodExists()`](../../../TCV-Backend/app/Services/StripeService.php#L241) | 241 | public | `User $user`, `string $paymentMethodId` | bool |
+| StripeService | [`createStripePaymentIntent()`](../../../TCV-Backend/app/Services/StripeService.php#L269) | 269 | public | `User $user`, `float $amount`, `int $credits`, `string $paymentMethod`, `array $billingInfo` | PaymentIntent |
+| StripeService | [`createACHPaymentIntent()`](../../../TCV-Backend/app/Services/StripeService.php#L312) | 312 | public | `User $user`, `float $amount`, `int $credits`, `array $billingInfo` | PaymentIntent |
+| StripeService | [`recordZeroAmountInvoice()`](../../../TCV-Backend/app/Services/StripeService.php#L349) | 349 | public | `User $user`, `string $orderId`, `int $credits`, `float $subtotal`, `string $discountCode` | Invoice |
+| StripeService | [`createBankTransferTransaction()`](../../../TCV-Backend/app/Services/StripeService.php#L415) | 415 | public | `User $user`, `float $amount`, `int $credits`, `array $billingInfo` | array |
+| StripeService | [`getPaymentMethods()`](../../../TCV-Backend/app/Services/StripeService.php#L461) | 461 | public | `User $user` | array |
+| StripeService | [`setDefaultPaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L469) | 469 | public | `User $user`, `string $paymentMethodId` | bool |
+| StripeService | [`removePaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L499) | 499 | public | `User $user`, `string $paymentMethodId` | bool |
+| StripeService | [`attachPaymentMethod()`](../../../TCV-Backend/app/Services/StripeService.php#L521) | 521 | public | `$customerId`, `$paymentMethodId` | — |
 
 ### `app/Services/TestAssignmentService.php`
 
@@ -2482,4 +2486,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._

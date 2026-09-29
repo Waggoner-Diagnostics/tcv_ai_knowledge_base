@@ -66,7 +66,7 @@ POST api/payment/initialize  {provider, amount, credits, discount_code?, …}
 POST api/payment/confirm     {provider, …}
         └─ provider->confirmPayment()     → on success: Transaction + Credits grant (SOURCE_PURCHASE)
 POST api/payment/webhook/{provider}      → provider->handleWebhook()
-POST api/payment/complete-free-order     → $0 orders only, no Stripe  (ws-451, unmerged — trap 10)
+POST api/payment/complete-free-order     → $0 orders only, no PaymentIntent; a paid $0 Stripe invoice (ws-451 — trap 10)
 ```
 
 `StripeService::createOrGetCustomer()` is also called on **every successful login**
@@ -235,7 +235,7 @@ failed"*, which reads to a customer as an outage rather than a deliberate refusa
 added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
 the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
 
-☠️ **That method is `POST api/stripe/create-payment-intent` (`API-091`) — the legacy surface, which the
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-092`) — the legacy surface, which the
 SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
 `POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **as first written
 neither had an unlimited check**. So the guard could not fire on the path that takes money: the
@@ -296,11 +296,12 @@ balance is still allowed to buy, and an *expired* unlimited grant does not refus
 (trap 10). It carries its own `Credits::hasUnlimited()` refusal, returned as a 422, but it is **not** in
 `UnlimitedCreditPurchaseRefusedTest`. Its own test file covers that case.
 
-### 10. A 100% discount code cannot go through Stripe (`ws-451`, unmerged)
+### 10. A 100% discount code cannot go through Stripe (`ws-451`)
 
-> ⚠️ **On `ws-451` only**: backend `584eb335`, frontend `d8b2435`, both pushed to `origin/ws-451`,
-> **not on `develop`** as of 2026-09-23. The generated indexes do not list the new route yet. Do not
-> regenerate from the branch.
+> ✅ **Merged 2026-09-28** — backend PRs #285 (`1b6b510a`, 09-24) and #287 (`829fac85`, 09-28), frontend
+> PR #416 (`46633f6`). Indexed at the 2026-09-29 sync as `API-066`. ⚠️ **The merged design is not the
+> one the 2026-09-23 branch-only note described**: the later review commits added the idempotency key,
+> the $0 Stripe invoice, the `free-order` rate limit and the overlapping-tier refusal below.
 
 **The bug.** `initialize` and `confirm` both validate `amount => min:1`, and Stripe will not create a
 $0 intent. When a code covered the whole order, *Total Due* read `$0.00`, the SPA still offered
@@ -309,18 +310,44 @@ $0 intent. When a code covered the whole order, *Total Due* read `$0.00`, the SP
 **The fix is a separate path, not a $0 intent:**
 
 ```
-POST api/payment/complete-free-order  {credits, discount_code}   (auth:sanctum)
-        └─ PaymentController::completeFreeOrder()
+POST api/payment/complete-free-order  {credits, discount_code, idempotency_key (uuid)}
+        │  auth:sanctum · throttle:free-order (5/min per account, AppServiceProvider)
+        └─ PaymentController::completeFreeOrder()        order id = 'free_' + lower(idempotency_key)
+             ├─ a transaction with that id exists → freeOrderReplay(): same order → 200, else 409
              ├─ Credits::hasUnlimited()  → 422
-             ├─ price from price_details (tier where from <= credits <= to) → 422 if no tier
+             ├─ price_details tiers where from <= credits <= to: none → 422, MORE THAN ONE → 422 + Log::error
              ├─ DB::transaction + lockForUpdate() on the discount_codes row
+             │    ├─ replay check again (two copies of one request queue on the lock)
              │    ├─ DiscountCodeService::validate($user, $code, $serverSubtotal, $credits)
              │    ├─ final_amount > 0  → 422 "This order still requires payment."
+             │    ├─ StripeService::recordZeroAmountInvoice()  → paid $0.00 invoice, BEFORE the grant
              │    ├─ Credits::addCreditsToUser(… amount 0, SOURCE_PURCHASE)
-             │    └─ Transaction::saveUserTransaction(… id 'free_<uuid>', amount 0, status 'succeeded')
-             ├─ audit: billing.checkout_discount_applied + billing.payment_succeeded
-             └─ any exception → rolled back, 500, audit billing.payment_failed (ws-451 PR review)
+             │    └─ Transaction::saveUserTransaction(… id 'free_<key>', amount 0, status 'succeeded')
+             ├─ audit: billing.checkout_discount_applied + billing.payment_succeeded (carries the invoice id)
+             ├─ refused by validate()/final_amount → audit billing.checkout_discount_apply_failed
+             └─ any exception (Stripe included) → rolled back, 500, audit billing.payment_failed
 ```
+
+**Idempotency (`ws-451` review).** The SPA mints one UUID per order (`credits|code`) in a `useRef` and
+resends it when the customer clicks again after an error, so a request that succeeded server-side but
+timed out in the browser is answered, not granted twice. The key becomes `stripe_transaction_id`, which is
+unique. The replay is checked **before** the unlimited/tier/code checks on purpose: the order itself may
+have spent a `max_uses_per_user = 1` code, and the retry must not be told it failed. A key that comes back
+with a different account, credit count or code gets **409**. Replays are neither granted nor audited again.
+
+**The $0 Stripe invoice (`StripeService::recordZeroAmountInvoice()`).** Stripe will not create a
+PaymentIntent under $0.50, so an invoice is the only way a free order appears on the customer's Stripe
+record: one line at the full server subtotal, one line of **minus the subtotal itself** (not the code's
+`discount_amount`, since a negative total would become customer credit), `pending_invoice_items_behavior
+= exclude`, finalized with `auto_advance = false`. A $0 invoice finalizes as `paid`; any other status
+throws. Every Stripe call uses `<order id>-invoice/-item/-discount/-finalize` as its idempotency key.
+- ☠️ **A Stripe outage now blocks free orders** (500, `billing.payment_failed`). That is deliberate —
+  a free order Stripe has no record of is refused like a failed card.
+- ⚠️ **The invoice is created inside the DB transaction, while the `discount_codes` row is locked**, so
+  four Stripe round-trips hold that lock. If the grant then fails, the transaction rolls back but the
+  paid $0 invoice stays in Stripe with no credits behind it. A retry with the same key gets the same
+  invoice back — but only within Stripe's idempotency-key window (24 h). After that a retry creates a
+  second invoice.
 
 ☠️ **The subtotal is priced on the server, and that is the point of the design.** `confirmPayment()`
 re-validates the discount against the **client's** `original_amount`. That is survivable there because
@@ -333,31 +360,40 @@ add an `amount` or `original_amount` parameter to it.
   `transaction_details.discount_code_id` are what `DiscountCode::countUses()` counts, so a free order
   uses up `max_uses` / `max_uses_per_user` exactly as a paid one does. `payment_method_type` is
   `'discount_code'`. `CreditPage`'s `formatPaymentMethod()` has no label for it and its fallback renders
-  it as *Discount Code*. `stripe_transaction_id` is `free_<uuid>` because the column is unique.
+  it as *Discount Code*. `stripe_transaction_id` is `free_<idempotency_key>`; the column is unique, which is what makes a retry safe.
 - **The code row is locked** (`lockForUpdate()` inside the transaction, before `validate()`), so two
   concurrent free orders cannot both pass the last remaining use. This covers the free path only.
   [DISCOUNT_CONTEXT trap 3](DISCOUNT_CONTEXT.md#-traps) still applies to the Stripe path.
 - A credit count that falls outside every tier is refused (422). `CreditPage` falls back to the first
   tier's price in that case. The server does not.
+- ☠️ **Overlapping tiers refuse the order** (422 *"Pricing … is being updated"*, plus a `Log::error` with
+  the `price_detail_ids`). The admin pricing page saves tiers one row at a time, so an overlap can exist
+  between two saves; picking either row would price a free grant from a tier nobody chose. The paid path
+  has no such check.
 
 **SPA (`components/PaymentForm/PaymentForm.js`):**
 - `isFreeOrder = Boolean(appliedDiscount) && Number(amount) <= 0`. The button reads **Complete Order**
-  and calls `completeFreeOrder` (`slices/payment/paymentSlice.js`) instead of `createPaymentIntent`.
-  The saved-card and `PaymentElement` sections are hidden. On success the form dispatches
-  `fetchUserCredits()` and navigates to `/user-panel/credit` with `{paymentSuccess: true, credits}`,
-  which is the same landing state `PaymentStatus` uses. `PaymentStatus` is not involved.
-- `isBelowMinimum` (`0 < amount < MIN_CHARGE_AMOUNT`, which is `1` and mirrors the backend rule)
+  and calls `completeFreeOrder({credits, discountCode, idempotencyKey})` (`slices/payment/paymentSlice.js`)
+  instead of `createPaymentIntent`. The saved-card and `PaymentElement` sections are hidden and a
+  *"Your discount covers the full order"* notice shows instead. On success the form dispatches
+  `fetchUserCredits()` and navigates (`replace: true`) to `/user-panel/credit` with
+  `{paymentSuccess: true, credits}`, the same landing state `PaymentStatus` uses. `PaymentStatus` is not involved.
+- The key comes from `newIdempotencyKey()`: `crypto.randomUUID()` where it exists, otherwise a v4 UUID
+  built from `crypto.getRandomValues()`, because `randomUUID` exists only in a secure context (https or localhost).
+- `isBelowMinimum` (not free and `amount < MIN_CHARGE_AMOUNT`, which is `1` and mirrors the backend rule)
   **disables** the button and shows *"The minimum card payment is $1.00."* A code that leaves only cents
   due has no path at all: Stripe cannot take it and the free path refuses it.
 - The `isBillingComplete` gate (trap 8) **still applies** to a free order, even though no billing field
   is sent anywhere on that path.
+- Incidental: the saved-methods effect now depends on `savedMethods`, not `savedMethods.length`.
 
 - The `ws-451` PR review added the `billing.payment_failed` row on an unexpected failure, which matches
   what `StripeProvider::confirmPayment()` writes. Before that, a failed free order appeared only in
-  `laravel.log`. The review found no gap in pricing, locking or grant parity with the paid path.
-  Refunds are not a risk for `free_` rows, because the refund routes are commented out.
+  `laravel.log`. Refunds are not a risk for `free_` rows, because the refund routes are commented out.
 
-✅ Tested: `tests/Feature/Credits/FreeOrderCheckoutTest.php`, 10 tests ([TESTING.md](../TESTING.md)).
+✅ Tested: `tests/Feature/Credits/FreeOrderCheckoutTest.php`, **19** tests, and
+`tests/Feature/Stripe/StripeZeroAmountInvoiceTest.php`, 2 tests ([TESTING.md](../TESTING.md)).
+`RateLimitScopeTest` now lists `free-order` among the named limiters that must be registered.
 
 ---
 

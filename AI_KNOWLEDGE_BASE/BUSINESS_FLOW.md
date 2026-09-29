@@ -34,7 +34,7 @@ Two sources, one ledger ([CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md
 admin grant   → POST api/credits           → Credits row, source = 0 (MANUAL)
 purchase      → POST api/payment/initialize → Stripe PaymentIntent
                 POST api/payment/confirm    → Transaction + Credits row, source = 1 (PURCHASE)
-$0 order      → POST api/payment/complete-free-order → same rows, amount 0, no Stripe   (ws-451, unmerged)
+$0 order      → POST api/payment/complete-free-order → same rows, amount 0, a paid $0 Stripe invoice, no PaymentIntent   (ws-451)
 ```
 
 Discount codes are validated during `initialize`

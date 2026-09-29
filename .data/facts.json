@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-09-23T08:47:20+02:00",
+    "generated_at": "2026-09-29T08:29:36+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "0197fd1b",
+            "sha": "e8507fb9",
             "branch": "develop",
-            "date": "2026-09-22"
+            "date": "2026-09-28"
         },
         "frontend": {
-            "sha": "22e5332",
+            "sha": "46633f6",
             "branch": "develop",
-            "date": "2026-09-22"
+            "date": "2026-09-24"
         },
         "website": {
             "sha": "6dc5223",
@@ -8057,7 +8057,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/OrganizationController.php",
             "line": 37,
-            "end_line": 1155,
+            "end_line": 1162,
             "extends": "Controller",
             "implements": [],
             "traits": [
@@ -8163,7 +8163,7 @@
                 {
                     "name": "index",
                     "line": 192,
-                    "end_line": 340,
+                    "end_line": 347,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8198,6 +8198,7 @@
                         "setCollection",
                         "addCreditsToOrganizations",
                         "getCollection",
+                        "each",
                         "ApiResponse::success",
                         "Log::error",
                         "getMessage",
@@ -8206,8 +8207,8 @@
                 },
                 {
                     "name": "store",
-                    "line": 342,
-                    "end_line": 424,
+                    "line": 349,
+                    "end_line": 431,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8249,8 +8250,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 426,
-                    "end_line": 438,
+                    "line": 433,
+                    "end_line": 445,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8269,8 +8270,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 440,
-                    "end_line": 618,
+                    "line": 447,
+                    "end_line": 625,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8322,8 +8323,8 @@
                 },
                 {
                     "name": "uploadLogo",
-                    "line": 620,
-                    "end_line": 645,
+                    "line": 627,
+                    "end_line": 652,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8347,8 +8348,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 647,
-                    "end_line": 695,
+                    "line": 654,
+                    "end_line": 702,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8377,8 +8378,8 @@
                 },
                 {
                     "name": "getPatientForm",
-                    "line": 701,
-                    "end_line": 755,
+                    "line": 708,
+                    "end_line": 762,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8405,8 +8406,8 @@
                 },
                 {
                     "name": "verifySignature",
-                    "line": 761,
-                    "end_line": 885,
+                    "line": 768,
+                    "end_line": 892,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8438,8 +8439,8 @@
                 },
                 {
                     "name": "generateFieldRules",
-                    "line": 890,
-                    "end_line": 959,
+                    "line": 897,
+                    "end_line": 966,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8457,8 +8458,8 @@
                 },
                 {
                     "name": "getDefaultTests",
-                    "line": 966,
-                    "end_line": 1007,
+                    "line": 973,
+                    "end_line": 1014,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8483,8 +8484,8 @@
                 },
                 {
                     "name": "getOrganizationPrivileges",
-                    "line": 1014,
-                    "end_line": 1046,
+                    "line": 1021,
+                    "end_line": 1053,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8502,8 +8503,8 @@
                 },
                 {
                     "name": "getOrganizationRedirectUrl",
-                    "line": 1053,
-                    "end_line": 1074,
+                    "line": 1060,
+                    "end_line": 1081,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8523,8 +8524,8 @@
                 },
                 {
                     "name": "addCreditsToOrganizations",
-                    "line": 1087,
-                    "end_line": 1128,
+                    "line": 1094,
+                    "end_line": 1135,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8553,8 +8554,8 @@
                 },
                 {
                     "name": "createOrganizationConfig",
-                    "line": 1133,
-                    "end_line": 1154,
+                    "line": 1140,
+                    "end_line": 1161,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -9061,8 +9062,8 @@
             "fqcn": "App\\Http\\Controllers\\PaymentController",
             "kind": "class",
             "file": "app/Http/Controllers/PaymentController.php",
-            "line": 15,
-            "end_line": 399,
+            "line": 19,
+            "end_line": 650,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -9070,8 +9071,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 17,
-                    "end_line": 17,
+                    "line": 21,
+                    "end_line": 21,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9084,8 +9085,8 @@
                 },
                 {
                     "name": "getProviders",
-                    "line": 19,
-                    "end_line": 33,
+                    "line": 23,
+                    "end_line": 37,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9099,8 +9100,8 @@
                 },
                 {
                     "name": "createSetupIntent",
-                    "line": 35,
-                    "end_line": 56,
+                    "line": 39,
+                    "end_line": 60,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9118,8 +9119,8 @@
                 },
                 {
                     "name": "initializePayment",
-                    "line": 58,
-                    "end_line": 117,
+                    "line": 62,
+                    "end_line": 121,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9142,8 +9143,8 @@
                 },
                 {
                     "name": "confirmPayment",
-                    "line": 119,
-                    "end_line": 247,
+                    "line": 123,
+                    "end_line": 251,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9165,9 +9166,84 @@
                     ]
                 },
                 {
+                    "name": "completeFreeOrder",
+                    "line": 271,
+                    "end_line": 469,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "JsonResponse",
+                    "doc": "Grant credits for an order a discount code has brought down to $0.00.",
+                    "calls": [
+                        "validate",
+                        "Auth::user",
+                        "first",
+                        "Transaction::where",
+                        "freeOrderReplay",
+                        "Credits::hasUnlimited",
+                        "json",
+                        "get",
+                        "where",
+                        "PriceDetail::where",
+                        "count",
+                        "Log::error",
+                        "all",
+                        "pluck",
+                        "isEmpty",
+                        "DB::transaction",
+                        "lockForUpdate",
+                        "whereNull",
+                        "DiscountCode::where",
+                        "recordZeroAmountInvoice",
+                        "Credits::addCreditsToUser",
+                        "Transaction::saveUserTransaction",
+                        "getMessage",
+                        "log",
+                        "freeOrderCompleted"
+                    ]
+                },
+                {
+                    "name": "freeOrderReplay",
+                    "line": 476,
+                    "end_line": 487,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Transaction $transaction",
+                        "int $userId",
+                        "int $credits",
+                        "string $code"
+                    ],
+                    "returns": "JsonResponse",
+                    "doc": "Answer a completeFreeOrder() retry with the order it already placed. Nothing is granted",
+                    "calls": [
+                        "first",
+                        "details",
+                        "json",
+                        "freeOrderCompleted"
+                    ]
+                },
+                {
+                    "name": "freeOrderCompleted",
+                    "line": 489,
+                    "end_line": 497,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Transaction $transaction"
+                    ],
+                    "returns": "JsonResponse",
+                    "doc": "",
+                    "calls": [
+                        "json"
+                    ]
+                },
+                {
                     "name": "handleWebhook",
-                    "line": 249,
-                    "end_line": 265,
+                    "line": 499,
+                    "end_line": 515,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9186,8 +9262,8 @@
                 },
                 {
                     "name": "getTransactions",
-                    "line": 270,
-                    "end_line": 300,
+                    "line": 520,
+                    "end_line": 550,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -9210,8 +9286,8 @@
                 },
                 {
                     "name": "getCreditHistory",
-                    "line": 309,
-                    "end_line": 398,
+                    "line": 560,
+                    "end_line": 649,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12158,7 +12234,7 @@
             "kind": "class",
             "file": "app/Http/Controllers/UserController.php",
             "line": 28,
-            "end_line": 583,
+            "end_line": 591,
             "extends": "Controller",
             "implements": [],
             "traits": [
@@ -12364,7 +12440,7 @@
                 {
                     "name": "userWithType",
                     "line": 385,
-                    "end_line": 524,
+                    "end_line": 532,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -12401,6 +12477,8 @@
                         "addCreditsToUsers",
                         "getCollection",
                         "setCollection",
+                        "user",
+                        "makeVisible",
                         "toArray",
                         "ApiResponse::success",
                         "Log::error",
@@ -12410,8 +12488,8 @@
                 },
                 {
                     "name": "getUserCredits",
-                    "line": 526,
-                    "end_line": 539,
+                    "line": 534,
+                    "end_line": 547,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -12427,8 +12505,8 @@
                 },
                 {
                     "name": "addCreditsToUsers",
-                    "line": 544,
-                    "end_line": 582,
+                    "line": 552,
+                    "end_line": 590,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -18965,7 +19043,7 @@
             "kind": "class",
             "file": "app/Models/User.php",
             "line": 18,
-            "end_line": 335,
+            "end_line": 340,
             "extends": "Authenticatable",
             "implements": [
                 "MustVerifyEmail"
@@ -18981,8 +19059,8 @@
             "methods": [
                 {
                     "name": "displayCountry",
-                    "line": 102,
-                    "end_line": 108,
+                    "line": 107,
+                    "end_line": 113,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -18995,8 +19073,8 @@
                 },
                 {
                     "name": "displayState",
-                    "line": 121,
-                    "end_line": 127,
+                    "line": 126,
+                    "end_line": 132,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19009,8 +19087,8 @@
                 },
                 {
                     "name": "resolveLocationLabel",
-                    "line": 135,
-                    "end_line": 146,
+                    "line": 140,
+                    "end_line": 151,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -19023,8 +19101,8 @@
                 },
                 {
                     "name": "getEmailForVerification",
-                    "line": 148,
-                    "end_line": 151,
+                    "line": 153,
+                    "end_line": 156,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19034,8 +19112,8 @@
                 },
                 {
                     "name": "casts",
-                    "line": 158,
-                    "end_line": 165,
+                    "line": 163,
+                    "end_line": 170,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -19045,8 +19123,8 @@
                 },
                 {
                     "name": "checkPassword",
-                    "line": 176,
-                    "end_line": 206,
+                    "line": 181,
+                    "end_line": 211,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -19066,8 +19144,8 @@
                 },
                 {
                     "name": "hasLegacyMd5Password",
-                    "line": 213,
-                    "end_line": 216,
+                    "line": 218,
+                    "end_line": 221,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19077,8 +19155,8 @@
                 },
                 {
                     "name": "candidatesForEmail",
-                    "line": 234,
-                    "end_line": 247,
+                    "line": 239,
+                    "end_line": 252,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -19100,8 +19178,8 @@
                 },
                 {
                     "name": "primaryForEmail",
-                    "line": 250,
-                    "end_line": 253,
+                    "line": 255,
+                    "end_line": 258,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -19117,8 +19195,8 @@
                 },
                 {
                     "name": "isActiveAccount",
-                    "line": 255,
-                    "end_line": 258,
+                    "line": 260,
+                    "end_line": 263,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19128,8 +19206,8 @@
                 },
                 {
                     "name": "markEmailAsVerified",
-                    "line": 260,
-                    "end_line": 275,
+                    "line": 265,
+                    "end_line": 280,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19143,17 +19221,6 @@
                 },
                 {
                     "name": "hasVerifiedEmail",
-                    "line": 277,
-                    "end_line": 280,
-                    "visibility": "public",
-                    "static": false,
-                    "params": [],
-                    "returns": "",
-                    "doc": "",
-                    "calls": []
-                },
-                {
-                    "name": "isSuperAdmin",
                     "line": 282,
                     "end_line": 285,
                     "visibility": "public",
@@ -19164,18 +19231,18 @@
                     "calls": []
                 },
                 {
-                    "name": "canImpersonate",
+                    "name": "isSuperAdmin",
                     "line": 287,
                     "end_line": 290,
                     "visibility": "public",
                     "static": false,
                     "params": [],
-                    "returns": "bool",
+                    "returns": "",
                     "doc": "",
                     "calls": []
                 },
                 {
-                    "name": "canBeImpersonated",
+                    "name": "canImpersonate",
                     "line": 292,
                     "end_line": 295,
                     "visibility": "public",
@@ -19186,9 +19253,20 @@
                     "calls": []
                 },
                 {
-                    "name": "canImpersonateUser",
+                    "name": "canBeImpersonated",
                     "line": 297,
-                    "end_line": 309,
+                    "end_line": 300,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "canImpersonateUser",
+                    "line": 302,
+                    "end_line": 314,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -19202,8 +19280,8 @@
                 },
                 {
                     "name": "stripeDetail",
-                    "line": 311,
-                    "end_line": 314,
+                    "line": 316,
+                    "end_line": 319,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19215,8 +19293,8 @@
                 },
                 {
                     "name": "assignedTests",
-                    "line": 316,
-                    "end_line": 319,
+                    "line": 321,
+                    "end_line": 324,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19228,8 +19306,8 @@
                 },
                 {
                     "name": "organization",
-                    "line": 326,
-                    "end_line": 329,
+                    "line": 331,
+                    "end_line": 334,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19241,8 +19319,8 @@
                 },
                 {
                     "name": "country",
-                    "line": 331,
-                    "end_line": 334,
+                    "line": 336,
+                    "end_line": 339,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -19268,6 +19346,11 @@
                     "name": "ORGANIZATION",
                     "value": "4",
                     "line": 32
+                },
+                {
+                    "name": "LEGACY_LOCATION_FIELDS",
+                    "value": "[…]",
+                    "line": 89
                 }
             ],
             "relations": [
@@ -19275,25 +19358,25 @@
                     "method": "stripeDetail",
                     "type": "hasOne",
                     "target": "UserStripeDetail",
-                    "line": 311
+                    "line": 316
                 },
                 {
                     "method": "assignedTests",
                     "type": "belongsToMany",
                     "target": "Test",
-                    "line": 316
+                    "line": 321
                 },
                 {
                     "method": "organization",
                     "type": "hasOne",
                     "target": "Organization",
-                    "line": 326
+                    "line": 331
                 },
                 {
                     "method": "country",
                     "type": "belongsTo",
                     "target": "Country",
-                    "line": 331
+                    "line": 336
                 }
             ]
         },
@@ -19916,7 +19999,7 @@
             "kind": "class",
             "file": "app/Providers/AppServiceProvider.php",
             "line": 24,
-            "end_line": 297,
+            "end_line": 304,
             "extends": "ServiceProvider",
             "implements": [],
             "traits": [],
@@ -19970,7 +20053,7 @@
                 {
                     "name": "configureRateLimiting",
                     "line": 93,
-                    "end_line": 155,
+                    "end_line": 162,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -19992,8 +20075,8 @@
                 },
                 {
                     "name": "accountLockedResponse",
-                    "line": 173,
-                    "end_line": 219,
+                    "line": 180,
+                    "end_line": 226,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20016,8 +20099,8 @@
                 },
                 {
                     "name": "formatRetryAfter",
-                    "line": 227,
-                    "end_line": 236,
+                    "line": 234,
+                    "end_line": 243,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20031,8 +20114,8 @@
                 },
                 {
                     "name": "callerKey",
-                    "line": 265,
-                    "end_line": 274,
+                    "line": 272,
+                    "end_line": 281,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20049,8 +20132,8 @@
                 },
                 {
                     "name": "warnIfFrontendAppUrlLooksInvalid",
-                    "line": 284,
-                    "end_line": 296,
+                    "line": 291,
+                    "end_line": 303,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -24148,8 +24231,8 @@
             "fqcn": "App\\Services\\StripeService",
             "kind": "class",
             "file": "app/Services/StripeService.php",
-            "line": 14,
-            "end_line": 452,
+            "line": 15,
+            "end_line": 528,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -24157,8 +24240,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 22,
-                    "end_line": 36,
+                    "line": 23,
+                    "end_line": 37,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24172,8 +24255,8 @@
                 },
                 {
                     "name": "appSource",
-                    "line": 50,
-                    "end_line": 63,
+                    "line": 51,
+                    "end_line": 64,
                     "visibility": "public",
                     "static": true,
                     "params": [],
@@ -24183,8 +24266,8 @@
                 },
                 {
                     "name": "describePaymentMethod",
-                    "line": 70,
-                    "end_line": 85,
+                    "line": 71,
+                    "end_line": 86,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -24196,8 +24279,8 @@
                 },
                 {
                     "name": "getStripeClient",
-                    "line": 91,
-                    "end_line": 94,
+                    "line": 92,
+                    "end_line": 95,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -24207,8 +24290,8 @@
                 },
                 {
                     "name": "createOrGetCustomer",
-                    "line": 99,
-                    "end_line": 197,
+                    "line": 100,
+                    "end_line": 198,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24230,8 +24313,8 @@
                 },
                 {
                     "name": "getCustomerPaymentMethods",
-                    "line": 203,
-                    "end_line": 234,
+                    "line": 204,
+                    "end_line": 235,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24248,8 +24331,8 @@
                 },
                 {
                     "name": "paymentMethodExists",
-                    "line": 240,
-                    "end_line": 263,
+                    "line": 241,
+                    "end_line": 264,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24267,8 +24350,8 @@
                 },
                 {
                     "name": "createStripePaymentIntent",
-                    "line": 268,
-                    "end_line": 306,
+                    "line": 269,
+                    "end_line": 307,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24289,8 +24372,8 @@
                 },
                 {
                     "name": "createACHPaymentIntent",
-                    "line": 311,
-                    "end_line": 334,
+                    "line": 312,
+                    "end_line": 335,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24309,9 +24392,31 @@
                     ]
                 },
                 {
+                    "name": "recordZeroAmountInvoice",
+                    "line": 349,
+                    "end_line": 410,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "User $user",
+                        "string $orderId",
+                        "int $credits",
+                        "float $subtotal",
+                        "string $discountCode"
+                    ],
+                    "returns": "Invoice",
+                    "doc": "Put an order a discount code fully covered on the customer's Stripe record as a paid",
+                    "calls": [
+                        "createOrGetCustomer",
+                        "self::appSource",
+                        "create",
+                        "finalizeInvoice"
+                    ]
+                },
+                {
                     "name": "createBankTransferTransaction",
-                    "line": 339,
-                    "end_line": 380,
+                    "line": 415,
+                    "end_line": 456,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24331,8 +24436,8 @@
                 },
                 {
                     "name": "getPaymentMethods",
-                    "line": 385,
-                    "end_line": 388,
+                    "line": 461,
+                    "end_line": 464,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24346,8 +24451,8 @@
                 },
                 {
                     "name": "setDefaultPaymentMethod",
-                    "line": 393,
-                    "end_line": 418,
+                    "line": 469,
+                    "end_line": 494,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24366,8 +24471,8 @@
                 },
                 {
                     "name": "removePaymentMethod",
-                    "line": 423,
-                    "end_line": 443,
+                    "line": 499,
+                    "end_line": 519,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -24389,8 +24494,8 @@
                 },
                 {
                     "name": "attachPaymentMethod",
-                    "line": 445,
-                    "end_line": 451,
+                    "line": 521,
+                    "end_line": 527,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -34039,6 +34144,19 @@
                 "FlexibleAuthMiddleware"
             ],
             "name": "patients.destroy",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "POST",
+            "uri": "api/payment/complete-free-order",
+            "action": "App\\Http\\Controllers\\PaymentController@completeFreeOrder",
+            "middleware": [
+                "api",
+                "auth:sanctum",
+                "throttle:free-order"
+            ],
+            "name": "",
             "line": 0,
             "source": "artisan"
         },

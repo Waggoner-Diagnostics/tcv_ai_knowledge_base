@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-23T08:47:25+02:00",
+    "generated_at": "2026-09-29T08:29:47+02:00",
     "frontend": {
         "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Frontend",
         "spa_routes": [
@@ -973,6 +973,14 @@
             },
             {
                 "method": "POST",
+                "path": "/api/payment/complete-free-order",
+                "raw": "/api/payment/complete-free-order",
+                "file": "src/redux/slices/payment/paymentSlice.js",
+                "line": 74,
+                "orphan": false
+            },
+            {
+                "method": "POST",
                 "path": "/api/payment/confirm",
                 "raw": "/api/payment/confirm",
                 "file": "src/redux/slices/payment/paymentSlice.js",
@@ -1008,7 +1016,7 @@
                 "path": "/api/payment/providers",
                 "raw": "/api/payment/providers",
                 "file": "src/redux/slices/payment/paymentSlice.js",
-                "line": 96,
+                "line": 114,
                 "orphan": false
             },
             {
@@ -1072,7 +1080,7 @@
                 "path": "/api/stripe/payment-methods",
                 "raw": "/api/stripe/payment-methods",
                 "file": "src/redux/slices/payment/paymentSlice.js",
-                "line": 72,
+                "line": 90,
                 "orphan": false
             },
             {
@@ -1080,7 +1088,7 @@
                 "path": "/api/stripe/payment-methods/{param}",
                 "raw": "/api/stripe/payment-methods/${paymentMethodId}",
                 "file": "src/redux/slices/payment/paymentSlice.js",
-                "line": 84,
+                "line": 102,
                 "orphan": false
             },
             {
@@ -1520,12 +1528,12 @@
         "counts": {
             "source_files": 287,
             "spa_routes": 75,
-            "api_calls": 93,
+            "api_calls": 94,
             "slices": 44,
             "hooks": 19,
             "pages": 96,
             "components": 50,
-            "loc": 41313
+            "loc": 41388
         }
     },
     "website": {
