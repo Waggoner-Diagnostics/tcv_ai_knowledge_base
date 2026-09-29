@@ -8,10 +8,10 @@ grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). **No indexed branch is ahead of `develop`.** 🚧 `ws-460` (HealthStream AICC) is documented as **prose only** — see [below](#-ws-460-healthstream-aicc--prose-only-not-indexed). |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`). 🚧 `ws-460` (HealthStream AICC) is documented as **prose only** — see [below](#-ws-460-healthstream-aicc--prose-only-not-indexed). |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `0197fd1b` (develop) · `TCV-Frontend` `22e5332` (develop) · `TCV-Website` `6dc5223` (website-integration) — generated **2026-09-23**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-22** (both tips are the `ws-459` merges of 20:54 / 20:57). Anything merged after that time is not here. |
-| **Backend scale** | 245 classes/interfaces/traits · 1249 methods · 164 API endpoints · 55 tables · 156 migrations · suite ☠️ **1317 passed / 1 failed** on `0197fd1b` — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Code state at sync** | `TCV-Backend` `e8507fb9` (develop) · `TCV-Frontend` `46633f6` (develop) · `TCV-Website` `6dc5223` (website-integration) — generated **2026-09-29**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), but against refs the IDE last fetched at **different times**: backend **2026-09-28 16:40**, frontend **2026-09-24 15:50**. Anything merged to frontend `develop` after 09-24 is not here. |
+| **Backend scale** | 245 classes/interfaces/traits · 1253 methods · 165 API endpoints · 55 tables · 156 migrations · suite ☠️ **1343 passed / 1 failed** on `e8507fb9` — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
 | **Client scale** | 65 top-level routes · 44 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -151,6 +151,39 @@ corner-clipping fix, written up in
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
+
+### What the 2026-09-29 sync changed
+
+Backend `develop` `0197fd1b` → **`e8507fb9`**, frontend `22e5332` → **`46633f6`**, website unchanged at
+`6dc5223`. `routes_source` stayed `artisan route:list --json`. Merge set:
+
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| **`ws-459`** legacy location visible to admins | PR #284, `4846ad3d` (09-23) | ⏳ `c1dd22a` **not merged** | `makeVisible()` for a super admin on the Users and Organisations grids, `User::LEGACY_LOCATION_FIELDS`. The grid cell and `NewUserModal` hint now render; `OrganisationModal` still does not. [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#-the-frontend-half-of-the-fallback-is-dead-on-arrival) · [FRONTEND.md](FRONTEND.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) |
+| **`ws-451`** 100% discount code / $0 order | PRs #285 `1b6b510a` (09-24), #287 `829fac85` (09-28) | PR #416, `46633f6` | every "`ws-451`, unmerged" label flipped. ⚠️ The merged design **differs** from the 2026-09-23 branch note: idempotency key + 409 on reuse, a paid $0 Stripe invoice before the grant, `throttle:free-order` (5/min), overlapping price tiers refused. [BILLING trap 10](CONTEXT/BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451) · [TESTING.md](TESTING.md) · [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) · [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [BUSINESS_FLOW](BUSINESS_FLOW.md) · [FULLSTACK_MAP](FULLSTACK_MAP.md) |
+| patient CSV export | `7a28fa6e` → reverted by `e8507fb9` (both 09-28) | — | **net zero**. Committed directly to `develop` (not via PR) and reverted the same afternoon, so nothing is indexed. If it returns, expect `PatientExportRequest`, `PatientExportService`, `PatientCsvExport`, `config/exports.php`, `GET api/patients/export` (`auth:sanctum` · `throttle:patient-export`) and `whereNumber('patient')` on the patients resource — without that constraint `patients/export` is swallowed by `show()` |
+
+| Count | 2026-09-23 | 2026-09-29 | Why |
+|---|---|---|---|
+| Endpoints / public `api/*` | 164 / 17 | **165 / 17** | `POST api/payment/complete-free-order` (`auth:sanctum` · `throttle:free-order`) |
+| Methods | 1249 | **1253** | `completeFreeOrder()`, `freeOrderReplay()`, `freeOrderCompleted()`, `StripeService::recordZeroAmountInvoice()` |
+| SPA API calls | 88 | **89** | `paymentSlice.completeFreeOrder` |
+| Tests | 1317 / 1 failed | ☠️ **1343 / 1 failed** | 4152 assertions; same stale `ws-401` test — [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| Everything else | — | **unchanged** | classes 245 · tables 55 · migrations 156 · models 42 · requests 28 · relations 70 · spa_routes 65 · spa_drift 8 · spa_slices 44 · website 32 / 5 |
+
+☠️ **`API-nnn` ids shifted by one from `API-066` up** — `api/payment/complete-free-order` took
+`API-066`. Re-resolved by endpoint: `verify-password` `API-164`→`API-165`, `stripe/create-payment-intent`
+`API-091`→`API-092`, `test-invitations/{id}/cancel` `API-104`→`API-105`,
+`user/tests/bulk-update-assignment` `API-150`→`API-151`. `distributor-enquiry` (`API-032`) and
+`audit-logs/export` (`API-011`) sit below the pivot and did not move. Historical sync notes below keep
+the ids of their own date.
+
+**Derived views — all three clean.** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) is the same 17
+public endpoints (ids renumbered only). [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) still has 8 unmatched
+rows; the new SPA call resolves. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md) lost no page.
+
+[S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid)
+is **still open**: PR #284 touched `UserController` only to add the super-admin `makeVisible()`.
 
 ### What the 2026-09-23 sync changed
 

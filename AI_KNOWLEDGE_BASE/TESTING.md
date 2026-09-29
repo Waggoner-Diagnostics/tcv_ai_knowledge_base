@@ -121,12 +121,19 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-☠️ **`develop` `0197fd1b`: 1317 passed, 1 failed** (4058 assertions, 96 s, `php artisan test`, in-memory
-SQLite, exit code 1, measured 2026-09-23). The +127 since `330cf77d` is the five PRs of the 2026-09-23
+☠️ **`develop` `e8507fb9`: 1343 passed, 1 failed** (4152 assertions, 136 s, `php artisan test`, in-memory
+SQLite, measured 2026-09-29). The growth since `0197fd1b` comes from `ws-451`
+(`Credits/FreeOrderCheckoutTest` 19, `Stripe/StripeZeroAmountInvoiceTest` 2) and `ws-459` PR #284
+(`Migration/LegacyLocationAdminPayloadTest` 4). The one failure is the **same** stale `ws-401` test below,
+unchanged. The patient-export feature (`PatientExportTest`) was committed straight to `develop` on
+2026-09-28 (`7a28fa6e`) and reverted the same day (`e8507fb9`), so it is not in this count.
+
+The previous measurement: **`develop` `0197fd1b`: 1317 passed, 1 failed** (4058 assertions, 96 s, measured
+2026-09-23). The +127 since `330cf77d` was the five PRs of the 2026-09-23
 sync: `ws-459` dedup (`OrganizationLookupDuplicatesTest`, `InsertOrIgnoreNeedsUniqueConstraintTest`),
 `ws-459` location (`LegacyLocationResolverTest`, `BackfillMigratedUserLocationTest`,
 `LegacyLocationDisplayTest`), and `ws-401` (`OrganizationEmailTemplateTypeTest` +~800 lines,
-`EmailTemplatePlaceholderValidationTest`). The failure is below.
+`EmailTemplatePlaceholderValidationTest`).
 
 #### ☠️ `develop` is red since 2026-09-22, one stale `ws-401` test
 
@@ -139,10 +146,10 @@ The fixture row is exactly that shape, so the body is no longer byte-identical. 
 is fine. The assertion is stale.** Fix the test, either by putting `{{verification_code}}` in the fixture
 or by rolling back only the migration under test, and do not weaken `000003`. It went unnoticed because
 CI runs no tests (see below). Found at the 2026-09-23 KB sync.
-⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`, not yet merged): the fixture now carries
+⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`), **still not merged at the 2026-09-29
+sync** — `develop` is still red on exactly this test: the fixture now carries
 the verification-code/expiry block, as a canonical `org_test_link` body does, and all 13 tests in the file
-pass. With that and the `ws-459-legacy-location-visible` branch together, nothing else in the suite fails:
-1321 passed on the second branch, and its one failure is this test.
+pass. It is the only failure on `develop` `e8507fb9`, so merging it turns the suite green.
 
 The previous measurement, for history: **1191 tests passed on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
 2026-09-21 with `php artisan test`, PHPUnit 11.5.55, PHP 8.2.12, in-memory SQLite; exit code 0). Up from
@@ -161,7 +168,39 @@ on `ws-401`, 267 on `tcv-backend-codefix`) are **history**: those lines have all
 the number that matters. Still untested: the test execution loop, resume, payments, reports,
 organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not closed — `ws-480` (merged
 2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
-purchase end to end.
+Stripe purchase end to end. `ws-451` (merged 2026-09-28, below) covers a successful **$0** order, which
+never creates a PaymentIntent (its Stripe invoice calls are mocked).
+
+### ✅ `ws-451` added 21 backend tests — on `develop` since 2026-09-28 (PRs #285, #287)
+
+`tests/Feature/Credits/FreeOrderCheckoutTest.php` (**19**) covers the $0-order path,
+`POST api/payment/complete-free-order`, and `tests/Feature/Stripe/StripeZeroAmountInvoiceTest.php` (**2**)
+covers `StripeService::recordZeroAmountInvoice()`
+([BILLING trap 10](CONTEXT/BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451)).
+All pass in the 2026-09-29 full run on `develop` `e8507fb9`. `RateLimitScopeTest` also gained `free-order`
+in its list of limiters that must be registered. The 2026-09-23 branch-only measurement (10 tests) predates
+the idempotency, invoice, throttle and tier-overlap review commits. `php artisan test --parallel` does not
+run here, because ParaTest is not installed.
+
+| Case | Covers |
+|---|---|
+| unauthenticated | 401 — the route sits in the `auth:sanctum` group |
+| no `idempotency_key` | 422 |
+| retry with the same key | the first order comes back, nothing is granted twice, no second invoice |
+| key reused for another order / by another account | 409 |
+| two price tiers overlap the credit count | 422, no grant |
+| throttled per account | `throttle:free-order`, 5/min |
+| order recorded in Stripe | a $0 invoice is created and finalized; a refused order is **not** invoiced; a Stripe failure grants nothing and writes `billing.payment_failed` |
+| `StripeZeroAmountInvoiceTest` | full-price line + equal negative line, finalized; an invoice Stripe did not mark `paid` throws |
+| 100% code, 750 credits | grant of 750 with `SOURCE_PURCHASE`, a $0 `succeeded` transaction with a `free_` id, and `original_amount` 6637.50 **priced on the server**; `countUses()` goes to 1 |
+| fixed $50 code, 750 credits | 422 and no grant — the server price leaves an amount due |
+| fixed $100 code, 3 credits | accepted — $88.50 is fully covered |
+| `max_uses_per_user = 1` | the second order gets a 400 and only one grant is written |
+| unknown code / credits outside every tier / unlimited account | 404 / 422 / 422 |
+| credit history | the grant shows as `type: purchase`, `payment_method_type: discount_code` |
+| failure after the grant is written (`transaction_details` dropped) | 500, **no** credit or transaction row survives, and a `billing.payment_failed` audit row is written (ws-451 PR review) |
+
+☠️ The SPA half (`PaymentForm`'s `isFreeOrder` / `isBelowMinimum` branches) has no test.
 
 ### ✅ `ws-459` added 9 backend tests — on `develop` since 2026-09-21 (PR #271, `2fb62959`)
 

@@ -204,7 +204,7 @@ page is therefore still accepted through the emailed reset link. See
 
 ## `verify-password` is a fourth path, and it decides nothing
 
-`POST api/verify-password` (`API-164`, `auth:sanctum`, no throttle — the only rate limit in
+`POST api/verify-password` (`API-165`, `auth:sanctum`, no throttle — the only rate limit in
 `routes/api.php` is on `/contact`) → `AuthController::verifyPassword()`: validate, `Hash::check`,
 return 200, or 422 `api.incorrect_password`. It writes **nothing** — no session flag, no token
 ability, no log line. Its only caller is the SPA's Patients-menu prompt, which treats the 200 as

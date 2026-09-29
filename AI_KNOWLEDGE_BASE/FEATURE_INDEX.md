@@ -63,7 +63,7 @@ does in detail. Read the source.
 | `app/Http/Controllers/Auth/*` | `laravel/ui` scaffolding, no routes |
 | `backend-queue` / `backend-scheduler` services and the `invitations:send-pending` schedule | behind the compose `workers` profile, off by default ([DEPLOYMENT.md](DEPLOYMENT.md)) |
 | `GET api/access-check` | registered and public, but no SPA code calls it yet |
-| `POST api/stripe/create-payment-intent` (`API-091`) and the rest of `api/stripe/*` | routed and guarded, but **no SPA caller** — the portal buys credits through `api/payment/initialize` → `api/payment/confirm`. ☠️ `ws-480` put its unlimited-credit 422 here *first*, and only here; it now sits on both surfaces ([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
+| `POST api/stripe/create-payment-intent` (`API-092`) and the rest of `api/stripe/*` | routed and guarded, but **no SPA caller** — the portal buys credits through `api/payment/initialize` → `api/payment/confirm`. ☠️ `ws-480` put its unlimited-credit 422 here *first*, and only here; it now sits on both surfaces ([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
 | `App\Rules\TurnstileToken` | never referenced |
 | `SecureImageService::getBatchSecurePlateUrls()` / `uploadPlateToS3()` | commented as unused |
 | `App\Models\Credit` | superseded by `Credits` on the same table |

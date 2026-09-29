@@ -22,7 +22,7 @@
 | `CTRL-016` | `OrganizationPatientController` | class | Controller | [app/Http/Controllers/OrganizationPatientController.php:17](../../../TCV-Backend/app/Http/Controllers/OrganizationPatientController.php#L17) | 4 |
 | `CTRL-017` | `PasswordController` | class | Controller | [app/Http/Controllers/PasswordController.php:14](../../../TCV-Backend/app/Http/Controllers/PasswordController.php#L14) | 2 |
 | `CTRL-018` | `PatientController` | class | Controller | [app/Http/Controllers/PatientController.php:26](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L26) | 10 |
-| `CTRL-019` | `PaymentController` | class | Controller | [app/Http/Controllers/PaymentController.php:15](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L15) | 8 |
+| `CTRL-019` | `PaymentController` | class | Controller | [app/Http/Controllers/PaymentController.php:19](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L19) | 11 |
 | `CTRL-020` | `PriceDetailController` | class | Controller | [app/Http/Controllers/PriceDetailController.php:15](../../../TCV-Backend/app/Http/Controllers/PriceDetailController.php#L15) | 8 |
 | `CTRL-021` | `ProfileController` | class | Controller | [app/Http/Controllers/ProfileController.php:15](../../../TCV-Backend/app/Http/Controllers/ProfileController.php#L15) | 3 |
 | `CTRL-022` | `QaAutomationController` | class | Controller | [app/Http/Controllers/Qa/QaAutomationController.php:28](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L28) | 10 |
@@ -113,7 +113,7 @@
 | `SVC-026` | `PricingAuditService` | class | — | [app/Services/Audit/PricingAuditService.php:5](../../../TCV-Backend/app/Services/Audit/PricingAuditService.php#L5) | 1 |
 | `SVC-027` | `SecureImageService` | class | — | [app/Services/SecureImageService.php:14](../../../TCV-Backend/app/Services/SecureImageService.php#L14) | 5 |
 | `SVC-028` | `StripeProvider` | class | BasePaymentProvider | [app/Services/PaymentProviders/StripeProvider.php:17](../../../TCV-Backend/app/Services/PaymentProviders/StripeProvider.php#L17) | 8 |
-| `SVC-029` | `StripeService` | class | — | [app/Services/StripeService.php:14](../../../TCV-Backend/app/Services/StripeService.php#L14) | 14 |
+| `SVC-029` | `StripeService` | class | — | [app/Services/StripeService.php:15](../../../TCV-Backend/app/Services/StripeService.php#L15) | 15 |
 | `SVC-030` | `TestAssignmentService` | class | — | [app/Services/TestAssignmentService.php:14](../../../TCV-Backend/app/Services/TestAssignmentService.php#L14) | 9 |
 | `SVC-031` | `TestExecutionService` | class | — | [app/Services/TestExecutionService.php:16](../../../TCV-Backend/app/Services/TestExecutionService.php#L16) | 8 |
 | `SVC-032` | `TestInvitationMailer` | class | — | [app/Services/TestInvitationMailer.php:22](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L22) | 7 |
@@ -257,4 +257,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-23. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._

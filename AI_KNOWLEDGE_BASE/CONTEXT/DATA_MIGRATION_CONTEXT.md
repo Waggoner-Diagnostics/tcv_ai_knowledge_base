@@ -267,8 +267,12 @@ serializes a `User` model: `UserController::userWithType()` (the grids, paginate
 migrated account whose value did not map. Only the backend detail views (trap 6) show the legacy text.
 `CONTRACT_DRIFT` cannot catch this, because it matches URLs, not fields. Found at the 2026-09-23 KB sync.
 
-⏳ **Fixed on branches, not yet merged (2026-09-23):**
-- **Backend `ws-459-legacy-location-visible`** (`b3506b2c`) adds
+**Status at the 2026-09-29 sync: backend fixed on `develop`, frontend half still unmerged.** So the
+Users grid cell and the `NewUserModal` hint now render for a super admin. `OrganisationModal` still shows
+nothing until the frontend branch lands.
+
+- ✅ **Backend `ws-459-legacy-location-visible`** (`b3506b2c`), **merged 2026-09-23 as PR #284
+  (`4846ad3d`) and indexed 2026-09-29** (`User::LEGACY_LOCATION_FIELDS` is in `CONSTANTS.md`). It adds
   `User::LEGACY_LOCATION_FIELDS` and calls `makeVisible()` in `OrganizationController::index()` for each
   row's owner (already super-admin only through `OrgPolicy::viewAny`). It also calls it in
   `UserController::userWithType()`, but **only for a super admin**, because that route checks nothing
@@ -277,7 +281,8 @@ migrated account whose value did not map. Only the backend detail views (trap 6)
   signed-in user's own profile fetch. `$hidden` stays the default. Pinned by
   `tests/Feature/Migration/LegacyLocationAdminPayloadTest.php`. Its two reveal cases fail without the fix,
   and its two withhold cases pass either way.
-- **Frontend `ws-459-legacy-location-visible`** (`c1dd22a`). There was a **second** break the backend fix
+- ⏳ **Frontend `ws-459-legacy-location-visible`** (`c1dd22a`), **not on frontend `develop` `46633f6`**
+  (local refs last fetched 2026-09-24). There was a **second** break the backend fix
   alone would not have cured: `mapOrganisationToFormData()` (`utils/organisationUtils.js`) rebuilds
   `user` field by field and dropped both values, so `OrganisationModal` still saw nothing. It now carries
   them through. The create/update payloads in `Organisation.js` list their fields explicitly, so the
