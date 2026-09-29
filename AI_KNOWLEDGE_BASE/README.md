@@ -1,17 +1,18 @@
 # TCV — AI Knowledge Base
 
 Single source of truth for **TestingColorVision** across its three repos, built so an AI assistant can
-work on the project **without rescanning ~66,100 lines across 524 source files**
-(`TCV-Backend/app` 174 · `TCV-Frontend/src` 256 · `TCV-Website` 94).
+work on the project **without rescanning ~82,800 lines across 603 source files**
+(`TCV-Backend/app` 221 · `TCV-Frontend/src` 287 · `TCV-Website` 95) — measured 2026-09-23; the backend
+grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up (PR #282).
 
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`; the audit-trail work (`feat/ui-audit-trail`, then PR #238) has merged into it, so those counts are `develop` counts. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ⚠️ Backend `ws-404` and `ws-449` are ahead of `develop` and **not** indexed |
+| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). **No branch is ahead of `develop` in this KB's scope.** |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `c3449270` (develop) · `TCV-Frontend` `e9b664c` (develop) · `TCV-Website` `cb4a1b6` (website-integration) — generated **2026-09-14** |
-| **Backend scale** | 207 classes/interfaces/traits · 863 methods · 162 API endpoints · 53 tables · 128 migrations |
-| **Client scale** | 65 top-level routes · 43 Redux slices (SPA) · 32 marketing pages (website) |
+| **Code state at sync** | `TCV-Backend` `0197fd1b` (develop) · `TCV-Frontend` `22e5332` (develop) · `TCV-Website` `6dc5223` (website-integration) — generated **2026-09-23**. ⚠️ `git fetch` still fails from the sync shell; local `develop` was confirmed **identical to `origin/develop`** in both code repos (`rev-list --left-right --count` = `0 0`), against refs the IDE last fetched **2026-09-22** (both tips are the `ws-459` merges of 20:54 / 20:57). Anything merged after that time is not here. |
+| **Backend scale** | 245 classes/interfaces/traits · 1249 methods · 164 API endpoints · 55 tables · 156 migrations · suite ☠️ **1317 passed / 1 failed** on `0197fd1b` — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Client scale** | 65 top-level routes · 44 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -39,36 +40,90 @@ describe shipped behaviour, not a branch. Backend `develop` has since taken two 
 tracks separately: the **QA automation helpers** (PR #223, 2026-09-08 — see
 [SECURITY.md](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env))
 and the **Audit Trail** read API (PR #227, 2026-09-09 — `AuditLogController`, `Services/Audit/`,
-`audit_logs`; the context packs for it are written but still sit on the KB branch `ws-422`).
+`audit_logs`).
 
-⚠️ **`ws-404` is the one backend branch still ahead of `develop`** — four commits as of 2026-09-14,
-but only **two carry work**: `b69a2c37` (delivery recovery) and `07a1c9b2` (infrastructure + preflight).
-`3abe5aef` and `09707463` merge `develop` in, the second of them pulling in the audit-trail work of
-2026-09-14. Most of what the KB flags `ws-404` is merged; what is **not** on `develop` is the
-delivery-recovery and mail-infrastructure work, and passages describing it say so:
+### ✅ `ws-404` and `ws-449` have merged — labels flipped 2026-09-17
 
-| `ws-404` only | Where |
+**`ws-404`** merged into backend `develop` as PR #240 (2026-09-15) with a follow-up, PR #251
+(2026-09-16). Every passage that flagged it "unmerged" / "`ws-404` only" now describes shipped code, and
+the indexes list **three** jobs, **six** commands and one schedule. It landed **substantially changed**
+from the `3f3aeb58` state the KB last described — read these before trusting older notes:
+
+| Changed after `3f3aeb58` | Where |
 |---|---|
-| `SweepPendingInvitationsJob` (`JOB-003`) — sweeps stranded `pending` rows using web traffic as the clock | [JOBS.md](JOBS.md) · [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) |
-| `->withSchedule(...)` with one task, `invitations:send-pending` | [CONFIGURATION.md](CONFIGURATION.md) · [JOBS.md](JOBS.md) |
-| ⭐ **`backend-queue` and `backend-scheduler` compose services** — the branch ships the worker and the scheduler process it needs | [DEPLOYMENT.md](DEPLOYMENT.md) · [QUEUES.md](QUEUES.md) |
-| ⭐ **`mail.invitation_dispatch`** — `after_response` (default) vs `queue`, selecting where batches run | [ENVIRONMENT.md](ENVIRONMENT.md) · [QUEUES.md](QUEUES.md) |
-| ⭐ **Connection failure ≠ address rejection** — unreachable-host sends defer instead of failing, so no spurious revoke + refund | [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) · [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) |
-| ⭐ **`ses-v2` mailer + `failover` no longer falls back to `log`** | [THIRD_PARTY.md](THIRD_PARTY.md) · [CONFIGURATION.md](CONFIGURATION.md) |
-| `MailPreflight` console command, `config/mail.php` sweep keys, `TestInvitation::awaitingDelivery()` | [ENVIRONMENT.md](ENVIRONMENT.md) |
+| ☠️ **`backend-queue` and `backend-scheduler` merged behind the compose `workers` profile — off by default.** A plain `docker compose up` still runs no worker and no scheduler, so the 2026-09-14 correction "the schedule fires" is **not** true of `develop` as deployed. First-boot runbook added | [DEPLOYMENT.md](DEPLOYMENT.md) · [QUEUES.md](QUEUES.md) · [JOBS.md](JOBS.md) |
+| Defer-vs-fail rules rewritten: `deferralReason()` defers never-connected, SMTP **4xx**, and **sender-quota 5xx** (the QA host's 200/hour `550`, `8ee517aa`); SES errors classified; post-DATA socket errors now **fail** to avoid duplicate emails | [JOBS.md](JOBS.md#-connection-failure-is-not-address-rejection) · [THIRD_PARTY.md](THIRD_PARTY.md) |
+| **Deferral cap** — `test_invitations.deferred_count`, `mail.invitation_max_deferrals` = **36** (≈6h), then write-off + refund | [JOBS.md](JOBS.md) · [ENVIRONMENT.md](ENVIRONMENT.md) |
+| **Expiry refunds** (`expireStaleInvitations()`), claim-guarded `markFailed()`, cancel **409** on a lost race, `credited_by = null` for automated refunds | [CONTEXT/CREDITS_CONTEXT.md](CONTEXT/CREDITS_CONTEXT.md) · [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) |
+| Queue batch budget (`invitation_queue_batch_budget` 60s, resolved at run time), `retry_after` 90 → **360**, `RUN_INIT` in `entrypoint.sh` | [QUEUES.md](QUEUES.md) · [CONFIGURATION.md](CONFIGURATION.md) · [DEPLOYMENT.md](DEPLOYMENT.md) |
 
-📌 **Correction, 2026-09-14 — the KB's "nothing runs the scheduler on `ws-404` either" note was true of
-`b69a2c37` and is now wrong.** `07a1c9b2` adds both a `backend-queue` (`queue:work --queue=lms,default`)
-and a `backend-scheduler` (`schedule:work`) service to **both** compose files, so on that branch the
-scheduled task does fire and the `database` queue does get consumed. Every passage that said otherwise
-has been corrected. The claim remains true of **`develop`**, which is what the deployment runs today.
+**`ws-449`** merged as PR #241 (2026-09-14): public `GET api/access-check` (the 17th public endpoint — no
+SPA caller yet), backend nginx forwarding `X-Forwarded-For`, and ☠️ `trustProxies()` **always on** with a
+private-range default. Because the edge and SPA nginx still `set_real_ip_from 0.0.0.0/0`, **S-16 changed
+shape rather than closing** — client IPs are now forgeable by the traced chain. Read
+[S-16 *Status 2026-09-17*](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not).
 
-Indexes are generated from `develop`, so they list **two** jobs and no schedule. That is correct, not
-drift — the branch rule above is why.
+On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404`, `ws-407`
+(PR #378) and `ws-417`, and `origin/ws-400` is merged. **`ws-401` is still unmerged there** (2 commits),
+and a local `ws-400` holds one unpushed commit — the frontend and backend halves of the same ticket number
+are not in the same state, so check per repo. Backend `ws-401` also has one commit (`af555809`) beyond
+`develop`, though its repair migration is merged.
 
-On the **frontend**, `develop` carries `ws-395`, `ws-397`, `ws-399`, `ws-402`, `ws-404` and
-`ws-417`, while **`ws-400`, `ws-401` and `ws-407` are still unmerged there** — the frontend and
-backend halves of the same ticket number are not in the same state, so check per repo.
+### ✅ `ws-459`, `ws-480`, `ws-502` and the countries fix have merged — labels flipped 2026-09-21
+
+Everything the previous sync tracked as a branch is now on `develop` and **indexed**. Merge set since
+`ff9be500` / `80403e7`, by first-parent:
+
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| **`ws-502`** list sort tiebreaks | PR #253, `820747a6` (09-17) | PR #390, `9152b45` (09-17) | [FRONTEND.md](FRONTEND.md#server-sorted-grids-ws-502) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [API_INDEX](API_INDEX.md) · the five context packs that flagged a grid's `ORDER BY` |
+| **`ws-480`** credit purchase gate | PR #254, `10a8ae73` (09-18) | PR #392, `1f31854` (09-18) | [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480) · [BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) · [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) · `F-017` / `F-041` / `F-042` |
+| **`ws-459`** legacy migration + patient encryption at rest (was `tcv_data_migration`) | PR #255, `f0541712` (09-18) | PR #395, `d0da885` (09-18) | [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) · [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) · [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) · [DATABASE.md](DATABASE.md) · `F-090` |
+| **audit-trail CSV export** | PR #261, `07cf5b6f` (09-18) | PR #398, `432f046` (09-18) | already written up 2026-09-18; the endpoint is now **indexed** as `API-011` |
+| **countries list** | PR #265, `330cf77d` (09-18) | — | [FEATURE_INDEX](FEATURE_INDEX.md) `F-081` · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [THIRD_PARTY](THIRD_PARTY.md) |
+
+☠️ **`ws-459` is the one that changes how you read the rest of this KB.** 182 files, ~25.3k insertions.
+Patient, answer and invitation PII is now **ciphertext at rest on `develop`**, so every
+`INDEXES/` column for those tables describes the *post*-encryption shape and `where('email', $x)` can
+never match — read [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) before touching a patient
+query. It also brought 20 migrations, the `migrate:*` command family and `migration_progress`.
+
+⚠️ **The `ws-480` review defects described below were both fixed before the merge.** The backend fix is
+`b081b618` + `23d005ff`; the frontend fix is `e3a222e` + `2b745ce`. The shas `8d247f8c` / `346efce` cited
+in older passages are the *pre-review* state and no longer describe `develop`.
+
+#### What the `ws-480` review found (kept — the lesson outlives the branch)
+
+| Repo | What the review found | Where it is written up |
+|---|---|---|
+| `TCV-Backend` | the refusal sat only on the deprecated `api/stripe/*` surface, so the live purchase path was open | [BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) |
+| `TCV-Frontend` | the purchase gate keyed off `initialized \|\| !!error`, which pins the credits page on `Loading credits…` for good on any failure carrying no JSON `message` | [FRONTEND.md](FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only) |
+
+The write-ups are:
+
+| Where | What it covers |
+|---|---|
+| [FRONTEND.md](FRONTEND.md#credit-purchase-gate-ws-480) | the three gate flags on `CreditPage`, `userCredits.settled` and why the gate cannot be derived from `error`, the separate `Checkout` guard and its `createSetupIntent()` condition, the `Loading credits…` paint, the `cp-alert--info` notice, and the modal's at-least-one-test pre-check |
+| [CONTEXT/BILLING_CONTEXT.md trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) | the 422, why it is returned rather than thrown, the four handlers it ended up on, and `Credits::hasUnlimited()` |
+| [CONTEXT/CREDITS_CONTEXT.md trap 12](CONTEXT/CREDITS_CONTEXT.md#-traps) | what a purchase on top of an unlimited grant does to the balance once the grant lapses |
+| [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) | the blast-radius rows for both halves |
+
+☠️ **The one thing to carry out of that ticket:** the backend refusal first landed on
+`POST api/stripe/create-payment-intent` **alone** — the deprecated surface no SPA code calls. The portal
+buys credits through `POST api/payment/initialize` → `POST api/payment/confirm`, so as written the rule
+was enforced in the client only. ✅ **Caught in review and fixed on the branch the same day**: the
+refusal now sits on all four routed purchase handlers, behind one predicate
+(`Credits::hasUnlimited()`), pinned by `tests/Feature/Billing/UnlimitedCreditPurchaseRefusedTest.php`.
+The lesson outlives the fix — read
+[BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md#two-parallel-payment-surfaces) before adding any rule to a
+payment handler, and count the handlers on **both** surfaces.
+
+📌 **Two corrections went in with it**, both about code that had already changed on `develop`:
+`FRONTEND.md` said `initialized` is never reset and nothing clears the credits slice on logout — both
+untrue since `ws-397`'s follow-up `400cf66` (2026-08-31), which is what `ws-480`'s gate relies on; and
+`API_INDEX.md` still listed `api/stripe/*` as **public**, though it moved into `auth:sanctum` on
+2026-09-07 with [S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop) and the
+generated index has said so since.
 
 ### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
 
@@ -86,7 +141,7 @@ around. Indexing `develop` here meant indexing the *less* deployable of the two.
 workflow.
 
 ☠️ **This exception is scoped to `TCV-Website` and does not generalise.** `TCV-Backend` and
-`TCV-Frontend` are still indexed from `develop`, and `ws-404` is still prose-only. Before indexing any
+`TCV-Frontend` are still indexed from `develop`, and `ws-502` is prose-only. Before indexing any
 other repo off a non-`develop` branch, establish the same two facts: the branch is a strict superset of
 `develop`, and it is what actually deploys.
 
@@ -96,6 +151,142 @@ corner-clipping fix, written up in
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
+
+### What the 2026-09-23 sync changed
+
+Backend `develop` `330cf77d` → **`0197fd1b`**, frontend `d0da885` → **`22e5332`**, website
+`4d2c0d4` → **`6dc5223`** (one cosmetic commit, `AuthModal.jsx` gradient removed, no routes).
+`routes_source` stayed `artisan route:list --json`. Merge set by first-parent:
+
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| **`ws-459`** compliance dedup | PR #271, `2fb62959` (09-21) | — | `2026_09_21_000001_deduplicate_organization_lookup_tables` is **merged**, no longer "pending". [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md) · [DATABASE.md](DATABASE.md) · [DEPLOYMENT.md](DEPLOYMENT.md) |
+| **`ws-401`** round 2 (org placeholders, template type follows sender) | PR #252, `345459fc` (09-21) | — | every "`ws-401` second round, not merged" label flipped. [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) · [SECURITY.md](SECURITY.md) · [LOGGING.md](LOGGING.md) · [DATABASE.md](DATABASE.md) |
+| **`ws-401`** `org_test_link` gets code + expiry | PRs #276 `d39c81e1`, #278 `8657e85c` (09-22) | — | three template migrations, `2026_09_22_000001`…`000003`. [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#org_test_link-carries-the-verification-code-and-expiry-ws-401-2026-09-22) |
+| **`ws-459`** legacy country/state | PR #282, `0197fd1b` (09-22) | PR #414, `22e5332` (09-22) | `LegacyLocationResolver`, `users:backfill-legacy-location`, `users.legacy_country/legacy_state`. [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#legacy-countrystate-resolution-ws-459-pr-282) · [DEPLOYMENT.md](DEPLOYMENT.md) |
+| button hover / password eye | — | PRs #409 `3f8caa2`, #405 `f02aeae` | cosmetic: `transform: translateY(-2px)` removed from primary/secondary hover; `ResetPassword`/`SetPassword` reformatted. No behaviour change |
+
+| Count | 2026-09-21 | 2026-09-23 | Why |
+|---|---|---|---|
+| Endpoints / public `api/*` | 164 / 17 | **164 / 17** | no route added, removed or re-guarded |
+| Classes/interfaces/traits | 242 | **245** | `LegacyLocationResolver`, `BackfillMigratedUserLocation`, `Controllers/Concerns/FormatsLocationLabels` |
+| Methods | 1215 | **1249** | same cause, plus `User::displayCountry()/displayState()` and the migration command's lookup helpers |
+| Migrations | 151 | **156** | dedup (#271), three `org_test_link` template migrations (#276/#278), `add_legacy_location_text_to_users_table` (#282) |
+| Controllers / services | 38 / 38 | **39 / 39** | the location trait counts as a controller (it lives in `Controllers/Concerns`), the resolver as a service |
+| `users` columns | 42 | **44** | `legacy_country`, `legacy_state` |
+| Tests | 1191 / 0 failed | ☠️ **1317 passed / 1 failed** | 4058 assertions — [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| Everything else | — | **unchanged** | tables 55 · models 42 · requests 28 · relations 70 · spa_routes 65 · spa_api_calls 88 · spa_drift 8 · spa_slices 44 · website 32 / 5 |
+
+**No `API-nnn` or `TABLE-nnn` renumbering this time**, because no route and no table was added. Class ids
+*did* shift: `FormatsLocationLabels` took `CTRL-012`, `LegacyLocationResolver` took `SVC-015`, and
+`BackfillMigratedUserLocation` moved the `CMD-nnn` ids after it. The only prose citing those families is
+historical sync notes (and the generic `SVC-012` example in the id table), so there was nothing to
+re-resolve.
+
+**Derived views — all three clean, byte-identical apart from the generation date.**
+[PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) is still the same 17 public endpoints.
+[CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) still has 8 rows. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md)
+lost no page.
+
+☠️ **But the contract did drift, below the level `CONTRACT_DRIFT` can see.** That view matches URLs.
+Frontend PR #414 reads `legacy_country` / `legacy_state` off user rows, and backend PR #282's last review
+commit (`02f8c5d8`) put both columns in `User::$hidden`. Every endpoint those screens call serializes a
+`User` model, so the fields never arrive and **none of the three frontend fallbacks can render**. Details in
+[DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#-the-frontend-half-of-the-fallback-is-dead-on-arrival).
+
+⏳ **Fix branches, not merged, so not indexed** (created 2026-09-23 from local `develop`):
+
+| Branch | Repo | Commit | Fixes |
+|---|---|---|---|
+| `ws-401-stale-template-test` | backend | `b2541667` | the one red test ([TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test)) |
+| `ws-459-legacy-location-visible` | backend | `b3506b2c` | `makeVisible()` on the two admin grids (super admin only) |
+| `ws-459-legacy-location-visible` | frontend | `c1dd22a` | `mapOrganisationToFormData()` carries `legacy_*` through |
+
+☠️ **Found while fixing that: [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid), critical and still open.**
+`UserController` has no authorization, and a plain customer promotes itself to super admin with
+`PUT api/users/{own id}`. This was reproduced.
+
+### What the 2026-09-21 sync changed
+
+`routes_source` stayed `artisan route:list --json`, so route figures compare directly with 2026-09-17.
+This is the largest single sync in the KB's history, and `ws-459` accounts for nearly all of it.
+
+| Count | 2026-09-17 | 2026-09-21 | Why |
+|---|---|---|---|
+| Endpoints | 163 | **164** | `GET api/audit-logs/export` (PR #261) — the only new route |
+| Public `api/*` | 17 | **17** | ✅ **unchanged, and the same 17 endpoints.** Nothing became public |
+| Classes/interfaces/traits | 210 | **242** | +32, almost all `ws-459`: the `migrate:*` command family, `Support/Legacy/*`, the three casts, `LegacyPatientSource`, `AuditLogFilter`, `AuditLogCsvExport`, `UnscoreableTestException` |
+| Methods | 903 | **1215** | +312, same cause |
+| DB tables | 53 | **55** | `migration_progress` (live) and `discount_code_usages` (**created and dropped in the same merge** — see [DATABASE.md](DATABASE.md)) |
+| Migrations | 131 | **151** | +20 — the `ws-459` set, plus `update_obsolete_country_names` (PR #265) |
+| Models | 41 | **42** | `Models/Concerns/HasLegacyEncryptedAttributes` |
+| Services | 35 | **38** | `Services/Migration/LegacyCipher`, `LegacyPatientSource`, `Services/Audit/AuditLogFilter` |
+| FormRequests | 26 | **28** | `AuditLogExportRequest`, `Requests/Concerns/ValidatesAuditDateRange` |
+| Redux slices | 43 | **44** | frontend `ws-459` / audit-export work |
+| Tests | 812 | **1191 passed, 0 failed** | 3632 assertions, measured on `330cf77d` ([TESTING.md](TESTING.md)) |
+| Everything else | — | **unchanged** | relations 70 · controllers 38 · policies 3 · middleware 4 · jobs 3 · events 3 · spa_routes 65 · spa_api_calls 88 · spa_drift 8 · website_pages 32 · website_api 5 |
+
+☠️ **`API-nnn` ids shifted by one again, from `API-011` up.** `api/audit-logs/export` sorts ahead of
+`api/audit-logs/people`, so it took `API-011` and pushed everything after it. `API-001`…`API-010` are
+unchanged. All 15 prose citations were re-resolved against the new index by endpoint, not by arithmetic
+— `verify-password` `API-163`→`API-164`, `stripe/create-payment-intent` `API-090`→`API-091`,
+`test-invitations/{id}/cancel` `API-103`→`API-104`, `user/tests/bulk-update-assignment`
+`API-149`→`API-150`, `distributor-enquiry` `API-031`→`API-032`,
+`dropdown/organization-settings-options` `API-034`→`API-035`. `TABLE-nnn` also renumbered from
+`TABLE-010`, but the two cited (`TABLE-007`, `TABLE-009`) were below the pivot and still resolve.
+
+**Derived views — all three clean.** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md): still 17
+public, the **same** 17 endpoints, id renumbering only — no route became public despite 182 files
+landing. [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md): unchanged at 8 drift rows, id renumbering only —
+no client call lost its endpoint. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md): **byte-identical
+apart from the generation date** — no page became unreachable, and the two known dead routes and three
+dead grants are the same ones.
+
+⚠️ **Fetch caveat unchanged.** `git fetch` still fails from the sync shell ("Repository not found").
+Local `develop` was verified identical to `origin/develop` in both repos, but those remote refs were
+last updated by the IDE on **2026-09-18** — anything merged after that is not in this sync.
+
+### What the 2026-09-17 sync changed
+
+Backend `develop` advanced from `c3449270` to `ff9be500` (33 commits: `ws-404` PRs #240/#251, `ws-449`
+PR #241, audit-trail PRs #242/#243/#245, and `45b53173`'s CI tweak); frontend `develop` from `e9b664c` to
+`80403e7` (audit-trail PRs #384/#386). `TCV-Website` was not in scope and is unchanged at `cb4a1b6`
+(its local `website-integration` is 2 commits behind origin — pull before the next website sync).
+`routes_source` stayed `artisan route:list --json`, so route figures compare directly.
+
+| Count | 2026-09-14 | 2026-09-17 | Why |
+|---|---|---|---|
+| Endpoints | 162 | **163** | `GET api/access-check` (`ws-449`) |
+| Public `api/*` | 16 | **17** | the same route — public by design, reviewed; see [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not) |
+| Classes/interfaces/traits | 207 | **210** | `MailPreflight` (`CMD-003`), `SweepPendingInvitationsJob` (`JOB-003`), `SuperAdminSeeder` |
+| Methods | 863 | **903** | mostly `SendTestInvitationEmailsJob` (13 → 26), `MailPreflight` (13), `BuildsAuditDiffs` (3 → 9), `accountLockedResponse()` |
+| Migrations | 128 | **131** | `…_14_000001_add_deferred_count_to_test_invitations`, `…_15_000001_add_impersonator_to_audit_logs`, `…_15_000002_backfill_impersonator_on_audit_logs` |
+| Jobs | 2 | **3** | `SweepPendingInvitationsJob` |
+| Tests | 812 (09-17) | **1191 passed, 0 failed** | measured on `330cf77d`, 3632 assertions ([TESTING.md](TESTING.md)) |
+| Everything else | — | **unchanged** | tables 53, relations 70, controllers 38, models 41, services 35, spa_routes 65, spa_slices 43, spa_api_calls 88, spa_drift 8, website_pages 32 |
+
+☠️ **Every `API-nnn` id shifted by one.** `api/access-check` sorts first, so it took `API-001`. The four
+prose citations were re-resolved (two were already stale: `verify-password` is `API-163`,
+`distributor-enquiry` is `API-031`); `CMD-003`…`006` also renumbered around `MailPreflight`. See
+[HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md).
+
+> 📌 **The ids in this paragraph are the 2026-09-17 numbering and have since moved again.** The
+> 2026-09-21 sync shifted everything from `API-011` up by one more (`api/audit-logs/export` took
+> `API-011`), so `verify-password` is now `API-164` and `distributor-enquiry` is `API-032`. This block
+> is kept as the record of *that* sync; the live ids are in
+> [API_ENDPOINT_INDEX](INDEXES/API_ENDPOINT_INDEX.md).
+
+**Derived views:** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md) gained exactly `api/access-check`
+(everything else renumbered only). [CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) changed only in id
+renumbering — no client call lost its endpoint. [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md) is
+identical apart from the date — no page became unreachable.
+
+**Prose corrections made on the way that were stale before this sync** (not caused by it): `ROUTES.md`
+zone counts (still quoting the 09-04 AST parse, and listing the five Stripe routes as public);
+`MIDDLEWARE.md` / `ARCHITECTURE_REALITY.md` saying `EnsureTokenIsValid` is still present and there is only
+one rate limit; the invitation "cancel refunds the wrong account" trap (the query is caller-scoped);
+`ws-373`/`ws-400` "will conflict" (both merged and reconciled); and `ws-401`'s repair migration labelled
+unmerged.
 
 ### What the 2026-09-14 sync changed
 
@@ -115,10 +306,10 @@ endpoint, no page became unreachable by every role. `routes_source` stayed
 `artisan route:list --json` (backend `vendor/` is present), so the route figures are directly comparable
 with the previous sync rather than being a parser artefact.
 
-⚠️ **`ws-404` is still prose-only and was not indexed** — the branch rule above. Its documentation was
-refreshed by hand on 2026-09-14; see the `ws-404` block below. A second backend branch, **`ws-449`**
-(adds the public `GET /access-check` SPA boot gate), is also ahead of `develop` and likewise not
-indexed — so the **16** public endpoints counted here do not include it.
+⚠️ *(As of 2026-09-14 — superseded: both merged and were indexed on 2026-09-17.)* **`ws-404` was still
+prose-only and not indexed** — the branch rule above. A second backend branch, **`ws-449`** (adds the
+public `GET /access-check` SPA boot gate), was also ahead of `develop` — so the **16** public endpoints
+counted here did not include it.
 
 ### What the 2026-09-07 sync changed
 
@@ -406,13 +597,13 @@ before writing code.
 ### Layers
 | Doc | Exists? |
 |---|---|
-| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 36 |
+| [CONTROLLERS.md](CONTROLLERS.md) | ✅ 38 |
 | [SERVICES.md](SERVICES.md) | ✅ 35 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 26 FormRequest classes |
+| [REQUESTS.md](REQUESTS.md) | ✅ 28 FormRequest classes |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
-| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 2 jobs · `database` driver · **no worker in compose** |
+| [JOBS.md](JOBS.md) / [QUEUES.md](QUEUES.md) | ✅ 3 jobs · 6 commands · 1 schedule · `database` driver · worker + scheduler **behind the `workers` compose profile, off by default** |
 | [REPOSITORIES.md](REPOSITORIES.md) | ⚠️ 1 only — not a pattern |
 | [HELPERS.md](HELPERS.md) | ✅ static classes, **no** global functions |
 | [CACHE.md](CACHE.md) / [STORAGE.md](STORAGE.md) | ✅ minimal · S3 for plates |
@@ -431,13 +622,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 161 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **16 public** (non-QA environment) |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 204 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 823 |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 163 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **17 public** (non-QA environment) |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 210 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 903 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |
-| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 204 |
+| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 — ⚠️ its "dropped later" footnotes include `down()`-only drops ([HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md)) |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 210 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |

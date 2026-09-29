@@ -1,13 +1,33 @@
 # Database
 
-MySQL, **53 tables**, reconstructed from 128 migrations — the indexed snapshot, taken from
-`TCV-Backend@develop` at `940238fd` (2026-09-09, with the Audit Trail merged). Full column detail:
-[INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
+MySQL, **55 tables**, reconstructed from 156 migrations — the indexed snapshot, taken from
+`TCV-Backend@develop` at `0197fd1b` (2026-09-23 sync). The jump of 20 migrations at the 2026-09-21 sync
+was almost all `ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
+**patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
+The 2026-09-23 sync added five: the `ws-459` lookup dedup and `users.legacy_country/legacy_state`, plus
+three `ws-401` `org_test_link` template migrations.
+Full column detail: [INDEXES/DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md).
 
 > **The index is a union across migrations, not a live schema.** A column added and later dropped still
 > appears. `DESCRIBE` is the only authority before you write a migration.
 
-## What the 53 include
+☠️ **One of the two new tables is a phantom — `discount_code_usages` is not live** (`ws-459`).
+`2026_09_10_000001_create_discount_code_usages_table` created it for a legacy redemption log
+(`tcv_discount_code_usage`) that turned out not to exist, and `2026_09_18_000001_drop_unused_discount_code_usages_table`
+drops it again in the same merge. It never held a row and nothing reads it — discount usage is derived
+from migrated credits and transactions instead ([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md)). It is
+in the index only because the index unions migrations. **`migration_progress` is the one genuinely new
+live table** (`table_name` unique + `last_processed_id`), the resume cursor every `migrate:*` command
+chunks against. The rest of that migration —`transactions.legacy_id` — does matter and stands.
+
+⚠️ **`ws-459` also reshaped columns you may have cached.** `users.email` lost its unique index
+(`2026_09_07_000001`) and became nullable (`2026_09_15_000001`); `patient_tests.is_email_invite` became
+nullable; `legacy_id` was added to `users`, `patients`, `credits`, `tests`, `patient_tests` and
+`transactions`. The patient/answer/invitation PII columns now hold **ciphertext**, with keyed-md5 blind
+indexes beside them — see [What is encrypted](CONTEXT/DATA_MIGRATION_CONTEXT.md#what-is-encrypted)
+before writing any `where()` against them.
+
+## What the 55 include
 
 | Group | Tables |
 |---|---|
@@ -22,7 +42,9 @@ MySQL, **53 tables**, reconstructed from 128 migrations — the indexed snapshot
 | Email | `email_template`, `user_email_templates`, `test_email_templates` |
 | Assignment | `user_assigned_tests`, `user_hidden_tests` |
 | Audit | `pricing_audit_logs`, `audit_logs` (general audit trail, on `develop` since 2026-09-09 — see SERVICES.md) |
+| Migration | `migration_progress` (resume cursor for `migrate:*`, on `develop` since 2026-09-18 / `ws-459`) |
 | **Historical names** | `user_emails`, `admin_settings`, `user_email_settings`, `discount_code_user` — see below |
+| **Phantom** | `discount_code_usages` — created and dropped by `ws-459`; in the index, not in the database |
 
 ---
 
@@ -120,6 +142,15 @@ recreates them. **Only `discount_code_users` is live.**
 - There is no seeder set for reference data beyond `database/seeders`; `compliances`, `privileges`,
   `organization_types`, `organization_settings_options` and `price_details` are lookup tables that must
   be populated for the app to be usable.
+- ☠️ **Lookup tables that the migration also writes need a unique index, or every run duplicates them.**
+  `compliances.compliance` and `organization_types.name` are unique as of
+  `2026_09_21_000001_deduplicate_organization_lookup_tables` (`ws-459`, **merged 2026-09-21**, PR #271). They are seeded *and* filled from legacy data by `migrate:tcv-users-orgs`,
+  which used `insertOrIgnore` — a plain INSERT without a constraint to ignore against — so QA carried two
+  of each compliance and six duplicate org types, one extra set per run
+  ([DATA_MIGRATION_CONTEXT trap 8](CONTEXT/DATA_MIGRATION_CONTEXT.md)). `countries`, `states`,
+  `allowed_tests` and `privileges` have no unique index either; that is safe **only** because no
+  `migrate:*` command writes them. Seeder-only is the precondition — if one ever gains a migration
+  writer, it needs the index first.
 - ☠️ **MySQL-only SQL in a migration takes down the entire test suite, not one test.** Tests run on
   in-memory SQLite and `RefreshDatabase` re-migrates from scratch for every test, so a single
   unguarded `ALTER TABLE … MODIFY` or `CONCAT()` aborts migration and **every test errors**. This is
@@ -138,6 +169,15 @@ recreates them. **Only `discount_code_users` is live.**
   enforce column types, and a one-off production data normalization has nothing to normalize in an
   empty test database. Adding such a guard to a migration that has **already run** in production is
   safe — it will not re-execute, and the MySQL path is unchanged.
+- ☠️ **Never match a template migration on a verbatim fragment of stored HTML.** `ws-401`'s
+  `2026_09_22_000001` / `000002` did, and they became silent no-ops wherever Quill had re-saved the
+  row (`<br />` → `<p><br></p>`). They were still recorded as run, so `migrate` never retries them.
+  `2026_09_22_000003` had to follow, anchored on the `{{verification_link}}` placeholder instead
+  ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#org_test_link-carries-the-verification-code-and-expiry-ws-401-2026-09-22)).
+- **`users.legacy_country` / `users.legacy_state`** (`2026_09_22_000004`, `ws-459` PR #282) hold the
+  raw legacy text behind `country_id` / `state_id`. NULL means the account was created in the new
+  system. Both are in `User::$hidden`
+  ([DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md#legacy-countrystate-resolution-ws-459-pr-282)).
 - `Schema::defaultStringLength(191)` is set in `AppServiceProvider::boot()` — a legacy MySQL index-length
   workaround. A `string` column is 191 chars unless you say otherwise.
 - **Data migrations that edit seeded content must match on the old value, not overwrite.** `email_template`
@@ -158,7 +198,7 @@ recreates them. **Only `discount_code_users` is live.**
 - ☠️ **A data migration answers to no validator, so it has to enforce their rules itself.** Nothing
   between `DB::table()->update()` and the column checks what a FormRequest would have rejected, and an
   irreversible migration has no way back once it has written. `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates`
-  (`ws-401`, **not merged**) is the reference for both halves of that: it scopes the tokens it writes to the row's own template
+  (`ws-401` round 1, merged as PR #212) is the reference for both halves of that: it scopes the tokens it writes to the row's own template
   type (a placeholder valid for one type is a hard 422 for the other — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#placeholder-validation-ws-404)),
   and it refuses a rewrite that would outgrow the column instead of letting the driver decide.
 - ⚠️ **A rewrite that lengthens a string needs its own width check — the tests cannot fail on this.**

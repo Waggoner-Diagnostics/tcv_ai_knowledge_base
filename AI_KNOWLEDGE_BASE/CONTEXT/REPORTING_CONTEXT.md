@@ -65,6 +65,32 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
    data bug rather than a bad request. The three report screens now block it before dispatching
    ([FRONTEND.md](../FRONTEND.md)) — that is a UI affordance, not validation, and the same distinction
    as the `usertype` note above. A saved link, an export re-run or any non-SPA caller still gets there.
+7. **The patient drill-down pages an array, not a query, so it has to be sorted in PHP**
+   (`ws-502`, on `develop` 2026-09-17). `GET api/reports/user-tests?patient_id=` runs `buildTransformedTests()`: it
+   loads every `patient_tests` row, groups monocular OS+OD pairs through `PatientTestTransformer`,
+   filters, and `getPatientTestsForReport()` then `array_slice`s the page out. **On `develop` the
+   `sort_by`/`sort_order` the SPA sends are ignored on this path**. Every header click returns
+   newest-first, so the arrow flips and nothing moves. On `ws-502`, `sortTransformedTests()` sorts the
+   grouped rows *before* the slice by `unique_test_id`, `test_name`, `created_at` or `status`
+   (`PATIENT_TEST_SORTS`), with an `id` tiebreak. `test_name` uses `strnatcasecmp`, so "Test 2" comes
+   before "Test 10". ☠️ `unique_test_id` and `status` use plain `strcasecmp`: the ids are UUIDs, and
+   natural order reads their leading digits as numbers, which would put `2f…` and `9c…` before `12ab…`.
+   Anything else keeps
+   newest-first. The export (`request_type` 2/3) goes through the same method, so the download order
+   matches the screen. Guard any new sort key on this path in PHP; adding an `orderBy` to the Eloquent
+   load does nothing once the transformer regroups.
+8. **Redemptions sort keys are the service's `$sortMap` keys, not the row's field names** (`ws-502`,
+   on `develop` 2026-09-17). The row carries `discount_code`, but the key is `code`. Until `ws-502` the SPA column sent
+   `discount_code`, which `normaliseSort()` silently swapped for `used_on`. `username` now orders by
+   first then last name, and every sort ends on `td.id` (one code is redeemed many times, amounts
+   repeat). `company` puts a blank company last ascending. NULL and `''` both render "—", and without
+   the explicit `(u.company_name IS NULL OR u.company_name = '')` key they filled the first pages. The
+   *Discount* column is not sortable: it has no key in the map.
+9. **`UserTestsReportService::query()` passes `sort_by` straight to `orderBy()` with no allow-list.**
+   Observed during `ws-502`, **not changed**. It only feeds the non-patient report and its exports.
+   Today that is unreachable from the SPA with a custom key, because `UserTestsAccordion` renders with
+   `disableHeaderSorting` and `UserTests.js` sends no `sort_by`. The grammar quotes the identifier, but
+   an unknown column is still a 500. Add an allow-list before wiring sorting to that screen.
 
 _[not deeply traced]: `SuperAdminDashboardController::index()`'s aggregation queries, the exact column
 sets of the three Export classes, and the dompdf Blade templates._

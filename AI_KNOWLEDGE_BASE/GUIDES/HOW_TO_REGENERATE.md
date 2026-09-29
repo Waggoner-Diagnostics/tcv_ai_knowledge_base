@@ -48,6 +48,12 @@ git -C ../<repo> log --oneline <branch>..develop     # must be EMPTY (superset)
 git -C ../<repo> merge-base --is-ancestor develop <branch> && echo superset
 ```
 
+⚠️ **Fetch before you trust `develop`.** A local `develop` is only as current as its last fetch. If
+`git fetch` fails from your shell (on 2026-09-17 it returned `Repository not found` for `TCV-Backend` and
+`TCV-Frontend` — the stored credential lacked access, while the IDE's own fetch worked), fetch from
+wherever does work first and compare `git rev-parse develop origin/develop` — and record in the sync note
+which fetch the SHAs came from.
+
 ☠️ **Never index a feature branch — not even a fix branch.** The 2026-09-02 sync was generated from
 `tcv-backend-codefix` (backend) and `QA` (frontend). That branch carries the ownership-scoping fixes
 for `S-02`/`S-03`/`S-14` and had moved the five Stripe payment routes inside `auth:sanctum`, so the
@@ -109,10 +115,14 @@ first time the source flips; a step change in the **`api/*`** rows is what deser
 `php artisan route:list --json`** — Laravel's own router is authoritative and should be used when it is
 available. The static parser is the fallback, not the preference.
 
-**As of the 2026-09-04 sync, TCV-Backend has neither `vendor/` nor a `.env`, so the AST fallback is
-what runs.** `extract.php` only checks for `vendor/autoload.php` before shelling out to artisan — with
-no `.env`, artisan cannot boot, `route:list --json` returns no parsable JSON, and the fallback takes
-over silently (correctly, and recorded in `routes_source`). To get the authoritative list back:
+📌 **That flip already happened — `artisan route:list --json` is what runs now.** TCV-Backend has had
+both `vendor/` and a `.env` since before the 2026-09-17 sync, and `routes_source` has read
+`artisan route:list --json` at every sync since. The 2026-09-21 sync confirmed it again, which is why
+its route counts compare directly with 2026-09-17's. **The paragraph that used to sit here said the AST
+fallback was running; that was true of the 2026-09-04 sync only and was corrected 2026-09-21.**
+
+If you land on a machine where `vendor/` or `.env` is missing, the fallback takes over silently
+(correctly, and recorded in `routes_source`). To get the authoritative list back:
 
 ```bash
 cd ../TCV-Backend && composer install && cp .env.example .env && php artisan key:generate
@@ -142,6 +152,28 @@ add a middleware alias to the backend, add it to the map.
 Known limits of the static parser: it does not resolve `Route::controller()`, `Route::match()`, or
 routes registered from a service provider. None of those are used today; if one is introduced, the
 counts will silently drop — which is what `verify.php`'s count check is for.
+
+⚠️ **"Dropped later by a migration" in `DATABASE_TABLE_INDEX.md` includes `down()` drops.** `extract.php`
+walks every `Schema::table` closure in a migration file without telling `up()` from `down()`, so a column
+a migration *adds* in `up()` and drops in its own `down()` is listed as dropped. Found 2026-09-17 on
+`test_invitations.deferred_count` (added by `2026_09_14_000001`, live on `develop`). Treat that footnote as
+"some migration mentions dropping it" and confirm with `DESCRIBE` or by reading the migration.
+
+☠️ **The `API-nnn` ids renumber when a route sorts ahead of existing ones.** They are assigned by sorted
+URI, so the 2026-09-17 addition of `api/access-check` shifted **every** endpoint id by one, and the
+2026-09-21 addition of `api/audit-logs/export` shifted everything from `API-011` up by one more. **This
+has now happened at two consecutive syncs — assume it will happen again.** After a
+regeneration, `grep -rn 'API-[0-9]' AI_KNOWLEDGE_BASE --include=*.md` outside `INDEXES/` and re-resolve each
+citation against the new index — `verify.php` does not check them.
+
+⚠️ **Re-resolve by endpoint, not by arithmetic.** Look up what the *old* id pointed at in the previous
+index, then find that URI's *new* id. Shifting every citation by +1 is wrong whenever a citation sits
+below the pivot (in 2026-09-21, `API-001`…`API-010` did not move) and silently wrong whenever a prose
+citation was already stale. Diffing the old and new `API_ENDPOINT_INDEX.md` shows the pivot in one read.
+
+☠️ **`TABLE-nnn`, `MODEL-nnn` and the other class ids renumber the same way.** The 2026-09-21 sync
+inserted `discount_code_usages` at `TABLE-010` and pushed every later table down. Both cited
+`TABLE-nnn` ids happened to sit below that pivot, but check rather than assume.
 
 ## The client scan is a lower bound
 

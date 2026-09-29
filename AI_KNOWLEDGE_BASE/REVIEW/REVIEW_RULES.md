@@ -46,7 +46,7 @@ Regexes over **added lines only**, skipping comment lines.
 | `R-B06` | HIGH | `Log::*` whose **arguments** contain `$request->all()` or a token/password/secret **value** | the codebase already logs a live 24-hour credential | [LOGGING.md](../LOGGING.md) |
 | `R-B07` | HIGH | `DB::raw(` containing `$` | interpolation into raw SQL | [REPOSITORIES.md](../REPOSITORIES.md) |
 | `R-B08` | HIGH | `Schema::dropIfExists` in a migration | `entrypoint.sh` runs `migrate --force` each boot and **continues on failure** | [DEPLOYMENT.md](../DEPLOYMENT.md) |
-| `R-B09` | MEDIUM | `getAvailableCredits(` / `getTotalUserCredit(` **without** `'Unlimited'` within ±12 added lines | returns `int\|string`; unguarded arithmetic blocks unlimited customers | [CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md) |
+| `R-B09` | MEDIUM | `getAvailableCredits(` / `getTotalUserCredit(` **without** `'Unlimited'` within ±12 added lines | returns `int\|string`; unguarded arithmetic blocks unlimited customers. ⚠️ Inverse smell since `ws-480`: a **new** `=== 'Unlimited'` used only as a yes/no test should be `Credits::hasUnlimited($userId)` | [CREDITS_CONTEXT](../CONTEXT/CREDITS_CONTEXT.md) |
 | `R-B10` | MEDIUM | `return response()->json(` in a controller | eight response shapes already exist | [ERROR_HANDLING.md](../ERROR_HANDLING.md) |
 | `R-B11` | MEDIUM | `tokenCan(` in a policy | must match `login()`'s 9-item super-admin ability array or the check inverts | [POLICIES.md](../POLICIES.md) |
 | `R-B12` | MEDIUM | `set_time_limit(0)` | removes the execution ceiling; the existing use fronts a ≤500-email loop | [QUEUES.md](../QUEUES.md) |
@@ -92,6 +92,22 @@ pre-existing gap in a file the PR touches still surfaces.
 |---|---|---|---|
 | `R-X01` | **CRITICAL** | a real `.env` file in the diff (`.env.example` and friends are excluded) | secrets must not be committed |
 | `R-X02` | LOW | a `.md` file added inside a code repo (excluding `README`/`CHANGELOG`) | **all docs live in the KB** |
+
+---
+
+## Documented, not automated — `ws-480`, 2026-09-17
+
+Two traps the 2026-09-17 `ws-480` reviews turned up are **not** in the tables above, because neither is
+expressible as a regex over added lines and this page only documents what `tools/review.php` actually
+runs. They live on the human checklist instead
+([REVIEW_CHECKLIST.md](REVIEW_CHECKLIST.md)) — a scanner clean run says nothing about either.
+
+| Would-be id | Trap | Why no regex | Doc |
+|---|---|---|---|
+| `R-B18` | a business rule added to **one** payment handler. There are two purchase surfaces and four routed handlers; `api/stripe/*` has no SPA caller, so a rule landing only there binds nothing, and on `api/payment/*` only `confirm` writes the grant | needs to know which *other* handlers exist and whether each carries the rule — a cross-file question, not a line match | [BILLING trap 9](../CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480) |
+| `R-F07` | a readiness gate (`…Resolved`, `…Known`, "has it loaded?") derived from a slice's `error`. `error` is not a settled-ness signal: `pending` clears it, so the gate flickers on every poll, and a thunk rejecting with `err.response?.data?.message` leaves it `undefined` on a network error or an HTML 502 — so a gate meant to fall open pins itself shut | the shape varies too much to match without drowning in false positives; recognising it needs the slice's reducers, not the added line | [FRONTEND.md](../FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only) |
+
+Both are worth automating if a reliable form is found. `R-F07` is the more tractable of the two.
 
 ---
 

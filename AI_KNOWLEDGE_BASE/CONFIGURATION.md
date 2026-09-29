@@ -20,8 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'FlexibleAuthMiddleware' => FlexibleAuthMiddleware::class,
             'lms.status'             => LmsSessionStatusMiddleware::class,
         ]);
-        // only when TRUSTED_PROXIES is a non-empty CIDR list
+        // ALWAYS called since ws-449 (2026-09-14); unset TRUSTED_PROXIES ⇒ every private range
         $middleware->trustProxies(at: $trustedProxies, headers: ...X_FORWARDED_*);
+    })
+    ->withSchedule(function (Schedule $schedule): void {          // ws-404, on develop 2026-09-15
+        $schedule->command('invitations:send-pending')->everyTenMinutes()->withoutOverlapping(20);
     })
     ->withExceptions(function (Exceptions $exceptions): void { /* empty */ })
     ->withBindings([ExceptionHandler::class => Handler::class])   // ← custom handler
@@ -34,33 +37,31 @@ Five things to remember:
 - `withExceptions` is **empty** — all exception behaviour is in the bound `Handler`
   ([ERROR_HANDLING.md](ERROR_HANDLING.md)).
 - New middleware aliases go here. There is nowhere else.
-- **No `->withSchedule(...)` on `develop`.** Nothing is scheduled. ⚠️ Unmerged `ws-404` adds one, and
-  only one — `invitations:send-pending`, every ten minutes, `withoutOverlapping(20)`:
+- **One scheduled task on `develop`** (since `ws-404` merged, 2026-09-15): `invitations:send-pending`,
+  every ten minutes, `withoutOverlapping(20)`, deliberately **not** `runInBackground()` so its summary
+  line lands in the scheduler's log.
 
-  ```php
-  ->withSchedule(function (Schedule $schedule): void {        // ws-404 only
-      $schedule->command('invitations:send-pending')->everyTenMinutes()->withoutOverlapping(20);
-  })
-  ```
-
-  📌 **Corrected 2026-09-14.** This said the task never fires even on `ws-404`. True of `b69a2c37`,
-  whose own comment calls the block "documentation of the intended shape" — but `07a1c9b2` then added a
-  `backend-scheduler` (`schedule:work`) service to both compose files, so **it does fire there**, every
-  ten minutes. On `develop` the trap stands: no block, no scheduler, nothing calls `schedule:run`. See
-  [JOBS.md](JOBS.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
-- **`trustProxies()` is called here**, but only when `TRUSTED_PROXIES` is non-empty
-  (comma-separated CIDRs). Deliberately not `*`. Empty default = trust nothing, so the Laravel half is
-  inert until the var is set — that is what makes it safe to ship ahead of the nginx half
-  ([SECURITY.md](SECURITY.md) `S-16`). On `develop` since 2026-09-12.
+  ☠️ **Registered ≠ running.** Only a `schedule:work` process fires it, and the `backend-scheduler`
+  service that runs one sits behind the compose **`workers` profile, which is off by default** — a plain
+  `docker compose up -d` starts no scheduler and no queue worker. Until an environment opts in with
+  `COMPOSE_PROFILES=workers`, the only automatic recovery is `SweepPendingInvitationsJob` riding on web
+  traffic. See [DEPLOYMENT.md](DEPLOYMENT.md) for the first-boot runbook, and [JOBS.md](JOBS.md).
+  (📌 The KB's 2026-09-14 note "on `ws-404` it does fire" was true of `07a1c9b2`; the profile gate was
+  added by `9c7d0f1e` before merge.)
+- ☠️ **`trustProxies()` is now called unconditionally** (`ws-449`, 2026-09-14). `TRUSTED_PROXIES` is
+  parsed `trim(env(...)) ?: '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1'`, and `'*'` is passed
+  through as `'*'`. The old "empty default = trust nothing" gate is **gone**, and because
+  `TCV-Website/nginx.conf` (the edge) and `TCV-Frontend/nginx.conf` still trust `X-Forwarded-For` from
+  `0.0.0.0/0`, the default makes client IPs forgeable by the documented trace — read
+  [S-16 *Status 2026-09-17*](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)
+  before touching either file.
 - ⚠️ **That block reads `env()`, not `config()`, and must.** The `withMiddleware` closure runs before
   the config provider registers, so `config()` there throws `BindingResolutionException`. Consequence:
-  `TRUSTED_PROXIES` has to arrive as a real container env var — `entrypoint.sh:34` runs `config:cache`
-  on every boot, and once config is cached Laravel stops re-parsing `.env`, so a `.env`-only entry is
-  invisible here.
-- ☠️ **`TRUSTED_PROXIES` has no plumbing at all yet.** It appears nowhere in the repo except that one
-  `env()` call — in particular it is **not** in the `environment:` allowlist of either compose file, so
-  it cannot reach the container no matter who sets it. Adding it there is a code change; only then does
-  supplying a value do anything. See [ENVIRONMENT.md](ENVIRONMENT.md).
+  `TRUSTED_PROXIES` has to arrive as a real container env var — `entrypoint.sh` runs `config:cache`
+  on every web boot, and once config is cached Laravel stops re-parsing `.env`, so a `.env`-only entry is
+  invisible here. It **is** now in the compose `environment:` allowlist of both files, so an unset host
+  variable reaches the container as an empty string — which the `?:` above turns into the private-range
+  default, not into "trust nothing".
 
 ## `bootstrap/providers.php` — the list people forget
 
@@ -86,9 +87,15 @@ here simply never runs — with no error.
 | `config/filesystems.php` | `local` / `public` / `s3`; default is `local` |
 | `config/logging.php` | default `stack` → `single` ([LOGGING.md](LOGGING.md)) |
 | `config/app.php` | `frontend_url` and the derived **`frontend_app_url`** |
-| `config/mail.php` | `messages_per_connection` — **20** (`ws-404`); how many messages one SMTP connection may carry before it is recycled. ⚠️ `'default' => env('MAIL_MAILER', 'log')` — the fallback **discards mail** |
+| `config/mail.php` | `messages_per_connection` — **20** (`ws-404`); how many messages one SMTP connection may carry before it is recycled. ⚠️ `'default' => env('MAIL_MAILER', 'log')` — the fallback **discards mail**. Plus the invitation keys: `invitation_send_budget` 240 · `invitation_queue_batch_budget` 60 · `connection_retry_delay` 2 · `invitation_max_deferrals` **36** · `invitation_sweep_{interval,age_minutes,budget}` 600/15/60 · `invitation_dispatch` `after_response` ([ENVIRONMENT.md](ENVIRONMENT.md)) |
+| `config/queue.php` | `database.retry_after` — **360** (was 90, `ws-404`). ☠️ Must stay **longer** than `backend-queue`'s `--timeout=300`: below the real runtime the queue re-reserves a still-running job, two workers send the same invitation batch, and patients get duplicates. Raise both together |
 
-⭐ **`ws-404` reworks the transport list** (unmerged):
+☠️ **The default mailer is still `log`**, whatever the code comments say. `SendTestInvitationEmailsJob::isFailoverExhaustion()`'s
+docblock claims "config/mail.php ships `ses-v2` as the default" — it does not; production reaches
+`ses-v2` only because `MAIL_MAILER` is set in its environment. An environment with the variable unset
+discards every email and reports success.
+
+⭐ **`ws-404` reworks the transport list** (on `develop` since 2026-09-15):
 
 - Adds a **`ses-v2`** mailer. It talks to SES over HTTPS instead of opening an SMTP socket, which
   removes the entire failure class the rest of that file works around — nothing to refuse on `:587`, no
@@ -123,15 +130,29 @@ Every patient-facing link is built from it. Unset, it becomes the host-less `"/a
 
 ## `AppServiceProvider::boot()`
 
-Only two things:
 ```php
 Schema::defaultStringLength(191);      // legacy MySQL index-length workaround → every string col is 191
+$this->configureRateLimiting();        // the 7 named throttle: limiters — see SECURITY.md S-16
+$this->configureMigrationHealthCheck(); // DiagnosingHealth → /up fails while the migration-failure marker exists
+Event::listen(MessageSending::class, PrefixEmailSubject::class);
 $this->warnIfFrontendAppUrlLooksInvalid();
 ```
 
+⭐ **The `login` limiter has its own response callback** (2026-09-15, PR #245, `4c92b5e2` + `c6734fb3`):
+`accountLockedResponse()` returns the same 429 body as the other six **and** writes an
+`auth.account_locked` audit row, because `ThrottleRequests` rejects before `AuthController::login()` runs
+and nothing else can see a lockout. It dedups with `Cache::add("audit:login-lockout:{key}")` for
+exactly `RateLimiter::availableIn(md5('login'.$key))` seconds — the limiter's own remaining window, read
+from the key `ThrottleRequests` itself uses for a named limiter. ☠️ Rename the limiter and that `md5()`
+must change with it, or the dedup reads a key that never exists and logs a row per rejected request.
+Details in [AUDIT_TRAIL_BACKEND_CONTEXT §16](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md#16--merged-2026-09-15--lockout-audit-and-diff-fidelity).
+
 ## Config caching
 
-`entrypoint.sh` runs `config:cache` **and** `route:cache` at boot. Consequences:
+`entrypoint.sh` runs `config:cache` **and** `route:cache` at boot — ⚠️ **in the web container only**
+since `ws-404`: the block is skipped unless `RUN_INIT` is `1|true|yes` (compose sets `"true"` on
+`backend-tcv`, `"false"` on `backend-queue`/`backend-scheduler`); unset, it falls back to "is argv[0]'s
+basename `php-fpm*`". Consequences:
 
 - **`env()` returns `null` outside config files** after caching. Read `config('…')` everywhere else.
 - **A route change requires a container restart.** Locally, `php artisan route:clear`.

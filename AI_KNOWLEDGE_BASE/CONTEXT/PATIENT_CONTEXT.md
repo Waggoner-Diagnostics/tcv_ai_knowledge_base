@@ -18,6 +18,20 @@
 
 ---
 
+## ☠️ Patient PII is encrypted at rest — on `develop` since 2026-09-18 (`ws-459`, PR #255)
+
+✅ **Shipped and indexed.** This is the first thing to know before writing any patient query:
+`first_name`, `last_name`, `email`, `dob`, `zipcode` and `test_eyes` are held in the legacy
+CodeIgniter cipher with a **random IV**. No SQL comparison against those columns can match — exact
+lookups go through the keyed-md5 blind indexes (`identification`, `*_name_ident`) and substring search is
+done in PHP by `PatientNameSearch`. `patient_id` stays plaintext deliberately, which is why it is still
+matchable in SQL.
+
+Two traps that follow from it are listed below (5) and in the full pack:
+[DATA_MIGRATION_CONTEXT](DATA_MIGRATION_CONTEXT.md).
+
+---
+
 ## Shape
 
 ```php
@@ -93,6 +107,12 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
    and in `ColorVisionDiagnosisService` reads it as a raw date string.
 5. **Patients are never deduplicated.** Nothing enforces uniqueness on `email` or `patient_id`, so the
    same person invited twice becomes two `patients` rows with separate test histories.
+
+   ✅ `ws-459` (on `develop` 2026-09-18) narrows this on the **update** path only: `unique:patients,email`
+   was a silent no-op once `email` became ciphertext, and it is replaced by a check through the blind
+   index. Creation is unchanged and still admits duplicates, and `identification` is a plain index, not a
+   unique one — so `whereEmail()` can still match several rows.
+   [DATA_MIGRATION_CONTEXT](DATA_MIGRATION_CONTEXT.md).
 6. **`resendTestLink()` lives here, not in `TestInvitationController`** — `POST api/resend-test-link`
    (`auth:sanctum`). If you are changing invitation resend behaviour, there are two places.
 7. **The SPA holds `gender` in two different shapes.** The fallback selector (`AddPatient.js`) stores the
@@ -120,5 +140,5 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
 9. **The Patients menu's password prompt is a client-side speed bump.** The SPA asks for the password
    before navigating into `/user-panel/patients`, but `api/verify-password` is stateless and no patient
    endpoint knows the prompt exists — a typed URL or any in-app `navigate()` walks straight past it.
-   ws-399 (2026-08-28, unmerged) narrows it further: no re-prompt once you are already inside the
+   ws-399 (2026-08-28, merged into `TCV-Frontend@develop`) narrows it further: no re-prompt once you are already inside the
    section. [FRONTEND.md](../FRONTEND.md#the-patients-menu-password-prompt-is-client-side-only).

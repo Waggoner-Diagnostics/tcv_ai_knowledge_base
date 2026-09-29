@@ -154,6 +154,10 @@ whenever the form has anything to lose, and done silently when it does not.
 
 3. **The usage check is not atomic.** Between `validate()` and `confirmPayment()` nothing holds a lock, so
    two concurrent redemptions can both pass a `max_uses` check on the last remaining use.
+   `ws-451` (unmerged) closes this on the **$0 path only**. `PaymentController::completeFreeOrder()`
+   locks the code row before `validate()`
+   ([BILLING_CONTEXT trap 10](BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
+   The Stripe path is unchanged.
 
 4. **`value` and `minimum_order_amount` are `decimal:2` casts** — they arrive as strings from Eloquent.
    `$amount < $discount->minimum_order_amount` works via PHP's numeric-string comparison, but do not
@@ -199,3 +203,31 @@ row being edited.
 5. **Validation happens twice on different inputs.** `POST api/discount-codes/validate` validates against
    a client-supplied `amount`/`credits`; `POST api/payment/initialize` validates again with the real
    figures. Only the second one is authoritative — never grant a discount from the first call's result.
+   ⚠️ `confirmPayment()` validates against the client's `original_amount`, so "real" here depends on
+   Stripe charging the card. A code that covers the whole order (100%, or a fixed amount at or above the
+   subtotal) cannot use that path: `amount` is `min:1`. On `ws-451` (unmerged) such an order goes to
+   `POST api/payment/complete-free-order`, which prices the subtotal from `price_details` itself
+   ([BILLING_CONTEXT trap 10](BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
+6. **The admin list's sort order (`DiscountCodeController::index()`, `ws-502`, on `develop` 2026-09-17).** Allowed
+   `sort_by`: `code`, `type`, `expires_at`, `created_at`, `minimum_order_amount`, `is_active`. Anything
+   else silently becomes `created_at`. The grid's columns send `code`, `type` (the *Discount* column)
+   and `expires_at` (*Valid Until*).
+   - **`type` was missing from that list before `ws-502`**, so sorting *Discount* returned newest-first
+     in both directions. It now groups by type, then orders by `value`, because comparing 10% with
+     $10.00 means nothing. The group order is spelled out,
+     `orderByRaw("CASE WHEN type = 'fixed' THEN 0 ELSE 1 END …")`, so ascending lists *fixed* first
+     on every engine. ☠️ **Don't simplify it to `orderBy('type')`.** `type` is
+     `enum('percentage','fixed')` on MySQL (rebuild migration `2026_04_17_000001`), and MySQL orders an
+     enum by **declared position** (*percentage* first), while SQLite stores a plain string and orders it
+     alphabetically (*fixed* first). The first `ws-502` commit did exactly that, and its SQLite test pinned
+     the opposite order to dev/QA. Fixed in the 2026-09-17 review round, checked on MariaDB 10.4: the
+     `CASE` passes `DiscountCodeListSortTest` there and the plain column fails it.
+   - **`expires_at` NULL means "Never"**, so it sorts after every date ascending and before every date
+     descending (`orderByRaw('expires_at IS NULL …')`). MySQL's default puts NULLs *first* ascending.
+     Expiries are stored at `endOfDay()`, so codes expiring the same day tie exactly.
+   - **Every sort ends on `id`**, because `LIMIT/OFFSET` over ties is non-deterministic on MySQL.
+     `code` alone never ties among live rows (the unique index above), but the rest do.
+   Pinned by `tests/Feature/DiscountCodes/DiscountCodeListSortTest.php`. Its page-walk test passes even
+   without the tiebreak (SQLite sorts ties stably); the id-order test is the one that guards it. The
+   **redemptions report** had its own sort-key bug, in
+   [REPORTING_CONTEXT](REPORTING_CONTEXT.md) trap 8.

@@ -1,6 +1,6 @@
 # Routes
 
-`routes/api.php` is **15 KB, 268 lines**, registering **178 `api/*` endpoints** — small enough to read,
+`routes/api.php` is **21 KB, 351 lines**, registering **163 `api/*` endpoints** (non-QA environment; 2026-09-17 sync) — small enough to read,
 which is exactly why people read it and draw the wrong conclusion. Authorisation here is expressed
 by a route's **physical position** inside one of two group blocks. Use [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) to answer
 "is this guarded?", not the route's own line.
@@ -8,13 +8,13 @@ by a route's **physical position** inside one of two group blocks. Use [INDEXES/
 ## The three zones
 
 ```php
-// ── Zone 1: top of file, NO middleware ───────────────── 21 endpoints, 20 fully public
+// ── Zone 1: top of file, NO middleware ───────────────── 18 endpoints, 17 fully public
 Route::post('/login', …);  Route::post('/register', …);  Route::post('/password/forgot', …);  …
 
-// ── Zone 2: session-token routes ─────────────────────── 23 endpoints
+// ── Zone 2: session-token routes ─────────────────────── 21 endpoints
 Route::middleware('FlexibleAuthMiddleware')->group(function () { … });
 
-// ── Zone 3: Sanctum-only routes ──────────────────────── 134 endpoints
+// ── Zone 3: Sanctum-only routes ──────────────────────── 124 endpoints
 Route::middleware('auth:sanctum')->group(function () { … });
 ```
 
@@ -36,18 +36,22 @@ never used** ([ARCHITECTURE_REALITY.md](ARCHITECTURE_REALITY.md)).
 
 ## Zone 1 — what is public
 
-21 `api/*` endpoints sit here, plus both web routes. **20 of them are reachable with no credential at
+18 `api/*` endpoints sit here, plus the web routes. **17 of them are reachable with no credential at
 all** — the odd one out is `GET api/verify-email/{id}/{hash}`, which carries `signed`, so Laravel's
 signature check guards it even though no auth group does. That is why
-[INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) reports **20 of 178**, not 21. The full
+[INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) reports **17 of 163**, not 18. The full
 list is there. Group them by *why*:
 
 | Why it's public | Endpoints |
 |---|---|
 | Precedes a token, legitimately | `login`, `register`, `password/forgot`, `password/reset`, `password/verify-setup-token`, `verify-email-token`, `resend-verification-by-token`, `resend_email_verification_link`, `validate-token`, `countries-with-states` |
 | Authenticates by its own emailed/embedded token | `test-invitation/verify-code`, `test-invitation/check-validity`, `test/resume`, `organization/verify-signature` |
-| ⚠️ Public but broken — every handler needs `Auth::user()` | all five `stripe/*` routes ([BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)) |
+| Unauthenticated site form, by intent | `distributor-enquiry` (`throttle:10,1`, forwards to HubSpot — [SECURITY.md](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop)) |
+| SPA boot gate (`ws-449`, 2026-09-14) | `access-check` — a closure returning `{success: true}`. The global `RestrictIpMiddleware` answers a blocked client with `IP_RESTRICTED` before it runs, so reaching it *is* the answer. ⚠️ No SPA caller on `develop` yet, and its verdict is only as good as `$request->ip()` — see [S-16](SECURITY.md#s-16--every-client-shares-one-ip-rate-limits-and-ip-restriction-are-both-inert) |
 | Leftover | `reset-password/{token}` (a closure echoing the token back) |
+
+The five `stripe/*` routes that used to sit here moved inside `auth:sanctum` on 2026-09-07
+([S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop), fixed).
 
 **Re-read the public audit after every route change.** A route added at the top of the file, or after the
 closing `});` of a group, is public with no warning.

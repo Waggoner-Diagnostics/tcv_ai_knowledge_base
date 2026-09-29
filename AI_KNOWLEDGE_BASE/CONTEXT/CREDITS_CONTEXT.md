@@ -84,6 +84,21 @@ Forget the guard and PHP coerces `'Unlimited'` to `0` in a numeric comparison �
 told they have no credits. Both `TestInvitationController` and `TestController::assignTest()` do guard;
 copy their shape.
 
+⭐ **`ws-480` (on `develop` since 2026-09-18, PR #254) adds a third kind of caller: one that refuses rather than adapts.**
+An unlimited grant covers every test, so there is nothing left to sell — the credits page stops offering
+the purchase flow, and all four routed purchase handlers answer **422** instead of taking the money
+(`PaymentController::initializePayment()` / `confirmPayment()`, plus the two legacy
+`StripePaymentController` halves).
+
+📌 **The backend half does not compare against the string.** It calls
+`Credits::hasUnlimited(int $userId): bool`, the single predicate added with the fix, which wraps the
+`is_unlimited_credit` + `scopeActive()` query `getTotalUserCredit()` already ran (and which now calls it).
+Use that for any new "is this account unlimited?" decision; `=== 'Unlimited'` remains the rule only for
+code that has a `getAvailableCredits()` return value in hand. The SPA half still does a lower-cased
+string compare, because what crosses the wire is the string. See
+[BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)
+for why the refusal is returned rather than thrown, and why the two `confirm` copies log at `warning`.
+
 ---
 
 ## Where credits are spent
@@ -91,7 +106,8 @@ copy their shape.
 | Path | When | Amount | `event_type` recorded |
 |---|---|---|---|
 | `TestInvitationController::sendInvitations()` | at **queue** time, per email (`ws-404`) | 1 per invited address (always the authenticated caller since 2026-08-26) | `test_invitation` |
-| `SendTestInvitationEmailsJob::markFailed()` | **refund**, per undeliverable address (`ws-404`) | +1, as a `SOURCE_REVOKED` grant | — |
+| `SendTestInvitationEmailsJob::markFailed()` | **refund**, per undeliverable address — or per row that passed the deferral cap (`ws-404`) | +1, as a `SOURCE_REVOKED` grant, `credited_by = null` | — |
+| `SendPendingInvitations::expireStaleInvitations()` | **refund**, per row that expired while still `pending` (2026-09-15) | +1, `SOURCE_REVOKED`, `credited_by = null` | — |
 | `TestAssignmentService` (via `TestController::assignTest()`) | at **assign** time — *unless* `test_invitation_id` is present | 1 | ⚠️ `test_completion` |
 | — | never actually at completion | — | — |
 
@@ -100,16 +116,28 @@ request, so the whole batch is billed inside the insert transaction and each add
 delivered is refunded individually by the job. Consequences worth knowing:
 
 - A send that is interrupted (container restart) leaves rows at `email_status = 'pending'` **already
-  charged**. On `develop`, `php artisan invitations:send-pending` finishes them and nothing runs it
-  automatically. ⭐ Unmerged `ws-404` adds two automatic paths: `SweepPendingInvitationsJob` (dispatched
-  after the response from the send and invitation-list endpoints, so it needs web traffic) **and** the
-  scheduled command, now that the branch also ships a `backend-scheduler` service.
-  See [../JOBS.md](../JOBS.md).
+  charged**. Two automatic paths finish them on `develop`: `SweepPendingInvitationsJob` (dispatched after
+  the response from the send and invitation-list endpoints, so it needs web traffic) and the scheduled
+  `invitations:send-pending` — ☠️ the latter only where `COMPOSE_PROFILES=workers` runs
+  `backend-scheduler`, which is **off by default**. See [../JOBS.md](../JOBS.md).
+- ⭐ **A row that expires while still undelivered is now refunded** (`expireStaleInvitations()`,
+  2026-09-15). Before, it fell out of `awaitingDelivery()` (which needs `expires_at > now()`) and stayed
+  charged forever. It runs only inside `invitations:send-pending` — so without the scheduler, only when
+  an operator runs the command.
 
-⭐ **`ws-404` narrows what counts as "undeliverable", and that changes the refund rate** (unmerged). A
-refund now fires only when the SMTP server **rejected the recipient**. A failure to reach the server at
-all — refused connection, dropped socket, TLS that never completed — leaves the row `pending` with its
-charge and its live token intact, for a sweep to retry.
+⭐ **`ws-404` narrows what counts as "undeliverable", and that changes the refund rate** (on `develop`
+since 2026-09-15). A refund fires when the mail service **rejected the recipient**. Three things instead
+leave the row `pending` with its charge and live token intact for a sweep to retry: never reaching the
+host (refused connection, STARTTLS failure, SES cURL 6/7/35, SES throttling/5xx/credential errors), an
+SMTP **4xx**, and a **sender-scoped quota 5xx** such as the QA host's 200-emails/hour cap. Full rules:
+[../JOBS.md](../JOBS.md#-connection-failure-is-not-address-rejection).
+
+⚠️ **Two cases still refund that a reader might expect to defer.** (1) A post-connect socket error —
+`timed out`, `closed unexpectedly` — **fails** the row, because the server may already have accepted the
+message and a retry would mail the patient again. (2) A row deferred more than
+`mail.invitation_max_deferrals` (**36**, ≈6h of outage at one sweep per 10 min) is written off and
+refunded. A long mail outage therefore still ends in a burst of `SOURCE_REVOKED` grants — just after
+hours, not minutes.
 
 ☠️ Before this, an unreachable mail host produced a burst of `SOURCE_REVOKED` refund grants — one per
 address in flight — and revoked every one of those invitations. The credits balanced, but the customer's
@@ -117,13 +145,28 @@ patients were silently un-invited and had to be re-sent by hand. If you are reco
 across a known outage window on `develop`, that burst is the signature to look for.
 
 ⚠️ **`SendTestInvitationEmailsJob::failed()` no longer refunds either.** It used to mark the whole batch
-failed, revoked and refunded; on `ws-404` it only releases `sending` claims back to `pending`, leaving
+failed, revoked and refunded; it now only releases `sending` claims back to `pending`, leaving
 `sent` and `failed` rows alone. The job dying says nothing about whether any address is deliverable.
-This becomes reachable for the first time under `mail.invitation_dispatch=queue`.
+This is reachable only under `mail.invitation_dispatch=queue`.
 - A refunded row is also `is_revoked = true`, which deliberately blocks both resend and cancel — a
   resend would be free and a cancel would refund the same charge twice.
-- The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller. This
-  is the opposite of `cancelUnregisteredInvitation()`, which credits `auth()->user()` (the trap below).
+- The refund goes to `User::find($this->userId)`, the invitation's own owner — **not** the caller, who in
+  a sweep is whichever customer's request happened to trigger it. `cancelUnregisteredInvitation()`
+  credits `auth()->user()` instead, which is the same account there because its select is scoped to
+  `user_id = auth()->id()` (📌 an earlier KB note called that a wrong-account trap; it is not).
+- ⭐ **Every refund path is now race-guarded — one charge, one refund** (2026-09-15). `markFailed()`
+  writes only `WHERE email_status='sending' AND is_revoked=false`; `expireStaleInvitations()` only
+  `WHERE email_status='pending' AND is_revoked=false`; `cancelUnregisteredInvitation()` flips
+  `is_revoked` with `WHERE is_revoked=false` and returns **409 "This invitation has already been
+  cancelled."** if it lost. Whoever flips the flag owns the refund; the loser changes nothing. Before
+  this, the expiry refund and a user's cancel could both refund one invitation.
+
+☠️ **`Credits::addCreditsToUser($user, $credits, $creditedBy = false)`** — the third argument is new
+(2026-09-15) and its default is a sentinel, not null. `false` (omitted) → `auth()->id()`, correct when a
+human's own request triggers the grant. **Pass `creditedBy: null` from any automated path.** The sweep
+runs inside *another* customer's request, so `auth()->id()` there recorded that stranger as the person who
+refunded this customer's credit in `credits.credited_by`. The job's
+`markFailed()` and `expireStaleInvitations()` both pass `null`.
 
 ☠️ **The `event_type` values are misleading.** Both spends happen before the test is taken, but the
 direct-assign path records `EVENT_TEST_COMPLETION`. Any report filtering `credit_consume.event_type`
@@ -391,3 +434,41 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     that grant's amount and re-opens the hole it exists to close. Locked down by
     `CreditRevocationTest::test_settle_command_repairs_a_grant_spent_before_it_expired()` and
     `…_does_not_hand_back_credits_that_expired_unspent()`.
+11. **`GET api/credits` (the Add Credits grid) must not let stored stand-ins decide order** (`ws-502`,
+    on `develop` 2026-09-17). An unlimited grant is stored as `credits = 0`, and "No expiry" is `has_expiry = 0` or a
+    NULL `expiry_date`. Sorted naively, Unlimited mixed in with real zeros and "No expiry" came before
+    every date ascending. `CreditsController::index()` now orders `credits` as `is_unlimited_credit`
+    then `credits`, so Unlimited ranks above any amount, the same as the Users grid. `expiry_date` puts
+    no-expiry after every date ascending. Every sort then ends on `id`.
+    📌 **That tiebreak re-ordered an existing test.** A revocation counter-entry is written in the same
+    second as the grant it claws back. Newest-first now reliably lists the counter-entry *above* the
+    grant, where SQLite's insertion order used to put the grant first.
+    `CreditRevocationTest::test_credits_an_admin_took_back_are_not_reported_as_user_usage` now finds the
+    grant by `id` instead of reading `data.data.0`. Any new assertion on this listing should do the same.
+    Pinned by `tests/Feature/Credits/CreditListSortTest.php`. ⚠️ The grid's
+    All/Available/Used/Expired tabs still filter only the rows on screen
+    ([FRONTEND.md](../FRONTEND.md#server-sorted-grids-ws-502)).
+12. **An unlimited holder could be sold credits, and the purchase eaten later** — closed by `ws-480`
+    (on `develop` 2026-09-18). **Nothing in the credit *model* forbids it**, which is why this stays on the list: the
+    arithmetic below is still what happens if a grant reaches an unlimited account by any route the
+    refusal does not cover. `BasePaymentProvider::createTransactionRecord()` writes a finite grant beside
+    the unlimited one. While unlimited lives, `getAvailableCredits()` still answers `'Unlimited'`, so the
+    purchase shows up nowhere. When it lapses, the new grant meets **all-time** consumption — including
+    every test taken *under* unlimited — and is consumed by it: granted 10, consumed 10 under unlimited,
+    balance **0**. That is trap 10's arithmetic, reached by buying instead of by being granted, and the
+    repair is the same `credits:settle-negative-balances` (run it *before* the purchase, or the deficit
+    it would have written has already been absorbed).
+    ✅ `ws-480` now closes the door in the SPA (`CreditPage`, `Checkout`) **and on all four routed
+    purchase handlers** — `api/payment/initialize`, `api/payment/confirm`, and both legacy
+    `api/stripe/*` halves. It was for a time on the legacy surface only, which is the more useful lesson
+    ([FRONTEND.md](../FRONTEND.md#credit-purchase-gate-ws-480),
+    [BILLING_CONTEXT trap 9](BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)).
+    `ws-451` (unmerged) adds a fifth grant-writing handler, `api/payment/complete-free-order` for $0
+    orders. It carries its own copy of the refusal
+    ([BILLING_CONTEXT trap 10](BILLING_CONTEXT.md#10-a-100-discount-code-cannot-go-through-stripe-ws-451-unmerged)).
+    ⚠️ Still uncovered by the refusal: an **admin grant** to an unlimited account
+    (`CreditsController`), and `confirmACHPayment()`, which writes a grant but is not routed.
+    ⚠️ **Undoing such a purchase is not a code path that exists**: `refund()` / `partialRefund()` are
+    written but unrouted (BILLING trap 5), so it is a Stripe-side refund plus
+    `CreditsController::destroy()` on the grant — which writes a `SOURCE_ADMIN_REVOKED` counter-entry
+    (see *Admin revocation*), not a deletion.

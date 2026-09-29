@@ -41,10 +41,10 @@ for 880 s. `Storage::disk('s3')->temporaryUrl(...)` with `ResponseContentDisposi
 ☠️ `FILESYSTEM_DISK` defaults to `local`; only `SecureImageService` names `s3` explicitly. Anything that
 relies on the default disk writes to the container filesystem, which is not persisted.
 
-## AWS SES (⚠️ `ws-404`, unmerged)
+## AWS SES (`ws-404`, on `develop` since 2026-09-15)
 
 `config/services.php` has always carried SES credentials — they read the **same `AWS_*` variables the S3
-disk uses** — but no mailer selected them. `ws-404` adds a **`ses-v2`** mailer, making SES reachable with
+disk uses** — but no mailer selected them. `ws-404` added a **`ses-v2`** mailer, making SES reachable with
 `MAIL_MAILER=ses-v2` and no other change. `MAIL_MAILER` is in the compose allowlist, so this is a DevOps
 env value rather than a code change.
 
@@ -55,11 +55,36 @@ rate-limit. The connection-failure/deferral machinery in
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md) becomes a fallback path rather than the
 common one. v2 rather than legacy v1 because SES exposes its rate and reputation controls only on v2.
 
+☠️ **But SES failures do not look like SMTP failures, and the job had to learn that.** `ses-v2` wraps
+*every* `AwsException` — a refused TCP connection and a rejected recipient alike — in one
+`TransportException('Request to AWS SES V2 API failed. Reason: …')`, so a classifier written against
+Symfony's SMTP strings sorted a whole SES outage into "undeliverable address": every row revoked and
+refunded. `SendTestInvitationEmailsJob::isSesRequestThatNeverDelivered()` unwraps `getPrevious()` and
+defers only what provably never delivered — pre-request cURL errors **6/7/35** (not 28/52, which can
+land after SES accepted the call), HTTP **429/5xx**, and error codes for throttling, service
+unavailability, paused sending, and expired/invalid/denied credentials. An AWS `CredentialsException` (no
+resolvable credentials at all — raised while building the request, never wrapped) also defers.
+`MessageRejected`, invalid addresses and suppression-list hits still fail. Full table in
+[JOBS.md](JOBS.md#-connection-failure-is-not-address-rejection).
+
 ☠️ **The `failover` chain used to end in `log`, and that was not a fallback.** `log` accepts every
 message and delivers none while reporting success, so a broken primary read as a clean send and no
-patient received anything. `ws-404` changes the chain to `['ses-v2', 'smtp']`. The same trap still sits
+patient received anything. `ws-404` changed the chain to `['ses-v2', 'smtp']`. The same trap still sits
 in `config/mail.php`'s `'default' => env('MAIL_MAILER', 'log')` — an unset `MAIL_MAILER` silently
 discards all mail, which is the first thing `php artisan mail:preflight` checks for ([JOBS.md](JOBS.md)).
+⚠️ A docblock in `SendTestInvitationEmailsJob::isFailoverExhaustion()` says `ses-v2` ships as the
+default; it does not — production gets `ses-v2` from its `MAIL_MAILER` value.
+
+⚠️ **With `failover`, only `No transports found.` defers.** `All transports failed.` fails the row:
+`RoundRobinTransport` collapses both legs' errors into that string (ses-v2 contributes nothing to
+`getDebug()`), so it cannot be told from a recipient both hosts rejected.
+
+**The QA mail host is not SES.** It is a cPanel/Exim box that caps the sending domain at **200
+emails/hour** and reports the cap as a **550** (`Domain … has exceeded the max emails per hour (200/200
+(100%)) allowed. Message discarded.`) — the code a dead mailbox returns. Since `8ee517aa` (2026-09-16) the
+job recognises the sender-scoped wording and defers instead of writing the address off; before that one
+500-address QA send wrote off 286 deliverable patients. Expect large QA sends to trickle out over hours,
+not fail. Production uses `ses-v2` and has no such cap.
 
 ⚠️ **SES identity verification is account state, not config.** `mail:preflight` calls SES v2 to confirm
 the `from` address is a verified identity and reports account-level sending state; a correct config with
@@ -138,6 +163,46 @@ Per-organisation, configured in `lms_provider_configs` and dispatched through `L
 ☠️ An org can be configured for `healthstream` and launch successfully, then fail at delivery, because
 `verifySignature()` prefers it in its sort but no provider is registered
 ([CONTEXT/LMS_CONTEXT.md](CONTEXT/LMS_CONTEXT.md)).
+
+## Country and state reference data (nnjeim/world)
+
+`nnjeim/world` seeds the `countries` / `states` tables behind `DropdownValuesController::getCountriesWithStates()`
+(F-081, `GET api/countries-with-states`) — the one source for every country/state dropdown in the
+product: the website's distributor-enquiry form (`DistributorSignupClient.jsx`) and `AuthModal.jsx`
+sign-up modal, plus `TCV-Frontend`'s Register, Checkout, `NewUserModal`, `OrganisationModal`,
+Profile/Settings and Admin user tables (all via `loginSlice.js`'s `fetchCountries` thunk). **Neither
+frontend sorts the list client-side** — both render whatever order the backend returns.
+
+☠️ **The package seeds two countries under names ISO 3166-1 retired**: `iso2 = 'SZ'` as "Swaziland"
+(renamed Eswatini, 2018) and `iso2 = 'MK'` as "Macedonia" (renamed North Macedonia, 2019).
+
+✅ **`TCV-Backend fix/countries-list-update`** (`ddbeccf6`, PR #265, merge `330cf77d`) is **on `develop`
+since 2026-09-18** — verified at the 2026-09-21 sync by finding `->orderBy('name')` in
+`DropdownValuesController::getCountriesWithStates()` and the two renames in **both**
+`database/seeders/WorldSeeder.php` and
+`database/migrations/2026_09_18_000001_update_obsolete_country_names.php`. It fixes both:
+
+- `getCountriesWithStates()` now calls `->orderBy('name')`. The list previously relied on **insertion
+  order**, which only *looked* alphabetical because the package's original English names happened to be
+  seeded that way — renaming "Swaziland"→"Eswatini" and "Macedonia"→"North Macedonia" in place, without
+  an explicit sort, left them under **S** and **M** instead of **E** and **N**.
+- `2026_09_18_000001_update_obsolete_country_names.php` backfills already-seeded databases, matched by
+  `iso2` (not the old `name`, so it's immune to any spelling/casing drift in a future package version).
+- ☠️ **The migration alone does not survive a reseed.** `WorldSeeder::run()` calls the package's
+  `SeedAction`, which **truncates and reinserts all ~250 country rows** from its bundled data on every
+  run. Laravel runs migrations before seeders and never re-runs a migration already recorded as applied
+  — so on a fresh environment, or any `php artisan migrate:fresh --seed`, the migration's `UPDATE`s would
+  no-op against the still-empty table, then the seeder would silently restore "Swaziland"/"Macedonia"
+  with no error and no way to detect it. Fixed by re-applying the same two-row correction **inside
+  `WorldSeeder::run()`, immediately after `SeedAction::class`**, so it re-lands every time seeding runs
+  regardless of order. Verified by re-running `WorldSeeder` directly (a full reseed of all 250 rows) and
+  confirming both `iso2` rows stayed corrected afterward.
+- Production is not exposed to the reseed gap today — [DEPLOYMENT.md](DEPLOYMENT.md) shows deploys only
+  run `php artisan migrate --force`, never seed — but any fresh local/staging database built the normal
+  Laravel way (`migrate --seed` / `migrate:fresh --seed`) was.
+
+Once merged: regenerate and expect `INDEXES/DATABASE_TABLE_INDEX.md`'s migration count to move by one;
+no route, endpoint or table count changes otherwise.
 
 ---
 

@@ -16,6 +16,9 @@ Delivered in three phases:
 | 2 | Filter popup + filter/query logic + active-filter chips | **done** |
 | 3 | Row detail side drawer | **done** |
 | 4 | Swap fixtures for the live endpoint | **done** (2026-09-08) — `src/apis/fixtures/` deleted, the three API modules call the real endpoints |
+| — | Post-ship: impersonation display, date and enum-value formatting in the drawer | **done**, on `develop` 2026-09-15 (PRs #384, #386) — see [Post-ship changes](#post-ship-changes-on-develop-2026-09-15-prs-384--386) |
+| — | Post-ship: admin-icon rendering polish, role labels, search placeholder; impersonation stop/token refactor | **done**, on `develop` (PRs #391, #393) — see [Later develop polish](#later-develop-polish-prs-391--393) |
+| — | Post-ship: **CSV export wired**, 31-day range cap, UTC-offset date filtering, responsive toolbar | **done**, on `develop` 2026-09-18 (PR #398) — see [Export section](#post-ship-export--local-timezone-filtering-develop-2026-09-18-pr-398) |
 
 Backend work is tracked separately (see [Backend — not in phase 1](#backend--not-in-phase-1)).
 
@@ -781,3 +784,154 @@ deliberately: `USER_ROLES.CUSTOMER` is `2` while `ROLE_LABELS` in `Sidebar.js` l
   `th` and `td`, Audit ID's fixed width intact, `--admin` class on the admin actor and absent on
   a non-admin, and the four spot-checked category chips resolving to the right tone class.
   Passed, then deleted.
+
+---
+
+## Post-ship changes (on `develop` 2026-09-15, PRs #384 + #386)
+
+Three changes to what the drawer and table *render*; the API contract only gained one key.
+
+### 1. Impersonated actions lead with the admin
+
+The backend now sends `impersonator` (same person shape, `null` on ordinary rows) alongside `actor` on
+both the list and detail payloads — see
+[AUDIT_TRAIL_BACKEND_CONTEXT §15](./AUDIT_TRAIL_BACKEND_CONTEXT.md). An impersonation token belongs to the
+impersonated user, so `actor` is the account the action ran *as*.
+
+| Surface | File | What it renders when `impersonator` is set |
+|---|---|---|
+| Drawer, "Who Did It" | `pages/AuditTrail/AuditDetailDrawer.js` → `PersonCard` in `AuditDetailSections.js` | `person = impersonator`, `impersonating = actor` → an extra muted line `⟲ impersonating {actor.name}` (`FiRepeat`, `.at-personcard__impersonating`) |
+| Table, "Who Did It" column | `utils/columns/auditTrailColumns.js` → `PersonCell` | same lead; the `impersonating …` line **replaces the company line** (a 240px cell has no room for a fourth line), with a tooltip `Acting through {actor.email}`. The column `accessor` also returns the impersonator's name so react-table's row model agrees with the cell |
+
+☠️ **Two independent components render an audit person.** `PersonCard` (drawer) and `PersonCell` (table)
+share no code, and the columns file lives **outside** `pages/AuditTrail/` — which is how the first fix
+updated the drawer and missed the table. Any future change to how a person renders must be made in both.
+"Who Was Affected" never passes `impersonating`.
+
+### 2. `DetailValue` formats dates
+
+Details and What Changed carry raw column values, so a logged date reached a super admin in storage
+format — and a naive datetime in UTC. `formatMaybeDate()` (exported) rewrites exactly three string shapes
+and leaves everything else (ids, coupon codes, version strings) alone:
+
+| Shape | Regex | `parseDateTimeString` type | Renders |
+|---|---|---|---|
+| date only | `^\d{4}-\d{2}-\d{2}$` | `2` | `June 9, 2026` |
+| naive datetime (stored UTC) | `^…[T ]HH:mm:ss$` | `18` — `moment.utc(…).local()` | `Jun 9, 2026 04:03 PM` in the viewer's zone |
+| zoned / ISO | `…(\.\d+)?(Z\|±HH:MM)$` | `23` | `June 9, 2026, 04:03:49 PM` |
+
+It runs before the array/long-text/enum branches and on each array item.
+
+⚠️ **This interacts with the backend's own date handling.** Since `3e42305d`/`c6734fb3` `BuildsAuditDiffs`
+already truncates datetime-cast fields to `Y-m-d` before logging — *except* when that truncation would make
+a same-day, time-only change look like a no-op, in which case it sends the full `Y-m-d H:i:s`. So a
+What Changed row normally arrives date-only (type 2), and a naive datetime (type 18, **converted to local
+time**) means "only the time of day changed".
+
+### 3. `DetailValue` title-cases enum-like strings
+
+`isEnumLikeValue()` matches only `^[a-z]+(_[a-z]+)*$` — a raw enum/type column the backend did not format
+(`test_link`, `requires_payment_method`) — and renders it through `formatFieldLabel` (`Test Link`).
+Anything with a digit, an uppercase letter or other punctuation is left exactly as sent, so Stripe ids
+(`pi_3Nx…`), uppercase coupon codes, emails, UUIDs and IPs are never mangled. ⚠️ A genuinely lowercase
+single word (`active`, `pending`) *is* enum-like and will render capitalised — intended, but do not rely
+on `DetailValue` to show a lowercase literal verbatim.
+
+### Verification
+
+`AuditDetailSections.test.js` (+111 lines) and a new `utils/columns/auditTrailColumns.test.js` (+73) —
+**18** `it`/`test` cases across the two files on `develop`, covering the impersonation card and cell,
+date shapes, and the enum-like guard. Counted, not run, for the 2026-09-17 KB sync.
+
+---
+
+## Later develop polish (PRs #391, #393)
+
+Two PRs merged to `develop` after the #384/#386 pass above and after the 2026-09-17 KB sync. Both touch how
+an audit **person** renders, so re-read the ☠️ two-components warning above before changing either surface.
+
+**#391 (`53bccaf`)** — role-label clarity, an **admin icon** shown next to the name in both `PersonCard`
+(drawer, `AuditDetailSections.js`) and `PersonCell` (table, `auditTrailColumns.js`), a clearer search
+placeholder, and matching `.scss`. Also edits `UserPannel/Header/Header.js` (impersonation banner) alongside.
+
+**#393 (`0280dc1`)** — impersonation **stop logic + token management** refactor: `hooks/UseAdminLogin.js`,
+`services/WindowManager.js`, `UserPannel/Header/Header.js`, plus an **admin-icon accessibility** touch in
+`PersonCard`/`PersonCell`. Mostly the impersonation *login* flow rather than the audit page itself — recorded
+here only for the audit-person rendering it changes.
+
+---
+
+## Post-ship: export + local-timezone filtering (`develop` 2026-09-18, PR #398)
+
+> ✅ **On `develop` 2026-09-18** (PR #398, merge `432f046`; branch `feat/audit-trail-export-18-sep`, commits
+> `c24fbbc`, `b35cc7f`, `ff77396`). Backend counterpart merged as PR #261 — see
+> [AUDIT_TRAIL_BACKEND_CONTEXT §17](./AUDIT_TRAIL_BACKEND_CONTEXT.md#17--merged--csv-export--local-timezone-date-filtering-feataudit-trail-export-18-sep).
+
+Wires the Export button (a no-op since phase 1), enforces the backend's 31-day cap in the calendar, and fixes
+the viewer-timezone gap the plan flagged in §10 of both docs.
+
+### 1. CSV export — `src/apis/exportAuditLogs.js` (new)
+
+- `exportAuditLogs({ search, status, filters })` → `axiosInstance.get('/api/audit-logs/export', { params,
+  responseType: 'blob', skipErrorPopup: true })`. Reuses **the same `toQueryParams()`** the table uses, minus
+  `page`/`limit` (whole matched set) and `sortBy`/`sortOrder` (file is always newest-first). `skipErrorPopup`
+  because `AuditTrail.js` renders its own popup.
+- ☠️ **`messageFromBlobError()` un-wraps the error.** With `responseType: 'blob'` the error body arrives as a
+  **Blob**, so `AxiosInstance`'s interceptor reads `data?.error_code` off a Blob and finds nothing — the real
+  reason (row cap, date cap, 403) would be lost. This reads `await blob.text()`, `JSON.parse`s it, and pulls
+  the nested `errors[0]` (ValidationException shape) or flat `message` (`ApiResponse::error` shape).
+- Returns `{ url, fileName }` (object URL the caller must revoke); reads `Content-Disposition` for the name.
+
+**`AuditTrail.js` — `handleExport()`:** `exporting` state; the anchor-click download dance (same as
+`Reports/UserTests.js`); **`window.URL.revokeObjectURL` on a 1.5 s delay** (Safari aborts a download whose
+URL is released in the same tick as the click); on error, `showPopup` with the un-wrapped `err.message`. The
+button loses its `disabled`/caret, gains `onClick={handleExport}`, and is disabled while
+`exporting || loading || total === 0` (title "Nothing to export" at zero). The caret/`FiChevronDown` is gone
+— it had promised a format dropdown, and CSV is the only format.
+
+### 2. 31-day range cap — `MAX_DATE_RANGE_DAYS = 31` in `constants/auditTrail.js`
+
+**Must match `ValidatesAuditDateRange::MAX_DATE_RANGE_DAYS` on the backend.** Only constrains Custom Range
+(every preset already fits). Enforcement is in `AuditDateRange.js`:
+
+- **The calendar clamps mid-selection.** While a range is half-picked (start clicked, end not), `minDate` =
+  start and `maxDate` = `start + 30 days` (or today, whichever is sooner) via a `useMemo` — an over-long range
+  simply cannot be selected. Outside that half-picked state the bounds are unchanged, so picking a fresh start
+  is never blocked. A visible hint ("Maximum range selection: 31 days") states the rule, because a calendar
+  cell that silently stops responding reads as a bug. The month/year nav arrows also grey out at the window
+  edge mid-selection — intended.
+- `exceedsMaxRange()` in `handleApply()` is a **backstop** ("unreachable given the clamped calendar, but this
+  is the function that writes filter state and shouldn't depend on the picker for its invariant").
+- New helpers in `auditFilters.js`: `rangeLengthInDays(from, to)` (inclusive of both boundary days) and
+  `exceedsMaxRange(from, to)`.
+
+### 3. UTC-offset date filtering — `toQueryParams()` refactor (`ff77396`)
+
+The fix for §10's viewer-timezone-vs-UTC gap. The window is stated once as `from`/`to` (local calendar dates,
+capped at 31 days); `toQueryParams()` now **also sends `from_offset`/`to_offset`** — the viewer's UTC offset
+in **minutes** (`moment.utcOffset()`, IST = 330), taken **per boundary** (`startOf('day')` for from,
+`endOf('day')` for to) so a range spanning a DST change carries the right offset at each end. The server
+derives the UTC instants from these together (see backend §17).
+
+- **Offsets, not instants, deliberately** — same reasoning as the backend: stating instants directly would let
+  a 1-day `from`/`to` smuggle a 10-year instant range past the cap.
+- **Paired** — both sent or neither (one half alone puts the boundaries in different zones, which the API
+  rejects). ⚠️ **0 is a legitimate offset (UTC)**, so `utcOffsetAt()` results are checked `!== null`, never
+  for truthiness — an off-by-one that would drop the offset for a UTC viewer.
+
+### 4. Responsive toolbar — `useRowWrapped` hook (new, `b35cc7f`)
+
+`useRowWrapped(ref)` returns true when a flex container's direct children have wrapped to more than one line,
+measured with a `ResizeObserver` in a `useLayoutEffect` (before paint, or the toolbar renders right-aligned
+for a frame then jumps). Used to right-align the toolbar while it shares the header line and spread it full
+width once it drops to its own line — a fact about the **laid-out result**, not the viewport, because the
+dashboard sidebar collapses 285→65 px on toggle so no single breakpoint is correct in both states. ⚠️ Only
+switch properties that **don't** change measured geometry (e.g. `justify-content`), or the observer feeds back.
+`AuditFilterPanel` also gains a backdrop-click-to-dismiss (`.at-filters__card` wrapper) for the tablet-and-below
+full-screen layout; `AuditTrail.scss` gains the responsive rules.
+
+### Tests
+
+`auditFilters.test.js` (+132 lines — `rangeLengthInDays`, `exceedsMaxRange`, offset pairing incl. the UTC-0
+case) and `AuditDateRange.test.js` (+80 — the clamped calendar and the hint). Counted, not run, for the
+2026-09-18 KB sync.

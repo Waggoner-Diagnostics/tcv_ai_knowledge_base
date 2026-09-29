@@ -33,6 +33,7 @@ See [GUIDES/HOW_TO_DEBUG.md](GUIDES/HOW_TO_DEBUG.md).
 |---|---|
 | `AuthController` | login gates, verification-token issue/use, password changes — with `user_id`, `email`, `ip` |
 | `TestInvitationController` | credits consumed, invitations sent |
+| `TestInvitationMailer` | one `info` per sent invitation (with `template_type` since `ws-401`) and two warnings for a mail that went out degraded — see *Levels in use* |
 | `TestExecutionService` | invitation marked used, and failures |
 | `SecureImageService` | `Unauthorized plate access attempt` (warning) and signing failures |
 | `LmsLaunchService` / `ProcessLmsDeliveryJob` | session created, delivery attempts, dead letters |
@@ -64,8 +65,25 @@ bodies (`Log::info('Performing test.', ['request' => $request->all()])`,
 ## Levels in use
 
 `Log::info` dominates — including for routine successes, which makes the file noisy at
-`LOG_LEVEL=debug`. `Log::error` for failures, `Log::warning` only in `SecureImageService`,
-`ProcessLmsDeliveryJob` and — on `ws-401` — the bracket-placeholder repair migration.
+`LOG_LEVEL=debug`. `Log::error` for failures, `Log::warning` in `SecureImageService`,
+`ProcessLmsDeliveryJob`, `TestInvitationMailer` (two lines, below) and the `ws-401`
+bracket-placeholder repair migration. `ws-401`'s `2026_09_22_000003` logs one `info` per
+`org_test_link` body it repaired (`table`, `id`), and a `warning` if it cannot clear the cached default.
+
+⭐ **`TestInvitationMailer`'s two warnings both mean "the mail went out, but wrong".** Neither fails the
+send, so the log line is the only report that exists — the same shape as the migration note below.
+`Invitation link restyle failed, sending unstyled content` (`ws-373`) means PCRE gave up on a long body
+and the Start Test button shipped unstyled. `Organization invitation has no organization name to
+substitute` (`ws-401`, on `develop` since 2026-09-21) means an organization account has neither an
+`organizations` row nor a `company_name`, so the invitation's sign-off went out with a blank line where
+the sender's identity belongs. The second is an account-data fault, not a mail fault — fix the row, do
+not chase the mailer ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)).
+
+⚠️ **Count the emissions, not just the wording, when a warning sits on a per-recipient path.** That
+second line is account-level but was being written once per *recipient*, so one misconfigured
+organization sending a 500-address batch produced up to 500 identical entries — enough to bury the
+finding it exists to report. `ws-401` review round two guards it with a set keyed on the sender's id. A
+warning whose context names an account and whose emission follows an address is the pattern to look for.
 
 ⭐ **A data migration's log line is sometimes the only report that will ever exist.** `ws-401`'s
 `2026_09_03_000002_normalize_legacy_bracket_placeholders_in_email_templates` warns on each row it

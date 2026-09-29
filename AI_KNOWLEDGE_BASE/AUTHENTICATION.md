@@ -45,9 +45,10 @@ Three additional credential types exist, all resolved by `FlexibleAuthMiddleware
 | LMS session | `lms_sessions.session_token` | **SHA-256** of a 32-byte random | 120 or 180 min (provider config) |
 | Legacy org session | `organization_patient_sessions.token` | **SHA-256 hashed** (same merge and backfill) | per row |
 
-⚠️ **Neither `test_sessions.patient_id` nor `invalidated_reason` exists on `develop`** — the table has
-only its create migration and the one making `test_invitation_id` nullable. On unmerged
-`tcv-backend-codefix` it gains `patient_id` (nullable — set for org-added-patient sessions, which carry
+📌 **Both `test_sessions.patient_id` and `invalidated_reason` exist on `develop`** (verified 2026-09-17 —
+`2026_09_02_000001_add_patient_id_to_test_sessions_table` and
+`2026_08_17_092413_add_invalidated_reason_to_test_sessions_table`); the earlier "neither exists" note
+predates the `tcv-backend-codefix` merge. That branch added `patient_id` (nullable — set for org-added-patient sessions, which carry
 no invitation) and `invalidated_reason` (distinguishing a deliberately superseded session from one that
 simply expired); those columns are what the `auth_context` request attribute is built on. See
 [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md#the-four-token-tiers) for why reading merged request

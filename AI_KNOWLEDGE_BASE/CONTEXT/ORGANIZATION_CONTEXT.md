@@ -104,3 +104,23 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    compare with a tolerance, or better, don't compare at all.
 6. **The org's user and the org row are separate lifecycles.** Look up by `Organization::where('user_id', …)`
    (as `SendAfterPasswordReset` does), not by assuming `$user->organization` is loaded.
+7. **`GET api/organizations` sorting** (`OrganizationController::index()`, `ws-502`, on `develop` 2026-09-17).
+   `sortBy`/`sortOrder` (camelCase), allow-listed. `account_status` and `credits` **inner-join
+   `users`**, which is safe only because `organizations.user_id` is NOT NULL. `compliance` left-joins
+   `compliances` and orders by its name, with no compliance last ascending. **Every sort now ends on
+   `organizations.id`** (qualified, because of those joins). Before `ws-502` none had a tiebreak. With
+   most orgs on one compliance and many at 0/Unlimited credits, Status, Compliance and Credits
+   repeated or dropped rows across pages on MySQL. ⚠️ **Tests need `Sanctum::actingAs($user,
+   ['view-organizations'])`.** The policy checks `tokenCan()`, so plain `actingAs()` gets "This action
+   is unauthorized" wrapped in a **500** by the controller's catch-all. Pinned by
+   `tests/Feature/Organizations/OrganizationListSortTest.php`.
+8. ☠️ **Compliance row ids are load-bearing on the frontend — never renumber them.** `validations.js`
+   requires `static_ip` unless `compliance_id === "1"`, and `OrganisationModal.js` hides the asterisk on
+   the same literal, so *which row holds "AICC/SABA"* is a contract rather than an implementation
+   detail. The data migration duplicated `compliances` (3–4 alongside the seeded 1–2) and
+   `organization_types` (6 names twice), then bound every migrated org to the duplicate — silently making
+   Static IP a required field for **57** organisations. `ws-459` merges duplicates onto the **lowest** id
+   precisely to keep `1` = AICC/SABA, and the dropdown endpoints (`DropdownValuesController`, no
+   `DISTINCT`, no ordering) return one row per option, so any duplicate row *is* a duplicate option. See
+   [DATA_MIGRATION_CONTEXT trap 8](DATA_MIGRATION_CONTEXT.md). Pinned by
+   `tests/Feature/Organizations/OrganizationLookupDuplicatesTest.php`.

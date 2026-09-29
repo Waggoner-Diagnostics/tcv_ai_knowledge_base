@@ -16,14 +16,14 @@
 | Services | **35** | **Where the business logic lives.** Includes an 11-class `Lms/` subtree, plus `TestInvitationMailer` (`ws-404`), plus `Audit/AuditService` + `Audit/AuditEventCatalog` (on `develop` since 2026-09-09). |
 | Models | **41** | Eloquent, 70 declared relationships. `AuditLog` is the newest. |
 | FormRequests | **25** | Validation is genuinely centralised here — follow this. |
-| Middleware | **4** | One global (`RestrictIpMiddleware`), two aliased, and `EnsureTokenIsValid` — dead but **still present** on `develop` — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
+| Middleware | **4** | Two global (`AddRequestId` prepended, `RestrictIpMiddleware` appended) and two aliased (`FlexibleAuthMiddleware`, `lms.status`). `EnsureTokenIsValid` is deleted — see below and [MIDDLEWARE.md](MIDDLEWARE.md). |
 | Policies | **3** | `TestPolicy`, `OrgPolicy`, `CreditsPolicy` — registered via `AuthServiceProvider`. |
 | Events / Listeners | **3 / 4** | Wired by **auto-discovery** + `LmsServiceProvider` + one explicit `AppServiceProvider` hook (`PrefixEmailSubject`, `ws-417`) — *not* by `EventServiceProvider`. |
-| Jobs | **2** | `ProcessLmsDeliveryJob` (`database` queue driver) · `SendTestInvitationEmailsJob` (`ws-404` — batches invitation sends). |
+| Jobs | **3** | `ProcessLmsDeliveryJob` (`database` queue driver) · `SendTestInvitationEmailsJob` (batches invitation sends) · `SweepPendingInvitationsJob` (re-sends stranded rows on web traffic) — the last two from `ws-404`, on `develop` since 2026-09-15. |
 | Notifications | 3 | `ResetPasswordNotification`, `VerifyEmailNotification`, `OrganizationTestUrlNotification`. |
 | Mail | 1 | `VerifyEmail` mailable. Most mail is sent as raw HTML instead — see below. |
 | Exports | 3 | `maatwebsite/excel`. |
-| Console commands | **5** | `UploadTestPlates` · `BackfillStripeSourceApp` · `CheckEmailTemplatePlaceholders` · `SendPendingInvitations` (recovers stranded invitation sends) · `SettleNegativeCreditBalances`. Unmerged `ws-404` adds a sixth, `MailPreflight`. **Still nothing scheduled** — `routes/console.php` registers only the stock `inspire` command; run these manually or wire a scheduler. |
+| Console commands | **6** | `UploadTestPlates` · `BackfillStripeSourceApp` · `CheckEmailTemplatePlaceholders` · `SendPendingInvitations` (recovers stranded sends, refunds expired ones) · `SettleNegativeCreditBalances` · `MailPreflight` (`ws-404`). **One is scheduled** — `invitations:send-pending` every 10 min in `bootstrap/app.php` — but ☠️ only a `backend-scheduler` container runs it, and that sits behind the compose `workers` profile, **off by default**. |
 | Rules | 1 | `TurnstileToken`. |
 | Traits | 1 | `Searchable` — the shared query-search scope. |
 
@@ -68,13 +68,12 @@ Full picture: [INDEXES/EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) · [EVENTS.md](EV
 
 ### 2. `EnsureTokenIsValid` middleware — deleted
 
-`app/Http/Middleware/EnsureTokenIsValid.php` is never aliased in `bootstrap/app.php` and appears in no
-route. Confirmed dead — and **still present on `develop`** (verified at `486a5cef`). It is deleted only
-on `tcv-backend-codefix` (merged into `develop`), which also adds `AddRequestId` in its `MW-001` slot,
-a real global middleware stamping a correlation id onto every request/log line — neither change has
-shipped, so `develop` has no request correlation. Do not reach for `EnsureTokenIsValid` when you need a
-guard — use `auth:sanctum` or `FlexibleAuthMiddleware`
-([MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md)).
+`app/Http/Middleware/EnsureTokenIsValid.php` was never aliased and appeared in no route. It is **gone from
+`develop`** (verified 2026-09-17 — `app/Http/Middleware/` holds four files, none of them this) since
+`tcv-backend-codefix` merged, which also added `AddRequestId` in its `MW-001` slot, a real global
+middleware stamping a correlation id onto every request/log line. 📌 The earlier "still present, neither
+change has shipped" wording was stale. If you find it in an old branch, do not reach for it — use
+`auth:sanctum` or `FlexibleAuthMiddleware` ([MIDDLEWARE.md](MIDDLEWARE.md), [LOGGING.md](LOGGING.md)).
 
 ### 3. `app/Repositories` holds exactly one class
 
@@ -108,7 +107,7 @@ shape**; check the `catch` before assuming a template problem would surface.
 subjects. See [EVENTS.md](EVENTS.md).
 
 **Every DB-template path now ends in one shared cleanup step** — `App\Support\EmailContent::linkify()`
-(`ws-373`, 2026-08-31 — merged into `ws-404` on 2026-09-01, not yet deployed). It runs **after**
+(`ws-373`, 2026-08-31 — merged into `ws-404` on 2026-09-01, on `develop` since 2026-09-15). It runs **after**
 placeholder substitution in `AuthController::sendVerificationEmailForUser()`,
 `ResetPasswordNotification::toMail()` and `TestInvitationMailer::send()` (the invitation call site moved
 there in `ws-404`; the merge deliberately kept both the extraction and this pass), and wraps
@@ -121,19 +120,20 @@ inside `<style>`/`<script>`, and URLs sitting in an attribute. Adding a fifth se
 calling it too — see [CONTEXT/AUTH_CONTEXT.md](CONTEXT/AUTH_CONTEXT.md) and
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
 
-### 5. Nothing is scheduled
+### 5. A schedule and a worker exist — and by default neither runs
 
-`routes/console.php` registers only the stock `inspire` command, and there is no
-`->withSchedule(...)` in `bootstrap/app.php` on `develop`. `ProcessLmsDeliveryJob` is queued on the
-`database` driver and **no queue worker service exists in either compose file** — so unless a worker
-runs elsewhere, LMS deliveries sit in `jobs` unprocessed. See [QUEUES.md](QUEUES.md).
+Since `ws-404` merged (2026-09-15), `bootstrap/app.php` has a `->withSchedule(...)` with one task
+(`invitations:send-pending`, every ten minutes), and both compose files define **`backend-queue`**
+(`queue:work --queue=lms,default`) and **`backend-scheduler`** (`schedule:work`). ☠️ **Both services carry
+`profiles: ["workers"]`**, so `docker compose up -d` starts neither. On an environment that has not set
+`COMPOSE_PROFILES=workers`, the schedule is inert and `ProcessLmsDeliveryJob` still sits in `jobs`
+unprocessed — exactly the old state, with code that *looks* wired. The only recovery that runs everywhere
+is `SweepPendingInvitationsJob`, riding on web traffic.
 
-📌 **Corrected 2026-09-14.** This said only `SweepPendingInvitationsJob` runs unattended on `ws-404`,
-the scheduled entry staying inert for want of a scheduler process. That held for `b69a2c37`; the
-branch's second work commit (`07a1c9b2`) adds **`backend-queue`** and **`backend-scheduler`** services to
-both compose files. On `ws-404`, therefore, the schedule fires, the `database` queue is consumed, and
-this heading's two claims — nothing scheduled, no worker in either compose file — are **`develop`-only**.
-See [JOBS.md](JOBS.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
+📌 The KB's 2026-09-14 correction said "on `ws-404` the schedule fires, the queue is consumed". That
+described `07a1c9b2`; `9c7d0f1e` added the profile gate before merge, deliberately, because first boot
+drains months of backlog. See [JOBS.md](JOBS.md), [QUEUES.md](QUEUES.md) and the runbook in
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
@@ -143,11 +143,11 @@ It is a **service-oriented Laravel app with an unusually wide authentication sur
 
 ```mermaid
 graph TD
-    R["routes/api.php<br/>15KB, two guard groups"] --> G["RestrictIpMiddleware<br/>GLOBAL — DB hit on every request"]
+    R["routes/api.php<br/>21KB, two guard groups"] --> G["RestrictIpMiddleware<br/>GLOBAL — DB hit on every request"]
     G --> A{"Which guard?"}
     A -->|"auth:sanctum"| S1["Admin / customer / org user<br/>15-min token"]
     A -->|"FlexibleAuthMiddleware"| S2["4 token tiers:<br/>Sanctum · TestSession · LmsSession · OrgPatientSession"]
-    A -->|"none — 15 routes"| S3["Public"]
+    A -->|"none — 17 routes"| S3["Public"]
     S1 --> C["Controller (34)"]
     S2 --> C
     S3 --> C
