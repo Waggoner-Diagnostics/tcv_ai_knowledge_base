@@ -222,7 +222,10 @@ the launch's `AICC_SID` is the only session key.
   `getPatientForm()` returns it as `prefill: {first_name, last_name}` (split on the **first** whitespace
   only, so "van der Berg" survives; `[]` for every non-LMS tier). The SPA uses it only where the org's
   own verification data left the field empty. A convenience, never an identity claim. For HealthStream
-  `learnerDetails()` also returns `patient_id` = the AICC `student_id`, as legacy stored it.
+  `learnerDetails()` also returns `patient_id` = the AICC `student_id`, as legacy stored it, and that one
+  is **not** a convenience: `storeDefaultPatient()` always overwrites `patient_id` with it, and the SPA
+  shows the field read-only (`lockedFields` on `PatientFormFields`). Legacy's form made it `readonly`
+  and looked results up by it.
 - **Patient save is the ordinary one.** `storeDefaultPatient()` merges the launch name / `student_id`
   into `$patientData` (only where the form left the field blank; server-side session, never the request)
   and then calls the same `Patient::create()` as every other org patient — so the name, email, DOB, zip
@@ -258,6 +261,17 @@ compared `$org->id === 3148` and so never flagged it; it now tests `user_id`. It
 `insertOrIgnore` stored `''` without an error. It now writes `cornerstone` or `default`. Nothing reads
 `form_type` except `=== 'prolific'`, so the empty value was harmless. Databases migrated before the fix
 need `UPDATE organization_configs SET is_healthstream = 1, is_active = 1 WHERE organization_id = 36;`.
+
+☠️ **Migrated orgs had no name fields (fixed in `ws-460`).** The new form hides every field whose option
+is not in `organization_configs.fields`, and the migration only mapped legacy's *flags*. Legacy's
+patient form (`views/website/organization/edit-user.php`) always required First/Last Name and Email, and
+DOB except for six orgs, with no flag, so every migrated org lost them (dev: 0 of 63 had First Name).
+A HealthStream learner whose `GetParam` returned no name was then saved nameless, e.g. dev patient 46764.
+Legacy never let that reach a test: all 33 nameless legacy HealthStream patients have no completed test.
+`legacyAlwaysShownFields()` now adds them, except for anonymised orgs, which skipped legacy's form, and
+DOB for owner **user** ids 35538/35648/35649/36125/38401/38596 (org rows 71/72/73/75/76/77; legacy's
+`org_id` is the owner's user id). Already-migrated databases were fixed with a one-off
+`JSON_ARRAY_APPEND` per option (dev, 2026-09-29: 62 of 63, the anonymous org excluded).
 
 ---
 
