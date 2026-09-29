@@ -249,10 +249,15 @@ keeps the stored value rather than resetting it to HealthStream's shared endpoin
 Nothing in the new system answers that path, and deliberately no compatibility route: it would be an
 unsigned launch. HealthStream must be given the new signed URL. Legacy's
 `/v2/healthstream/results?AICC_SID=` (look up by `student_id`, redirect to the result) has no equivalent
-either; its caller was never identified. The migration marks the HealthStream org with
-`$org->id === 3148` (`MigrateTcvUsersAndOrganizations::migrateOrganizationConfigs`) while legacy keys it
-on `tcv_organization.user_id` — confirm the two match before relying on `is_healthstream` auto-detection;
-`--org=` works either way.
+either; its caller was never identified.
+
+**HealthStream org = new/legacy org id 36, legacy user 3148** (checked against the prod backup,
+2026-09-29). `ws-460` fixed `MigrateTcvUsersAndOrganizations::migrateOrganizationConfigs()`, which
+compared `$org->id === 3148` and so never flagged it; it now tests `user_id`. It also wrote
+`form_type = 'lms'`, which is not in the enum (`default/custom/prolific/cornerstone`), and
+`insertOrIgnore` stored `''` without an error. It now writes `cornerstone` or `default`. Nothing reads
+`form_type` except `=== 'prolific'`, so the empty value was harmless. Databases migrated before the fix
+need `UPDATE organization_configs SET is_healthstream = 1, is_active = 1 WHERE organization_id = 36;`.
 
 ---
 
