@@ -94,6 +94,12 @@ HealthStream's `GetParam` supplied at launch, as `{first_name, last_name}`, or `
 `OrganizationPatient.js` reads `AICC_SID` / `AICC_URL` from the test URL case-insensitively before
 posting them to `verify-signature` ([LMS_CONTEXT](LMS_CONTEXT.md#healthstream--aicc-ws-460-branch-only)).
 
+☠️ **On `develop` the Patient ID typed on `patient/default` is lost** under an LMS (tier 3) or
+org-patient (tier 4) session: `FlexibleAuthMiddleware` merges the session's own `patient_id` (null
+before the store) over the request field of the same name. 🚧 `ws-460` fixes it with the
+`SUBMITTED_PATIENT_ID` request attribute, captured before any tier runs. Don't read
+`$request->input('patient_id')` behind this middleware expecting user input.
+
 ---
 
 ## ☠️ Traps

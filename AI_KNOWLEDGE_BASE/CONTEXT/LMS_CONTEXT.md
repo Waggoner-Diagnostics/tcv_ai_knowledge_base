@@ -144,7 +144,12 @@ missing from their transcript, with the row sitting at `pending` forever. Run
 ⚠️ After-response delivery holds a php-fpm child for the outbound call, which is why the HealthStream
 defaults cap `delivery_timeout_seconds` at 30. `lms:deliver-pending` is safe beside a real worker because
 of the claim above. ⚠️ A row stuck `in_flight` (job died mid-delivery) is never picked up again by
-either path — watch `stuck_in_flight` on `delivery-status` and replay it by hand.
+either path — watch `stuck_in_flight` on `delivery-status`. **There is no API to recover it:**
+`replayDeadLetter()` refuses anything not `dead_letter`. Confirm in HealthStream that the score did not
+land, then `UPDATE lms_delivery_queue SET status = 'pending' WHERE id = …` by hand. Deliberately **not**
+automated (`ws-460` review, 2026-09-30): the process may have died *after* HealthStream accepted the
+PutParam, and an automatic reclaim would report the completion twice — the exact thing the claim exists
+to prevent. Same gap on `develop`.
 
 **Idempotency** is enforced at enqueue time, not delivery time: `enqueueCompletion()` refuses a second
 row for the same session + event, and `enqueueSectionProgress()` derives a deterministic key from
@@ -237,6 +242,12 @@ the launch's `AICC_SID` is the only session key.
   and test eyes are stored **encrypted in the legacy format with blind indexes** before the test starts,
   and `patient_id` stays plaintext exactly as in legacy. Pinned by
   `test_healthstream_patient_is_stored_encrypted_like_any_other_patient`.
+- ☠️ **`patient_id` in the request is not what the learner typed (fixed on `ws-460`).** Tiers 3 and 4 of
+  `FlexibleAuthMiddleware` `merge()` the session's internal `patient_id` (null until the form is stored)
+  over the request, so on `develop` a Patient ID typed on the org form is silently discarded. `ws-460`
+  stashes the raw value first as the request attribute `FlexibleAuthMiddleware::SUBMITTED_PATIENT_ID`,
+  and `storeDefaultPatient()` reads that. It is a label to store, **never** an id to authorise with. For
+  HealthStream the `student_id` then overrides it (above).
 - **Frontend (`ws-460`).** `OrganizationPatient.js` now reads `AICC_SID` / `AICC_URL` **case-
   insensitively** — HealthStream sends upper, the AICC spec writes lower. Reading one spelling loses the
   SID silently: the learner passes and the result dead-letters. `VerifiedDefaultUser.js` merges

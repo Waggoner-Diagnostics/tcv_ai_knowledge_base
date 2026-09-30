@@ -237,9 +237,10 @@ commit (`02f8c5d8`) put both columns in `User::$hidden`. Every endpoint those sc
 
 ### 🚧 `ws-460` HealthStream AICC — prose only, not indexed
 
-Branch `ws-460`, **not merged** as of 2026-09-23: backend `918b0bd4` (20 files, +2291/−33, includes the
-`ws-459` merge), frontend `8ea38de` (2 files). Local refs only — `git fetch` fails from this shell, so
-these are what the IDE last fetched (2026-09-22). **Not regenerated**: `INDEXES/*` still show `develop`,
+Branch `ws-460`, **not merged** as of 2026-09-30: backend `71d72732` (26 files, +2753/−55 against
+`develop` `a5938b2e`; the 2026-09-30 PR review added three comment/docblock fixes, uncommitted),
+frontend `8ea38de` (2 files, last recorded 2026-09-23, not re-checked). Local refs only — `git fetch` fails from this shell, so
+these are what the IDE last fetched. **Not regenerated**: `INDEXES/*` still show `develop`,
 so no HealthStream provider, no `super.admin` on `api/admin/lms/*`, and the old console-command /
 middleware counts. Regenerate only after the merge.
 
@@ -253,6 +254,8 @@ What it changes, and where it is written up:
   [ENVIRONMENT](ENVIRONMENT.md) · [DEPLOYMENT](DEPLOYMENT.md)
 - `super.admin` on `api/admin/lms/*` — [S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)
   (access half; **not** marked fixed) · [MIDDLEWARE](MIDDLEWARE.md)
+- Typed Patient ID survives tier-3/4 sessions (`SUBMITTED_PATIENT_ID`) —
+  [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md)
 - `redirectGuestsTo(fn () => null)` — guest requests without `Accept: application/json` stop 500-ing
   ([ERROR_HANDLING](ERROR_HANDLING.md))
 - Traps for all of it: [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md#lms--healthstream--ws-460-branch-only--not-on-develop-2026-09-23)
