@@ -239,7 +239,8 @@ commit (`02f8c5d8`) put both columns in `User::$hidden`. Every endpoint those sc
 
 Branch `ws-460`, **not merged** as of 2026-09-30: backend `71d72732` (26 files, +2753/−55 against
 `develop` `a5938b2e`; the 2026-09-30 PR review added three comment/docblock fixes, uncommitted),
-frontend `8ea38de` (2 files, last recorded 2026-09-23, not re-checked). Local refs only — `git fetch` fails from this shell, so
+frontend `5861f68` (4 files, +60/−21 against `develop` `308fe7a`; the 2026-09-30 PR review hoisted
+`getParamIgnoringCase()` out of the component for `exhaustive-deps`, uncommitted). Local refs only — `git fetch` fails from this shell, so
 these are what the IDE last fetched. **Not regenerated**: `INDEXES/*` still show `develop`,
 so no HealthStream provider, no `super.admin` on `api/admin/lms/*`, and the old console-command /
 middleware counts. Regenerate only after the merge.
