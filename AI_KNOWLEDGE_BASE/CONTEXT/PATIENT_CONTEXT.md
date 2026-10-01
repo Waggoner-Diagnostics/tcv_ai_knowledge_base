@@ -262,7 +262,7 @@ export; (4) an export cut off mid-stream stayed `success` in the audit log.
   endpoints (Invited-tab search, report searches, tokens in query strings) still put patient data and
   secrets in URLs. See the local, git-ignored note `TCV-Frontend/.claude/known-issues/phi-in-url-and-nginx-logs.md`.
 
-**Tests (pending branches):** backend `Feature/PatientExportTest` **70** (route table, body helper
+**Tests (pending branches):** backend `Feature/PatientExportTest` **74** (route table, body helper
 `exportBody()`, bad zone in body and query, UTC+13 future-date case, timezone header, `Retry-After` on 429,
 started + outcome entries (completed, dropped connection, server stop; started entry byte-for-byte unchanged;
 no outcome when the stream never ran; search term in neither entry), shutdown hook only fires when the trailer
