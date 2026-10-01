@@ -1,6 +1,6 @@
 # Services
 
-**39 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
+**40 classes under `app/Services/`.** This is where the business logic lives — start here, not in the
 controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`SVC-nnn`).
 
 ## By subsystem
@@ -11,7 +11,7 @@ controller. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_
 | **LMS** (`Lms/`) | `LmsLaunchService` · `LmsDeliveryService` · `LmsProviderRegistry` · `XapiStatementBuilder` · `Providers/CornerstoneProvider` · `Providers/GenericWebhookProvider` · `Contracts/LmsProviderInterface` · `Contracts/LmsIdentity` · `Contracts/LmsLaunchContext` · `Contracts/DeliveryResult` |
 | **Payments** (`PaymentProviders/`) | `PaymentManager` · `PaymentProviderInterface` · `BasePaymentProvider` · `StripeProvider` · `StripeService` |
 | **Commerce** | `DiscountCodeService` |
-| **Reports** (`Reports/`) | `UserTestsReportService` · `DiscountCodeReportService` |
+| **Reports** (`Reports/`) | `UserTestsReportService` · `DiscountCodeReportService` · `PatientExportService` (patient CSV export, 2026-09-29 — [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)) |
 | **Audit** (`Audit/`) | `AuditLogger` · `PricingAuditService` |
 | **Email** | `EmailTemplateService`, `TestInvitationMailer` (`ws-404` — renders and sends one invitation; the queue job and the resend path share it) — plus `App\Support\EmailContent` / `EmailSignature`, which are **not** services: static, dependency-free string helpers shared by the controllers, the notification, the seeder and three data migrations (`ws-373`) |
 | **Integrations** | `HubSpotService` · `TurnstileService` |

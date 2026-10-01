@@ -28,7 +28,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-019` | `OrganizationPatientSession` | [app/Models/OrganizationPatientSession.php:8](../../../TCV-Backend/app/Models/OrganizationPatientSession.php#L8) | `HasFactory` | `organization`→Organization, `patient`→Patient, `test`→Test | 10 |
 | `MODEL-020` | `OrganizationSettingsOption` | [app/Models/OrganizationSettingsOption.php:7](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php#L7) | — | — | 0 |
 | `MODEL-021` | `OrganizationType` | [app/Models/OrganizationType.php:7](../../../TCV-Backend/app/Models/OrganizationType.php#L7) | — | — | 0 |
-| `MODEL-022` | `Patient` | [app/Models/Patient.php:13](../../../TCV-Backend/app/Models/Patient.php#L13) | `HasFactory`, `HasLegacyEncryptedAttributes`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 10 |
+| `MODEL-022` | `Patient` | [app/Models/Patient.php:13](../../../TCV-Backend/app/Models/Patient.php#L13) | `HasFactory`, `HasLegacyEncryptedAttributes`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 11 |
 | `MODEL-023` | `PatientTest` | [app/Models/PatientTest.php:9](../../../TCV-Backend/app/Models/PatientTest.php#L9) | `HasFactory` | `patient`→Patient, `test`→Test, `testInvitation`→TestInvitation | 13 |
 | `MODEL-024` | `PriceDetail` | [app/Models/PriceDetail.php:8](../../../TCV-Backend/app/Models/PriceDetail.php#L8) | `HasFactory` | — | 0 |
 | `MODEL-025` | `Privilege` | [app/Models/Privilege.php:7](../../../TCV-Backend/app/Models/Privilege.php#L7) | — | — | 0 |
@@ -52,4 +52,4 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._

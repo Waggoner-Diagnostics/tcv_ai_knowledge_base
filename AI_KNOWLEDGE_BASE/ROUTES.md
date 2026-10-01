@@ -113,6 +113,19 @@ Route::post('discount-codes/validate', …);  Route::patch('discount-codes/{disc
 Route::apiResource('discount-codes', DiscountCodeController::class);   // literals first — correct
 ```
 
+### 4. A literal segment registered in a *later* group — `whereNumber()` instead of ordering
+```php
+// FlexibleAuthMiddleware group (registered first)
+Route::apiResource('patients', PatientController::class)->whereNumber('patient');
+// auth:sanctum group (registered later)
+Route::get('/patients/export', [PatientController::class, 'export'])->middleware('throttle:patient-export');
+```
+On `develop` since 2026-09-29 (PR #291). The export cannot be moved above the resource, because it
+deliberately lives in a different middleware group ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)).
+So the resource's `{patient}` is constrained to digits instead. Without that constraint, `export` is a
+valid `{patient}` and the request lands in `show('export')` → 404. `AuditLogController@show` uses the
+same fix. ☠️ Keep the constraint whenever you add another literal `patients/<word>` route.
+
 ### ⚠️ All three traps above are still live on `develop`
 
 `tcv-backend-codefix` (merged into `develop` 2026-09-07) fixed them, and it is the shape to follow — but

@@ -1,16 +1,16 @@
 {
-    "generated_at": "2026-09-29T08:29:36+02:00",
+    "generated_at": "2026-10-01T06:36:17+02:00",
     "root": "D:\\TCV\\tcv_ai_knowledge_base/../TCV-Backend",
     "git": {
         "backend": {
-            "sha": "e8507fb9",
+            "sha": "a5938b2e",
             "branch": "develop",
-            "date": "2026-09-28"
+            "date": "2026-09-29"
         },
         "frontend": {
-            "sha": "46633f6",
+            "sha": "308fe7a",
             "branch": "develop",
-            "date": "2026-09-24"
+            "date": "2026-09-29"
         },
         "website": {
             "sha": "6dc5223",
@@ -5773,6 +5773,355 @@
             "relations": []
         },
         {
+            "name": "PatientCsvExport",
+            "fqcn": "App\\Exports\\PatientCsvExport",
+            "kind": "class",
+            "file": "app/Exports/PatientCsvExport.php",
+            "line": 25,
+            "end_line": 392,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "The patient list as CSV: every one of the caller's patients, one row per test",
+            "methods": [
+                {
+                    "name": "exportNote",
+                    "line": 61,
+                    "end_line": 79,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "array $filters"
+                    ],
+                    "returns": "string",
+                    "doc": "The narrative shown in the export modal (exportScopeNote() in the frontend's",
+                    "calls": []
+                },
+                {
+                    "name": "__construct",
+                    "line": 81,
+                    "end_line": 99,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "PatientExportService $exportService",
+                        "User $user",
+                        "array $filters",
+                        "string $from",
+                        "string $to",
+                        "?Closure $onComplete = null"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "headers",
+                    "line": 102,
+                    "end_line": 105,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "stream",
+                    "line": 107,
+                    "end_line": 178,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "string $fileName"
+                    ],
+                    "returns": "StreamedResponse",
+                    "doc": "",
+                    "calls": [
+                        "streamDownload",
+                        "self::exportNote",
+                        "self::headers",
+                        "streamRows",
+                        "row"
+                    ]
+                },
+                {
+                    "name": "row",
+                    "line": 181,
+                    "end_line": 191,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "decryptPii",
+                        "self::escape"
+                    ]
+                },
+                {
+                    "name": "escape",
+                    "line": 199,
+                    "end_line": 208,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string|int|null $value"
+                    ],
+                    "returns": "string",
+                    "doc": "Neutralise CSV/formula injection, identical to AuditLogCsvExport::escape().",
+                    "calls": []
+                },
+                {
+                    "name": "colFirstName",
+                    "line": 212,
+                    "end_line": 215,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colLastName",
+                    "line": 217,
+                    "end_line": 220,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colEmail",
+                    "line": 222,
+                    "end_line": 225,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colDob",
+                    "line": 245,
+                    "end_line": 255,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "m/d/Y, not a UTC instant: dob is a calendar date, not a moment in time.",
+                    "calls": [
+                        "self::parseUsDate",
+                        "format"
+                    ]
+                },
+                {
+                    "name": "parseUsDate",
+                    "line": 264,
+                    "end_line": 283,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $value"
+                    ],
+                    "returns": "?Carbon",
+                    "doc": "The two numeric shapes DOB is actually entered or migrated in: US",
+                    "calls": [
+                        "Carbon::create"
+                    ]
+                },
+                {
+                    "name": "colPatientId",
+                    "line": 285,
+                    "end_line": 288,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colZipCode",
+                    "line": 290,
+                    "end_line": 293,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colGender",
+                    "line": 295,
+                    "end_line": 298,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": [
+                        "Patient::genderLabel"
+                    ]
+                },
+                {
+                    "name": "colTestId",
+                    "line": 300,
+                    "end_line": 303,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colTestName",
+                    "line": 305,
+                    "end_line": 308,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colEyeTested",
+                    "line": 315,
+                    "end_line": 318,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "TestHelper::getEyeLabel() takes a non-nullable string, and a migrated row can",
+                    "calls": [
+                        "TestHelper::getEyeLabel"
+                    ]
+                },
+                {
+                    "name": "colTestSentAt",
+                    "line": 320,
+                    "end_line": 323,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": [
+                        "self::formatUtcTimestamp"
+                    ]
+                },
+                {
+                    "name": "colTestStatus",
+                    "line": 331,
+                    "end_line": 338,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "The literal \"No tests in range\" when the LEFT JOIN found nothing for this",
+                    "calls": []
+                },
+                {
+                    "name": "colCompletionDate",
+                    "line": 340,
+                    "end_line": 343,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": [
+                        "self::formatUtcTimestamp"
+                    ]
+                },
+                {
+                    "name": "colCalculatedReport",
+                    "line": 345,
+                    "end_line": 348,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "colIpAddress",
+                    "line": 350,
+                    "end_line": 353,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "string",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "formatUtcTimestamp",
+                    "line": 380,
+                    "end_line": 391,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "?string $value"
+                    ],
+                    "returns": "string",
+                    "doc": "UTC, spelled out -- Y-m-d H:i:s plus a literal \" UTC\", matching",
+                    "calls": [
+                        "format",
+                        "Carbon::parse"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "COLUMNS",
+                    "value": "[…]",
+                    "line": 36
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "UserTestsDetailExport",
             "fqcn": "App\\Exports\\UserTestsDetailExport",
             "kind": "class",
@@ -8786,8 +9135,8 @@
             "fqcn": "App\\Http\\Controllers\\PatientController",
             "kind": "class",
             "file": "app/Http/Controllers/PatientController.php",
-            "line": 26,
-            "end_line": 686,
+            "line": 30,
+            "end_line": 855,
             "extends": "Controller",
             "implements": [],
             "traits": [],
@@ -8795,14 +9144,15 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 46,
-                    "end_line": 51,
+                    "line": 66,
+                    "end_line": 76,
                     "visibility": "public",
                     "static": false,
                     "params": [
                         "TestService $testService",
                         "PatientTestTransformer $testTransformer",
-                        "AuditService $auditService"
+                        "AuditService $auditService",
+                        "PatientExportService $patientExportService"
                     ],
                     "returns": "",
                     "doc": "",
@@ -8810,8 +9160,8 @@
                 },
                 {
                     "name": "index",
-                    "line": 56,
-                    "end_line": 119,
+                    "line": 81,
+                    "end_line": 141,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -8822,13 +9172,8 @@
                         "json",
                         "Log::info",
                         "get",
-                        "where",
+                        "Patient::applyRegisteredTabScope",
                         "Patient::where",
-                        "orWhereHas",
-                        "orDoesntHave",
-                        "whereNull",
-                        "whereNot",
-                        "openInvitation",
                         "count",
                         "first",
                         "with",
@@ -8840,9 +9185,61 @@
                     ]
                 },
                 {
+                    "name": "export",
+                    "line": 156,
+                    "end_line": 234,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "PatientExportRequest $request"
+                    ],
+                    "returns": "",
+                    "doc": "GET /api/patients/export — the patient list as CSV, server-side, with an audit",
+                    "calls": [
+                        "validated",
+                        "countRows",
+                        "user",
+                        "log",
+                        "exportScopeDetails",
+                        "ApiResponse::error",
+                        "stream",
+                        "recordStreamedRowCount"
+                    ]
+                },
+                {
+                    "name": "recordStreamedRowCount",
+                    "line": 255,
+                    "end_line": 267,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "AuditLog $auditLog",
+                        "int $rowsWritten"
+                    ],
+                    "returns": "void",
+                    "doc": "Replace the audit row's provisional \"Number of Records\" with what was actually",
+                    "calls": [
+                        "save",
+                        "forceFill"
+                    ]
+                },
+                {
+                    "name": "exportScopeDetails",
+                    "line": 279,
+                    "end_line": 288,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $validated"
+                    ],
+                    "returns": "array",
+                    "doc": "The audit details that say what an export covered — shared by the success row and",
+                    "calls": []
+                },
+                {
                     "name": "store",
-                    "line": 124,
-                    "end_line": 184,
+                    "line": 293,
+                    "end_line": 353,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8866,8 +9263,8 @@
                 },
                 {
                     "name": "show",
-                    "line": 189,
-                    "end_line": 205,
+                    "line": 358,
+                    "end_line": 374,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8886,8 +9283,8 @@
                 },
                 {
                     "name": "update",
-                    "line": 210,
-                    "end_line": 267,
+                    "line": 379,
+                    "end_line": 436,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8912,8 +9309,8 @@
                 },
                 {
                     "name": "destroy",
-                    "line": 272,
-                    "end_line": 303,
+                    "line": 441,
+                    "end_line": 472,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8935,8 +9332,8 @@
                 },
                 {
                     "name": "callerOwnsPatient",
-                    "line": 311,
-                    "end_line": 345,
+                    "line": 480,
+                    "end_line": 514,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -8954,8 +9351,8 @@
                 },
                 {
                     "name": "resendTestLink",
-                    "line": 347,
-                    "end_line": 411,
+                    "line": 516,
+                    "end_line": 580,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -8984,8 +9381,8 @@
                 },
                 {
                     "name": "getPatientTests",
-                    "line": 421,
-                    "end_line": 478,
+                    "line": 590,
+                    "end_line": 647,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9015,8 +9412,8 @@
                 },
                 {
                     "name": "storeOrganizationPatient",
-                    "line": 484,
-                    "end_line": 685,
+                    "line": 653,
+                    "end_line": 854,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -9052,7 +9449,12 @@
                 {
                     "name": "AUDIT_FIELDS",
                     "value": "[…]",
-                    "line": 36
+                    "line": 40
+                },
+                {
+                    "name": "FILTER_LABELS",
+                    "value": "[…]",
+                    "line": 50
                 }
             ],
             "relations": []
@@ -13179,6 +13581,46 @@
             "relations": []
         },
         {
+            "name": "ValidatesPatientExportDateRange",
+            "fqcn": "App\\Http\\Requests\\Concerns\\ValidatesPatientExportDateRange",
+            "kind": "trait",
+            "file": "app/Http/Requests/Concerns/ValidatesPatientExportDateRange.php",
+            "line": 23,
+            "end_line": 62,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Caps the patient export's date range at one calendar year, not a day count.",
+            "methods": [
+                {
+                    "name": "withValidator",
+                    "line": 25,
+                    "end_line": 61,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Validator $validator"
+                    ],
+                    "returns": "void",
+                    "doc": "",
+                    "calls": [
+                        "after",
+                        "hasAny",
+                        "errors",
+                        "input",
+                        "toDateString",
+                        "Carbon::now",
+                        "add",
+                        "gt",
+                        "Carbon::parse",
+                        "addYearsNoOverflow"
+                    ]
+                }
+            ],
+            "constants": [],
+            "relations": []
+        },
+        {
             "name": "ContactFormRequest",
             "fqcn": "App\\Http\\Requests\\ContactFormRequest",
             "kind": "class",
@@ -13613,6 +14055,46 @@
                     "line": 11
                 }
             ],
+            "relations": []
+        },
+        {
+            "name": "PatientExportRequest",
+            "fqcn": "App\\Http\\Requests\\PatientExportRequest",
+            "kind": "class",
+            "file": "app/Http/Requests/PatientExportRequest.php",
+            "line": 18,
+            "end_line": 52,
+            "extends": "FormRequest",
+            "implements": [],
+            "traits": [
+                "ValidatesPatientExportDateRange"
+            ],
+            "doc": "GET /api/patients/export.",
+            "methods": [
+                {
+                    "name": "authorize",
+                    "line": 22,
+                    "end_line": 25,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "bool",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "rules",
+                    "line": 27,
+                    "end_line": 51,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": []
+                }
+            ],
+            "constants": [],
             "relations": []
         },
         {
@@ -17402,7 +17884,7 @@
             "kind": "class",
             "file": "app/Models/Patient.php",
             "line": 13,
-            "end_line": 264,
+            "end_line": 300,
             "extends": "Model",
             "implements": [],
             "traits": [
@@ -17504,9 +17986,32 @@
                     ]
                 },
                 {
+                    "name": "applyRegisteredTabScope",
+                    "line": 233,
+                    "end_line": 253,
+                    "visibility": "public",
+                    "static": true,
+                    "params": [
+                        "$query"
+                    ],
+                    "returns": "",
+                    "doc": "Restrict a patients query to what the Registered Patients tab lists.",
+                    "calls": [
+                        "where",
+                        "orWhereExists",
+                        "orWhereNotExists",
+                        "whereNull",
+                        "whereColumn",
+                        "from",
+                        "selectRaw",
+                        "whereNot",
+                        "whereNotNull"
+                    ]
+                },
+                {
                     "name": "genderLabel",
-                    "line": 225,
-                    "end_line": 232,
+                    "line": 261,
+                    "end_line": 268,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -17518,8 +18023,8 @@
                 },
                 {
                     "name": "testConditionLabel",
-                    "line": 240,
-                    "end_line": 247,
+                    "line": 276,
+                    "end_line": 283,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -17531,8 +18036,8 @@
                 },
                 {
                     "name": "user",
-                    "line": 252,
-                    "end_line": 255,
+                    "line": 288,
+                    "end_line": 291,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -17544,8 +18049,8 @@
                 },
                 {
                     "name": "tests",
-                    "line": 260,
-                    "end_line": 263,
+                    "line": 296,
+                    "end_line": 299,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -17613,13 +18118,13 @@
                     "method": "user",
                     "type": "belongsTo",
                     "target": "User",
-                    "line": 252
+                    "line": 288
                 },
                 {
                     "method": "tests",
                     "type": "hasMany",
                     "target": "PatientTest",
-                    "line": 260
+                    "line": 296
                 }
             ]
         },
@@ -19999,7 +20504,7 @@
             "kind": "class",
             "file": "app/Providers/AppServiceProvider.php",
             "line": 24,
-            "end_line": 304,
+            "end_line": 384,
             "extends": "ServiceProvider",
             "implements": [],
             "traits": [],
@@ -20007,8 +20512,8 @@
             "methods": [
                 {
                     "name": "register",
-                    "line": 29,
-                    "end_line": 46,
+                    "line": 39,
+                    "end_line": 56,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -20020,8 +20525,8 @@
                 },
                 {
                     "name": "boot",
-                    "line": 51,
-                    "end_line": 63,
+                    "line": 61,
+                    "end_line": 73,
                     "visibility": "public",
                     "static": false,
                     "params": [],
@@ -20037,8 +20542,8 @@
                 },
                 {
                     "name": "configureMigrationHealthCheck",
-                    "line": 74,
-                    "end_line": 85,
+                    "line": 84,
+                    "end_line": 95,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -20052,8 +20557,8 @@
                 },
                 {
                     "name": "configureRateLimiting",
-                    "line": 93,
-                    "end_line": 162,
+                    "line": 103,
+                    "end_line": 179,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -20070,13 +20575,50 @@
                         "user",
                         "bearerToken",
                         "header",
+                        "ip",
+                        "patientExportLimiterKey"
+                    ]
+                },
+                {
+                    "name": "patientExportLimiterKey",
+                    "line": 186,
+                    "end_line": 189,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Request $request"
+                    ],
+                    "returns": "string",
+                    "doc": "The single definition of who the patient-export limiter counts against, used by",
+                    "calls": [
+                        "user",
                         "ip"
                     ]
                 },
                 {
+                    "name": "patientExportRateLimitedResponse",
+                    "line": 216,
+                    "end_line": 242,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "Request $request",
+                        "array $headers"
+                    ],
+                    "returns": "JsonResponse",
+                    "doc": "Response callback for the 'patient-export' limiter only: the same 429 the other",
+                    "calls": [
+                        "patientExportLimiterKey",
+                        "Cache::add",
+                        "log",
+                        "user",
+                        "json"
+                    ]
+                },
+                {
                     "name": "accountLockedResponse",
-                    "line": 180,
-                    "end_line": 226,
+                    "line": 260,
+                    "end_line": 306,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20099,8 +20641,8 @@
                 },
                 {
                     "name": "formatRetryAfter",
-                    "line": 234,
-                    "end_line": 243,
+                    "line": 314,
+                    "end_line": 323,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20114,8 +20656,8 @@
                 },
                 {
                     "name": "callerKey",
-                    "line": 272,
-                    "end_line": 281,
+                    "line": 352,
+                    "end_line": 361,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20132,8 +20674,8 @@
                 },
                 {
                     "name": "warnIfFrontendAppUrlLooksInvalid",
-                    "line": 291,
-                    "end_line": 303,
+                    "line": 371,
+                    "end_line": 383,
                     "visibility": "protected",
                     "static": false,
                     "params": [],
@@ -20144,7 +20686,18 @@
                     ]
                 }
             ],
-            "constants": [],
+            "constants": [
+                {
+                    "name": "PATIENT_EXPORT_PER_MINUTE",
+                    "value": "10",
+                    "line": 32
+                },
+                {
+                    "name": "PATIENT_EXPORT_PER_MINUTE_WINDOW",
+                    "value": "60",
+                    "line": 34
+                }
+            ],
             "relations": []
         },
         {
@@ -20623,7 +21176,7 @@
             "kind": "class",
             "file": "app/Services/Audit/AuditService.php",
             "line": 24,
-            "end_line": 527,
+            "end_line": 532,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -20631,8 +21184,8 @@
             "methods": [
                 {
                     "name": "log",
-                    "line": 100,
-                    "end_line": 191,
+                    "line": 105,
+                    "end_line": 196,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20667,8 +21220,8 @@
                 },
                 {
                     "name": "personSnapshot",
-                    "line": 196,
-                    "end_line": 209,
+                    "line": 201,
+                    "end_line": 214,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20682,8 +21235,8 @@
                 },
                 {
                     "name": "impersonatorFor",
-                    "line": 227,
-                    "end_line": 254,
+                    "line": 232,
+                    "end_line": 259,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20700,8 +21253,8 @@
                 },
                 {
                     "name": "roleFor",
-                    "line": 263,
-                    "end_line": 271,
+                    "line": 268,
+                    "end_line": 276,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -20713,8 +21266,8 @@
                 },
                 {
                     "name": "lookupCountry",
-                    "line": 273,
-                    "end_line": 295,
+                    "line": 278,
+                    "end_line": 300,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20728,8 +21281,8 @@
                 },
                 {
                     "name": "parseBrowser",
-                    "line": 297,
-                    "end_line": 313,
+                    "line": 302,
+                    "end_line": 318,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20741,8 +21294,8 @@
                 },
                 {
                     "name": "sessionKeyForToken",
-                    "line": 336,
-                    "end_line": 339,
+                    "line": 341,
+                    "end_line": 344,
                     "visibility": "public",
                     "static": true,
                     "params": [
@@ -20754,8 +21307,8 @@
                 },
                 {
                     "name": "sessionKey",
-                    "line": 341,
-                    "end_line": 372,
+                    "line": 346,
+                    "end_line": 377,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20774,8 +21327,8 @@
                 },
                 {
                     "name": "maskDetails",
-                    "line": 380,
-                    "end_line": 393,
+                    "line": 385,
+                    "end_line": 398,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20793,8 +21346,8 @@
                 },
                 {
                     "name": "maskChanges",
-                    "line": 399,
-                    "end_line": 411,
+                    "line": 404,
+                    "end_line": 416,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20812,8 +21365,8 @@
                 },
                 {
                     "name": "isDenylistedKey",
-                    "line": 413,
-                    "end_line": 416,
+                    "line": 418,
+                    "end_line": 421,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -20827,8 +21380,8 @@
                 },
                 {
                     "name": "isSecretKey",
-                    "line": 421,
-                    "end_line": 424,
+                    "line": 426,
+                    "end_line": 429,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20842,8 +21395,8 @@
                 },
                 {
                     "name": "isPhiKey",
-                    "line": 429,
-                    "end_line": 432,
+                    "line": 434,
+                    "end_line": 437,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20857,8 +21410,8 @@
                 },
                 {
                     "name": "keyMatches",
-                    "line": 437,
-                    "end_line": 448,
+                    "line": 442,
+                    "end_line": 453,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20871,8 +21424,8 @@
                 },
                 {
                     "name": "isDateAllowlistedKey",
-                    "line": 454,
-                    "end_line": 459,
+                    "line": 459,
+                    "end_line": 464,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20884,8 +21437,8 @@
                 },
                 {
                     "name": "maskValue",
-                    "line": 470,
-                    "end_line": 506,
+                    "line": 475,
+                    "end_line": 511,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -20902,8 +21455,8 @@
                 },
                 {
                     "name": "maskFreeText",
-                    "line": 515,
-                    "end_line": 526,
+                    "line": 520,
+                    "end_line": 531,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -23896,6 +24449,269 @@
             "relations": []
         },
         {
+            "name": "PatientExportService",
+            "fqcn": "App\\Services\\Reports\\PatientExportService",
+            "kind": "class",
+            "file": "app/Services/Reports/PatientExportService.php",
+            "line": 28,
+            "end_line": 348,
+            "extends": "",
+            "implements": [],
+            "traits": [],
+            "doc": "Builds the patient export query: every patient on the caller's Registered Patients tab",
+            "methods": [
+                {
+                    "name": "__construct",
+                    "line": 40,
+                    "end_line": 43,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "PatientNameSearch $nameSearch",
+                        "LegacyEncrypter $encrypter"
+                    ],
+                    "returns": "",
+                    "doc": "",
+                    "calls": []
+                },
+                {
+                    "name": "countRows",
+                    "line": 51,
+                    "end_line": 54,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "User $user",
+                        "array $filters",
+                        "string $from",
+                        "string $to"
+                    ],
+                    "returns": "int",
+                    "doc": "The exact row count streamRows() will emit for these filters — one row per",
+                    "calls": [
+                        "count",
+                        "withTestsInRange",
+                        "matchingPatients",
+                        "timezoneOf"
+                    ]
+                },
+                {
+                    "name": "streamRows",
+                    "line": 68,
+                    "end_line": 92,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "User $user",
+                        "array $filters",
+                        "string $from",
+                        "string $to",
+                        "callable $onBatch"
+                    ],
+                    "returns": "void",
+                    "doc": "Stream every matching row to $onBatch, one Collection of stdClass rows per call.",
+                    "calls": [
+                        "all",
+                        "pluck",
+                        "limit",
+                        "orderBy",
+                        "where",
+                        "matchingPatients",
+                        "rowsForPatients",
+                        "timezoneOf",
+                        "isNotEmpty"
+                    ]
+                },
+                {
+                    "name": "decryptPii",
+                    "line": 101,
+                    "end_line": 110,
+                    "visibility": "public",
+                    "static": false,
+                    "params": [
+                        "object $row"
+                    ],
+                    "returns": "object",
+                    "doc": "Decrypt the PII columns on a row this service produced.",
+                    "calls": [
+                        "decrypt"
+                    ]
+                },
+                {
+                    "name": "timezoneOf",
+                    "line": 118,
+                    "end_line": 121,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "array $filters"
+                    ],
+                    "returns": "string",
+                    "doc": "The viewer's IANA timezone, from the request's validated `timezone` (UTC when",
+                    "calls": []
+                },
+                {
+                    "name": "matchingPatients",
+                    "line": 129,
+                    "end_line": 186,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $user",
+                        "array $filters"
+                    ],
+                    "returns": "Builder",
+                    "doc": "The caller's own, non-deleted Registered-tab patients, narrowed by search or quick filter --",
+                    "calls": [
+                        "whereNull",
+                        "where",
+                        "DB::table",
+                        "Patient::applyRegisteredTabScope",
+                        "idsMatching",
+                        "orWhereIntegerInRaw",
+                        "orWhereRaw",
+                        "self::escapeLikeTerm",
+                        "orWhere",
+                        "applyQuickFilter",
+                        "timezoneOf"
+                    ]
+                },
+                {
+                    "name": "escapeLikeTerm",
+                    "line": 189,
+                    "end_line": 192,
+                    "visibility": "private",
+                    "static": true,
+                    "params": [
+                        "string $term"
+                    ],
+                    "returns": "string",
+                    "doc": "Escape LIKE metacharacters so $term is matched as a literal substring.",
+                    "calls": []
+                },
+                {
+                    "name": "applyQuickFilter",
+                    "line": 201,
+                    "end_line": 214,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Builder $query",
+                        "string $filter",
+                        "string $timezone"
+                    ],
+                    "returns": "void",
+                    "doc": "today / yesterday / lastWeek against patients.updated_at, matching",
+                    "calls": [
+                        "Carbon::now",
+                        "whereBetween",
+                        "dayBounds",
+                        "copy",
+                        "subDay",
+                        "format",
+                        "utc",
+                        "subDays"
+                    ]
+                },
+                {
+                    "name": "dayBounds",
+                    "line": 217,
+                    "end_line": 223,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Carbon $day",
+                        "string $timezone"
+                    ],
+                    "returns": "array",
+                    "doc": "",
+                    "calls": [
+                        "format",
+                        "utc",
+                        "startOfDay",
+                        "copy",
+                        "endOfDay"
+                    ]
+                },
+                {
+                    "name": "withTestsInRange",
+                    "line": 238,
+                    "end_line": 265,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "Builder $query",
+                        "string $from",
+                        "string $to",
+                        "string $timezone = 'UTC'"
+                    ],
+                    "returns": "Builder",
+                    "doc": "Left-join a patient query to the tests attached to it within [from, to].",
+                    "calls": [
+                        "format",
+                        "utc",
+                        "startOfDay",
+                        "Carbon::parse",
+                        "addDay",
+                        "leftJoin",
+                        "where",
+                        "whereNull",
+                        "on",
+                        "orWhere"
+                    ]
+                },
+                {
+                    "name": "rowsForPatients",
+                    "line": 277,
+                    "end_line": 307,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [
+                        "User $user",
+                        "array $patientIds",
+                        "string $from",
+                        "string $to",
+                        "string $timezone"
+                    ],
+                    "returns": "Collection",
+                    "doc": "One page's worth of export rows: exactly $patientIds, whichever of their",
+                    "calls": [
+                        "whereIntegerInRaw",
+                        "whereNull",
+                        "where",
+                        "DB::table",
+                        "get",
+                        "orderBy",
+                        "selectRaw",
+                        "select",
+                        "withTestsInRange",
+                        "diagnosisSelectExpression"
+                    ]
+                },
+                {
+                    "name": "diagnosisSelectExpression",
+                    "line": 342,
+                    "end_line": 347,
+                    "visibility": "private",
+                    "static": false,
+                    "params": [],
+                    "returns": "string",
+                    "doc": "Pull `diagnosis.calculated` out of result_json in SQL so only that short",
+                    "calls": [
+                        "DB::getDriverName"
+                    ]
+                }
+            ],
+            "constants": [
+                {
+                    "name": "PATIENT_BATCH_SIZE",
+                    "value": "500",
+                    "line": 38
+                }
+            ],
+            "relations": []
+        },
+        {
             "name": "UserTestsReportService",
             "fqcn": "App\\Services\\Reports\\UserTestsReportService",
             "kind": "class",
@@ -26597,8 +27413,8 @@
             "fqcn": "App\\Support\\Legacy\\PatientNameSearch",
             "kind": "class",
             "file": "app/Support/Legacy/PatientNameSearch.php",
-            "line": 31,
-            "end_line": 146,
+            "line": 35,
+            "end_line": 159,
             "extends": "",
             "implements": [],
             "traits": [],
@@ -26606,8 +27422,8 @@
             "methods": [
                 {
                     "name": "__construct",
-                    "line": 47,
-                    "end_line": 47,
+                    "line": 51,
+                    "end_line": 51,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -26619,8 +27435,8 @@
                 },
                 {
                     "name": "idsMatching",
-                    "line": 71,
-                    "end_line": 122,
+                    "line": 75,
+                    "end_line": 135,
                     "visibility": "public",
                     "static": false,
                     "params": [
@@ -26630,9 +27446,9 @@
                     "returns": "array",
                     "doc": "Ids of patients whose first name, last name, or \"first last\" contains the",
                     "calls": [
-                        "whereExists",
                         "select",
                         "DB::table",
+                        "whereExists",
                         "whereColumn",
                         "from",
                         "DB::raw",
@@ -26643,8 +27459,8 @@
                 },
                 {
                     "name": "matches",
-                    "line": 124,
-                    "end_line": 145,
+                    "line": 137,
+                    "end_line": 158,
                     "visibility": "private",
                     "static": false,
                     "params": [
@@ -26662,7 +27478,7 @@
                 {
                     "name": "CHUNK",
                     "value": "2000",
-                    "line": 34
+                    "line": 38
                 }
             ],
             "relations": []
@@ -34101,6 +34917,19 @@
         },
         {
             "method": "GET|HEAD",
+            "uri": "api/patients/export",
+            "action": "App\\Http\\Controllers\\PatientController@export",
+            "middleware": [
+                "api",
+                "auth:sanctum",
+                "throttle:patient-export"
+            ],
+            "name": "",
+            "line": 0,
+            "source": "artisan"
+        },
+        {
+            "method": "GET|HEAD",
             "uri": "api/patients/{id}/tests",
             "action": "App\\Http\\Controllers\\PatientController@getPatientTests",
             "middleware": [
@@ -35513,14 +36342,14 @@
             "event": "MessageSending",
             "listener": "PrefixEmailSubject",
             "file": "app/Providers/AppServiceProvider.php",
-            "line": 60
+            "line": 70
         },
         {
             "kind": "listen",
             "event": "DiagnosingHealth",
             "listener": "",
             "file": "app/Providers/AppServiceProvider.php",
-            "line": 76
+            "line": 86
         },
         {
             "kind": "listen",

@@ -145,12 +145,26 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
+## Patient CSV export (PR #291 / #420, on `develop` 2026-09-29)
+
+| Change | Also check |
+|---|---|
+| **`Patient::applyRegisteredTabScope()`** | One clause shared by `PatientController::index()` (the Registered tab) **and** `PatientExportService::matchingPatients()`. Any change moves the tab and the file together. This sharing is the point: the file must never list a patient the tab hides. Do not fork it back into two copies ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)) |
+| **`PatientNameSearch::idsMatching()` scope keys** | `require_test` is a control flag, not a filter. It is unset before the query and folded into the cache key separately. The report screens keep the default `true`; only the export passes `false` (a patient with no test must still be findable). A new flag needs the same handling, or it leaks into `array_filter($scope)` |
+| **`PatientCsvExport::COLUMNS` / `exportNote()` / the `End of Export` trailer** | The SPA's `constants/patientExport.js` `exportScopeNote()` must match `exportNote()` word for word. `apis/exportPatients.js` `hasEndOfExportMarker()` matches the trailer by regex, and **a mismatch makes every export fail as "interrupted"**. `PatientExportTest` pins the header order |
+| **`ValidatesPatientExportDateRange` / `shiftYears()`** | The same one-calendar-year rule lives in both repos, and both must clamp 29 Feb → 28 Feb (`addYearsNoOverflow` ↔ `shiftYears`). Changing one side makes the picker allow a range the server rejects, or the reverse. Do **not** align it with `ValidatesAuditDateRange` (31 days); the two rules are different on purpose |
+| **`throttle:patient-export` or its constants** | `PATIENT_EXPORT_PER_MINUTE` and `…_WINDOW` are coupled (one audit row per limiter window). `RateLimitScopeTest` requires every `throttle:<name>` to resolve to a registered limiter |
+| **Moving `GET api/patients/export` into the `FlexibleAuthMiddleware` group** | Don't. It would expose a full PHI dump to the patient-session tiers, and `$request->user()` could be null for the audit row |
+| **`AuditService::DATE_ALLOWLIST`** / the export's detail labels | Gained `date_range`. `maskValue()` redacts any date-shaped content in a patient-data row unless the detail's label, normalised (`Date Range` → `date_range`), is on this list. Renaming the label silently turns the logged range into `[REDACTED]` |
+
+---
+
 ## Routes
 
 | Change | Also check |
 |---|---|
 | Any route addition/move | re-run the generator and **diff `PUBLIC_ROUTE_AUDIT.md`** |
-| Adding a literal route near a resource | ordering — `credits/{coupon-code}` is already dead because of this ([ROUTES.md](ROUTES.md#ordering-traps)) |
+| Adding a literal route near a resource | ordering — `credits/{coupon-code}` is already dead because of this ([ROUTES.md](ROUTES.md#ordering-traps)). The fix used for `audit-logs/{id}` and `patients/{patient}` is a `whereNumber()` constraint on the parameter; `GET patients/export` 404s without it |
 | Renaming/removing an endpoint | `CONTRACT_DRIFT.md` — the SPA may call it |
 | Route caching | routes are cached at boot; a change needs a restart |
 
