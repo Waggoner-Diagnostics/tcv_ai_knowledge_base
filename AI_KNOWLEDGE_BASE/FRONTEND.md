@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-165`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-166`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -332,6 +332,36 @@ each dispatch `fetchUserCredits()` with **no argument** (i.e. foreground), and
 into the slice without any request at all.
 
 ---
+
+## Patient export (PR #420, on `develop` 2026-09-29)
+
+**Patients ▸ Registered ▸ Export Patients** now asks the server for the CSV. The deleted
+`components/ExportPatients.js` used to build one in the browser from `filteredPatients`. Backend
+behaviour and the full trap list are in
+[PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420).
+
+| File | Role |
+|---|---|
+| `pages/UserPannel/PatientPage/PatientPage.js` | Owns `showExportModal` and the tab's current quick filter (`onExportScopeChange({count, filter})`, a stable `useCallback`). The button is disabled when the tab lists 0 rows. Hidden in the start-test flow |
+| `PatientPage/RegisteredPatientsTab.js` | Sets `exportFnRef.current = ({from, to}) => …`. It sends **parameters, not rows**: `search` when there is one, otherwise `activeFilter`, the same precedence as its own `filteredPatients`. Triggers the download with an anchor click and revokes the object URL after 1.5 s (Safari aborts if revoked in the same tick) |
+| `PatientPage/ExportPatientModal.js` | From/To `react-datepicker` fields (mm/dd/yyyy), portalled to `<body>`, one portal id per field. Shows the scope note and an error line per field. The fake password check is gone |
+| `apis/exportPatients.js` | `GET api/patients/export` with `responseType: 'blob'` and `skipErrorPopup: true`. Sends `timezone` from `Intl.DateTimeFormat().resolvedOptions().timeZone`. Parses JSON error bodies out of the `Blob` (`messageFromBlobError`). Rejects a file without the `End of Export, N row(s)` trailer as `EXPORT_INCOMPLETE` |
+| `constants/patientExport.js` | `MAX_RANGE_YEARS` (1) · `shiftYears()` (UTC-only, clamps 29 Feb) · `rangeViolation(field, {from, to, today})` → `RANGE_VIOLATION` code · `exportScopeNote()` |
+
+☠️ **Dates stay `'YYYY-MM-DD'` strings everywhere except at the picker boundary.** `isoToLocalDate()` /
+`localDateToIso()` are the only places a `Date` object exists. react-datepicker compares with *local*
+getters, while `shiftYears()` works in UTC, and mixing the two is what produced an off-by-one day for
+users ahead of UTC (IST) during review. "Today" for the future-date check is the **local** calendar day.
+
+☠️ **`rangeViolation()` returns a code, never a sentence.** The modal owns the wording
+(`requiredMessage`, `futureDateMessage`, …). The rule judges one field at a time, in this order:
+required → future → order → too-wide. That ordering is why two dates entered the wrong way round
+report "cannot be before/after", not "range too wide". It is pinned by `patientExport.test.js`.
+
+⚠️ **Three strings are mirrored from the backend and must stay in step:** `exportScopeNote()` ↔
+`PatientCsvExport::exportNote()`, the trailer regex ↔ `PatientCsvExport::stream()`, and the year rule ↔
+`ValidatesPatientExportDateRange`. Tests: `apis/exportPatients.test.js`, `constants/patientExport.test.js`,
+`PatientPage/ExportPatientModal.test.js`.
 
 ## Send Test & invited patients (`ws-404`)
 
@@ -646,7 +676,7 @@ unstyled, the same trap as the `&--type-*` credit-history badges
 
 ☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
 landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
-`API-092`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`API-093`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
 `POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
 `services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
 `api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
@@ -672,7 +702,7 @@ usertype whose tests the modal manages.
 
 ☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
 user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
-*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-151`, 422
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-152`, 422
 `api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
 rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
 account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no

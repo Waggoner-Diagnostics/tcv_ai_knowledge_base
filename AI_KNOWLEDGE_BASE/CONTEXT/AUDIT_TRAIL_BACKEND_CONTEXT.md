@@ -258,7 +258,8 @@ Grouped by the file that changes. Every method listed was confirmed to exist on 
 | `PriceDetailController` | `store`, `update`, `destroy` | pricing tier changes (+ failures) |
 | `PaymentController`, `StripePaymentController` | webhook + confirm handlers | payment success / failure — **system-generated: no location or device** |
 | `TestInvitationController` | `sendInvitations`, `resendUnregisteredInvitation`, `cancelUnregisteredInvitation` | invitation sent / bulk / resent / cancelled+refunded, insufficient credits |
-| `PatientController` | `store`, `update`, `destroy` | patient added / edited / deleted — **redacted per §5** |
+| `PatientController` | `store`, `update`, `destroy`, `export` (2026-09-29) | patient added / edited / deleted — **redacted per §5**; `patient.exported` success / too-large failure (§17.2) |
+| `AppServiceProvider` | `accountLockedResponse`, `patientExportRateLimitedResponse` | `auth.account_locked`; `patient.exported` failed (rate limit) |
 | `TestController` | `assignTest` | test started |
 | `TestExecutionService` | `finalizeTestIfCompleted` | test completed — **no result or diagnosis** |
 | `ReportController` | `userTestsReport`, `discountCode`, `getPatientsHavingTests` | exports |
@@ -821,6 +822,28 @@ Merged to `develop` after the KB's `ff9be500` sync, independent of the export br
   `billing.discount_code_toggled` description changed from the static `'Discount code activated/inactivated.'`
   to `'Discount code '.($discount->is_active ? 'activated' : 'inactivated').'.'` — same dynamic-title style §13
   applied to status-change events. One line, description text only; catalog unchanged.
+
+### 17.2. ✅ ON DEVELOP 2026-09-29 — `patient.exported` finally fires (PR #291)
+
+`patient.exported` (`patient_records`) has been in `AuditEventCatalog` since the original catalogue,
+but **nothing emitted it**. The old patient export ran entirely in the browser, so no request ever
+reached the server. The new server-side `GET api/patients/export` writes it from three places:
+
+| Outcome | Where | Status | Details |
+|---|---|---|---|
+| exported | `PatientController::export()`, **before** streaming | `success` | Export Format `CSV` · Number of Records (provisional, rewritten to the streamed count by `recordStreamedRowCount()` after the trailer) · Date Range `from to to (tz)` · Applied Filter |
+| too many rows | `PatientController::export()` | `failed` | Reason `Export too large` · **Records Requested** (deliberately not "Number of Records") · Row Limit · Date Range · Applied Filter |
+| rate-limited | `AppServiceProvider::patientExportRateLimitedResponse()` | `failed` | Reason only. Nothing from the query string is logged, because it is unvalidated there. Deduped to one row per 60 s per caller |
+
+- **Applied Filter never carries the search term.** It shows the allowlisted quick-filter label, or
+  the literal phrase `Search applied`. A search term is usually a patient's name, and neither the
+  DENYLIST nor content masking catches a bare name (§5).
+- **`DATE_ALLOWLIST` gained `date_range`.** This is the first `patient_records` call site to log a
+  date range, and without the entry `maskValue()` would redact it.
+- **A `null` from `log()` blocks the export** (500 `api.patient_export_audit_failed`). This is the only
+  call site where an audit-write failure stops the action it records, because here the disclosure and
+  its record must be one transaction.
+- Full feature and its traps: [PATIENT_CONTEXT](PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420).
 
 > **Not audit-trail:** `ws-502` (`00d5e98f`, `15207600`) fixes list-sort order for Credits / Discount Codes /
 > Organizations / Users / Reports — unrelated to this feature, noted here only so a reader scanning `develop`'s

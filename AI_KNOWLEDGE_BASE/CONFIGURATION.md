@@ -132,20 +132,36 @@ Every patient-facing link is built from it. Unset, it becomes the host-less `"/a
 
 ```php
 Schema::defaultStringLength(191);      // legacy MySQL index-length workaround → every string col is 191
-$this->configureRateLimiting();        // the 7 named throttle: limiters — see SECURITY.md S-16
+$this->configureRateLimiting();        // the 9 named throttle: limiters — see SECURITY.md S-16
 $this->configureMigrationHealthCheck(); // DiagnosingHealth → /up fails while the migration-failure marker exists
 Event::listen(MessageSending::class, PrefixEmailSubject::class);
 $this->warnIfFrontendAppUrlLooksInvalid();
 ```
 
 ⭐ **The `login` limiter has its own response callback** (2026-09-15, PR #245, `4c92b5e2` + `c6734fb3`):
-`accountLockedResponse()` returns the same 429 body as the other six **and** writes an
+`accountLockedResponse()` returns the same 429 body as the other limiters **and** writes an
 `auth.account_locked` audit row, because `ThrottleRequests` rejects before `AuthController::login()` runs
 and nothing else can see a lockout. It dedups with `Cache::add("audit:login-lockout:{key}")` for
 exactly `RateLimiter::availableIn(md5('login'.$key))` seconds — the limiter's own remaining window, read
 from the key `ThrottleRequests` itself uses for a named limiter. ☠️ Rename the limiter and that `md5()`
 must change with it, or the dedup reads a key that never exists and logs a row per rejected request.
 Details in [AUDIT_TRAIL_BACKEND_CONTEXT §16](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md#16--merged-2026-09-15--lockout-audit-and-diff-fidelity).
+
+⭐ **`patient-export` has the only other callback** (2026-09-29, PR #291): `patientExportRateLimitedResponse()`
+writes a failed `patient.exported` row. It **deliberately does not** reuse the `md5()` trick above. It dedups
+with its own fixed window, `Cache::add("audit:patient-export-rate-limit:{key}", …, 60)`, so a change to Laravel's
+key hashing cannot silently turn it into one row per retry. `PATIENT_EXPORT_PER_MINUTE` (10) and
+`PATIENT_EXPORT_PER_MINUTE_WINDOW` (60) must change together.
+[PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420).
+
+## `config/exports.php` (2026-09-29)
+
+`patient_max_rows` ← `PATIENT_EXPORT_MAX_ROWS` (default **50 000**). It is the row ceiling
+`PatientController::export()` checks **before** streaming: patients × attached tests, plus one row per
+patient with none. Over the ceiling, the request gets a 422 `api.patient_export_too_large` and a failed audit row. The setting is
+per environment, unlike `AuditLogController::MAX_EXPORT_ROWS` (hardcoded 50 000), because the safe value
+depends on nginx's `fastcgi_read_timeout` and PHP's `max_execution_time`. ⚠️ With `config:cache` at boot, a
+change needs a container restart.
 
 ## Config caching
 

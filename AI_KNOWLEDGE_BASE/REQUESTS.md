@@ -1,12 +1,12 @@
 # FormRequests
 
-**28 classes in `app/Http/Requests/`.** This is the one convention the codebase applies consistently —
+**30 classes in `app/Http/Requests/`.** This is the one convention the codebase applies consistently —
 follow it. Full list with line numbers: [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) (`REQ-nnn`).
 
 | Domain | Classes |
 |---|---|
 | Users / auth | `UserRequest` · `UpdateUserEmailTemplateRequest` · `ChangePasswordRequest` · `UpdateProfileRequest` |
-| Patients | `PatientAddRequest` · `PatientUpdateRequest` |
+| Patients | `PatientAddRequest` · `PatientUpdateRequest` · `PatientExportRequest` (+ trait `Concerns\ValidatesPatientExportDateRange` — a one-**calendar-year** cap, deliberately not `ValidatesAuditDateRange`'s 31 days; [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)) |
 | Tests | `CreateTestRequest` · `TestRequest` · `PerformTestRequest` · `TestAnswerRequest` · `TestConditionRequest` · `TestSectionRequest` · `TestSectionPlateRequest` · `GenerateTestReportRequest` |
 | Credits & money | `CreditsAddRequest` · `CreatePaymentRequest` · `PartialPaymentRequest` · `RefundPaymentRequest` |
 | Discounts | `StoreDiscountCodeRequest` · `UpdateDiscountCodeRequest` · `ValidateDiscountCodeRequest` |

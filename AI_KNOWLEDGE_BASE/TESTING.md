@@ -121,12 +121,26 @@ because CI runs no tests. Guard driver-specific SQL with `DB::getDriverName() ==
 | `tests/Feature/Patients/PatientUpdateFieldsTest.php` | 1 | **4** | `tcv-backend-codefix` (merged) — added 2026-09-07 after `zipcode` was found silently unwritable. The structural case asserts every `PatientUpdateRequest` rule key names a real fillable attribute, so the *next* misspelling fails here rather than shipping; the rest pin that `zipcode` and `test_condition` actually persist through `PUT` and that `user_id` still cannot be reassigned |
 | `tests/Feature/Credits/CreditsExpiryBoundaryTest.php` | 1 | **6** | `tcv-backend-codefix` (merged) — a credit dated "expires today" counts for the whole of that day and stops the day after, for finite and unlimited grants alike. Pins the DATE-vs-DATETIME change described in [CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md) |
 
-☠️ **`develop` `e8507fb9`: 1343 passed, 1 failed** (4152 assertions, 136 s, `php artisan test`, in-memory
+☠️ **`develop` `a5938b2e`: 1398 passed, 3 failed** (1401 tests, 4948 assertions, `php artisan test`, in-memory
+SQLite, measured 2026-10-01). The +57 since `e8507fb9` is exactly the patient export (PR #291):
+`Feature/PatientExportTest` (55) and `Unit/Services/Reports/PatientExportServiceDiagnosisExpressionTest` (2),
+**all passing**. Of the 3 failures, **one is real**: the same stale `ws-401` test below.
+⚠️ **The other two are environmental, not regressions:**
+`InvitationSendReviewFixesTest::test_a_bare_link_placeholder_is_still_linkified` and
+`OrganizationEmailTemplateTypeTest::test_the_verification_link_is_still_anchored_for_an_organization` render
+a host-less `/app/test-invitation/…` link that is never anchored. They also fail on `e8507fb9` when run in the same
+environment, although the 2026-09-29 run passed them, and the export PR touches no invitation code.
+Suspect an unset `FRONTEND_APP_URL` in `.env` ([ENVIRONMENT.md](ENVIRONMENT.md)). Re-measure with a
+correctly configured `.env` before treating them as real. ⚠️ `artisan` (and therefore `php artisan test`
+and `route:list`) cannot boot on `develop` unless `HUBSPOT_ACCESS_TOKEN` is set: `HubSpotService`'s
+constructor throws when it is empty. Any value works locally.
+
+The previous measurement: **`develop` `e8507fb9`: 1343 passed, 1 failed** (4152 assertions, 136 s, `php artisan test`, in-memory
 SQLite, measured 2026-09-29). The growth since `0197fd1b` comes from `ws-451`
 (`Credits/FreeOrderCheckoutTest` 19, `Stripe/StripeZeroAmountInvoiceTest` 2) and `ws-459` PR #284
 (`Migration/LegacyLocationAdminPayloadTest` 4). The one failure is the **same** stale `ws-401` test below,
-unchanged. The patient-export feature (`PatientExportTest`) was committed straight to `develop` on
-2026-09-28 (`7a28fa6e`) and reverted the same day (`e8507fb9`), so it is not in this count.
+unchanged. The patient-export feature was committed straight to `develop` on 2026-09-28 (`7a28fa6e`) and
+reverted the same day (`e8507fb9`), so it was not in that count. It returned via PR #291 (above).
 
 The previous measurement: **`develop` `0197fd1b`: 1317 passed, 1 failed** (4058 assertions, 96 s, measured
 2026-09-23). The +127 since `330cf77d` was the five PRs of the 2026-09-23
@@ -149,7 +163,7 @@ CI runs no tests (see below). Found at the 2026-09-23 KB sync.
 ⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`), **still not merged at the 2026-09-29
 sync** — `develop` is still red on exactly this test: the fixture now carries
 the verification-code/expiry block, as a canonical `org_test_link` body does, and all 13 tests in the file
-pass. It is the only failure on `develop` `e8507fb9`, so merging it turns the suite green.
+pass. It is the only *real* failure on `develop` `a5938b2e` (2026-10-01; two more fail on that machine for environmental reasons, see above), so merging it turns the suite green.
 
 The previous measurement, for history: **1191 tests passed on `develop` `330cf77d`** — **3632 assertions, 0 failures**, 1 min 41 s (measured
 2026-09-21 with `php artisan test`, PHPUnit 11.5.55, PHP 8.2.12, in-memory SQLite; exit code 0). Up from
@@ -170,6 +184,27 @@ organisations, and anything nginx does. ⚠️ *Payments* is narrowing but not c
 2026-09-18, below) pins the unlimited-credit purchase refusal; nothing still covers a **successful**
 Stripe purchase end to end. `ws-451` (merged 2026-09-28, below) covers a successful **$0** order, which
 never creates a PaymentIntent (its Stripe invoice calls are mocked).
+
+### ✅ Patient CSV export added 57 backend + 39 frontend tests — on `develop` since 2026-09-29 (PR #291 / #420)
+
+`tests/Feature/PatientExportTest.php` (**55**) and
+`tests/Unit/Services/Reports/PatientExportServiceDiagnosisExpressionTest.php` (**2**) cover
+`GET api/patients/export` ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)). All 57 pass in the 2026-10-01 full run on
+`a5938b2e`. On the frontend, `apis/exportPatients.test.js` (5), `constants/patientExport.test.js` (13) and
+`PatientPage/ExportPatientModal.test.js` (21) all pass on `308fe7a` (run with
+`CI=true npx react-scripts test --watchAll=false <files>`).
+
+| Case | Covers |
+|---|---|
+| file shape | UTF-8 BOM + `text/csv`, the two banner rows, the header row in the agreed order, the `End of Export, N row(s)` trailer |
+| who is in the file | cross-tenant isolation; soft-deleted patients absent; **every** Registered-tab patient appears, tested or not; invitation-only migrated patients excluded; `the_export_lists_the_same_patients_as_the_registered_tab` |
+| which tests attach | sent-in-window **or** completed-in-window; a test matching both counts once; boundary timestamps; local-day windows in the viewer's timezone |
+| date range | exactly one calendar year accepted, one day more rejected; leap-day start clamps to 28 Feb; same-day range; future `to`; viewer-timezone "today"; `Asia/Calcutta` accepted, invalid zone rejected; missing `from`/`to` |
+| cells | US month-first / ISO / unparseable DOB; UTC timestamps stay UTC under a non-UTC app timezone; four diagnosis shapes (JSON null, missing key, missing diagnosis, the string `"null"`); formula injection neutralised; OS/OD pair → two rows |
+| search / filter | search finds an untested patient; search beats the quick filter; `%` is matched literally |
+| audit | exactly one success row with the right details; the streamed count replaces the pre-flight count; the search term never reaches the row; a failed audit write aborts before any CSV is sent |
+| guards | 401 unauthenticated; 422 + failed row over the row ceiling; 429 + **one** failed row however often the client retries; numeric `GET patients/{id}` still resolves (`whereNumber`) |
+| MySQL branch | ⚠️ SQL text only (unit test). No test runs it against a live MySQL — [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420) trap 12 |
 
 ### ✅ `ws-451` added 21 backend tests — on `develop` since 2026-09-28 (PRs #285, #287)
 

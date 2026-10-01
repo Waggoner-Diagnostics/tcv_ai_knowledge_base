@@ -20,6 +20,7 @@ commits can reference a feature without restating it.
 | **F-016** | Monocular (both-eyes) tests | part of F-011/F-012 | `TestAssignmentService::createBothEyesTests()` · `resolveCanonicalTestId()` | `patient_tests.parent_test_id`, `.eye_tested` | [TEST_EXEC](CONTEXT/TEST_EXECUTION_CONTEXT.md) |
 | **F-017** | User test assignment / visibility | `api/user/tests/*` | `TestController::userIndex`, `assignUserTest`, `bulkUpdateAssignment` · ⭐ `ws-480` (PR #392, on `develop` 2026-09-18) adds the SPA-side at-least-one-test check in `components/NewUserModal.js`: the 422 (`api.at_least_one_test_required`) only fires on the assignment call, which runs **after** the user row is written, and the modal swallows it ([FRONTEND.md](FRONTEND.md#the-user-modals-at-least-one-test-pre-check-same-ticket)) | `user_assigned_tests`, `user_hidden_tests` | — |
 | **F-020** | Patients | `api/patients` (resource) · `GET api/patients/{id}/tests` | `PatientController` · `PatientTestTransformer` | `patients`, `patient_tests` | [PATIENT](CONTEXT/PATIENT_CONTEXT.md) |
+| **F-022** | ✅ Patient CSV export (User Panel ▸ Patients, on `develop` 2026-09-29, PR #291 / #420) | `GET api/patients/export` (`API-062`, `auth:sanctum` · `throttle:patient-export`) | `PatientController::export()` · `Reports\PatientExportService` · `Exports\PatientCsvExport` · `PatientExportRequest` + `Concerns\ValidatesPatientExportDateRange` · `Patient::applyRegisteredTabScope()` · `config/exports.php` · SPA `apis/exportPatients.js`, `constants/patientExport.js`, `PatientPage/ExportPatientModal.js` | `patients`, `patient_tests`, `tests`, `audit_logs` | [PATIENT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420) |
 | **F-021** | Org patient intake | `POST api/organization/patient/{default,prolific}` · `GET api/organization/patientForm` | `OrganizationPatientController` · `TurnstileService` | `patients`, `prolific_ids`, `organization_configs` | [ORG](CONTEXT/ORGANIZATION_CONTEXT.md) |
 | **F-030** | Email invitations | `POST api/test-invitations/send` (202) · `/verify-code` · `/check-validity` · `{id}/resend` · `{id}/cancel` (409 on a lost race) · `GET unregistered` | `TestInvitationController` · `SendTestInvitationEmailsJob` · `SweepPendingInvitationsJob` · `TestInvitationMailer` · `invitations:send-pending` (scheduled, needs `workers` profile) · `mail:preflight` | `test_invitations` (`email_status`, `deferred_count`), `test_sessions`, `credit_consume`, `credits`, `jobs` | [INVITATION](CONTEXT/INVITATION_CONTEXT.md) · [JOBS](JOBS.md) |
 | **F-031** | Resume links | `POST api/test/send-resume-email` · `POST api/test/resume` | `TestResumeController` | `test_resume_tokens`, `test_sessions` | [INVITATION](CONTEXT/INVITATION_CONTEXT.md) |
@@ -48,7 +49,7 @@ commits can reference a feature without restating it.
 
 | Traced closely | `[not deeply traced]` |
 |---|---|
-| F-001…F-005, F-011…F-014, F-016, F-030, F-031, F-040, F-041, F-051, F-060…F-062 | F-015 (dompdf templates), F-017, F-032, F-070, F-071, F-081, and the ACH/bank-transfer branches of F-041 |
+| F-001…F-005, F-011…F-014, F-016, F-022, F-030, F-031, F-040, F-041, F-051, F-060…F-062 | F-015 (dompdf templates), F-017, F-032, F-070, F-071, F-081, and the ACH/bank-transfer branches of F-041 |
 
 Where a feature is marked not deeply traced, this KB tells you **where to look**, not what the code
 does in detail. Read the source.
@@ -63,7 +64,7 @@ does in detail. Read the source.
 | `app/Http/Controllers/Auth/*` | `laravel/ui` scaffolding, no routes |
 | `backend-queue` / `backend-scheduler` services and the `invitations:send-pending` schedule | behind the compose `workers` profile, off by default ([DEPLOYMENT.md](DEPLOYMENT.md)) |
 | `GET api/access-check` | registered and public, but no SPA code calls it yet |
-| `POST api/stripe/create-payment-intent` (`API-092`) and the rest of `api/stripe/*` | routed and guarded, but **no SPA caller** — the portal buys credits through `api/payment/initialize` → `api/payment/confirm`. ☠️ `ws-480` put its unlimited-credit 422 here *first*, and only here; it now sits on both surfaces ([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
+| `POST api/stripe/create-payment-intent` (`API-093`) and the rest of `api/stripe/*` | routed and guarded, but **no SPA caller** — the portal buys credits through `api/payment/initialize` → `api/payment/confirm`. ☠️ `ws-480` put its unlimited-credit 422 here *first*, and only here; it now sits on both surfaces ([BILLING trap 9](CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480)) |
 | `App\Rules\TurnstileToken` | never referenced |
 | `SecureImageService::getBatchSecurePlateUrls()` / `uploadPlateToS3()` | commented as unused |
 | `App\Models\Credit` | superseded by `Credits` on the same table |

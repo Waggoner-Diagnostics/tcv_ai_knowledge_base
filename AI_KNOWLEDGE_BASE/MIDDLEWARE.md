@@ -13,12 +13,14 @@ are aliased.**
 📌 `EnsureTokenIsValid` (dead, never aliased) was **deleted** when `tcv-backend-codefix` merged; its old
 `MW-001` slot is now `AddRequestId`. Earlier text here saying it was "still present on `develop`" was stale.
 
-Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. **Seven named limiters** live in
+Laravel's own `auth:sanctum`, `signed` and `throttle` are also used. **Nine named limiters** live in
 `AppServiceProvider::configureRateLimiting()`, plus the bare `throttle:10,1` on `api/contact` and
 `api/distributor-enquiry`: `login`, `register`, `password-reset`, `signature-verify`, `bulk-invitations`
-(keyed `identifier|ip` through `callerKey()`), and `plate-url`, `send-resume-email` (keyed on the session
-or bearer token). ⭐ `login` alone has a custom response callback that writes `auth.account_locked`
-([CONFIGURATION.md](CONFIGURATION.md)). ☠️ The `|ip` half is only as trustworthy as `$request->ip()`, which
+(keyed `identifier|ip` through `callerKey()`), `plate-url`, `send-resume-email` (keyed on the session
+or bearer token), `free-order` (5/min per account, `ws-451`) and `patient-export` (10/min per user id, PR #291,
+2026-09-29). ⭐ Two limiters have a custom response callback that writes an audit row: `login` writes
+`auth.account_locked` ([CONFIGURATION.md](CONFIGURATION.md)) and `patient-export` writes a failed
+`patient.exported` ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)). ☠️ The `|ip` half is only as trustworthy as `$request->ip()`, which
 since `ws-449` is forgeable by the traced chain
 ([S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not)).
 

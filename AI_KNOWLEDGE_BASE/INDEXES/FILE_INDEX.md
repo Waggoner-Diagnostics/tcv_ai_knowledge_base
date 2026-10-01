@@ -1,6 +1,6 @@
 # File Index
 
-**245 PHP files** containing classes, under `app/` + `database/`.
+**249 PHP files** containing classes, under `app/` + `database/`.
 
 | File | Classes | Methods |
 |---|---|---|
@@ -39,6 +39,7 @@
 | [`app/Exceptions/UnscoreableTestException.php`](../../../TCV-Backend/app/Exceptions/UnscoreableTestException.php) | UnscoreableTestException | 1 |
 | [`app/Exports/AuditLogCsvExport.php`](../../../TCV-Backend/app/Exports/AuditLogCsvExport.php) | AuditLogCsvExport | 20 |
 | [`app/Exports/DiscountCodeReportExport.php`](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php) | DiscountCodeReportExport | 6 |
+| [`app/Exports/PatientCsvExport.php`](../../../TCV-Backend/app/Exports/PatientCsvExport.php) | PatientCsvExport | 23 |
 | [`app/Exports/UserTestsDetailExport.php`](../../../TCV-Backend/app/Exports/UserTestsDetailExport.php) | UserTestsDetailExport | 7 |
 | [`app/Exports/UserTestsReportExport.php`](../../../TCV-Backend/app/Exports/UserTestsReportExport.php) | UserTestsReportExport | 6 |
 | [`app/Helpers/ApiResponse.php`](../../../TCV-Backend/app/Helpers/ApiResponse.php) | ApiResponse | 2 |
@@ -63,7 +64,7 @@
 | [`app/Http/Controllers/OrganizationController.php`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php) | OrganizationController | 19 |
 | [`app/Http/Controllers/OrganizationPatientController.php`](../../../TCV-Backend/app/Http/Controllers/OrganizationPatientController.php) | OrganizationPatientController | 4 |
 | [`app/Http/Controllers/PasswordController.php`](../../../TCV-Backend/app/Http/Controllers/PasswordController.php) | PasswordController | 2 |
-| [`app/Http/Controllers/PatientController.php`](../../../TCV-Backend/app/Http/Controllers/PatientController.php) | PatientController | 10 |
+| [`app/Http/Controllers/PatientController.php`](../../../TCV-Backend/app/Http/Controllers/PatientController.php) | PatientController | 13 |
 | [`app/Http/Controllers/PaymentController.php`](../../../TCV-Backend/app/Http/Controllers/PaymentController.php) | PaymentController | 11 |
 | [`app/Http/Controllers/PriceDetailController.php`](../../../TCV-Backend/app/Http/Controllers/PriceDetailController.php) | PriceDetailController | 8 |
 | [`app/Http/Controllers/ProfileController.php`](../../../TCV-Backend/app/Http/Controllers/ProfileController.php) | ProfileController | 3 |
@@ -90,6 +91,7 @@
 | [`app/Http/Requests/AuditLogIndexRequest.php`](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php) | AuditLogIndexRequest | 4 |
 | [`app/Http/Requests/ChangePasswordRequest.php`](../../../TCV-Backend/app/Http/Requests/ChangePasswordRequest.php) | ChangePasswordRequest | 4 |
 | [`app/Http/Requests/Concerns/ValidatesAuditDateRange.php`](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesAuditDateRange.php) | ValidatesAuditDateRange | 1 |
+| [`app/Http/Requests/Concerns/ValidatesPatientExportDateRange.php`](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesPatientExportDateRange.php) | ValidatesPatientExportDateRange | 1 |
 | [`app/Http/Requests/ContactFormRequest.php`](../../../TCV-Backend/app/Http/Requests/ContactFormRequest.php) | ContactFormRequest | 3 |
 | [`app/Http/Requests/CreatePaymentRequest.php`](../../../TCV-Backend/app/Http/Requests/CreatePaymentRequest.php) | CreatePaymentRequest | 2 |
 | [`app/Http/Requests/CreateTestRequest.php`](../../../TCV-Backend/app/Http/Requests/CreateTestRequest.php) | CreateTestRequest | 4 |
@@ -99,6 +101,7 @@
 | [`app/Http/Requests/OrganizationRequest.php`](../../../TCV-Backend/app/Http/Requests/OrganizationRequest.php) | OrganizationRequest | 2 |
 | [`app/Http/Requests/PartialPaymentRequest.php`](../../../TCV-Backend/app/Http/Requests/PartialPaymentRequest.php) | PartialPaymentRequest | 2 |
 | [`app/Http/Requests/PatientAddRequest.php`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php) | PatientAddRequest | 3 |
+| [`app/Http/Requests/PatientExportRequest.php`](../../../TCV-Backend/app/Http/Requests/PatientExportRequest.php) | PatientExportRequest | 2 |
 | [`app/Http/Requests/PatientUpdateRequest.php`](../../../TCV-Backend/app/Http/Requests/PatientUpdateRequest.php) | PatientUpdateRequest | 3 |
 | [`app/Http/Requests/PerformTestRequest.php`](../../../TCV-Backend/app/Http/Requests/PerformTestRequest.php) | PerformTestRequest | 4 |
 | [`app/Http/Requests/RefundPaymentRequest.php`](../../../TCV-Backend/app/Http/Requests/RefundPaymentRequest.php) | RefundPaymentRequest | 2 |
@@ -143,7 +146,7 @@
 | [`app/Models/OrganizationPatientSession.php`](../../../TCV-Backend/app/Models/OrganizationPatientSession.php) | OrganizationPatientSession | 10 |
 | [`app/Models/OrganizationSettingsOption.php`](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php) | OrganizationSettingsOption | 0 |
 | [`app/Models/OrganizationType.php`](../../../TCV-Backend/app/Models/OrganizationType.php) | OrganizationType | 0 |
-| [`app/Models/Patient.php`](../../../TCV-Backend/app/Models/Patient.php) | Patient | 10 |
+| [`app/Models/Patient.php`](../../../TCV-Backend/app/Models/Patient.php) | Patient | 11 |
 | [`app/Models/PatientTest.php`](../../../TCV-Backend/app/Models/PatientTest.php) | PatientTest | 13 |
 | [`app/Models/PriceDetail.php`](../../../TCV-Backend/app/Models/PriceDetail.php) | PriceDetail | 0 |
 | [`app/Models/Privilege.php`](../../../TCV-Backend/app/Models/Privilege.php) | Privilege | 0 |
@@ -170,7 +173,7 @@
 | [`app/Policies/CreditsPolicy.php`](../../../TCV-Backend/app/Policies/CreditsPolicy.php) | CreditsPolicy | 7 |
 | [`app/Policies/OrgPolicy.php`](../../../TCV-Backend/app/Policies/OrgPolicy.php) | OrgPolicy | 5 |
 | [`app/Policies/TestPolicy.php`](../../../TCV-Backend/app/Policies/TestPolicy.php) | TestPolicy | 5 |
-| [`app/Providers/AppServiceProvider.php`](../../../TCV-Backend/app/Providers/AppServiceProvider.php) | AppServiceProvider | 8 |
+| [`app/Providers/AppServiceProvider.php`](../../../TCV-Backend/app/Providers/AppServiceProvider.php) | AppServiceProvider | 10 |
 | [`app/Providers/AuthServiceProvider.php`](../../../TCV-Backend/app/Providers/AuthServiceProvider.php) | AuthServiceProvider | 1 |
 | [`app/Providers/EventServiceProvider.php`](../../../TCV-Backend/app/Providers/EventServiceProvider.php) | EventServiceProvider | 0 |
 | [`app/Providers/LmsServiceProvider.php`](../../../TCV-Backend/app/Providers/LmsServiceProvider.php) | LmsServiceProvider | 2 |
@@ -204,6 +207,7 @@
 | [`app/Services/PaymentProviders/PaymentProviderInterface.php`](../../../TCV-Backend/app/Services/PaymentProviders/PaymentProviderInterface.php) | PaymentProviderInterface | 6 |
 | [`app/Services/PaymentProviders/StripeProvider.php`](../../../TCV-Backend/app/Services/PaymentProviders/StripeProvider.php) | StripeProvider | 8 |
 | [`app/Services/Reports/DiscountCodeReportService.php`](../../../TCV-Backend/app/Services/Reports/DiscountCodeReportService.php) | DiscountCodeReportService | 4 |
+| [`app/Services/Reports/PatientExportService.php`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php) | PatientExportService | 12 |
 | [`app/Services/Reports/UserTestsReportService.php`](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php) | UserTestsReportService | 10 |
 | [`app/Services/SecureImageService.php`](../../../TCV-Backend/app/Services/SecureImageService.php) | SecureImageService | 5 |
 | [`app/Services/StripeService.php`](../../../TCV-Backend/app/Services/StripeService.php) | StripeService | 15 |
@@ -252,4 +256,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._

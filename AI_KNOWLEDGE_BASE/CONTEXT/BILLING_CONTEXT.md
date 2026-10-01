@@ -235,7 +235,7 @@ failed"*, which reads to a customer as an outage rather than a deliberate refusa
 added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
 the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
 
-☠️ **That method is `POST api/stripe/create-payment-intent` (`API-092`) — the legacy surface, which the
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-093`) — the legacy surface, which the
 SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
 `POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **as first written
 neither had an unlimited check**. So the guard could not fire on the path that takes money: the
@@ -299,7 +299,7 @@ balance is still allowed to buy, and an *expired* unlimited grant does not refus
 ### 10. A 100% discount code cannot go through Stripe (`ws-451`)
 
 > ✅ **Merged 2026-09-28** — backend PRs #285 (`1b6b510a`, 09-24) and #287 (`829fac85`, 09-28), frontend
-> PR #416 (`46633f6`). Indexed at the 2026-09-29 sync as `API-066`. ⚠️ **The merged design is not the
+> PR #416 (`46633f6`). Indexed at the 2026-09-29 sync as `API-066` (`API-067` since the 2026-10-01 sync). ⚠️ **The merged design is not the
 > one the 2026-09-23 branch-only note described**: the later review commits added the idempotency key,
 > the $0 Stripe invoice, the `free-order` rate limit and the overlapping-tier refusal below.
 

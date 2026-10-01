@@ -40,8 +40,8 @@ the backend, so the browser only ever talks to the website's own origin.
 | `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-015` |
 | `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` | ✅ `API-032` |
 | `/api/logout` | POST | `/api/logout` | ✅ `API-040` |
-| `/api/register` | POST | `/api/register` | ✅ `API-078` |
+| `/api/register` | POST | `/api/register` | ✅ `API-079` |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._

@@ -1,6 +1,6 @@
 # Method Index
 
-**1253 methods across 245 classes.**
+**1297 methods across 249 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -430,6 +430,34 @@ method — several controllers here run 400–900 lines.
 | DiscountCodeReportExport | [`applyStyle()`](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L312) | 312 | private | `$sheet`, `string $range`, `array $styles` | void |
 | DiscountCodeReportExport | [`stream()`](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L317) | 317 | public | `string $fileName` | Symfony\Component\HttpFoundation\StreamedResponse |
 
+### `app/Exports/PatientCsvExport.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| PatientCsvExport | [`exportNote()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L61) | 61 | public static | `array $filters` | string |
+| PatientCsvExport | [`__construct()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L81) | 81 | public | `PatientExportService $exportService`, `User $user`, `array $filters`, `string $from`, `string $to`, `?Closure $onComplete = null` | — |
+| PatientCsvExport | [`headers()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L102) | 102 | public static | — | array |
+| PatientCsvExport | [`stream()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L107) | 107 | public | `string $fileName` | StreamedResponse |
+| PatientCsvExport | [`row()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L181) | 181 | private | `object $row` | array |
+| PatientCsvExport | [`escape()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L199) | 199 | private static | `string|int|null $value` | string |
+| PatientCsvExport | [`colFirstName()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L212) | 212 | private static | `object $row` | string |
+| PatientCsvExport | [`colLastName()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L217) | 217 | private static | `object $row` | string |
+| PatientCsvExport | [`colEmail()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L222) | 222 | private static | `object $row` | string |
+| PatientCsvExport | [`colDob()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L245) | 245 | private static | `object $row` | string |
+| PatientCsvExport | [`parseUsDate()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L264) | 264 | private static | `string $value` | ?Carbon |
+| PatientCsvExport | [`colPatientId()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L285) | 285 | private static | `object $row` | string |
+| PatientCsvExport | [`colZipCode()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L290) | 290 | private static | `object $row` | string |
+| PatientCsvExport | [`colGender()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L295) | 295 | private static | `object $row` | string |
+| PatientCsvExport | [`colTestId()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L300) | 300 | private static | `object $row` | string |
+| PatientCsvExport | [`colTestName()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L305) | 305 | private static | `object $row` | string |
+| PatientCsvExport | [`colEyeTested()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L315) | 315 | private static | `object $row` | string |
+| PatientCsvExport | [`colTestSentAt()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L320) | 320 | private static | `object $row` | string |
+| PatientCsvExport | [`colTestStatus()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L331) | 331 | private static | `object $row` | string |
+| PatientCsvExport | [`colCompletionDate()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L340) | 340 | private static | `object $row` | string |
+| PatientCsvExport | [`colCalculatedReport()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L345) | 345 | private static | `object $row` | string |
+| PatientCsvExport | [`colIpAddress()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L350) | 350 | private static | `object $row` | string |
+| PatientCsvExport | [`formatUtcTimestamp()`](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L380) | 380 | private static | `?string $value` | string |
+
 ### `app/Exports/UserTestsDetailExport.php`
 
 | Class | Method | Line | Vis | Params | Returns |
@@ -678,16 +706,19 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PatientController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L46) | 46 | public | `TestService $testService`, `PatientTestTransformer $testTransformer`, `AuditService $auditService` | — |
-| PatientController | [`index()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L56) | 56 | public | — | — |
-| PatientController | [`store()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L124) | 124 | public | `PatientAddRequest $request` | — |
-| PatientController | [`show()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L189) | 189 | public | `Request $request`, `$id` | — |
-| PatientController | [`update()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L210) | 210 | public | `PatientUpdateRequest $request`, `$id` | — |
-| PatientController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L272) | 272 | public | `Request $request`, `$id` | — |
-| PatientController | [`callerOwnsPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L311) | 311 | private | `Request $request`, `Patient $patient` | bool |
-| PatientController | [`resendTestLink()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L347) | 347 | public | `Request $request` | — |
-| PatientController | [`getPatientTests()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L421) | 421 | public | `$id` | JsonResponse |
-| PatientController | [`storeOrganizationPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L484) | 484 | public | `Request $request` | — |
+| PatientController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L66) | 66 | public | `TestService $testService`, `PatientTestTransformer $testTransformer`, `AuditService $auditService`, `PatientExportService $patientExportService` | — |
+| PatientController | [`index()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L81) | 81 | public | — | — |
+| PatientController | [`export()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L156) | 156 | public | `PatientExportRequest $request` | — |
+| PatientController | [`recordStreamedRowCount()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L255) | 255 | private | `AuditLog $auditLog`, `int $rowsWritten` | void |
+| PatientController | [`exportScopeDetails()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L279) | 279 | private | `array $validated` | array |
+| PatientController | [`store()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L293) | 293 | public | `PatientAddRequest $request` | — |
+| PatientController | [`show()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L358) | 358 | public | `Request $request`, `$id` | — |
+| PatientController | [`update()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L379) | 379 | public | `PatientUpdateRequest $request`, `$id` | — |
+| PatientController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L441) | 441 | public | `Request $request`, `$id` | — |
+| PatientController | [`callerOwnsPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L480) | 480 | private | `Request $request`, `Patient $patient` | bool |
+| PatientController | [`resendTestLink()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L516) | 516 | public | `Request $request` | — |
+| PatientController | [`getPatientTests()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L590) | 590 | public | `$id` | JsonResponse |
+| PatientController | [`storeOrganizationPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L653) | 653 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/PaymentController.php`
 
@@ -990,6 +1021,12 @@ method — several controllers here run 400–900 lines.
 |---|---|---|---|---|---|
 | ValidatesAuditDateRange | [`withValidator()`](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesAuditDateRange.php#L35) | 35 | public | `Validator $validator` | void |
 
+### `app/Http/Requests/Concerns/ValidatesPatientExportDateRange.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| ValidatesPatientExportDateRange | [`withValidator()`](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesPatientExportDateRange.php#L25) | 25 | public | `Validator $validator` | void |
+
 ### `app/Http/Requests/ContactFormRequest.php`
 
 | Class | Method | Line | Vis | Params | Returns |
@@ -1057,6 +1094,13 @@ method — several controllers here run 400–900 lines.
 | PatientAddRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L12) | 12 | public | — | bool |
 | PatientAddRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L17) | 17 | public | — | array |
 | PatientAddRequest | [`failedValidation()`](../../../TCV-Backend/app/Http/Requests/PatientAddRequest.php#L33) | 33 | public | `Illuminate\Contracts\Validation\Validator $validator` | — |
+
+### `app/Http/Requests/PatientExportRequest.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| PatientExportRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/PatientExportRequest.php#L22) | 22 | public | — | bool |
+| PatientExportRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/PatientExportRequest.php#L27) | 27 | public | — | array |
 
 ### `app/Http/Requests/PatientUpdateRequest.php`
 
@@ -1465,10 +1509,11 @@ method — several controllers here run 400–900 lines.
 | Patient | [`plaintextOf()`](../../../TCV-Backend/app/Models/Patient.php#L176) | 176 | private | `string $column` | ?string |
 | Patient | [`scopeWhereEmail()`](../../../TCV-Backend/app/Models/Patient.php#L196) | 196 | public | `Builder $query`, `string $email` | Builder |
 | Patient | [`scopeWhereName()`](../../../TCV-Backend/app/Models/Patient.php#L204) | 204 | public | `Builder $query`, `?string $firstName`, `?string $lastName = null` | Builder |
-| Patient | [`genderLabel()`](../../../TCV-Backend/app/Models/Patient.php#L225) | 225 | public static | `$gender` | ?string |
-| Patient | [`testConditionLabel()`](../../../TCV-Backend/app/Models/Patient.php#L240) | 240 | public static | `$condition` | ?string |
-| Patient | [`user()`](../../../TCV-Backend/app/Models/Patient.php#L252) | 252 | public | — | — |
-| Patient | [`tests()`](../../../TCV-Backend/app/Models/Patient.php#L260) | 260 | public | — | — |
+| Patient | [`applyRegisteredTabScope()`](../../../TCV-Backend/app/Models/Patient.php#L233) | 233 | public static | `$query` | — |
+| Patient | [`genderLabel()`](../../../TCV-Backend/app/Models/Patient.php#L261) | 261 | public static | `$gender` | ?string |
+| Patient | [`testConditionLabel()`](../../../TCV-Backend/app/Models/Patient.php#L276) | 276 | public static | `$condition` | ?string |
+| Patient | [`user()`](../../../TCV-Backend/app/Models/Patient.php#L288) | 288 | public | — | — |
+| Patient | [`tests()`](../../../TCV-Backend/app/Models/Patient.php#L296) | 296 | public | — | — |
 
 ### `app/Models/PatientTest.php`
 
@@ -1714,14 +1759,16 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AppServiceProvider | [`register()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L29) | 29 | public | — | void |
-| AppServiceProvider | [`boot()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L51) | 51 | public | — | void |
-| AppServiceProvider | [`configureMigrationHealthCheck()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L74) | 74 | protected | — | void |
-| AppServiceProvider | [`configureRateLimiting()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L93) | 93 | protected | — | void |
-| AppServiceProvider | [`accountLockedResponse()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L180) | 180 | public | `Request $request`, `array $headers` | JsonResponse |
-| AppServiceProvider | [`formatRetryAfter()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L234) | 234 | private | `int $seconds` | string |
-| AppServiceProvider | [`callerKey()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L272) | 272 | private | `Request $request`, `string|int|null $identifier` | string |
-| AppServiceProvider | [`warnIfFrontendAppUrlLooksInvalid()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L291) | 291 | protected | — | void |
+| AppServiceProvider | [`register()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L39) | 39 | public | — | void |
+| AppServiceProvider | [`boot()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L61) | 61 | public | — | void |
+| AppServiceProvider | [`configureMigrationHealthCheck()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L84) | 84 | protected | — | void |
+| AppServiceProvider | [`configureRateLimiting()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L103) | 103 | protected | — | void |
+| AppServiceProvider | [`patientExportLimiterKey()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L186) | 186 | private | `Request $request` | string |
+| AppServiceProvider | [`patientExportRateLimitedResponse()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L216) | 216 | public | `Request $request`, `array $headers` | JsonResponse |
+| AppServiceProvider | [`accountLockedResponse()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L260) | 260 | public | `Request $request`, `array $headers` | JsonResponse |
+| AppServiceProvider | [`formatRetryAfter()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L314) | 314 | private | `int $seconds` | string |
+| AppServiceProvider | [`callerKey()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L352) | 352 | private | `Request $request`, `string|int|null $identifier` | string |
+| AppServiceProvider | [`warnIfFrontendAppUrlLooksInvalid()`](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L371) | 371 | protected | — | void |
 
 ### `app/Providers/AuthServiceProvider.php`
 
@@ -1788,23 +1835,23 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuditService | [`log()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L100) | 100 | public | `string $eventKey`, `string $description`, `?User $actor`, `?User $target = null`, `string $status = 'success'`, `array $details = []`, `array $changes = []`, `?Request $request = null`, `?string $sessionKeyOverride = null`, `?string $eventTitleOverride = null` | ?AuditLog |
-| AuditService | [`personSnapshot()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L196) | 196 | private | `?User $user` | ?array |
-| AuditService | [`impersonatorFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L227) | 227 | private | `?User $actor`, `?Request $request` | ?User |
-| AuditService | [`roleFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L263) | 263 | public static | `int $usertype` | string |
-| AuditService | [`lookupCountry()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L273) | 273 | private | `?string $ip` | ?string |
-| AuditService | [`parseBrowser()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L297) | 297 | private | `?string $userAgent` | ?string |
-| AuditService | [`sessionKeyForToken()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L336) | 336 | public static | `string $plainTextToken` | string |
-| AuditService | [`sessionKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L341) | 341 | private | `?Request $request` | ?string |
-| AuditService | [`maskDetails()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L380) | 380 | public | `array $details`, `bool $maskPatientData = true` | array |
-| AuditService | [`maskChanges()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L399) | 399 | public | `array $changes`, `bool $maskPatientData = true` | array |
-| AuditService | [`isDenylistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L413) | 413 | public | `string $key` | bool |
-| AuditService | [`isSecretKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L421) | 421 | private | `string $key` | bool |
-| AuditService | [`isPhiKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L429) | 429 | private | `string $key` | bool |
-| AuditService | [`keyMatches()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L437) | 437 | private | `string $key`, `array $terms` | bool |
-| AuditService | [`isDateAllowlistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L454) | 454 | private | `string $key` | bool |
-| AuditService | [`maskValue()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L470) | 470 | private | `mixed $value`, `bool $isDateAllowlisted = false`, `bool $maskPatientData = true` | mixed |
-| AuditService | [`maskFreeText()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L515) | 515 | private | `string $text`, `bool $maskPatientData = true` | string |
+| AuditService | [`log()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L105) | 105 | public | `string $eventKey`, `string $description`, `?User $actor`, `?User $target = null`, `string $status = 'success'`, `array $details = []`, `array $changes = []`, `?Request $request = null`, `?string $sessionKeyOverride = null`, `?string $eventTitleOverride = null` | ?AuditLog |
+| AuditService | [`personSnapshot()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L201) | 201 | private | `?User $user` | ?array |
+| AuditService | [`impersonatorFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L232) | 232 | private | `?User $actor`, `?Request $request` | ?User |
+| AuditService | [`roleFor()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L268) | 268 | public static | `int $usertype` | string |
+| AuditService | [`lookupCountry()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L278) | 278 | private | `?string $ip` | ?string |
+| AuditService | [`parseBrowser()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L302) | 302 | private | `?string $userAgent` | ?string |
+| AuditService | [`sessionKeyForToken()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L341) | 341 | public static | `string $plainTextToken` | string |
+| AuditService | [`sessionKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L346) | 346 | private | `?Request $request` | ?string |
+| AuditService | [`maskDetails()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L385) | 385 | public | `array $details`, `bool $maskPatientData = true` | array |
+| AuditService | [`maskChanges()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L404) | 404 | public | `array $changes`, `bool $maskPatientData = true` | array |
+| AuditService | [`isDenylistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L418) | 418 | public | `string $key` | bool |
+| AuditService | [`isSecretKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L426) | 426 | private | `string $key` | bool |
+| AuditService | [`isPhiKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L434) | 434 | private | `string $key` | bool |
+| AuditService | [`keyMatches()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L442) | 442 | private | `string $key`, `array $terms` | bool |
+| AuditService | [`isDateAllowlistedKey()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L459) | 459 | private | `string $key` | bool |
+| AuditService | [`maskValue()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L475) | 475 | private | `mixed $value`, `bool $isDateAllowlisted = false`, `bool $maskPatientData = true` | mixed |
+| AuditService | [`maskFreeText()`](../../../TCV-Backend/app/Services/Audit/AuditService.php#L520) | 520 | private | `string $text`, `bool $maskPatientData = true` | string |
 
 ### `app/Services/Audit/PricingAuditService.php`
 
@@ -2079,6 +2126,23 @@ method — several controllers here run 400–900 lines.
 | DiscountCodeReportService | [`buildQuery()`](../../../TCV-Backend/app/Services/Reports/DiscountCodeReportService.php#L94) | 94 | public | `?string $search`, `$sortBy`, `$sortOrder`, `?string $fromDate`, `?string $toDate`, `?string $code` | — |
 | DiscountCodeReportService | [`normaliseSort()`](../../../TCV-Backend/app/Services/Reports/DiscountCodeReportService.php#L188) | 188 | private | `$sortBy`, `$sortOrder` | array |
 
+### `app/Services/Reports/PatientExportService.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| PatientExportService | [`__construct()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L40) | 40 | public | `PatientNameSearch $nameSearch`, `LegacyEncrypter $encrypter` | — |
+| PatientExportService | [`countRows()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L51) | 51 | public | `User $user`, `array $filters`, `string $from`, `string $to` | int |
+| PatientExportService | [`streamRows()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L68) | 68 | public | `User $user`, `array $filters`, `string $from`, `string $to`, `callable $onBatch` | void |
+| PatientExportService | [`decryptPii()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L101) | 101 | public | `object $row` | object |
+| PatientExportService | [`timezoneOf()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L118) | 118 | private | `array $filters` | string |
+| PatientExportService | [`matchingPatients()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L129) | 129 | private | `User $user`, `array $filters` | Builder |
+| PatientExportService | [`escapeLikeTerm()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L189) | 189 | private static | `string $term` | string |
+| PatientExportService | [`applyQuickFilter()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L201) | 201 | private | `Builder $query`, `string $filter`, `string $timezone` | void |
+| PatientExportService | [`dayBounds()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L217) | 217 | private | `Carbon $day`, `string $timezone` | array |
+| PatientExportService | [`withTestsInRange()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L238) | 238 | private | `Builder $query`, `string $from`, `string $to`, `string $timezone = 'UTC'` | Builder |
+| PatientExportService | [`rowsForPatients()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L277) | 277 | private | `User $user`, `array $patientIds`, `string $from`, `string $to`, `string $timezone` | Collection |
+| PatientExportService | [`diagnosisSelectExpression()`](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L342) | 342 | private | — | string |
+
 ### `app/Services/Reports/UserTestsReportService.php`
 
 | Class | Method | Line | Vis | Params | Returns |
@@ -2297,9 +2361,9 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PatientNameSearch | [`__construct()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L47) | 47 | public | `LegacyEncrypter $encrypter` | — |
-| PatientNameSearch | [`idsMatching()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L71) | 71 | public | `?string $term`, `array $scope = []` | array |
-| PatientNameSearch | [`matches()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L124) | 124 | private | `object $row`, `string $term` | bool |
+| PatientNameSearch | [`__construct()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L51) | 51 | public | `LegacyEncrypter $encrypter` | — |
+| PatientNameSearch | [`idsMatching()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L75) | 75 | public | `?string $term`, `array $scope = []` | array |
+| PatientNameSearch | [`matches()`](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L137) | 137 | private | `object $row`, `string $term` | bool |
 
 ### `app/Support/TestConstants.php`
 
@@ -2486,4 +2550,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._

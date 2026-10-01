@@ -124,6 +124,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `DARK_TEXT` | `'1F2937'` | [26](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L26) |
 | `COLUMNS` | `[…]` | [29](../../../TCV-Backend/app/Exports/DiscountCodeReportExport.php#L29) |
 
+### `PatientCsvExport` — `app/Exports/PatientCsvExport.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `COLUMNS` | `[…]` | [36](../../../TCV-Backend/app/Exports/PatientCsvExport.php#L36) |
+
 ### `AuditLogController` — `app/Http/Controllers/AuditLogController.php`
 
 | Constant | Value | Line |
@@ -157,7 +163,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_FIELDS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L36) |
+| `AUDIT_FIELDS` | `[…]` | [40](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L40) |
+| `FILTER_LABELS` | `[…]` | [50](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L50) |
 
 ### `ProfileController` — `app/Http/Controllers/ProfileController.php`
 
@@ -396,6 +403,13 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `TYPE_TEST_LINK` | `'test_link'` | [33](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L33) |
 | `TYPE_ORG_TEST_LINK` | `'org_test_link'` | [34](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L34) |
 
+### `AppServiceProvider` — `app/Providers/AppServiceProvider.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `PATIENT_EXPORT_PER_MINUTE` | `10` | [32](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L32) |
+| `PATIENT_EXPORT_PER_MINUTE_WINDOW` | `60` | [34](../../../TCV-Backend/app/Providers/AppServiceProvider.php#L34) |
+
 ### `AuditEventCatalog` — `app/Services/Audit/AuditEventCatalog.php`
 
 | Constant | Value | Line |
@@ -444,6 +458,12 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `CONNECTION` | `'OLD_DB_CONNECTION'` | [28](../../../TCV-Backend/app/Services/Migration/LegacyPatientSource.php#L28) |
 | `MIRRORED_COLUMNS` | `[…]` | [31](../../../TCV-Backend/app/Services/Migration/LegacyPatientSource.php#L31) |
+
+### `PatientExportService` — `app/Services/Reports/PatientExportService.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `PATIENT_BATCH_SIZE` | `500` | [38](../../../TCV-Backend/app/Services/Reports/PatientExportService.php#L38) |
 
 ### `UserTestsReportService` — `app/Services/Reports/UserTestsReportService.php`
 
@@ -529,7 +549,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `CHUNK` | `2000` | [34](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L34) |
+| `CHUNK` | `2000` | [38](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L38) |
 
 ### `TestConstants` — `app/Support/TestConstants.php`
 
@@ -549,4 +569,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-09-29. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._
