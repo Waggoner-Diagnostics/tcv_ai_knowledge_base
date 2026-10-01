@@ -187,7 +187,7 @@ never creates a PaymentIntent (its Stripe invoice calls are mocked).
 
 ### ✅ Patient CSV export added 57 backend + 39 frontend tests — on `develop` since 2026-09-29 (PR #291 / #420)
 
-`tests/Feature/PatientExportTest.php` (**55**) and
+`tests/Feature/PatientExportTest.php` (**55** on `develop`; **66** on the unmerged `improve/export-format`, which also covers the POST-only route, timezone fallback, `X-Export-Timezone` and interrupted-export auditing) and
 `tests/Unit/Services/Reports/PatientExportServiceDiagnosisExpressionTest.php` (**2**) cover
 `GET api/patients/export` ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)). All 57 pass in the 2026-10-01 full run on
 `a5938b2e`. On the frontend, `apis/exportPatients.test.js` (5), `constants/patientExport.test.js` (13) and

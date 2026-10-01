@@ -823,6 +823,8 @@ Merged to `develop` after the KB's `ff9be500` sync, independent of the export br
   to `'Discount code '.($discount->is_active ? 'activated' : 'inactivated').'.'` — same dynamic-title style §13
   applied to status-change events. One line, description text only; catalog unchanged.
 
+> 🔶 **Unmerged follow-up (2026-10-01, `improve/export-format`):** the export is now `POST`, and a stream that stops before its trailer turns the `success` row into **`failed`** with Reason "the connection was dropped before the file was fully delivered" plus `Records Sent Before It Stopped` ("Number of Records" becomes "Records Requested"). It is not an intent claim: cancel, reload, closed tab and network drop look identical to the server. A `failed` row can still mean rows were sent. See [PATIENT_CONTEXT](PATIENT_CONTEXT.md#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01).
+
 ### 17.2. ✅ ON DEVELOP 2026-09-29 — `patient.exported` finally fires (PR #291)
 
 `patient.exported` (`patient_records`) has been in `AuditEventCatalog` since the original catalogue,
