@@ -165,7 +165,7 @@ sync). `routes_source` stayed
 
 | Count | 2026-09-29 | 2026-10-01 | Why |
 |---|---|---|---|
-| Endpoints / public `api/*` | 165 / 17 | **166 / 17** | `GET api/patients/export` (`auth:sanctum` · `throttle:patient-export`) — not public. **Unmerged on `improve/export-format`: now `POST api/patients/export` (filters in the body, not the URL) ; update this row when that merges** |
+| Endpoints / public `api/*` | 165 / 17 | **166 / 17** | `GET api/patients/export` (`auth:sanctum` · `throttle:patient-export`) — not public. **Unmerged on `improve/export-format`: now `POST api/patients/export` (filters in the body, not the URL) and, from `2127d581`, an XLSX file (`PatientXlsxExport` replaces `PatientCsvExport`, cap 5 000); update this row and the class count when that merges** |
 | Classes/interfaces/traits | 245 | **249** | `PatientExportService`, `PatientCsvExport`, `PatientExportRequest`, `Concerns\ValidatesPatientExportDateRange` |
 | Methods | 1253 | **1297** | +44, nearly all the four classes above plus `PatientController::export()` / `recordStreamedRowCount()` / `exportScopeDetails()`, `Patient::applyRegisteredTabScope()`, `AppServiceProvider::patientExport*()` |
 | Services / FormRequests | 39 / 28 | **40 / 30** | same classes |

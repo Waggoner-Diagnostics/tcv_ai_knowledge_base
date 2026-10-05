@@ -38,7 +38,7 @@ same warning at boot.
 | HubSpot | `HUBSPOT_ACCESS_TOKEN` |
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
 | **Legacy source DB** (`ws-459`) | `OLD_DB_CONNECTION` `OLD_DB_HOST` `OLD_DB_PORT` `OLD_DB_DATABASE` `OLD_DB_USERNAME` `OLD_DB_PASSWORD` |
-| **Patient export** (PR #291) | `PATIENT_EXPORT_MAX_ROWS` — optional, default 50 000 ([CONFIGURATION.md](CONFIGURATION.md#configexportsphp-2026-09-29)) |
+| **Patient export** (PR #291) | `PATIENT_EXPORT_MAX_ROWS` — optional, default 50 000 ([CONFIGURATION.md](CONFIGURATION.md#configexportsphp-2026-09-29)). 🔶 Default **5 000** on unmerged `improve/export-format` (XLSX built in memory); do not set it above that without re-measuring |
 | **Legacy encryption** (`ws-459`) | **`LEGACY_MASTER_KEY`** (or `LEGACY_DEC_KEY`) `LEGACY_ENC_KEY` `LEGACY_DATA_KEY` · `LEGACY_ENCRYPTION_ENABLED` (deliberately **not** in compose) |
 | **Legacy key DB** (`ws-459`) | `ENC_DB_HOST` `ENC_DB_PORT` `ENC_DB_DATABASE` `ENC_DB_USERNAME` `ENC_DB_PASSWORD` `ENC_DB_SSL_CA` |
 | Deploy | `IMAGE_TAG_BACKEND` |

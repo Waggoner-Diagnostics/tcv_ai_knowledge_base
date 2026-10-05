@@ -336,6 +336,8 @@ into the slice without any request at all.
 ## Patient export (PR #420, on `develop` 2026-09-29)
 
 > 🔶 **Unmerged follow-up on `ui/refine-export-patient-modal` (2026-10-01)** changes this section: `exportPatients.js` becomes a `POST` body with an abort `signal`, a one-export-at-a-time guard, timezone omission/notice and a 429 "try again in N seconds" message; `ExportPatientModal.js` blocks Esc/backdrop/X while exporting, keeps Cancel enabled (it aborts), shows a wait note and a UTC hint; the picker adopts the shared outlined `DateRangeInput` (`allowTyping`, `aria-required`) with an `aria-hidden` asterisk. Details and traps: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01).
+>
+> 🔶 **Then `80e6de7` (2026-10-05, same branch):** the download is an **XLSX** (`isCompleteXlsx()` checks the zip end record; the `End of Export` regex is gone; `EXPORT_FAILED_MESSAGE`, `EXPORT_TIMED_OUT_MESSAGE` for 502/503/504); a slow-export note after 15 s; the picker's "today" is always the local date; `DateRangeInput` gets an `onClear` / `clearLabel` clear button (`allowTyping` only, so the report screens are unchanged); and the Export, Password Verification and Send Test modals share `src/styles/components/UserPanelModal.scss` (`user-panel-modal`). Needs backend `f361256d` or later. [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button).
 
 **Patients ▸ Registered ▸ Export Patients** now asks the server for the CSV. The deleted
 `components/ExportPatients.js` used to build one in the browser from `filteredPatients`. Backend
