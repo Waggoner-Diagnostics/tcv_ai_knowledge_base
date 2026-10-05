@@ -231,3 +231,54 @@ row being edited.
    without the tiebreak (SQLite sorts ties stably); the id-order test is the one that guards it. The
    **redemptions report** had its own sort-key bug, in
    [REPORTING_CONTEXT](REPORTING_CONTEXT.md) trap 8.
+7. **The admin grid's Status is derived on every read, not stored** (**`ws-521`**, branch `ws-521` in both
+   TCV-Backend and TCV-Frontend, 2026-10-05, ⚠️ **not yet merged to `develop`**. Until it merges, the indexed
+   tree still has the old four-state label and `METHOD_INDEX` line numbers for `DiscountCode` predate it).
+   The two branches must merge together: backend `develop` never sends `limit_reached`.
+   - **The bug it fixes:** `getStatusLabelAttribute()`, `scopeValid()` (the **Active** card and filter) and
+     `stats()` only read `is_active` and the dates. A 1/1 code stayed **Active** even though checkout refuses
+     it at step 8 above ("reached its usage limit").
+   - **Precedence** (first match wins): `inactive` (switch off) → `expired` → **`limit_reached`** → `scheduled` →
+     `active`. A code that is both expired and used up reads `expired`.
+   - **`limit_reached` = `max_uses !== null && total_uses >= max_uses`.** `total_uses` is `countUses()`, so
+     the badge, the Usage column and checkout share one definition of "a use". That includes migrated
+     credits for `created_by = null` codes. ☠️ Don't reimplement the count in SQL for the badge. Change
+     `countUses()` and `primeTotalUses()` together, or the screen and checkout disagree again.
+   - **Not SQL-expressible, so `DiscountCode::limitReachedIds()` resolves it in PHP.** It loads the codes
+     that have a `max_uses` **and are switched on and not expired**, primes their counts (2 queries), then
+     returns ids. `scopeValid()` excludes them, and `scopeLimitReached()` (switched on, not expired) includes
+     them. `stats()` returns a `limit_reached` count, and `index()` accepts `?status=limit_reached`. Cost
+     scales with the number of live limited codes, not with page size, and the historic half can full-scan
+     `credits`. The switched-on/not-expired narrowing came from the second `ws-521` review, so the Super Admin
+     dashboard stops loading every capped code on each visit. It changes no result, because both scopes
+     already drop those codes. ⚠️ So the ids aren't "every used-up code": a switched-off or expired code
+     that's used up won't be in them. Don't reuse `limitReachedIds()` for anything that needs that.
+   - **Both scopes take an optional `?array $limitReachedIds`** (`ws-521` PR review). Pass it when one
+     request needs both, as `stats()` does: compute `limitReachedIds()` once and hand it to `valid()` and
+     `limitReached()`, rather than paying for it twice. Omitted, each scope works it out itself.
+   - **`scopeValid()` is the single definition of "Active"** (`ws-521` PR review). The Super Admin dashboard's
+     `active_discount_codes` (`SuperAdminDashboardController::index()`) used its own `is_active` + expiry
+     query, so it kept counting used-up and not-yet-started codes after the grid stopped. It now calls
+     `DiscountCode::valid()->count()`. ☠️ Any new "active codes" figure must use `valid()` too, or it drifts
+     from the Discount Codes page's Active card.
+   - ☠️ **`is_active` is never flipped automatically.** It stays the admin's own switch. Raising `max_uses`
+     makes a used-up code Active again with no toggle. An auto-flip would need the admin to re-enable it,
+     and for dates a scheduler, which no environment runs (see
+     [AUDIT_TRAIL_BACKEND_CONTEXT](AUDIT_TRAIL_BACKEND_CONTEXT.md)). QA's ticket asked for "Inactive". The
+     screen says **Limit Reached** for the same reason it already says **Expired**: "Inactive" beside a switch
+     that is on contradicts itself.
+   - **Frontend:** `DiscountCodes.jsx` maps the key through `STATUS_TEXT` (`limit_reached` → "Limit Reached";
+     the badge would otherwise print `Limit_reached` under `text-transform: capitalize`). There's a fifth
+     stats card and a `.status-badge.limit_reached` style. The status `<select>` lives in `FiltersBar`, which
+     is **defined but never rendered**: commit `0af4aa5` (2026-04-23, "Modification UI") commented
+     `<FiltersBar />` out, and `54ad3e1` (2026-04-27) deleted the commented block. The page has had no status
+     or type filter since. The `limit_reached` `<option>` is in `FiltersBar` anyway: the second `ws-521`
+     review asked for it, so the filter works as soon as the bar is rendered again. Whether to bring the bar
+     back is an open question for the product owner, not part of `ws-521`. Until then, used-up codes are
+     findable only by the badge in the unfiltered list and the Limit Reached card's count.
+   - **Still open:** trap 3's race on the Stripe path. Two simultaneous paid checkouts can push a code to
+     "2 / 1". The badge will then correctly read Limit Reached, but the over-redemption already happened.
+   Pinned by `tests/Feature/DiscountCodes/DiscountCodeLimitStatusTest.php` (10 tests: single-use,
+   unlimited until expiry, both conditions, switch-off precedence, raising the limit, failed payments
+   not counting, legacy credits counting, `show` agreeing with `index`, filter + stats split). The last
+   one also asserts the dashboard's `active_discount_codes` matches the Active card (`ws-521` PR review).
