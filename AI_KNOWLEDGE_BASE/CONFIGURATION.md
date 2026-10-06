@@ -163,6 +163,12 @@ per environment, unlike `AuditLogController::MAX_EXPORT_ROWS` (hardcoded 50 000)
 depends on nginx's `fastcgi_read_timeout` and PHP's `max_execution_time`. ⚠️ With `config:cache` at boot, a
 change needs a container restart.
 
+🔶 **Unmerged (`improve/export-format`, 2026-10-05): default 5 000.** The export becomes an XLSX workbook built
+in memory before it is sent; 50 000 rows measured 522 MB (over the 512 MB `memory_limit`) and 113 s (past nginx's
+60 s default). Over the cap the 422 now carries `error_code` `EXPORT_TOO_MANY_PATIENTS` or `EXPORT_TOO_LARGE`.
+⚠️ Make sure no environment sets `PATIENT_EXPORT_MAX_ROWS` back up to 50 000
+([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button)).
+
 ## Config caching
 
 `entrypoint.sh` runs `config:cache` **and** `route:cache` at boot — ⚠️ **in the web container only**

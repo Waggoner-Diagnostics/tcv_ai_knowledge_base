@@ -14,7 +14,8 @@
 | `app/Models/ProlificId.php` | Prolific research-panel identity |
 | `app/Services/Reports/PatientExportService.php` · `app/Exports/PatientCsvExport.php` | Patient CSV export: query + streaming writer ([below](#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)) |
 | `app/Http/Requests/PatientExportRequest.php` · `Requests/Concerns/ValidatesPatientExportDateRange.php` | Export validation + the one-calendar-year cap |
-| `config/exports.php` | `patient_max_rows` (`PATIENT_EXPORT_MAX_ROWS`, default 50 000) |
+| `app/Services/Reports/PatientExportTracker.php` | 🔶 unmerged: appends the `patient.export_outcome` entry (Completed Yes/No); never edits an audit row ([pending section](#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01)) |
+| `config/exports.php` | `patient_max_rows` (`PATIENT_EXPORT_MAX_ROWS`, default 50 000; 🔶 **5 000** on unmerged `improve/export-format`, see [the XLSX update](#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button)) |
 
 ## Tables
 `patients` · `patient_tests` · `prolific_ids` · `organization_patient_sessions`
@@ -192,7 +193,130 @@ ignored, the same rule `RegisteredPatientsTab.js` applies. Search matches decryp
 `patients.updated_at`. `frequent` is accepted and **does nothing**, on the server and on the screen
 alike.
 
-### ☠️ Export traps
+### 🔶 Pending, NOT on `develop` yet: export review follow-up (2026-10-01)
+
+Branches: backend `improve/export-format`, frontend `ui/refine-export-patient-modal`. **Everything in this
+section is unmerged; the diagram and traps below still describe `develop` until it merges. Deploy both
+repos together** (an old SPA bundle calling `GET` gets an error, reported as a 500 by `Handler.php`).
+Re-run `composer regenerate` and update the API/route indexes and the counts after the merge.
+
+**Why:** code review found (1) the modal could be dismissed mid-export, so a second export, second audit
+row and second rate-limit slot were possible; (2) `search` (often a patient's name) travelled in the URL
+and so reached the Nginx access logs; (3) a timezone PHP could not resolve returned 422 and blocked the
+export; (4) an export cut off mid-stream stayed `success` in the audit log.
+
+| Area | Change |
+|---|---|
+| Route | `GET` → **`POST api/patients/export`**; `from`, `to`, `timezone`, `filter`, `search` go in the body. The GET route is removed. `whereNumber('patient')` stays as a guard for future literal segments (trap 1 no longer bites this route) |
+| Timezone | `PatientExportRequest::prepareForValidation()` **drops** a `timezone` PHP cannot resolve (same `DateTimeZone::ALL_WITH_BC` list as the rule), so the export proceeds in **UTC** instead of failing 422. Trap 8's rule is otherwise unchanged |
+| "Future" check | With no usable timezone, `ValidatesPatientExportDateRange` judges "future" against **UTC+14** (`Pacific/Kiritimati`), not UTC, so someone ahead of UTC is never refused their own today. A known timezone is still strict |
+| Response header | `X-Export-Timezone` = the zone actually used (`UTC` after a fallback). Exposed through `config/cors.php` with `Content-Disposition` and `Retry-After`. The SPA compares it with what it sent |
+| Audit on early stop | `PatientCsvExport` takes an `onInterrupted` callback and registers `register_shutdown_function([$this, 'handleShutdown'])` (PHP skips `finally` when a client disconnects but runs shutdown functions). Two append-only entries per export. **Started:** `patient.exported`, written before streaming, `success`, `Patient export started.`, details `Export Format` · `Records Requested` · `Date Range` · `Applied Filter`; never edited again. **Outcome:** `patient.export_outcome` ("Patients export outcome"), appended by `PatientExportTracker` when the export ends: `Completed: Yes` + `Number of Records` (streamed count) + `Export Entry ID` (the started entry's id), `success`; or `Completed: No` + `Reason` + `Records Sent Before It Stopped` + `Export Entry ID`, status `failed` (the outcome entry fails; the started entry stays `success`, so a report on `success` still lists every export that began sending). Reasons never claim intent: **"…the connection was dropped before the file was fully delivered"** when `connection_aborted()`, **"…it was stopped by a server error or timeout"** otherwise. Cancel, reload, closed tab and network drop look identical to the server, so there is deliberately **no** cancel endpoint. Develop's in-place count correction (`recordStreamedRowCount()`) is removed. **Best effort:** it only works while PHP is still writing rows (nginx buffering, a small export already handed to the proxy, or a cancel before streaming starts leave only the started entry, or record the export as completed). The hook is switched off after it reports once (`$finished`), since PHP cannot unregister a shutdown function |
+| Frontend cancel | Best effort too: a Cancel pressed just after the response arrived may still save the file. It exists for long-running exports |
+| Frontend modal | While exporting: Export disabled, Esc / backdrop / header X blocked (`backdrop='static'`, `keyboard={false}`, X hidden). **Cancel stays enabled**: it aborts the request (`AbortController`), saves nothing, shows no error, and closes. Note shown: "Your export is being prepared. Keep this window open, or select Cancel to stop it." |
+| Frontend stale requests | An attempt counter (`attemptRef`) stops a request that finishes after Cancel or a reopen from closing or changing the modal now on screen |
+| Frontend one-at-a-time | `exportPatients.js` keeps a module-level `exportInFlight` guard: a second export while one runs (e.g. after navigating away and back) is refused with `EXPORT_IN_PROGRESS`. Navigating away does **not** abort; the download completes |
+| Frontend timezone | `viewerTimeZone()` omits a zone the browser reports as missing or unresolvable. With no zone, the modal says the days are read as UTC (the picker's "today" was UTC too until `80e6de7`; it is now always the local date, see below). After download, `notice` (`UTC_NOT_REPORTED_NOTICE` / `UTC_NOT_RECOGNISED_NOTICE`) is shown when the header says UTC but the browser's zone differed |
+| Frontend errors | 429 → "Too many exports. Please try again in N seconds." from `Retry-After`. `messageFromBlobError()` now reads the blob with the FileReader helper (`Blob.text()` is missing in jsdom and old Safari) |
+| Picker UI | From/To use the outlined calendar-icon field shared with the admin report screens (`DateRangeInput`, new opt-in `allowTyping` prop forwarding `id`, `onKeyDown`, `onFocus`, `onBlur`, `autoComplete`, `className`, `aria-invalid`, `aria-required`). Static labels, styles scoped to `.export-patient-modal` in `UserPanel.scss` (`.date-picker-input` is defined differently in three global stylesheets). Note copy split into `exportScopeLead()` (rendered bold) and `EXPORT_DATE_RANGE_NOTE`; hint is "Maximum selection range: 1 year" |
+| Accessibility | The required `*` is `aria-hidden`; both date inputs carry `aria-required="true"`, so they read as "From" / "To". Each input's `aria-describedby` points at its always-present error line (`{id}-error`, `aria-live="polite"`) and the shared range hint (`export-patients-range-hint`); `DateRangeInput` forwards `aria-required`, `aria-invalid` and `aria-describedby` (react-datepicker 9 passes them through). The wait message sits in an always-rendered `<div role="status" aria-live="polite">` (a live region inserted together with its text is often not announced). The form is `aria-busy` while exporting and the dialog is `aria-labelledby` its title. `viewerTimeZone()` is memoised per mount. Tests look the fields up by accessible name (`getByRole('textbox', {name: 'From'})`), not label text |
+
+#### 🔶 Update 2026-10-05: XLSX workbook, 5 000-row cap, clear button
+
+Backend `2127d581` + `f361256d`, frontend `80e6de7`, all on the same two unmerged branches. **Local only (not
+pushed) when this was written**; `origin/improve/export-format` was still at `c4786d3f` (CSV). **This pairing is
+strict:** frontend `80e6de7` rejects every CSV download as incomplete, so it needs backend `f361256d` or later, and
+`develop`'s SPA (GET + CSV trailer regex) cannot use this backend at all. A temporary GET route would not help.
+
+| Area | Change |
+|---|---|
+| Format | `PatientCsvExport` is **deleted**; `app/Exports/PatientXlsxExport.php` replaces it (PhpSpreadsheet, already present via `maatwebsite/excel`; no new dependency). Same columns and row rules. `Content-Type` `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, file `patients_export_YYYYmmdd_His.xlsx`. Audit `Export Format` is `XLSX` |
+| Cell safety | Every cell is written with `setCellValueExplicit(…, TYPE_STRING)`, so the file stores text, never a formula. The CSV `'` prefix (`escape()`) is **not** used: in an xlsx string cell it would show up literally. Cells are capped at Excel's 32 767 characters (`fitCell()`). Leading zeros are kept |
+| Built, then sent | An xlsx is a zip and cannot be streamed row by row. `stream()` builds the whole workbook in memory, saves it to a temp file, then streams that file. Nothing reaches the browser until the build finishes |
+| "End of Export" | Now a styled **last row of the sheet** (A `End of Export`, B `N row(s)`), visual only. It is no longer the completeness signal |
+| Row cap | `PATIENT_EXPORT_MAX_ROWS` default **50 000 → 5 000** (`config/exports.php:34`). Measured without Laravel: 10 000 rows 138 MB / 11 s; 50 000 rows **522 MB** (over the 512 MB `memory_limit`, `custom.ini`) / 113 s (past nginx's default 60 s `fastcgi_read_timeout` → 504). 5 000 rows ≈ 90 MB / 4 s |
+| Too large (422) | Two cases, both with `error_code`. Over the cap with **more patients than the cap** → `EXPORT_TOO_MANY_PATIENTS`, `api.patient_export_too_many_patients` ("Too many patients to export. Search or filter the patient list, then try again."). Otherwise → `EXPORT_TOO_LARGE`, `api.patient_export_too_large` (reworded: "Too many records to export. Choose a shorter date range, or search or filter the patient list."). `countPatients()` runs only on this refusal path |
+| Build failure (500) | Any exception while building or saving → JSON `{success:false, status_code:500, message, error_code:'EXPORT_GENERATION_FAILED'}`, `api.patient_export_failed` ("We couldn't generate the Excel file. Please try again, or choose a shorter date range."), and an interrupted outcome entry with 0 rows |
+| Temp files | `createTempFile()` calls `tempnam(sys_get_temp_dir(), 'tcv-patient-export-')` (mode 0600) and **immediately** registers a shutdown function that deletes it, before `save()`, so an out-of-memory or timeout fatal still cleans up. The stream closure also deletes it after sending. `deleteStaleTempFiles()` removes files with that prefix older than `STALE_TEMP_FILE_SECONDS` (3 600 s) to catch SIGKILL / container OOM-kill leftovers. A `tempnam()` failure throws and becomes the 500 above |
+| Frontend completeness | `exportPatients.js` drops the `End of Export` regex (`hasEndOfExportMarker()`). `isCompleteXlsx()` looks for the zip end-of-central-directory signature `PK\x05\x06` in the last 22 + 65 535 bytes; missing → `EXPORT_INCOMPLETE`. The blob is re-wrapped as `XLSX_MIME_TYPE`; the fallback name is `patients_export_<ms>.xlsx` |
+| Frontend messages | `EXPORT_FAILED_MESSAGE` = the backend's `api.patient_export_failed`, word for word. 502 / 503 / 504 or no response → `EXPORT_TIMED_OUT_MESSAGE`. A 422 shows the server's `message` as-is (`error_code` is not read), so the new 422 copy flows through without a frontend change |
+| Slow notice | After `SLOW_EXPORT_MS` (15 000 ms) the modal's wait message says large exports take longer to prepare |
+| Picker "today" | Always `localDateToIso(new Date())`, the viewer's local date, even with no timezone. The backend's no-timezone rule (UTC+14) accepts it |
+| Clear button | `DateRangeInput` gains `onClear` + `clearLabel` (`allowTyping` mode only). The button (`.date-clear-btn`, `type="button"`) shows when the field has text and is not disabled, clears **only its own field** through the picker's `clear()` (focus returns to the input), and is hidden while exporting. It is out of the tab order (`tabIndex={-1}`); from the keyboard, deleting the text does the same. Accessible names "Clear From date" / "Clear To date". The report screens use `DateRangeInput` without `onClear` and are unchanged. Not react-datepicker's `isClearable`, which also shows on an empty From once To is set |
+| Modal styles | Shared shell moved to `src/styles/components/UserPanelModal.scss` (class `user-panel-modal`), imported by `ExportPatientModal`, `PasswordVerificationModal` (plus its own new `PasswordVerificationModal.scss`) and `SendTestModal`. Previously the export modal borrowed `.send-test-modal` from `SendTestModal.scss`, which only loaded with the Home chunk, so a direct load of the patients page could show an unstyled header |
+
+☠️ **Traps from this update**
+- **Deploy in lockstep, no backward-compatible window.** Each side breaks against the other's old version: the old SPA sends GET and checks for the CSV trailer; the new SPA rejects a CSV as incomplete; the old backend has no POST. Open tabs on the old bundle fail until reloaded.
+- **The 5 000 cap is a product trade-off.** An org with more than 5 000 registered patients can no longer export the full list in one file (it was allowed on `develop`); it must search or use a quick filter. Needs product sign-off. A streaming writer (e.g. OpenSpout, not a dependency) would remove the trade-off.
+- **`PATIENT_EXPORT_MAX_ROWS` is only a default.** An environment that sets it (e.g. to the old 50 000) brings back the out-of-memory and 504 path. Check deployed env before release. Raise it only after re-measuring on the target infrastructure.
+- **Register cleanup before you write PHI to disk.** `try/finally` does not run on a fatal; only a shutdown function does. Keep `register_shutdown_function` right after `tempnam()`.
+- **The temp-file test passes vacuously on Windows.** `tempnam()` keeps only 3 prefix characters there (`tcvXXXX.tmp`), so `test_the_built_file_is_not_left_behind_in_the_temp_directory` and the stale sweep never match a real file on a Windows dev machine. Linux is unaffected. No test can cover a real fatal during `save()`.
+- **`isCompleteXlsx()` is a heuristic.** A truncated file whose compressed tail happens to contain `PK\x05\x06` would pass. Checking the record's comment-length field (offset 20) against the bytes after it would tighten it.
+- **Error bodies built by hand.** `PatientController` builds the 422 and 500 envelopes itself (`:268`, `:298`) because `ApiResponse::error()` cannot carry `error_code`; the scanner's `R-B10` flags both. Either give `ApiResponse::error()` an `error_code` parameter or narrow `R-B10`.
+- **"Records Sent Before It Stopped" for an XLSX** is the full row count once any byte left: a partial zip cannot be read row by row.
+
+☠️ **New traps from this change**
+- **`audit_logs` stays append-only; the outcome is a second entry, not an edit.** The earlier design flipped the
+  row to `failed` in place, which drops a partial disclosure out of `success` reports and leaves no trace of the
+  edit (no `updated_at`). Now `failed` on `patient.exported` again means "nothing left the server" (too many
+  rows, rate limit, audit write failed), and the started entry is always `success`.
+- **Reading the trail:** a `patient.exported` entry with **no** `patient.export_outcome` entry whose
+  `Export Entry ID` matches it means the outcome is unknown: still running, the worker was killed before the
+  shutdown hook could write (SIGKILL, OOM, PHP-FPM `request_terminate_timeout`), the stream never started, or
+  the outcome write itself failed (reported to the log only). A reconciler job to flag old unmatched entries is
+  possible later and not built.
+- **`Completed: No` does not mean nothing was disclosed:** `Records Sent Before It Stopped` says how much may have
+  left. The SPA rejects an incomplete file (the `End of Export` trailer for CSV; the zip end record for XLSX
+  since `80e6de7`), but that is enforced **only by this SPA**:
+  a script could keep a partial file. The meaning of the outcome entry's `failed` status and the reconciliation
+  rule need the compliance owner's confirmation before production.
+- **`Completed: Yes` means the server finished writing the file, not that the browser received it.** A Cancel after
+  PHP wrote the last row (a small export, or a buffered response from `php artisan serve` / nginx) cannot be seen
+  by the server, so it is recorded as completed (description "Patient export finished (file fully sent by the
+  server)."). To see a `Completed: No` locally, export something slow (seed ~15 000 patients with
+  `PATIENT_SEED_COUNT`, under the 50 000-row cap) and cancel while it is running, ideally behind nginx + PHP-FPM.
+  With the XLSX build (cap 5 000) nothing is sent until the workbook is built, so cancel during the build
+  leaves only the started entry; to see `Completed: No`, cancel while the file itself is downloading.
+  Only a receipt from the browser could close this gap (an extra call per export; not built), and a trailing-probe
+  heuristic was rejected as unreliable.
+- **Two entries per export now, and `Records Requested` on the started entry is the pre-flight count** (it is never
+  corrected); the delivered count is `Number of Records` on the outcome entry. Anything that read the old
+  `Number of Records` on `patient.exported` must read the outcome entry instead.
+- **The interrupted-export path was only unit-tested** (the hook is called directly). A real client
+  disconnect through PHP-FPM and both nginx layers has not been exercised: verify on QA (cancel a large export,
+  check the row).
+- **`search` / `filter` / `timezone` are still also read from the query string** (Laravel merges query and
+  body), so a stale client calling `POST api/patients/export?search=...` would put a name back in the logs.
+  Deferred: read `$this->json()` only and 422 on a query-string `search`.
+- **Deploying GET → POST:** QA is deployed as one unit (both repos' `non-prod.yml` accept `deploy_target: both` plus a `frontend_branch` and `backend_branch`), so there is no one-sided window; testers with an old tab must reload. **No temporary GET route was added** (it would keep accepting `search` in the URL). Production needs a rollout plan (backend first, GET overlap for one release) and the production edge/CORS/buffering config in `TCV-Website` was not read. Note the `pull_request: closed` trigger on `dev`: merging one PR there can auto-deploy that repo alone.
+- **A wrong-method call returns 500, not 405**, because `app/Exceptions/Handler.php` flattens
+  `MethodNotAllowedHttpException`. Tests pin the route table instead of a status.
+- **Backend date tests must not depend on the clock.** With no timezone the future check uses UTC+14, so "tomorrow in UTC" stops being the future once UTC passes 10:00 (two tests failed at 11:39 UTC for that reason). Pin time with `Carbon::setTestNow()` or build the date from `now('Pacific/Kiritimati')`.
+- **Test mocks in CRA are reset between tests** (`resetMocks`): set `mockReturnValue` in `beforeEach`, not
+  in the `jest.mock` factory. An Esc test passes vacuously while a calendar popup is open (it swallows the
+  first Esc): close it first and assert `.react-datepicker-popper` is gone.
+- **The wider leak is not fixed:** Nginx logs `$request_uri` and the Referer in both repos, and other
+  endpoints (Invited-tab search, report searches, tokens in query strings) still put patient data and
+  secrets in URLs. See the local, git-ignored note `TCV-Frontend/.claude/known-issues/phi-in-url-and-nginx-logs.md`.
+
+**Tests (pending branches):** backend `Feature/PatientExportTest` **74** (route table, body helper
+`exportBody()`, bad zone in body and query, UTC+13 future-date case, timezone header, `Retry-After` on 429,
+started + outcome entries (completed, dropped connection, server stop; started entry byte-for-byte unchanged;
+no outcome when the stream never ran; search term in neither entry), shutdown hook only fires when the trailer
+was not reached and only once); `AuditEventCatalogTest` now counts **69** events (`patient_records` 6). Frontend: the
+three export suites (`src/apis`, `PatientPage`, `constants/patientExport`) pass with **64** tests, including Cancel
+aborts, stale completion ignored, the in-flight guard, 429 and 401 flows, UTC notices, and the accessibility
+checks (`aria-describedby`, live regions, `aria-busy`, dialog name).
+
+**After the 2026-10-05 update** (run on archived copies of the commits, not CI): backend `PatientExportTest` **86**
+pass (987 assertions; reads the XLSX back, formula-shaped name stays text, temp file removed, stale sweep, 5 000
+default, both 422 `error_code`s, `EXPORT_GENERATION_FAILED`). Full backend suite 1 430 pass / 3 fail; the same 3
+fail on `develop` (`InvitationSendReviewFixesTest`, `NormalizeLegacyBracketPlaceholdersMigrationTest`,
+`OrganizationEmailTemplateTypeTest`). Frontend: `src/apis/exportPatients.test.js`, `PatientPage` and
+`src/components` suites, **155** pass (7 new clear-button tests). `exportPatients.test.js:190` still uses the old
+422 wording as a fixture (it tests pass-through, so it passes).
+
+### ☠️ Export traps (as on `develop`)
 
 1. **`whereNumber('patient')` on `apiResource('patients')` is load-bearing.** Without it,
    `GET patients/export` matches the resource's `GET patients/{patient}` first and lands in

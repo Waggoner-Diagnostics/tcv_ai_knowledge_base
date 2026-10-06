@@ -823,6 +823,10 @@ Merged to `develop` after the KB's `ff9be500` sync, independent of the export br
   to `'Discount code '.($discount->is_active ? 'activated' : 'inactivated').'.'` — same dynamic-title style §13
   applied to status-change events. One line, description text only; catalog unchanged.
 
+> 🔶 **Unmerged follow-up (2026-10-01, `improve/export-format`):** the export is now `POST`, and nothing is edited after the fact: the `patient.exported` entry is written before streaming and stays `success`, and when the export ends one more **`patient.export_outcome`** entry is appended with `Completed: Yes/No`, the count streamed (or records sent before it stopped), a plain-language reason when not completed, and `Export Entry ID` pointing at the first entry. **The catalog is therefore 69 events on the unmerged branch** (`patient_records` 6). Develop's in-place count correction is removed, so `audit_logs` stays append-only. A started entry with no outcome entry means the outcome is unknown. `Completed: No` can still mean rows were sent. See [PATIENT_CONTEXT](PATIENT_CONTEXT.md#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01).
+>
+> 🔶 **2026-10-05 (`2127d581`, `f361256d`):** `Export Format` is now **`XLSX`**. A build or save failure appends an interrupted outcome entry with 0 records before the 500. Because nothing is sent until the workbook is built, an out-of-memory or timeout fatal during the build leaves only the started entry (outcome unknown); the 5 000-row cap is what keeps that rare.
+
 ### 17.2. ✅ ON DEVELOP 2026-09-29 — `patient.exported` finally fires (PR #291)
 
 `patient.exported` (`patient_records`) has been in `AuditEventCatalog` since the original catalogue,
@@ -831,7 +835,8 @@ reached the server. The new server-side `GET api/patients/export` writes it from
 
 | Outcome | Where | Status | Details |
 |---|---|---|---|
-| exported | `PatientController::export()`, **before** streaming | `success` | Export Format `CSV` · Number of Records (provisional, rewritten to the streamed count by `recordStreamedRowCount()` after the trailer) · Date Range `from to to (tz)` · Applied Filter |
+| exported | `PatientController::export()`, **before** streaming | `success` | Export Format `CSV` · Number of Records (provisional, rewritten to the streamed count by `recordStreamedRowCount()` after the trailer) · Date Range `from to to (tz)` · Applied Filter. 🔶 *On the unmerged branch:* description `Patient export started.`, **Records Requested** instead of Number of Records, never rewritten; the delivered count is on the outcome entry below |
+| 🔶 outcome (unmerged) | `PatientExportTracker`, after the stream ends | `success` (completed) / `failed` (not completed) | `patient.export_outcome` · Completed `Yes`/`No` · Number of Records (completed) or Reason + Records Sent Before It Stopped (not completed) · Export Entry ID |
 | too many rows | `PatientController::export()` | `failed` | Reason `Export too large` · **Records Requested** (deliberately not "Number of Records") · Row Limit · Date Range · Applied Filter |
 | rate-limited | `AppServiceProvider::patientExportRateLimitedResponse()` | `failed` | Reason only. Nothing from the query string is logged, because it is unvalidated there. Deduped to one row per 60 s per caller |
 
