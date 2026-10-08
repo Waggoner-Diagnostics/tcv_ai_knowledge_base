@@ -124,3 +124,9 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    `DISTINCT`, no ordering) return one row per option, so any duplicate row *is* a duplicate option. See
    [DATA_MIGRATION_CONTEXT trap 8](DATA_MIGRATION_CONTEXT.md). Pinned by
    `tests/Feature/Organizations/OrganizationLookupDuplicatesTest.php`.
+9. **No redirect URL means the patient lands on the result page with nowhere to go.**
+   `getOrganizationRedirectUrl()` is what the SPA's `ResultPage` checks first. An org with no
+   `organization_configs.redirect_url` shows the result, and, without print or download privileges, a
+   lone **Close** button. On `develop` that button is dead: `window.close()` is refused on a tab no script
+   opened. 🔶 Fixed on the unmerged frontend `fix/ux-result-close-datefilter` with a "you can now close
+   this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).

@@ -385,6 +385,23 @@ and `RegistrationVerificationEmailTest` guards the call with a `checkdnsrr()` pr
 [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) before assuming a factory exists for the model you
 need. Only 29 of 40 models `use HasFactory`.
 
+### 🔶 Patients newest first: 2 new backend tests, 1 renamed (unmerged, 2026-10-08)
+
+Backend branch `fix/ux-patients-newest-first`, stacked on `feat/export-completion-and-sent-date`
+([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md)).
+
+- **New `tests/Feature/Patients/RegisteredPatientsOrderTest.php` (2).** `GET api/patients` lists the
+  newest `created_at` first, and same-second ties fall back to the higher id first. `created_at` is set
+  through the query builder so the fixture controls it exactly.
+- **`PatientExportTest`.** `test_patients_are_streamed_in_ascending_order_across_a_batch_boundary` is
+  renamed to `…_newest_first_…`. It still checks that all 550 patients cross the 500-patient batch
+  exactly once, now as `array_reverse($expected)`. No other export test assumed an order.
+- **Result.** `php artisan test --filter='PatientExport|RegisteredPatients'` gives **112 passed** on the
+  branch.
+- ⚠️ **`vendor/bin/pint --dirty` reformats unrelated lines** in `PatientController.php` and
+  `PatientExportTest.php`, because both have pre-existing style drift. Revert those hunks rather than
+  shipping them inside a behaviour change.
+
 ## TCV-Frontend — Jest + React Testing Library (CRA)
 
 ```bash
@@ -436,6 +453,9 @@ failure with `--testPathPattern` before blaming a change.
 | `src/components/table/TableWithGlobalFilter.test.js` | **3** | `ws-502` (on `develop` 2026-09-17) — a `useServerSorting` header goes asc → desc → asc and never emits a cleared sort; `currentSort` moves the header when the page's sort changes elsewhere, without emitting `onSort`; the page echoing a click back changes nothing |
 | `src/pages/Setting/RestrictedIps.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — newest IP first on load; a just-added IP becomes row 1. The first page-level RTL test with a real store and a mocked `AxiosInstance` — copy it for page tests |
 | `src/pages/Reports/UserTests.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — no error popup for a search request a newer one replaced; the current request's error still shows |
+| 🔶 `src/components/DateRangeInput.test.js` | **4** | `fix/ux-result-close-datefilter` (unmerged, 2026-10-08). Report mode: the `label` is the accessible name and the `title`; it falls back to the placeholder; the picked date becomes the tooltip; the `date-picker-input--report` / `is-disabled` / `has-value` classes. Typing mode: the visible `<label>` still names it, with no `aria-label` and no report modifier. Uses `getAllByTitle(...)[0]` for the wrapper, because `testing-library/no-node-access` rejects `parentElement` |
+| 🔶 `src/hooks/useDateRangeFilter.test.js` | +assertions | same branch: the `MM/DD/YYYY` / *Pick a From date first* placeholders and `fromLabel` / `toLabel`, locked and unlocked |
+| 🔶 `src/pages/UserPannel/ResultPage/ResultPage.test.js` | **3** | same branch. Close falls back when `window.close()` is refused: tokens cleared, flag set, `testResult.result` null. A reload with the `tcv_result_closed:<id>` flag shows the closed screen and never calls the API. Unmount clears the result. Mocks `miscApis`, `OrganisationSlice` and a virtual `react-router-dom` (`useParams` / `useLocation` on the invitation path) |
 | `src/pages/AddCredits.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — the same for a sort click on Add Credits (`latestCreditsRequest`) |
 
 On the `ws-502` branch with its 2026-09-17 review fixes, a full run reads **1 failed / 17 passed,
