@@ -482,6 +482,54 @@ border and background sit on the `.date-picker-input` wrapper with a transparent
 inside, where the other two style `input.form-control` directly. Same tokens in all three
 (`#f3f4f6` fill, `#9ca3af` text), so the disabled state looks identical across the reports.
 
+☠️ **…and on `develop` those three blocks are unscoped, so they stack.** `DiscountCode.js` imports
+both `DiscountCodeReport.scss` and `UserTest.scss`, and CRA's CSS chunks are global once loaded. The
+input ends up with the wrapper's 12 px padding **plus** `UserTest.scss`'s 42 px left and 32 px right
+padding, inside a 260 px menu. That cut the locked To placeholder to *"Select From date fi…"* and pushed
+it off-centre. How bad it looks depends on which report pages the user has visited.
+
+### 🔶 Update: one stylesheet, labels, tooltips (frontend `fix/ux-result-close-datefilter`, unmerged, 2026-10-08)
+
+Cut from `develop`. This supersedes the "three stylesheets" paragraphs above once merged.
+
+- **Styles.**
+  - New `components/DateRangeInput.scss`, imported by `DateRangeInput.js`. In report mode (no
+    `allowTyping`) the wrapper carries a `date-picker-input--report` modifier, and every report rule is
+    scoped to it.
+  - Layout: the wrapper has the border, a 40 px height, `padding: 0 12px` and a `:focus-within` orange
+    border. The icon is static. The input has `flex: 1; min-width: 0; padding: 0` plus `text-overflow:
+    ellipsis`.
+  - A `has-value` class adds 32 px right padding for react-datepicker's clear "×".
+  - The three old `.date-picker-input` blocks are **deleted**.
+  - The patient export modal's typed field (`allowTyping`) gets no modifier. It keeps its scoped copy in
+    `UserPanel.scss`.
+- **Wording.**
+  - Each picker is wrapped in `.date-range-field` with a visible, `aria-hidden` caption, *From date* or
+    *To date*.
+  - Placeholders become the format hint `MM/DD/YYYY` (`DATE_FORMAT_HINT`). The locked To field reads
+    *"Pick a From date first"* (`TO_LOCKED_HINT`), down from *"Select From date first"*, so it fits.
+  - The filter menu is widened from 260 to 280 px (`UserTest.scss`, `UserTestDetail.scss`).
+- **Accessible name and tooltip.**
+  - `useDateRangeFilter()` also returns `fromLabel` / `toLabel`: *"From date"*, *"To date"*, or *"To date
+    – pick a From date first"* while locked.
+  - These are returned **beside** the picker props, not inside them. Per the `customInput` trap above,
+    react-datepicker would swallow them. The pages pass them as `<DateRangeInput label={…} />`.
+  - In report mode, `aria-label` is `label || placeholder`. `title` is `value || label || placeholder`,
+    on both the input and the wrapper, so hovering anywhere on the field shows the full text even when it
+    is cut off.
+- **Tests.**
+  - `useDateRangeFilter.test.js` is updated for the new strings and labels.
+  - New `components/DateRangeInput.test.js` (4).
+
+Long placeholders in general: **do not** reach for a scrolling ("marquee") placeholder. `::placeholder`
+can't be animated reliably, and moving text needs a pause control (WCAG 2.2.2) and a
+`prefers-reduced-motion` opt-out. The house pattern is the one above:
+
+1. a short format-hint placeholder;
+2. a visible label for the instruction;
+3. a `title` tooltip;
+4. an ellipsis for anything that can still overflow.
+
 ---
 
 ## The test player
@@ -499,6 +547,44 @@ configuration (sections, timing, input type) is in `src/constants/testConfig.js`
 **The same flow is mounted three times** with different prefixes — `/user-panel/start-test/*` (logged
 in), `/test-invitation/test/start-test/*` (emailed link), `/organization/*` (org launch). They share the
 screen components. A change to a screen affects all three; a change to a **route** affects only one.
+
+### The result page Close button
+
+`pages/UserPannel/ResultPage/ResultPage.js` serves both `/user-panel/start-test/result/:id` and the public
+`/test-invitation/test/start-test/result/:id`. On the invitation route it first asks
+`GET api/organization/redirect-url`:
+
+- `send_result_to_email` → a "results will be emailed" screen;
+- any other URL → token removed, then `window.location.href = …`;
+- none → the result is rendered.
+
+**Close** shows only on the invitation route, and only when the org has neither the print (`2`) nor the
+download (`3`) privilege.
+
+☠️ **On `develop`, Close does nothing.** It calls `window.close()`, which browsers allow only for a tab a
+script opened. Every invitation and organisation flow reaches this page by plain navigation
+(`OrganizationPatient.js`, `Verification.js`, `ResumeTest.js`). The only `window.open`s in the SPA are
+impersonation, report downloads and print. So the call is refused with *"Scripts may close only the
+windows that were opened by them."*
+
+🔶 **Fix on frontend `fix/ux-result-close-datefilter` (unmerged, 2026-10-08).** `handleClose` still tries
+`window.close()`. If the tab is still open 200 ms later, it:
+
+1. removes `test_invitation_session_token` and `verification_data` from `localStorage`;
+2. sets `sessionStorage['tcv_result_closed:<uniqueTestId>'] = '1'`;
+3. dispatches `clearResultState()`;
+4. shows *"Test Complete – You can now close this tab."*
+
+The flag is read in the `useState` initialiser, and the fetch effect returns early when it is set. A
+reload after Close therefore shows the closed screen instead of `PageLoader` forever, which is what
+happens otherwise: no token means the fetch fails, and the loading guard waits on `!result` with no error
+branch. `clearResultState()` also runs on unmount. `ResultPage` is the only consumer of `testResult`, and
+the slice isn't persisted.
+
+⚠️ **This is a client-side logout only.** The `TestSession` / `OrganizationPatientSession` stays valid on
+the server until it expires. Anyone who copied the token can still use it. Pinned by
+`ResultPage/ResultPage.test.js` (3), which follows the virtual `react-router-dom` mock pattern
+([TESTING.md](TESTING.md)).
 
 ☠️ **Plate URLs are pre-signed and short-lived.** `getPlateUrl` returns a URL valid 900 s, cached
 server-side for 880 s ([CONTEXT/TEST_EXECUTION_CONTEXT.md](CONTEXT/TEST_EXECUTION_CONTEXT.md)).

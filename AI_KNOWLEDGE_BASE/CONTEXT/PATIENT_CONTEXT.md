@@ -202,6 +202,27 @@ started has no row. *Completion Date* is `result_generated_at`, falling back for
 (`legacy_id` set) to `updated_at`. **That fallback is unstable:** any later write to the row moves the
 date and can move the test in or out of an export window.
 
+**🔶 Row order: newest first (backend `fix/ux-patients-newest-first`, unmerged, stacked on
+`feat/export-completion-and-sent-date`; 2026-10-08).** Before this, `PatientController::index()` had **no
+`ORDER BY`**. The Registered tab paginates in the browser over whatever order the API returns, so a
+patient the practice had just added landed among older records, pages deep. On the branch:
+
+- **`index()`** sorts `created_at DESC, id DESC`. The `id` breaks same-second ties (bulk imports,
+  migrations).
+- **The export** sorts patients by `patients.id DESC`. Its keyset cursor is flipped to
+  `patients.id < lastId`, starting from `PHP_INT_MAX`, so each patient's rows still arrive in one batch.
+  Within a patient, tests are newest first (`patient_tests.created_at DESC, id DESC`).
+- ⚠️ **The tab and the file do not sort identically, on purpose.** The tab keys on `created_at`, the file
+  on `id`. A migrated patient with a NULL `created_at` sits at the **bottom** of the tab but appears **by
+  id** in the file. Patients created in the new system come out in the same order either way.
+- **Do not "align" the export to `created_at`.** It pages by id, so sorting by date would need a
+  compound `(created_at, id)` keyset cursor. A plain date sort with an id cursor skips or repeats
+  patients across the 500-patient batch boundary.
+
+The SPA needed no change: `RegisteredPatientsTab.js` filters and slices but never re-sorts. Pinned by
+`tests/Feature/Patients/RegisteredPatientsOrderTest.php` (2) and the renamed
+`PatientExportTest::test_patients_are_streamed_newest_first_across_a_batch_boundary`.
+
 ### 🔶 Pending, NOT on `develop` yet: export review follow-up (2026-10-01)
 
 Branches: backend `improve/export-format`, frontend `ui/refine-export-patient-modal`. **Everything in this
