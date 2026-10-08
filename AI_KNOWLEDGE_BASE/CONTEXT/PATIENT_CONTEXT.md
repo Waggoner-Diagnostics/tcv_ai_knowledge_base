@@ -193,6 +193,15 @@ ignored, the same rule `RegisteredPatientsTab.js` applies. Search matches decryp
 `patients.updated_at`. `frequent` is accepted and **does nothing**, on the server and on the screen
 alike.
 
+**Derived dates (branch `feat/export-completion-and-sent-date`, unmerged).** Two columns are computed at read
+time in `PatientExportService`, with no schema change; each expression is shared by the SELECT and the
+window predicate. *Date Test Sent* for an email-invite test (`test_invitation_id` set) is the invitation's
+latest send, `COALESCE(email_sent_at, created_at)`, instead of the test's start time; other tests keep
+`patient_tests.created_at`. Only the latest send is stored (a resend overwrites it), and an invite never
+started has no row. *Completion Date* is `result_generated_at`, falling back for migrated completed tests
+(`legacy_id` set) to `updated_at`. **That fallback is unstable:** any later write to the row moves the
+date and can move the test in or out of an export window.
+
 ### 🔶 Pending, NOT on `develop` yet: export review follow-up (2026-10-01)
 
 Branches: backend `improve/export-format`, frontend `ui/refine-export-patient-modal`. **Everything in this
