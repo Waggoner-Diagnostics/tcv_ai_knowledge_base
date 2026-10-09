@@ -213,8 +213,11 @@ patient the practice had just added landed among older records, pages deep. On t
   `patients.id < lastId`, starting from `PHP_INT_MAX`, so each patient's rows still arrive in one batch.
   Within a patient, tests are newest first (`patient_tests.created_at DESC, id DESC`).
 - ⚠️ **The tab and the file do not sort identically, on purpose.** The tab keys on `created_at`, the file
-  on `id`. A migrated patient with a NULL `created_at` sits at the **bottom** of the tab but appears **by
-  id** in the file. Patients created in the new system come out in the same order either way.
+  on `id`. Patients created in the new system come out in the same order either way. **Any migrated
+  patient can diverge**, not just undated ones: migration keeps the legacy id as the primary key, so id
+  order and `created_at` order need not agree, and two migrated patients with valid dates can swap places
+  between tab and file. A migrated patient with a NULL `created_at` (the migration writes NULL for empty or
+  `0000-00-00` dates) sits at the **bottom** of the tab but appears **by id** in the file.
 - **Do not "align" the export to `created_at`.** It pages by id, so sorting by date would need a
   compound `(created_at, id)` keyset cursor. A plain date sort with an id cursor skips or repeats
   patients across the 500-patient batch boundary.
