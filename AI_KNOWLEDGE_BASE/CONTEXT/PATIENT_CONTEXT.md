@@ -198,7 +198,10 @@ time in `PatientExportService`, with no schema change; each expression is shared
 window predicate. *Date Test Sent* for an email-invite test (`test_invitation_id` set) is the invitation's
 latest send, `COALESCE(email_sent_at, created_at)`, instead of the test's start time; other tests keep
 `patient_tests.created_at`. Only the latest send is stored (a resend overwrites it), and an invite never
-started has no row. *Completion Date* is `result_generated_at`, falling back for migrated completed tests
+started has no row. **It is not the sort key, on purpose:** within a patient, rows are ordered by
+`patient_tests.created_at` (when each test started), so the *Date Test Sent* column can read out of order
+(an invite sent on the 1st but opened on the 20th sorts as the 20th). Do not "fix" this by sorting on the
+sent date without a product decision. *Completion Date* is `result_generated_at`, falling back for migrated completed tests
 (`legacy_id` set) to `updated_at`. **That fallback is unstable:** any later write to the row moves the
 date and can move the test in or out of an export window.
 
