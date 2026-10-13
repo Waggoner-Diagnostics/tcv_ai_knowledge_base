@@ -1,6 +1,6 @@
 # Database Table Index
 
-**55 tables**, reconstructed from 158 migrations.
+**55 tables**, reconstructed from 156 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is

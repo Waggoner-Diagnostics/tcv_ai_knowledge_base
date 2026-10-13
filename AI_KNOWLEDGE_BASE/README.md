@@ -2,16 +2,16 @@
 
 Single source of truth for **TestingColorVision** across its three repos, built so an AI assistant can
 work on the project **without rescanning ~82,800 lines across 603 source files**
-(`TCV-Backend/app` 221 · `TCV-Frontend/src` 287 · `TCV-Website` 95) — measured 2026-09-23; the backend
-grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up (PR #282).
+(`TCV-Backend/app` 226 · `TCV-Frontend/src` 298 · `TCV-Website` 95 source files) — file counts re-measured
+2026-10-13; the line total is from 2026-09-23 and not re-measured.
 
 | | |
 |---|---|
 | **Repos covered** | `TCV-Backend` (Laravel 12 API) · `TCV-Frontend` (React 18 SPA) · `TCV-Website` (Next.js 15 marketing site) |
-| **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ✅ **2026-10-01:** the server-side **patient CSV export** (backend PR #291, frontend PR #420) is merged and indexed — see [What the 2026-10-01 sync changed](#what-the-2026-10-01-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`). |
+| **Branches indexed** | `develop` · `develop` · `develop` — ✅ **since 2026-10-13 all three repos are indexed from `develop`**; the website's `website-integration` exception is retired ([WEBSITE.md](WEBSITE.md#branch-state--indexed-from-develop-again-2026-10-13)). ✅ **2026-10-13:** the export follow-up (PR #298/#432, `POST` + XLSX), `ws-521` (PR #300/#434), export derived dates (PR #308), patients newest first (PR #310) and the result-close/date-filter fix (frontend PR #441) are merged and indexed — see [What the 2026-10-13 sync changed](#what-the-2026-10-13-sync-changed). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ✅ **2026-10-01:** the server-side **patient CSV export** (backend PR #291, frontend PR #420) is merged and indexed — see [What the 2026-10-01 sync changed](#what-the-2026-10-01-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`) — ☠️ **neither commit exists on `origin`** (checked 2026-10-13); both were local to the machine the KB was first built on and must be redone. |
 | **First generated** | 2026-08-19 |
-| **Code state at sync** | `TCV-Backend` `a5938b2e` (develop) · `TCV-Frontend` `308fe7a` (develop) · `TCV-Website` `6dc5223` (website-integration, **not re-indexed** — carried over from 2026-09-29) — generated **2026-10-01**. Anything merged to `develop` after `a5938b2e` / `308fe7a` is not here. |
-| **Backend scale** | 254 classes/interfaces/traits · 1336 methods · 170 API endpoints · 55 tables · 158 migrations · suite ☠️ **1398 passed / 3 failed** on `a5938b2e` (1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Code state at sync** | `TCV-Backend` `362547d7` · `TCV-Frontend` `9ecbf6b` (incl. PR #445 `client-unbilled-changes`) · `TCV-Website` `4d2c0d4` — all `develop` = `origin/develop` — generated **2026-10-13**. Routes from the ⚠️ **AST parser**, not `artisan route:list` (PHP 8.0 on the sync machine; see [the sync note](#what-the-2026-10-13-sync-changed)). Anything merged to `develop` after these SHAs is not here. |
+| **Backend scale** | 250 classes/interfaces/traits · 1314 methods · 166 API endpoints · 55 tables · 156 migrations · suite **not re-run at this sync** (last measured ☠️ **1398 passed / 3 failed** on `a5938b2e`: 1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
 | **Client scale** | 65 top-level routes · 45 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -125,9 +125,14 @@ untrue since `ws-397`'s follow-up `400cf66` (2026-08-31), which is what `ws-480`
 2026-09-07 with [S-17](SECURITY.md#s-17--five-stripe-payment-endpoints-were-public-on-develop) and the
 generated index has said so since.
 
-### TCV-Website is indexed from `website-integration`, not `develop` — the one deliberate exception
+### ✅ Retired 2026-10-13 — TCV-Website was indexed from `website-integration`, not `develop`
 
-**Resolved 2026-09-12.** The website indexes used to lag at `develop` `3ec94ec` while the prose ran
+**All three repos are indexed from `develop` from the 2026-10-13 sync on** (team decision). Website
+`develop` absorbed `website-integration` (merge `4d2c0d4`); the only commit it lacks is the cosmetic
+`6dc5223` ([WEBSITE.md](WEBSITE.md#branch-state--indexed-from-develop-again-2026-10-13)). The record below
+explains the exception while it applied.
+
+**History (2026-09-12 → 2026-10-13).** The website indexes used to lag at `develop` `3ec94ec` while the prose ran
 ahead; they are now generated from `website-integration` (`deb667a`), the same branch
 [WEBSITE.md](WEBSITE.md) describes, so the two no longer contradict each other.
 
@@ -151,6 +156,57 @@ corner-clipping fix, written up in
 ⚠️ **It is a different branch from the backend `ws-373`** that the email-template passages flag. The
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
+
+### What the 2026-10-13 sync changed
+
+Backend `develop` `a5938b2e` → **`362547d7`** (+29 commits), frontend `308fe7a` → **`0f44d23`** (+35),
+website `6dc5223` (`website-integration`) → **`4d2c0d4`** (`develop`, see the retired exception above).
+All three equal to `origin/develop` as fetched 2026-10-13. First sync run from a new machine.
+Frontend re-indexed later the same day at **`9ecbf6b`** (PR #445 `client-unbilled-changes` merged) while merging
+PR #9 into this branch; PR #9 had indexed the unmerged backend `client-unbilled-changes` branch, which this
+reverts to backend `develop` (its 4 report/email-template routes and 2 migrations are not on `develop` yet).
+
+⚠️ **`routes_source` flipped to the AST parser** (`AST static parse of routes/api.php + routes/web.php`).
+The sync machine has only PHP 8.0 (XAMPP), Laravel 12 needs 8.2, so `artisan route:list` cannot boot even
+with a backend `vendor/`; the KB tools ran on 8.0 via `composer install --ignore-platform-req=php`
+([HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md)). Same artefacts as the 2026-09-04 sync: `GET|HEAD` reads
+`GET`, `LmsSessionStatusMiddleware:` reads `lms.status:`, and the framework/package web rows
+(`sanctum/csrf-cookie`, `storage/{path}`, `up`, the seven `nnjeim/world` `{prefix?}/…` routes) drop out of
+[PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md)'s web table. **They are still live.** The `api/*` set is
+unaffected. The **backend suite was not run** for the same reason.
+
+| Ticket | Backend | Frontend | What flipped in this KB |
+|---|---|---|---|
+| Patient export follow-up — `POST`, XLSX, outcome audit entry, 5 000 cap | PR #298 `c745bc18` (10-05) | PR #432 `e0c294c` (10-05) | every "`improve/export-format` / `ui/refine-export-patient-modal`, unmerged" label: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-export-review-follow-up--on-develop-since-2026-10-05-pr-298--432) (diagram redrawn, CSV-era traps 4/5/9/10/14 marked superseded) · [AUDIT_TRAIL_BACKEND §17.2](CONTEXT/AUDIT_TRAIL_BACKEND_CONTEXT.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) · [FRONTEND.md](FRONTEND.md) · [CONFIGURATION](CONFIGURATION.md) / [ENVIRONMENT](ENVIRONMENT.md) · [TESTING](TESTING.md) · [FEATURE_INDEX](FEATURE_INDEX.md) `F-022` · [FULLSTACK_MAP](FULLSTACK_MAP.md) · [SERVICES](SERVICES.md) |
+| **`ws-521`** discount `limit_reached` status | PR #300 `2c38993d` (10-05) | PR #434 `b81134f` (10-05) | [DISCOUNT_CONTEXT trap 7](CONTEXT/DISCOUNT_CONTEXT.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) |
+| Export derived dates (sent / completion) | PR #308 `8299c73c` (10-09) | — | [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) |
+| Patients newest first | PR #310 `362547d7` (10-09) | — | [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) · [TESTING](TESTING.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) |
+| Result-page Close + report date filter | — | PR #441 `7381c91` (10-09) | [FRONTEND.md](FRONTEND.md) · [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [TESTING](TESTING.md) · [CHANGE_IMPACT_GUIDE](CHANGE_IMPACT_GUIDE.md) |
+| `docker-compose.yml` duplicate `LEGACY_*` keys removed | `bab3ff5b` (10-05) | — | [ENVIRONMENT](ENVIRONMENT.md) warning marked fixed |
+| CI-only commits (`non-prod.yml`, `uat-prod.yml`) | several | several | none — workflow tweaks, not re-read |
+
+| Count | 2026-10-01 | 2026-10-13 | Why |
+|---|---|---|---|
+| Endpoints / public `api/*` | 166 / 17 | **166 / 17** | `api/patients/export` changed method `GET` → **`POST`** in place; no route added or removed, none re-guarded |
+| Classes/interfaces/traits | 249 | **250** | `+PatientExportTracker` (`SVC-024`), `PatientCsvExport` → `PatientXlsxExport` (rename, net 0) |
+| Methods | 1297 | **1314** | the XLSX writer, the tracker, `DiscountCode::limitReachedIds()` / `scopeLimitReached()` (`DiscountCode` 15 → 18), the derived-date expressions |
+| Services | 40 | **41** | `PatientExportTracker` |
+| SPA API calls / drift | 89 / 8 | **89 / 8** | the export call is still a constant, so still invisible to the scanner |
+| Website | 32 pages / 5 proxies | **32 / 5** | branch switch changed no route |
+| Tests | 1398 / 3 failed | **not re-run** | PHP 8.0 on the sync machine; `NormalizeLegacyBracketPlaceholdersMigrationTest` is unchanged, so the stale `ws-401` failure almost certainly stands |
+| Everything else | — | **unchanged** | tables 55 · migrations 156 · models 42 · controllers 39 · requests 30 · relations 70 · spa_routes 65 · spa_slices 44 |
+
+☠️ **`SVC-nnn` ids shifted by one from `SVC-024` up** (`PatientExportTracker` took it). No prose cites an
+`SVC` id in that range. **No `API-nnn` or `TABLE-nnn` renumbering.**
+
+**Derived views — all three clean.** [PUBLIC_ROUTE_AUDIT](INDEXES/PUBLIC_ROUTE_AUDIT.md): the same 17
+public `api/*` endpoints; the web-table changes are the parser artefact above, not code.
+[CONTRACT_DRIFT](INDEXES/CONTRACT_DRIFT.md) and [FRONTEND_ROUTE_INDEX](INDEXES/FRONTEND_ROUTE_INDEX.md):
+byte-identical apart from the generation date.
+
+📌 **Also found:** `ws-401-stale-template-test` (`b2541667`) and frontend `ws-459-legacy-location-visible`
+(`c1dd22a`) were never pushed, so they cannot merge as written — redo them. [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid)
+re-checked and **still open** (no `UserPolicy`; `UserRequest::authorize()` returns `true`).
 
 ### What the 2026-10-01 sync changed
 
@@ -667,7 +723,7 @@ before writing code.
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 39 |
 | [SERVICES.md](SERVICES.md) | ✅ 40 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 31 FormRequest classes (incl. 2 `Concerns\` traits) |
+| [REQUESTS.md](REQUESTS.md) | ✅ 30 FormRequest classes (incl. 2 `Concerns\` traits) |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
@@ -690,13 +746,13 @@ before writing code.
 ### Indexes — generated, never hand-edited
 | Index | Rows |
 |---|---|
-| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 163 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
+| [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 166 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
 | [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **17 public** (non-QA environment) |
-| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 210 |
-| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 903 |
-| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |
-| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 53 — ⚠️ its "dropped later" footnotes include `down()`-only drops ([HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md)) |
-| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 210 |
+| [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 250 |
+| [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 1314 |
+| [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 42 |
+| [DATABASE_TABLE_INDEX.md](INDEXES/DATABASE_TABLE_INDEX.md) | 55 — ⚠️ its "dropped later" footnotes include `down()`-only drops ([HOW_TO_REGENERATE](GUIDES/HOW_TO_REGENERATE.md)) |
+| [FILE_INDEX.md](INDEXES/FILE_INDEX.md) | 250 |
 | [EVENT_INDEX.md](INDEXES/EVENT_INDEX.md) | dispatch + listen sites |
 | [CONSTANTS.md](INDEXES/CONSTANTS.md) · [FUNCTION_INDEX.md](INDEXES/FUNCTION_INDEX.md) · [ENUM_INDEX.md](INDEXES/ENUM_INDEX.md) | |
 | [FRONTEND_ROUTE_INDEX.md](INDEXES/FRONTEND_ROUTE_INDEX.md) | SPA routes **+ role-gating drift** |
@@ -791,7 +847,7 @@ and method and a lexical scan of both clients.
   organisation signature, error handling) and is deliberately marked **`[not deeply traced]`** where it
   was not (HubSpot sync, PDF generation internals, the Exports classes, the SuperAdmin dashboard
   aggregation) rather than padded with plausible-sounding text.
-- **Column lists** are the union across all 126 migrations, so a column added then dropped may still
+- **Column lists** are the union across all 156 migrations, so a column added then dropped may still
   show. Verify against a live `DESCRIBE` before relying on it for a migration.
 - **[SECURITY.md](SECURITY.md) findings are observations from reading the code**, not the output of a
   pen test or an exploit attempt. Each states exactly what was read and where.

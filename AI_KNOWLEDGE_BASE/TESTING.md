@@ -160,8 +160,11 @@ The fixture row is exactly that shape, so the body is no longer byte-identical. 
 is fine. The assertion is stale.** Fix the test, either by putting `{{verification_code}}` in the fixture
 or by rolling back only the migration under test, and do not weaken `000003`. It went unnoticed because
 CI runs no tests (see below). Found at the 2026-09-23 KB sync.
-⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`), **still not merged at the 2026-09-29
-sync** — `develop` is still red on exactly this test: the fixture now carries
+⏳ **Fixed on branch `ws-401-stale-template-test`** (`b2541667`), **still not merged at the 2026-10-13
+sync.** ☠️ That commit was **never pushed** — it is absent from `origin` (checked 2026-10-13), so it existed
+only on the machine the KB was first built on. The test file is unchanged on `develop` `362547d7`, so the
+failure almost certainly stands (not re-run: this machine has PHP 8.0, Laravel 12 needs 8.2). Redo the fix
+from the description here. On that branch the fixture carried
 the verification-code/expiry block, as a canonical `org_test_link` body does, and all 13 tests in the file
 pass. It is the only *real* failure on `develop` `a5938b2e` (2026-10-01; two more fail on that machine for environmental reasons, see above), so merging it turns the suite green.
 
@@ -187,7 +190,7 @@ never creates a PaymentIntent (its Stripe invoice calls are mocked).
 
 ### ✅ Patient CSV export added 57 backend + 39 frontend tests — on `develop` since 2026-09-29 (PR #291 / #420)
 
-`tests/Feature/PatientExportTest.php` (**55** on `develop`; **74** on the unmerged `improve/export-format`, which also covers the POST-only route, timezone fallback, `X-Export-Timezone`, the started + outcome audit entries, a once-only shutdown hook, and controller-level runs of the completion/interruption callbacks (a stream that throws or hits an `Error` mid-way, and a broken callback being reported rather than thrown; a real fatal, a killed worker and a real cancel through nginx cannot be raised in-process and stay a manual QA check) (`AuditEventCatalogTest` counts 69 events there); the future-date tests are pinned to a fixed clock because the UTC+14 rule makes a real-clock "tomorrow" time-of-day dependent; 🔶 **86** at `f361256d` (2026-10-05), which reads the XLSX back and adds the formula-as-text, temp-file, stale-sweep, 5 000-cap and 422/500 `error_code` cases; the temp-file test is vacuous on Windows because `tempnam()` truncates the prefix — [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button)) and
+`tests/Feature/PatientExportTest.php` (**55** at PR #291; **74** on `improve/export-format`, ✅ merged 2026-10-05 as PR #298, which also covers the POST-only route, timezone fallback, `X-Export-Timezone`, the started + outcome audit entries, a once-only shutdown hook, and controller-level runs of the completion/interruption callbacks (a stream that throws or hits an `Error` mid-way, and a broken callback being reported rather than thrown; a real fatal, a killed worker and a real cancel through nginx cannot be raised in-process and stay a manual QA check) (`AuditEventCatalogTest` counts 69 events there); the future-date tests are pinned to a fixed clock because the UTC+14 rule makes a real-clock "tomorrow" time-of-day dependent; **86** at `f361256d` (2026-10-05, in the same PR; #308/#310 added more since, not re-counted), which reads the XLSX back and adds the formula-as-text, temp-file, stale-sweep, 5 000-cap and 422/500 `error_code` cases; the temp-file test is vacuous on Windows because `tempnam()` truncates the prefix — [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button)) and
 `tests/Unit/Services/Reports/PatientExportServiceDiagnosisExpressionTest.php` (**2**) cover
 `GET api/patients/export` ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#patient-csv-export--on-develop-since-2026-09-29-pr-291--420)). All 57 pass in the 2026-10-01 full run on
 `a5938b2e`. On the frontend, `apis/exportPatients.test.js` (5), `constants/patientExport.test.js` (13) and
@@ -385,9 +388,9 @@ and `RegistrationVerificationEmailTest` guards the call with a `checkdnsrr()` pr
 [INDEXES/CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) before assuming a factory exists for the model you
 need. Only 29 of 40 models `use HasFactory`.
 
-### 🔶 Patients newest first: 2 new backend tests, 1 renamed (unmerged, 2026-10-08)
+### ✅ Patients newest first: 2 new backend tests, 1 renamed (on `develop` since 2026-10-09, PR #310)
 
-Backend branch `fix/ux-patients-newest-first`, stacked on `feat/export-completion-and-sent-date`
+Backend branch `fix/ux-patients-newest-first`, merged after `feat/export-completion-and-sent-date` (PR #308)
 ([PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md)).
 
 - **New `tests/Feature/Patients/RegisteredPatientsOrderTest.php` (2).** `GET api/patients` lists the
@@ -453,9 +456,9 @@ failure with `--testPathPattern` before blaming a change.
 | `src/components/table/TableWithGlobalFilter.test.js` | **3** | `ws-502` (on `develop` 2026-09-17) — a `useServerSorting` header goes asc → desc → asc and never emits a cleared sort; `currentSort` moves the header when the page's sort changes elsewhere, without emitting `onSort`; the page echoing a click back changes nothing |
 | `src/pages/Setting/RestrictedIps.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — newest IP first on load; a just-added IP becomes row 1. The first page-level RTL test with a real store and a mocked `AxiosInstance` — copy it for page tests |
 | `src/pages/Reports/UserTests.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — no error popup for a search request a newer one replaced; the current request's error still shows |
-| 🔶 `src/components/DateRangeInput.test.js` | **4** | `fix/ux-result-close-datefilter` (unmerged, 2026-10-08). Report mode: the `label` is the accessible name and the `title`; it falls back to the placeholder; the picked date becomes the tooltip; the `date-picker-input--report` / `is-disabled` / `has-value` classes. Typing mode: the visible `<label>` still names it, with no `aria-label` and no report modifier. Uses `getAllByTitle(...)[0]` for the wrapper, because `testing-library/no-node-access` rejects `parentElement` |
-| 🔶 `src/hooks/useDateRangeFilter.test.js` | +assertions | same branch: the `MM/DD/YYYY` / *Pick a From date first* placeholders and `fromLabel` / `toLabel`, locked and unlocked |
-| 🔶 `src/pages/UserPannel/ResultPage/ResultPage.test.js` | **3** | same branch. Close falls back when `window.close()` is refused: tokens cleared, flag set, `testResult.result` null. A reload with the `tcv_result_closed:<id>` flag shows the closed screen and never calls the API. Unmount clears the result. Mocks `miscApis`, `OrganisationSlice` and a virtual `react-router-dom` (`useParams` / `useLocation` on the invitation path) |
+| `src/components/DateRangeInput.test.js` | **4** | `fix/ux-result-close-datefilter` (PR #441, on `develop` since 2026-10-09). Report mode: the `label` is the accessible name and the `title`; it falls back to the placeholder; the picked date becomes the tooltip; the `date-picker-input--report` / `is-disabled` / `has-value` classes. Typing mode: the visible `<label>` still names it, with no `aria-label` and no report modifier. Uses `getAllByTitle(...)[0]` for the wrapper, because `testing-library/no-node-access` rejects `parentElement` |
+| `src/hooks/useDateRangeFilter.test.js` | +assertions | same PR: the `MM/DD/YYYY` / *Pick a From date first* placeholders and `fromLabel` / `toLabel`, locked and unlocked |
+| `src/pages/UserPannel/ResultPage/ResultPage.test.js` | **3** | same PR. Close falls back when `window.close()` is refused: tokens cleared, flag set, `testResult.result` null. A reload with the `tcv_result_closed:<id>` flag shows the closed screen and never calls the API. Unmount clears the result. Mocks `miscApis`, `OrganisationSlice` and a virtual `react-router-dom` (`useParams` / `useLocation` on the invitation path) |
 | `src/pages/AddCredits.test.js` | **2** | `ws-502` (on `develop` 2026-09-17) — the same for a sort click on Add Credits (`latestCreditsRequest`) |
 
 On the `ws-502` branch with its 2026-09-17 review fixes, a full run reads **1 failed / 17 passed,

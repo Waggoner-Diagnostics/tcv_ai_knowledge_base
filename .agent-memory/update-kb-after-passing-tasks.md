@@ -31,8 +31,9 @@ legacy `docs/` folder outside the KB — that folder is not maintained here.)
   change. Keep it terse, KB gotcha-style.
 - If you fixed something recorded in `SECURITY.md`, **mark the `S-nn` finding fixed with the date** —
   don't delete it. Same for a trap listed in a context pack.
-- ⚠️ **Check the checked-out branch before regenerating**: `TCV-Backend` and `TCV-Frontend` index from
-  `develop`, `TCV-Website` from `website-integration` (the one exception — see `GUIDES/HOW_TO_REGENERATE.md`).
+- ⚠️ **Check the checked-out branch before regenerating**: all three repos index from `develop`
+  (since 2026-10-13; the former `TCV-Website` `website-integration` exception is retired — see
+  `GUIDES/HOW_TO_REGENERATE.md`).
 - The GENERATED indexes (`INDEXES/*`) come from
   `php tools/extract.php && php tools/extract-clients.php && php tools/render.php`.
   **No Docker and no database needed** — `nikic/php-parser` is vendored inside the KB itself

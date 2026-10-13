@@ -335,9 +335,9 @@ into the slice without any request at all.
 
 ## Patient export (PR #420, on `develop` 2026-09-29)
 
-> 🔶 **Unmerged follow-up on `ui/refine-export-patient-modal` (2026-10-01)** changes this section: `exportPatients.js` becomes a `POST` body with an abort `signal`, a one-export-at-a-time guard, timezone omission/notice and a 429 "try again in N seconds" message; `ExportPatientModal.js` blocks Esc/backdrop/X while exporting, keeps Cancel enabled (it aborts), shows a wait note and a UTC hint; the picker adopts the shared outlined `DateRangeInput` (`allowTyping`, `aria-required`) with an `aria-hidden` asterisk. Details and traps: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01).
+> ✅ **Follow-up `ui/refine-export-patient-modal` merged 2026-10-05 (PR #432)** — the two notes below are the current `develop` behaviour and **supersede the table and the "three strings" note further down**, which describe the 2026-09-29 CSV/GET version. It changes this section: `exportPatients.js` becomes a `POST` body with an abort `signal`, a one-export-at-a-time guard, timezone omission/notice and a 429 "try again in N seconds" message; `ExportPatientModal.js` blocks Esc/backdrop/X while exporting, keeps Cancel enabled (it aborts), shows a wait note and a UTC hint; the picker adopts the shared outlined `DateRangeInput` (`allowTyping`, `aria-required`) with an `aria-hidden` asterisk. Details and traps: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-export-review-follow-up--on-develop-since-2026-10-05-pr-298--432).
 >
-> 🔶 **Then `80e6de7` (2026-10-05, same branch):** the download is an **XLSX** (`isCompleteXlsx()` checks the zip end record; the `End of Export` regex is gone; `EXPORT_FAILED_MESSAGE`, `EXPORT_TIMED_OUT_MESSAGE` for 502/503/504); a slow-export note after 15 s; the picker's "today" is always the local date; `DateRangeInput` gets an `onClear` / `clearLabel` clear button (`allowTyping` only, so the report screens are unchanged); and the Export, Password Verification and Send Test modals share `src/styles/components/UserPanelModal.scss` (`user-panel-modal`). Needs backend `f361256d` or later. [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button).
+> ✅ **Then `80e6de7` (2026-10-05, same PR):** the download is an **XLSX** (`isCompleteXlsx()` checks the zip end record; the `End of Export` regex is gone; `EXPORT_FAILED_MESSAGE`, `EXPORT_TIMED_OUT_MESSAGE` for 502/503/504); a slow-export note after 15 s; the picker's "today" is always the local date; `DateRangeInput` gets an `onClear` / `clearLabel` clear button (`allowTyping` only, so the report screens are unchanged); and the Export, Password Verification and Send Test modals share `src/styles/components/UserPanelModal.scss` (`user-panel-modal`). Needs backend `f361256d` or later. [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button).
 
 **Patients ▸ Registered ▸ Export Patients** now asks the server for the CSV. The deleted
 `components/ExportPatients.js` used to build one in the browser from `filteredPatients`. Backend
@@ -349,7 +349,7 @@ behaviour and the full trap list are in
 | `pages/UserPannel/PatientPage/PatientPage.js` | Owns `showExportModal` and the tab's current quick filter (`onExportScopeChange({count, filter})`, a stable `useCallback`). The button is disabled when the tab lists 0 rows. Hidden in the start-test flow |
 | `PatientPage/RegisteredPatientsTab.js` | Sets `exportFnRef.current = ({from, to}) => …`. It sends **parameters, not rows**: `search` when there is one, otherwise `activeFilter`, the same precedence as its own `filteredPatients`. Triggers the download with an anchor click and revokes the object URL after 1.5 s (Safari aborts if revoked in the same tick) |
 | `PatientPage/ExportPatientModal.js` | From/To `react-datepicker` fields (mm/dd/yyyy), portalled to `<body>`, one portal id per field. Shows the scope note and an error line per field. The fake password check is gone |
-| `apis/exportPatients.js` | `GET api/patients/export` with `responseType: 'blob'` and `skipErrorPopup: true`. Sends `timezone` from `Intl.DateTimeFormat().resolvedOptions().timeZone`. Parses JSON error bodies out of the `Blob` (`messageFromBlobError`). Rejects a file without the `End of Export, N row(s)` trailer as `EXPORT_INCOMPLETE` |
+| `apis/exportPatients.js` | `POST api/patients/export` (since 2026-10-05; was `GET`) with the filters in the **body**, `responseType: 'blob'` and `skipErrorPopup: true`. Sends `timezone` from `Intl.DateTimeFormat().resolvedOptions().timeZone` (omitted if unresolvable). Parses JSON error bodies out of the `Blob` (`messageFromBlobError`). Rejects a file that is not a complete xlsx (`isCompleteXlsx()`, zip end record) as `EXPORT_INCOMPLETE` — the CSV-era trailer check is gone |
 | `constants/patientExport.js` | `MAX_RANGE_YEARS` (1) · `shiftYears()` (UTC-only, clamps 29 Feb) · `rangeViolation(field, {from, to, today})` → `RANGE_VIOLATION` code · `exportScopeNote()` |
 
 ☠️ **Dates stay `'YYYY-MM-DD'` strings everywhere except at the picker boundary.** `isoToLocalDate()` /
@@ -362,9 +362,10 @@ users ahead of UTC (IST) during review. "Today" for the future-date check is the
 required → future → order → too-wide. That ordering is why two dates entered the wrong way round
 report "cannot be before/after", not "range too wide". It is pinned by `patientExport.test.js`.
 
-⚠️ **Three strings are mirrored from the backend and must stay in step:** `exportScopeNote()` ↔
-`PatientCsvExport::exportNote()`, the trailer regex ↔ `PatientCsvExport::stream()`, and the year rule ↔
-`ValidatesPatientExportDateRange`. Tests: `apis/exportPatients.test.js`, `constants/patientExport.test.js`,
+⚠️ **Things mirrored from the backend that must stay in step:** `exportScopeNote()` ↔
+`PatientXlsxExport::exportNote()`, `EXPORT_FAILED_MESSAGE` ↔ `api.patient_export_failed`, and the year rule ↔
+`ValidatesPatientExportDateRange`. (The CSV trailer regex ↔ `PatientCsvExport::stream()` pairing is gone
+since 2026-10-05.) Tests: `apis/exportPatients.test.js`, `constants/patientExport.test.js`,
 `PatientPage/ExportPatientModal.test.js`.
 
 ## Send Test & invited patients (`ws-404`)
@@ -488,9 +489,9 @@ input ends up with the wrapper's 12 px padding **plus** `UserTest.scss`'s 42 px 
 padding, inside a 260 px menu. That cut the locked To placeholder to *"Select From date fi…"* and pushed
 it off-centre. How bad it looks depends on which report pages the user has visited.
 
-### 🔶 Update: one stylesheet, labels, tooltips (frontend `fix/ux-result-close-datefilter`, unmerged, 2026-10-08)
+### ✅ Update: one stylesheet, labels, tooltips (frontend `fix/ux-result-close-datefilter`, PR #441, on `develop` since 2026-10-09)
 
-Cut from `develop`. This supersedes the "three stylesheets" paragraphs above once merged.
+This supersedes the "three stylesheets" paragraphs above, which now describe history.
 
 - **Styles.**
   - New `components/DateRangeInput.scss`, imported by `DateRangeInput.js`. In report mode (no
@@ -567,7 +568,7 @@ script opened. Every invitation and organisation flow reaches this page by plain
 impersonation, report downloads and print. So the call is refused with *"Scripts may close only the
 windows that were opened by them."*
 
-🔶 **Fix on frontend `fix/ux-result-close-datefilter` (unmerged, 2026-10-08).** `handleClose` still tries
+✅ **Fix on frontend `fix/ux-result-close-datefilter` (PR #441, on `develop` since 2026-10-09).** `handleClose` still tries
 `window.close()`. If the tab is still open 200 ms later, it:
 
 1. removes `test_invitation_session_token` and `verification_data` from `localStorage`;

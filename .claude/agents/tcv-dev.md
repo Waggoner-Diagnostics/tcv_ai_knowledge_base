@@ -47,7 +47,7 @@ Skip every index until you need one specific ID.
 
 **DB / schema change**
 `GUIDES/HOW_TO_TRACE_DATABASE.md` → `INDEXES/DATABASE_TABLE_INDEX.md` (`TABLE-nnn`).
-Column lists are a **union across 109 migrations** — confirm with `DESCRIBE` before relying on one.
+Column lists are a **union across 156 migrations** — confirm with `DESCRIBE` before relying on one.
 
 **Frontend (SPA) work** → `FRONTEND.md` → `INDEXES/FRONTEND_ROUTE_INDEX.md`
 **Website work** → `WEBSITE.md` → `INDEXES/WEBSITE_ROUTE_INDEX.md`

@@ -17,6 +17,15 @@ Requirements: **PHP 8.2+** with the `tokenizer`, `json` and `mbstring` extension
 database. `artisan` is used for routes *when TCV-Backend has a `vendor/`* — see the caveat below — but
 the KB tooling never requires it.
 
+**Only PHP 8.0/8.1 available?** (e.g. an older XAMPP — the 2026-10-13 sync ran this way.) The KB tools
+themselves lint and run on 8.0, and `nikic/php-parser` v5 needs only PHP ≥ 7.4; it is just this
+`composer.json`'s `"php": "^8.2"` that refuses. Install with
+`composer install --ignore-platform-req=php` and run the tools with that PHP. What you lose: Laravel 12
+cannot boot on < 8.2, so `artisan route:list` is unavailable even with a backend `vendor/`, and routes
+come from the **AST parser** (`api/*` is fully covered; framework/package web routes such as
+`sanctum/csrf-cookie`, `up` and the `nnjeim/world` set disappear from the web table, and `GET|HEAD`
+reads `GET`). Say so in the sync note. You also cannot run `php artisan test`.
+
 ## Check out the right branch first
 
 ☠️ **`extract.php` records whatever branch is checked out — it does not select one.** The `git` block in
@@ -26,22 +35,20 @@ a feature branch silently indexes that branch **and** labels the KB with it. Bef
 ```bash
 git -C ../TCV-Backend  rev-parse --abbrev-ref HEAD    # expect develop
 git -C ../TCV-Frontend rev-parse --abbrev-ref HEAD    # expect develop
-git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect website-integration  ← not develop
+git -C ../TCV-Website  rev-parse --abbrev-ref HEAD    # expect develop
 ```
 
-⚠️ **The website is the one exception, and it is deliberate** (changed 2026-09-12). `TCV-Backend` and
-`TCV-Frontend` index from **`develop`**; `TCV-Website` indexes from **`website-integration`**, because
-that is the branch its deploy workflows are shaped around and it is a strict superset of `develop` —
-`git log website-integration..develop` is empty. Indexing the website from `develop` meant indexing the
-*less* deployable tree and left the generated views with no `Dockerfile`, no `nginx.conf` and neither
-deploy workflow. (The earlier note here said `develop` had absorbed `website-integration` at `3ec94ec`;
-that stopped being true as the integration line moved on.)
+✅ **All three repos index from `develop`** (team decision, 2026-10-13). From 2026-09-12 to 2026-10-13 the
+website was the one exception, indexed from `website-integration` because that branch was a strict
+superset of `develop` and the one its deploy workflows were shaped around. `develop` has since absorbed it
+(merge `4d2c0d4`), leaving `website-integration` one cosmetic commit ahead (`6dc5223`, see
+[WEBSITE.md](../WEBSITE.md#branch-state--indexed-from-develop-again-2026-10-13)).
 
 Put each repo back on its own working branch afterwards, and remember that the *next* regeneration will
 pick up wherever you left it.
 
-**Before extending that exception to any other repo, prove both facts** — the branch is a strict
-superset of `develop`, and it is what actually deploys:
+**Before re-introducing an exception for any repo, prove both facts** — the branch is a strict
+superset of `develop`, and it is what actually deploys — and get the team to agree:
 
 ```bash
 git -C ../<repo> log --oneline <branch>..develop     # must be EMPTY (superset)

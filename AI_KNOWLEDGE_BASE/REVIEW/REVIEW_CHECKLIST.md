@@ -90,7 +90,7 @@ Each item exists because it has gone wrong *in this codebase*. The KB link expla
 
 ## 6. Database
 
-- [ ] Column existence confirmed with **`DESCRIBE`**, not the index (which is a union across 109
+- [ ] Column existence confirmed with **`DESCRIBE`**, not the index (which is a union across 156
       migrations). [HOW_TO_TRACE_DATABASE](../GUIDES/HOW_TO_TRACE_DATABASE.md)
 - [ ] Migration has a real `down()`, and any `dropIfExists` is deliberate — `entrypoint.sh` runs
       `migrate --force` every boot and **continues on failure**.

@@ -241,22 +241,16 @@ Verify reports layout problems as *"unresolved source links"* rather than failin
 
 ---
 
-## 5. Putting it in version control (optional, your call)
+## 5. Version control
 
-This folder is **not** a git repo yet. To make it one:
+✅ **This is its own git repo** (`Waggoner-Diagnostics`, default branch `main`). KB changes go through a
+`kb/<topic>` branch and a PR, like the code repos. It documents three repos, so it can't live in any one
+of them.
 
-```bash
-cd D:/Git/TCV/tcv-ai-knowledge-base
-git init
-git add .
-git commit -m "Add TCV AI knowledge base"
-```
-
-`.gitignore` already excludes `vendor/`. `.data/*.json` **is** committed deliberately — it lets someone
-read the machine-readable facts without running PHP.
-
-Whether this becomes its own repo or a folder in an existing one is a team decision. Keeping it separate
-matches how it's built (it documents three repos, so it can't live in any one of them).
+`.gitignore` excludes `vendor/`. `.data/*.json` **is** committed deliberately — it lets someone read the
+machine-readable facts without running PHP. ⚠️ `.gitignore` also lists `/.data`, so the three existing
+files are tracked (changes show up in `git diff`) but a **new** file there would be ignored — `git add -f`
+it if you ever add one.
 
 ---
 
@@ -265,6 +259,8 @@ matches how it's built (it documents three repos, so it can't live in any one of
 | Symptom | Cause / fix |
 |---|---|
 | `php: command not found` | add `C:\xampp\php` to PATH |
+| `composer install` refuses: *requires php ^8.2* (older XAMPP ships 8.0) | `composer install --ignore-platform-req=php` — the tools and php-parser run on 8.0. Routes then come from the AST parser, not artisan, and the backend suite can't run; note both in the sync. See [HOW_TO_REGENERATE](AI_KNOWLEDGE_BASE/GUIDES/HOW_TO_REGENERATE.md) |
+| No Composer at all | download the phar outside the repo (check its `.sha256sum`) and run `php composer.phar install …` |
 | `Failed to open stream: vendor/autoload.php` | run `composer install` **in the KB folder** |
 | `routes: 0` | `config.json` points somewhere wrong, or TCV-Backend isn't a sibling |
 | Route count drops unexpectedly | a route form the static parser doesn't handle (`Route::controller`, `Route::match`, provider-registered routes). See [HOW_TO_REGENERATE.md](AI_KNOWLEDGE_BASE/GUIDES/HOW_TO_REGENERATE.md) |

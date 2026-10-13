@@ -227,10 +227,10 @@ row being edited.
    without the tiebreak (SQLite sorts ties stably); the id-order test is the one that guards it. The
    **redemptions report** had its own sort-key bug, in
    [REPORTING_CONTEXT](REPORTING_CONTEXT.md) trap 8.
-7. **The admin grid's Status is derived on every read, not stored** (**`ws-521`**, branch `ws-521` in both
-   TCV-Backend and TCV-Frontend, 2026-10-05, ⚠️ **not yet merged to `develop`**. Until it merges, the indexed
-   tree still has the old four-state label and `METHOD_INDEX` line numbers for `DiscountCode` predate it).
-   The two branches must merge together: backend `develop` never sends `limit_reached`.
+7. **The admin grid's Status is derived on every read, not stored** (**`ws-521`**, ✅ **on `develop`
+   since 2026-10-05** — backend PR #300, frontend PR #434 — and indexed 2026-10-13: `DiscountCode` is now
+   18 methods in `METHOD_INDEX`).
+   The two halves shipped together; an SPA older than PR #434 has no label for `limit_reached`.
    - **The bug it fixes:** `getStatusLabelAttribute()`, `scopeValid()` (the **Active** card and filter) and
      `stats()` only read `is_active` and the dates. A 1/1 code stayed **Active** even though checkout refuses
      it at step 8 above ("reached its usage limit").

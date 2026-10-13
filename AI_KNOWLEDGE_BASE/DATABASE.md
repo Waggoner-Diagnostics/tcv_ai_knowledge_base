@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **55 tables**, reconstructed from 158 migrations — the indexed snapshot, taken from
+MySQL, **55 tables**, reconstructed from 156 migrations — the indexed snapshot, taken from
 `TCV-Backend@develop` at `0197fd1b` (2026-09-23 sync). The jump of 20 migrations at the 2026-09-21 sync
 was almost all `ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
 **patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).

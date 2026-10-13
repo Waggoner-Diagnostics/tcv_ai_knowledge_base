@@ -127,13 +127,16 @@ Both advance the LMS session's status. Remember the status gate only bites for t
 9. **No redirect URL means the patient lands on the result page with nowhere to go.**
    `getOrganizationRedirectUrl()` is what the SPA's `ResultPage` checks first. An org with no
    `organization_configs.redirect_url` shows the result, and, without print or download privileges, a
-   lone **Close** button. On `develop` that button is dead: `window.close()` is refused on a tab no script
-   opened. 🔶 Fixed on the unmerged frontend `fix/ux-result-close-datefilter` with a "you can now close
-   this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+   lone **Close** button. That button used to be dead: `window.close()` is refused on a tab no script
+   opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
+   with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
 
 ---
 
-## UI terminology & form changes (2026-10-12, uncommitted)
+## UI terminology & form changes (2026-10-12, `client-unbilled-changes`)
+
+> Frontend side is on `develop` (PR #445, merged 2026-10-13). Backend side (`generateFieldRules`,
+> `AuthController` message) is on the **unmerged** backend `client-unbilled-changes` branch.
 
 - "Organization(s)" -> **Integrated Partner(s)** in the UI only (routes/tables/keys unchanged). Org-settings checkboxes keep
   DB option names, displayed via `ORG_OPTION_LABELS` in `OrganisationModal.js`. Only "Distributor" is used (no reseller/affiliate).

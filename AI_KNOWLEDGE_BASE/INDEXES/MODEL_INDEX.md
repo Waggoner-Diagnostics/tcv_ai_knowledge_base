@@ -13,7 +13,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-004` | `Country` | [app/Models/Country.php:8](../../../TCV-Backend/app/Models/Country.php#L8) | `HasFactory` | `states`→State | 1 |
 | `MODEL-005` | `Credit` | [app/Models/Credit.php:8](../../../TCV-Backend/app/Models/Credit.php#L8) | `HasFactory` | `user`→User | 1 |
 | `MODEL-006` | `CreditConsume` | [app/Models/CreditConsume.php:8](../../../TCV-Backend/app/Models/CreditConsume.php#L8) | — | `user`→User | 4 |
-| `MODEL-007` | `Credits` | [app/Models/Credits.php:13](../../../TCV-Backend/app/Models/Credits.php#L13) | `HasFactory`, `Searchable` | `user`→User, `transactions`→Transaction | 18 |
+| `MODEL-007` | `Credits` | [app/Models/Credits.php:13](../../../TCV-Backend/app/Models/Credits.php#L13) | `HasFactory`, `Searchable` | `user`→User, `transactions`→Transaction | 16 |
 | `MODEL-008` | `DiscountCode` | [app/Models/DiscountCode.php:12](../../../TCV-Backend/app/Models/DiscountCode.php#L12) | `HasFactory`, `SoftDeletes` | `users`→User, `priceTiers`→PriceDetail, `creator`→User | 18 |
 | `MODEL-009` | `DiscountCodePriceTier` | [app/Models/DiscountCodePriceTier.php:7](../../../TCV-Backend/app/Models/DiscountCodePriceTier.php#L7) | — | `discountCode`→DiscountCode, `priceTier`→PriceDetail | 2 |
 | `MODEL-010` | `DiscountCodeUser` | [app/Models/DiscountCodeUser.php:7](../../../TCV-Backend/app/Models/DiscountCodeUser.php#L7) | — | `discountCode`→DiscountCode, `user`→User | 2 |
@@ -29,7 +29,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | `MODEL-020` | `OrganizationSettingsOption` | [app/Models/OrganizationSettingsOption.php:7](../../../TCV-Backend/app/Models/OrganizationSettingsOption.php#L7) | — | — | 0 |
 | `MODEL-021` | `OrganizationType` | [app/Models/OrganizationType.php:7](../../../TCV-Backend/app/Models/OrganizationType.php#L7) | — | — | 0 |
 | `MODEL-022` | `Patient` | [app/Models/Patient.php:13](../../../TCV-Backend/app/Models/Patient.php#L13) | `HasFactory`, `HasLegacyEncryptedAttributes`, `SoftDeletes` | `user`→User, `tests`→PatientTest | 11 |
-| `MODEL-023` | `PatientTest` | [app/Models/PatientTest.php:9](../../../TCV-Backend/app/Models/PatientTest.php#L9) | `HasFactory` | `patient`→Patient, `test`→Test, `testInvitation`→TestInvitation | 14 |
+| `MODEL-023` | `PatientTest` | [app/Models/PatientTest.php:9](../../../TCV-Backend/app/Models/PatientTest.php#L9) | `HasFactory` | `patient`→Patient, `test`→Test, `testInvitation`→TestInvitation | 13 |
 | `MODEL-024` | `PriceDetail` | [app/Models/PriceDetail.php:8](../../../TCV-Backend/app/Models/PriceDetail.php#L8) | `HasFactory` | — | 0 |
 | `MODEL-025` | `Privilege` | [app/Models/Privilege.php:7](../../../TCV-Backend/app/Models/Privilege.php#L7) | — | — | 0 |
 | `MODEL-026` | `ProlificId` | [app/Models/ProlificId.php:8](../../../TCV-Backend/app/Models/ProlificId.php#L8) | `HasFactory` | `organization`→Organization, `patient`→Patient | 2 |
