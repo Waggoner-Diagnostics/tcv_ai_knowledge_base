@@ -11,8 +11,8 @@ grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up
 | **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ✅ **2026-10-01:** the server-side **patient CSV export** (backend PR #291, frontend PR #420) is merged and indexed — see [What the 2026-10-01 sync changed](#what-the-2026-10-01-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`). |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `a5938b2e` (develop) · `TCV-Frontend` `308fe7a` (develop) · `TCV-Website` `6dc5223` (website-integration, **not re-indexed** — carried over from 2026-09-29) — generated **2026-10-01**. Anything merged to `develop` after `a5938b2e` / `308fe7a` is not here. |
-| **Backend scale** | 249 classes/interfaces/traits · 1297 methods · 166 API endpoints · 55 tables · 156 migrations · suite ☠️ **1398 passed / 3 failed** on `a5938b2e` (1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
-| **Client scale** | 65 top-level routes · 44 Redux slices (SPA) · 32 marketing pages (website) |
+| **Backend scale** | 254 classes/interfaces/traits · 1336 methods · 170 API endpoints · 55 tables · 158 migrations · suite ☠️ **1398 passed / 3 failed** on `a5938b2e` (1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Client scale** | 65 top-level routes · 45 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
 > If they differ, the generated indexes may be stale — re-run the generator (see [Regenerating](#regenerating)).
@@ -667,7 +667,7 @@ before writing code.
 |---|---|
 | [CONTROLLERS.md](CONTROLLERS.md) | ✅ 39 |
 | [SERVICES.md](SERVICES.md) | ✅ 40 — the real home of business logic |
-| [REQUESTS.md](REQUESTS.md) | ✅ 30 FormRequest classes (incl. 2 `Concerns\` traits) |
+| [REQUESTS.md](REQUESTS.md) | ✅ 31 FormRequest classes (incl. 2 `Concerns\` traits) |
 | [MIDDLEWARE.md](MIDDLEWARE.md) | ✅ 4 (`EnsureTokenIsValid` deleted; `AddRequestId` added) |
 | [POLICIES.md](POLICIES.md) | ✅ 3 — ability-gated, with a super-admin trap |
 | [EVENTS.md](EVENTS.md) | ✅ 3 events / 4 listeners — wired by discovery + `LmsServiceProvider` + one `AppServiceProvider` hook, not by the provider |
@@ -752,7 +752,7 @@ adding a class renumbers only its neighbours.
 The indexes are **generated, not written**. After changing code:
 
 ```bash
-cd tcv-ai-knowledge-base
+cd tcv_ai_knowledge_base
 composer install                  # one-time: vendors nikic/php-parser INTO THE KB, not into TCV-Backend
 php tools/extract.php             # TCV-Backend AST → .data/facts.json
 php tools/extract-clients.php     # TCV-Frontend + TCV-Website scan → .data/clients.json

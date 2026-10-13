@@ -28,7 +28,7 @@ up the PR.
 ### Pass 1 — automated (30 seconds)
 
 ```bash
-cd tcv-ai-knowledge-base
+cd tcv_ai_knowledge_base
 composer review -- --repo=backend --base=develop --head=origin/TCV-132
 ```
 

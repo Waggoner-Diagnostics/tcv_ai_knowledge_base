@@ -4,7 +4,7 @@ Derived view: every `api/*` route reachable **with no token of any kind**. Auth 
 opt-in per route — a route added outside the `auth:sanctum` or `FlexibleAuthMiddleware` group is
 public by default. This list is the blast radius of that design; re-read it every release.
 
-**17 of 166 endpoints are public.**
+**17 of 170 endpoints are public.**
 
 Several are legitimately public (login and registration precede a token; the invitation and resume
 flows authenticate by emailed token *inside* the controller). The ones to scrutinise are those that
@@ -21,14 +21,14 @@ read or mutate money, credits, or another user's data.
 | `API-057` | POST | `api/password/reset` | AuthController@setOrResetPassword |
 | `API-058` | POST | `api/password/verify-setup-token` | AuthController@verifySetupToken |
 | `API-079` | POST | `api/register` | AuthController@register |
-| `API-084` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken |
-| `API-085` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink |
-| `API-086` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ |
-| `API-102` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus |
-| `API-103` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode |
-| `API-113` | POST | `api/test/resume` | TestResumeController@resume |
-| `API-163` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid |
-| `API-164` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken |
+| `API-087` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken |
+| `API-088` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink |
+| `API-089` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ |
+| `API-106` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus |
+| `API-107` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode |
+| `API-117` | POST | `api/test/resume` | TestResumeController@resume |
+| `API-167` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid |
+| `API-168` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken |
 
 ## Also public: `routes/web.php`
 
@@ -50,4 +50,4 @@ read or mutate money, credits, or another user's data.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._

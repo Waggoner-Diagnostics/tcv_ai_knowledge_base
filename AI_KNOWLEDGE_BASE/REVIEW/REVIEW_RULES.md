@@ -122,6 +122,8 @@ Both are worth automating if a reliable form is found. `R-F07` is the more tract
   [checklist](REVIEW_CHECKLIST.md) — and it is where the real defects are.
 - **`R-F01` resolves against `.data/facts.json`.** Run `composer regenerate` first, or a route added in
   the same PR reads as missing.
+- **Fixed 2026-10-13.** `R-B01` now skips `$request->all()` passed straight into `Validator::make` / a `validate*()` helper (validation only, no write). `R-F01` now keeps a trailing `${id}` in the captured path, so `/api/x/${id}` matches `x/{id}` instead of the bare `x/`.
+- **`R-F06` on `/user-panel/start-test/instruction` and `/test` is real, not a false positive.** `protectedRoutes.js` registers both param-less paths, but `routeConfig.js` grants only the `:uniqueTestId` variants. They are legacy routes no role can reach.
 - **The route delta needs both revisions.** Skipped for `--diff` and for uncommitted work.
 - **A data migration is a complete blind spot.** No rule reads what a migration *writes* into existing
   rows, and none can: whether a rewritten value is one the app will still accept is semantic, per-table

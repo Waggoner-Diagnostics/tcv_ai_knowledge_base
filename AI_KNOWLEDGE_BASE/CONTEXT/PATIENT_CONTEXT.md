@@ -407,3 +407,13 @@ fail on `develop` (`InvitationSendReviewFixesTest`, `NormalizeLegacyBracketPlace
     guarded by `Cache::add('audit:patient-export-rate-limit:{key}', …, 60)`.
     `PATIENT_EXPORT_PER_MINUTE` (10) and `…_WINDOW` (60) are coupled, so change them together. The
     limiter key is the user id, falling back to the IP.
+
+---
+
+## UI terminology & optional Unique Identifier (2026-10-12, uncommitted)
+
+UI only; identifiers, routes and DB keys unchanged. "Patient" -> **Test Taker**; "Patient ID" -> **Unique Identifier**
+(`patients.patient_id`, already nullable) and now **optional**: SPA no longer requires it, `PatientUpdateRequest`
+is `nullable`, `OrganizationController::generateFieldRules` returns `required=false` for `patient_id`.
+`PatientTest::statusLabel()` returns "In Progress" for exports/PDFs. Export headers renamed: "Unique Identifier",
+"Test Taker IP Address", "Test Takers Export". Expiry wording: "Expires on" / "Expiration date" / "No expiration".

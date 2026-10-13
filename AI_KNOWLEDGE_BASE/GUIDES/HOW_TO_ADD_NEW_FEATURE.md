@@ -114,7 +114,7 @@ Say so rather than reporting "tests pass".
 ## 9. Update the KB
 
 ```bash
-cd tcv-ai-knowledge-base
+cd tcv_ai_knowledge_base
 php tools/extract.php && php tools/extract-clients.php && php tools/render.php && php tools/verify.php
 ```
 

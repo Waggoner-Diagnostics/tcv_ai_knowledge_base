@@ -472,3 +472,21 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
     written but unrouted (BILLING trap 5), so it is a Stripe-side refund plus
     `CreditsController::destroy()` on the grant — which writes a `SOURCE_ADMIN_REVOKED` counter-entry
     (see *Admin revocation*), not a deletion.
+
+---
+
+## Super Admins get unlimited credits by default (2026-10-12, uncommitted)
+
+`Credits::ensureUnlimitedForSuperAdmin()` grants an `is_unlimited_credit` row; called from
+`UserController::store` and `SuperAdminSeeder`; migration `2026_10_12_000001_backfill_unlimited_credits_for_super_admins.php`
+backfills existing Super Admins. Known gap: `DELETE api/credits/{id}` can still revoke it. (The earlier gap "promotion via `UserController::update` does not grant it" is **closed**, see below.) SPA: Manage Credits
+and "Log in as user" icons removed from the `Admin.js` screen (`userManagementColumns.js` is shared with `Users.js`;
+the login icon renders only if `onLoginAsUser` is passed). Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
+
+## Role change syncs the default unlimited grant (2026-10-13, uncommitted)
+
+`UserController::update()` runs the update plus credit sync inside `DB::transaction`:
+- **Promotion to Super Admin** -> `Credits::ensureUnlimitedForSuperAdmin()`.
+- **Demotion** -> new `Credits::revokeDefaultSuperAdminUnlimited()`, which goes through `revokeGrant()` so negative-balance settlement still runs. It revokes only grants that are unlimited, `source` manual, `credited_by` NULL and `has_expiry` 0.
+- ☠️ **Blind spot:** seeder/CLI-created grants also have `credited_by` NULL, so they are indistinguishable and are revoked on demotion too.
+- Tests: `tests/Feature/Users/AuditedUserControllerTest.php`. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.

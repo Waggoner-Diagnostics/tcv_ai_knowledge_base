@@ -837,3 +837,39 @@ refund. (Under impersonation `auth()` is the impersonated owner, so that is corr
     list that ever mixed senders would mail one organization's branding, sign-off and patient name to
     another's invitee, not merely charge the wrong account. A defensive scope on the query is cheap.
     **Not part of `ws-401`** — raised in its round-2 review (2026-09-17) and left for its own ticket.
+
+
+---
+
+## Editable account/system emails & the Email Templates dropdown (2026-10-12, uncommitted)
+
+**What the platform sends, and where each lives** (SPA: Settings > Email Templates, dropdown in this order):
+
+| # | Email | Stored in | Key | Link placeholder (required) |
+|---|---|---|---|---|
+| 1 | Test invitation (Test Taker) / (Integrated Partner) | `test_email_templates` | `test_link`, `org_test_link` | `{{verification_link}}` |
+| 2 | Test Link Resent (`TestService::generateAndSendTestLink`) | `email_template` | `test_link_resent` | `{{test_url}}` |
+| 3 | Start or Resume Test Link (`TestResumeController::dispatchResumeEmail`) | `email_template` | `test_resume_link` | `{{resume_link}}` (+ `{{test_name}}`, `{{expires_at}}`, `{{expiry_days}}`) |
+| 4 | Verify Email Address (`AuthController::sendVerificationEmailForUser`) | `email_template` | `email_verification` | `{{verification_link}}` |
+| 5 | Set Password for a New Account (`ResetPasswordNotification`, `isReset=false`) | `email_template` | `set_password` | `{{set_password_url}}` (+ `{{first_name}}`, `{{last_name}}`) |
+| 6 | Password Reset (`ResetPasswordNotification`, `isReset=true`) | `email_template` | `password_reset` | `{{reset_url}}` (+ names) |
+| 7 | Integrated Partner Test URL (`OrganizationTestUrlNotification`, fired by `SendAfterPasswordReset`) | `email_template` | `organization_test_url` | `{{test_url}}` (+ `{{organization_name}}`) |
+
+There is **no "Welcome" template** anywhere in the backend; "Welcome" only survives in old subject strings.
+
+**API (`routes/api.php`, `auth:sanctum` group, `TestEmailTemplateController`):**
+- `GET api/test-email-templates`: original keys `test_link` / `org_test_link` unchanged, plus `system_templates` (map name -> `{id, subject, body, type, last_modified, placeholders}`) and `available` (ordered `[{key,label,source}]`, only templates whose row exists). Order and labels live in the controller constant `SYSTEM_TEMPLATES`.
+- `PUT api/test-email-templates/system/{id}` (`updateSystem`): registered **before** `/{id}`. **Super Admin only** (403 otherwise, `usertype === User::SUPER_ADMIN`): the group is `auth:sanctum` only, so without the check any customer could rewrite the password-reset email. Edits `subject` and `body` only (header/footer are shared branding, never exposed). Validation reuses `validateRequiredPlaceholders` against `EmailTemplatePlaceholders::catalogue($name)` (required / unknown / padded / markup-broken), re-anchors bare link tokens using `SYSTEM_LINK_LABELS`, and logs `settings.email_template_updated` with before/after.
+- **Updated 2026-10-13, uncommitted:** `PUT /{id}` (`update`) is now **Super Admin only** (403 otherwise): it edits the global admin-default `test_email_templates` rows. Customers/orgs edit their own copies via `user-email-template` (`UserEmailTemplate`); the only SPA caller of `PUT /{id}` is the admin Settings slice. `GET index` returns an empty `system_templates` and omits the account-email entries from `available` for non-Super-Admins (`test_link`/`org_test_link` are still returned to everyone). The old text "`GET index` and `PUT /{id}` remain unscoped" is no longer true.
+- Disabled `email_template` rows silently fall back to `SystemEmailDefaults` (no error, no log), so disabling a row has no visible effect. The `{id}` for `/system/` is an `email_template.id`, a different id space from `test_email_templates.id`.
+- `EmailTemplatePlaceholders::catalogue()` gained the six name-keyed arms above, so `GET api/test-email-templates/placeholders/{type}` also works for them.
+
+**Rows 2, 3 and 7 used to be hard-coded; now data with a fallback.**
+- `App\Support\SystemEmailDefaults::all()` holds each default subject/body: the exact HTML the mailers used to emit, with the dynamic values turned into placeholders. It is the single source for the seeding migration `2026_10_12_000002_seed_editable_system_email_templates` (idempotent: skips a name that already exists, header/footer `''`; `down()` removes only rows still holding the seeded body), for `EmailTemplateSeeder`, and for the fallback.
+- `App\Services\SystemEmailTemplateService::render($name, $values, $fallbackToDefaults = true)` reads the enabled `email_template` row (header + body + footer), replaces `{{name}}` with the **HTML-escaped** value in the body (the subject is plain text, unescaped), runs `EmailContent::linkify`, and returns `['subject','content']`. It deliberately does **not** run `styleAnchors`, so seeded output stays byte-identical to the old mail.
+- Resume and Resent mails: with the seeded row the content equals the old output (tests compare against a copy of the old heredoc / blade render); with the row missing or disabled the service uses `SystemEmailDefaults`, same output. `emails/testLink.blade.php` now just wraps a `$content` variable in the same document shell.
+- Integrated Partner Test URL: `OrganizationTestUrlNotification` renders the row through `emails.dynamic-template` (like reset/set-password). **Visual change:** it previously used Laravel's default markdown mail layout (greeting, button, "Regards" footer, trouble-clicking subcopy). The words and button are reproduced, but the layout shell is now the `dynamic-template` container. With the row missing the notification returns the original `MailMessage` unchanged.
+- Editing: bodies pass through Quill in `linkTokens` mode ([FRONTEND](../FRONTEND.md), section "Settings: Super Admin Profile removal & Email Templates dropdown"). The resume button's original inline style (`padding:12px 28px; font-weight:600`) is replaced by the standard editor button style the first time the body is saved from the SPA.
+- Tests: `tests/Feature/Mail/SystemEmailTemplateMailTest.php`, `tests/Feature/Settings/SystemEmailTemplateTest.php`.
+
+☠️ **Changing a default body in `SystemEmailDefaults` changes only fresh databases and the fallback.** Existing rows keep their stored text, like every `email_template` row ([AUTH_CONTEXT](AUTH_CONTEXT.md) trap 8).

@@ -6,7 +6,7 @@ maintain by hand.
 ## One-time setup
 
 ```bash
-cd tcv-ai-knowledge-base
+cd tcv_ai_knowledge_base
 composer install          # vendors nikic/php-parser INTO THE KB — never into TCV-Backend
 ```
 

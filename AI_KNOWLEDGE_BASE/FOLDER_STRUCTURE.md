@@ -4,7 +4,7 @@ Three repos, siblings under one parent alongside this KB ([PATHS.md](../PATHS.md
 
 ```
 <parent>/
-├── tcv-ai-knowledge-base/   ← this KB
+├── tcv_ai_knowledge_base/   ← this KB
 ├── TCV-Backend/
 ├── TCV-Frontend/
 └── TCV-Website/

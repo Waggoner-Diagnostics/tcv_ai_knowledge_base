@@ -130,3 +130,14 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    lone **Close** button. On `develop` that button is dead: `window.close()` is refused on a tab no script
    opened. 🔶 Fixed on the unmerged frontend `fix/ux-result-close-datefilter` with a "you can now close
    this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+
+---
+
+## UI terminology & form changes (2026-10-12, uncommitted)
+
+- "Organization(s)" -> **Integrated Partner(s)** in the UI only (routes/tables/keys unchanged). Org-settings checkboxes keep
+  DB option names, displayed via `ORG_OPTION_LABELS` in `OrganisationModal.js`. Only "Distributor" is used (no reseller/affiliate).
+- `run_test_on_subdomain` removed from the SPA create/edit form, payload and validation; backend column/fillable/cast kept, field optional.
+- `patient_id` rule is now `required=false` in `generateFieldRules` (Unique Identifier optional).
+- Account status label **Inactive -> Restricted** (accounts only; test and discount-code Active/Inactive unchanged).
+  `AuthController` message is now "Account is restricted"; the stored value is unchanged.

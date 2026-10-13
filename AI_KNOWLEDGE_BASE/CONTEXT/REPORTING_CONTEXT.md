@@ -94,3 +94,52 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
 
 _[not deeply traced]: `SuperAdminDashboardController::index()`'s aggregation queries, the exact column
 sets of the three Export classes, and the dompdf Blade templates._
+
+---
+
+## Export/PDF wording (2026-10-12, uncommitted)
+
+Headers renamed ("Unique Identifier", "Test Taker IP Address", "Test Takers Export"); in-flight tests print
+`PatientTest::statusLabel()` = "In Progress". Audit labels "Expiry Date"/"Invitation Expiry" intentionally **unchanged**:
+the `AuditService` redaction allowlist matches the exact string. Existing audit rows keep old text.
+
+---
+
+## Tabular User Tests report (2026-10-12, uncommitted)
+
+Replaces the card grid on the SPA screen; tests: `tests/Feature/Reports/UserTestsTableReportTest.php`. Indexes **not regenerated** (QA/UAT branches, not `develop`) - pending.
+
+### Routes (GET, `auth:sanctum`, **Super Admin only**)
+```
+api/reports/user-tests/table                              → ReportController::userTestsTable
+api/reports/user-tests/table/export                       → ReportController::exportUserTestsTable
+api/reports/user-tests/test-takers/{patient}/export       → ReportController::exportTestTakerHistory
+```
+Literal segments sit before `{patient}`; route order is fine.
+
+### Contract
+- `table` params: `page`, `limit` (1-100), `sort_by`, `sort_order`, `search`, `status` (`pending|inprogress|completed|abandoned`), `test_id`, `user_id`, `organization_id`, `patient_id`, `from_date`, `to_date` (Y-m-d). Returns `data`, `pagination`, `columns`, `required_columns`.
+- `table/export`: same filters + `columns[]` or `all=1`. Required columns are always added; `all=1` overrides `columns[]`.
+- `test-takers/{patient}/export`: full history, **ignores all filters**, includes soft-deleted tests; xlsx default, `?format=pdf`; unknown patient -> 404 `api.patient_not_found`.
+- `UserTestsTableRequest`: non-Super-Admin -> 403 `api.forbidden` **before** validation; `sort_by`/`columns` allow-listed; `to_date < from_date` -> 422.
+
+### Service (`UserTestsReportService`)
+- `TABLE_COLUMNS` (10): Unique Identifier, Test Name, Test Taker, Account, Integrated Partner, Status, Eye Tested, Test Taken Via, Test Taker IP Address, Date. `REQUIRED_TABLE_COLUMNS`: Unique Identifier, Test Name, Status, Date (`unique_test_id`, `test_name`, `status`, `created_at`).
+- `TABLE_SORTS` = sort allow-list. **Test Taker is not sortable** (names are ciphertext); name search is done in PHP via `PatientNameSearch`.
+- `tableQuery()` is the **single filter implementation** shared by screen and export - change filters there only. `tableRow()` decrypts names; `resolveTableColumns($requested, $all)` keeps required columns, order follows `TABLE_COLUMNS`.
+- `UserTestsReportExport` takes optional `?array $columns`; `null` = legacy 5-column export (old callers unchanged).
+- Audit reuses `report.user_tests_exported` with `scope=table|patient_history`; details carry only format, date filter, count.
+
+### Traps
+- Trap 3: the new routes are Super Admin gated in the FormRequest/controller, but the legacy `user-tests`, `list-patients-having-tests` stay open to any authenticated user.
+- Trap 9 (unguarded `sort_by` in `query()`) **still true for the legacy path**; the new table path is allow-listed via `TABLE_SORTS`.
+
+### Screen
+`src/pages/Reports/UserTests.js` - see [FRONTEND.md](../FRONTEND.md#tabular-user-tests-report-2026-10-12-uncommitted).
+
+## Export sanitising (2026-10-13, uncommitted)
+
+- New `App\Support\SpreadsheetSafe` (`cell()` / `row()`): prefixes an apostrophe to non-numeric strings starting with tab, CR, `=`, `+`, `-` or `@` (formula injection). Applied in `UserTestsReportExport` (legacy and table branches) and `UserTestsDetailExport`. Test: `tests/Unit/Support/SpreadsheetSafeTest.php`.
+- `PatientXlsxExport` is deliberately **unchanged**: it writes `setCellValueExplicit(TYPE_STRING)`, where an apostrophe would show literally.
+- **Known limitation:** report name search decrypts names in PHP (`PatientNameSearch`) and the export has **no row cap**; large datasets cost time and memory.
+- SPA: export thunks now parse a Blob error body into `{message}` ([FRONTEND.md](../FRONTEND.md)).
