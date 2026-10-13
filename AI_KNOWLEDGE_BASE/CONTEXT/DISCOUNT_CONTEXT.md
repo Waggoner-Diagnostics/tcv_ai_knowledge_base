@@ -278,3 +278,7 @@ row being edited.
    unlimited until expiry, both conditions, switch-off precedence, raising the limit, failed payments
    not counting, legacy credits counting, `show` agreeing with `index`, filter + stats split). The last
    one also asserts the dashboard's `active_discount_codes` matches the Active card (`ws-521` PR review).
+
+## ☠️ Deployment warning: allowlist flip (2026-10-13, uncommitted)
+
+Before release, review the discount-code users pivot data: after the allowlist flip, any existing code with a **non-empty users pivot becomes usable ONLY by those users** (they were previously excluded). See [DISCOUNT_CONTEXT](DISCOUNT_CONTEXT.md) trap 1. There is no data migration.

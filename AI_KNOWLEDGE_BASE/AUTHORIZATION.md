@@ -84,6 +84,8 @@ further check:
 | `api/test-session/*`, `api/test-result/*`, `api/tests/perform` | `FlexibleAuthMiddleware` | any session touches any test ([S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)) — `test-result/{id}/download-pdf` is now scoped, the rest are not |
 | `api/patient-tests/{id}/revoke-credit` | `auth:sanctum` | any user abandons any test ([S-04](SECURITY.md#s-04--revokecredit-has-no-ownership-check)) |
 
+**Updated 2026-10-13, uncommitted - `api/test-email-templates`:** `PUT /{id}` (API-101) and `PUT /system/{id}` are Super Admin only (403). `GET` (API-099) stays open to any authenticated user but returns empty `system_templates` and no account-email `available` entries for non-Super-Admins ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). The API index still shows no extra guard (pending regeneration).
+
 **The SPA hides these surfaces by role** through `RouteConfig` in
 `src/constants/routeConfig.js` ([FRONTEND.md](FRONTEND.md)). That is a menu, not a permission — every
 endpoint above is reachable directly.

@@ -253,6 +253,13 @@ either way ([FRONTEND.md](FRONTEND.md#report-date-filters-ws-455)).
 - Indexes not regenerated (pending).
 
 
+## Review fixes (2026-10-13, uncommitted)
+
+- `App\Support\SpreadsheetSafe` is shared by `UserTestsReportExport` and `UserTestsDetailExport`; any new export writing user-controlled strings should use it, except explicit-string writers like `PatientXlsxExport`.
+- Credits role sync: `UserController::update` <-> `Credits::ensureUnlimitedForSuperAdmin` / `revokeDefaultSuperAdminUnlimited`. Changing the grant shape (`source`, `credited_by`, `has_expiry`) changes what demotion revokes; seeder/CLI grants with `credited_by` NULL are revoked too.
+- `TestEmailTemplateController`: `update` Super Admin only, `index` role-filtered; a non-admin caller of `PUT api/test-email-templates/{id}` now gets 403.
+- Indexes not regenerated (pending).
+
 ## Ticket 8: Settings Profile removal & editable emails (2026-10-12, uncommitted)
 
 - `routeConfig.js` `/settings` children are the single switch for both the Settings submenu and route registration; the `Router.js` Super Admin redirects (`SUPER_ADMIN_SETTINGS_HOME`) must name a child the role still has. The avatar-menu "Profile" is hidden separately in `Sidebar.js` (two places) and `Header.js`.

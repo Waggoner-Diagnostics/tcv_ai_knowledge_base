@@ -122,6 +122,7 @@ Both are worth automating if a reliable form is found. `R-F07` is the more tract
   [checklist](REVIEW_CHECKLIST.md) — and it is where the real defects are.
 - **`R-F01` resolves against `.data/facts.json`.** Run `composer regenerate` first, or a route added in
   the same PR reads as missing.
+- **Known false positives (2026-10-13, uncommitted).** `R-B01` fires on `TestEmailTemplateController::updateSystem` although it uses `DB::table` with explicit columns; `R-F01` reads stale `.data/facts.json` until indexes are regenerated.
 - **The route delta needs both revisions.** Skipped for `--diff` and for uncommitted work.
 - **A data migration is a complete blind spot.** No rule reads what a migration *writes* into existing
   rows, and none can: whether a rewritten value is one the app will still accept is semantic, per-table

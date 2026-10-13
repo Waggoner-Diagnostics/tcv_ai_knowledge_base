@@ -995,3 +995,8 @@ Route paths unchanged.
 
 **Quill `linkTokens` mode (`richTextEditor/emailPlaceholders.js`, `RichTextEditor.js`).** Quill's link sanitiser rewrites `href="{{reset_url}}"` to `about:blank`. The Test Invitation editor already dodged this with a `testLink` chip blot for `{{verification_link}}`; the blot now carries a `token` (`data-token`), and `toEditorHtml(html, { linkTokens, healBareLink })` / `toTemplateHtml(html, { healBareLink })` take options (defaults reproduce the old behaviour exactly). `RichTextEditor` prop `linkTokens` (array of names without braces) switches on account-email mode: `<a href="{{token}}">` becomes an atomic chip and is written back as an anchor with the standard button style, **except** an anchor whose text is the token itself (the "copy and paste" fallback), which is written back unstyled. A bare `{{token}}` is left as text (not healed into a button); the server re-anchors it (`EmailContent::anchorPlaceholders`).
 - Lost on an edit round trip: inline `style` on non-link elements, `target="_blank"`, and a custom style on a labelled link (replaced by the standard button style). Header and footer (`EmailSignature::HTML`) are separate columns and are never loaded into the editor.
+
+## Review fixes: export errors & template fallback (2026-10-13, uncommitted)
+
+- Export thunks (reports) parse a Blob error body into `{message}`; the `rejected` case no longer writes `s.error`, so exactly one popup shows.
+- `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating).

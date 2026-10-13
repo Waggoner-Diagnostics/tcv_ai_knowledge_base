@@ -136,3 +136,10 @@ Literal segments sit before `{patient}`; route order is fine.
 
 ### Screen
 `src/pages/Reports/UserTests.js` - see [FRONTEND.md](../FRONTEND.md#tabular-user-tests-report-2026-10-12-uncommitted).
+
+## Export sanitising (2026-10-13, uncommitted)
+
+- New `App\Support\SpreadsheetSafe` (`cell()` / `row()`): prefixes an apostrophe to non-numeric strings starting with tab, CR, `=`, `+`, `-` or `@` (formula injection). Applied in `UserTestsReportExport` (legacy and table branches) and `UserTestsDetailExport`. Test: `tests/Unit/Support/SpreadsheetSafeTest.php`.
+- `PatientXlsxExport` is deliberately **unchanged**: it writes `setCellValueExplicit(TYPE_STRING)`, where an apostrophe would show literally.
+- **Known limitation:** report name search decrypts names in PHP (`PatientNameSearch`) and the export has **no row cap**; large datasets cost time and memory.
+- SPA: export thunks now parse a Blob error body into `{message}` ([FRONTEND.md](../FRONTEND.md)).
