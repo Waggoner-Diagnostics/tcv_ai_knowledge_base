@@ -48,6 +48,11 @@ before writing any `where()` against them.
 
 ---
 
+## `email_template` is now written by the API (2026-10-12, uncommitted)
+
+`email_template` (singular) holds six named rows: `password_reset`, `set_password`, `email_verification` (seeder) and `test_link_resent`, `test_resume_link`, `organization_test_url` (seeder + migration `2026_10_12_000002_seed_editable_system_email_templates`, defaults from `App\Support\SystemEmailDefaults`). `TestEmailTemplateController::updateSystem` updates `subject`, `body`, `updated_at` by id; `header`/`footer` are never written by the app. Rows are read by name with `status = 'enable'` (`SystemEmailTemplateService`, `ResetPasswordNotification`, `AuthController`). The migration skips a name that already exists, and its `down()` only deletes rows still holding the seeded body. `email_template.id` is not `test_email_templates.id`. See [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md).
+
+
 ## Naming is inconsistent — know the exceptions
 
 | Table | Why it's odd |

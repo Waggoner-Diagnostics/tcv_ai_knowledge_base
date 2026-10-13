@@ -954,3 +954,44 @@ Regenerated every run; the current state:
 **exact title string**, and the backend enforces neither — the API still returns and accepts the test.
 Renaming that test in the `tests` table un-hides it here *and* changes its diagnosis path server-side
 ([TEST_EXECUTION_CONTEXT](CONTEXT/TEST_EXECUTION_CONTEXT.md)); the title is load-bearing in both repos.
+
+---
+
+## Terminology, Contact page, Admin screen (2026-10-12, uncommitted)
+
+UI strings: patient -> Test Taker, Patient ID -> Unique Identifier (optional), Organization -> Integrated Partner,
+Inactive -> Restricted (accounts only). `ContactPage.js`: email Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext);
+TCV-Website still uses info@waggonerdiagnostics.com. `Admin.js` drops Manage Credits / Log-in-as icons
+(`userManagementColumns.js` shared with `Users.js`). `OrganisationModal.js` no longer has `run_test_on_subdomain`.
+Route paths unchanged.
+
+## Tabular User Tests report (2026-10-12, uncommitted)
+
+`src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and "Export full test history". Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
+
+- State: `redux/slices/reports/userTestsTableSlice.js`, registered as `userTestsTable` in `store.js`.
+- `utils/columns/userTestsTableColumns.js`: column ids **must stay in sync with backend `UserTestsReportService::TABLE_COLUMNS` keys**. Distinct from `userTestsColumns.js` (detail page).
+- Styling: `um-header` classes, bordered card like `DiscountCodeReport.scss`; `UserTest.scss` carries the **shared global `.filter-dropdown` / `.export-dropdown`** styles (Discount Code report also uses them); cells ellipsis at 240px.
+- No UI for `test_id` / `user_id` / `organization_id` filters (API only).
+- Old card list / `list-patients-having-tests` endpoint and `patientTestsSlice` remain (now unused by this screen).
+
+
+## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, uncommitted)
+
+**Settings > Profile is gone for Super Admin only.**
+- `constants/routeConfig.js`: `"profile"` removed from `childRoutes["/settings"]` for `SUPER_ADMIN` (customer/org keep it). That alone drops the sidebar submenu item (Sidebar filters by `tab`) and unregisters the route.
+- `router/Router.js`: for `userType === SUPER_ADMIN` the `/settings` route gets an `index` redirect and a `profile` redirect, both to `SUPER_ADMIN_SETTINGS_HOME = /settings/restricted-ips` (first remaining item). Without it `/settings/profile` would 404.
+- `Sidebar.js` (expanded and collapsed user menu) and `Header.js` hide the avatar-menu "Profile" entry when `userType === SUPER_ADMIN` (impersonating super admins, `isSuperAdminLogin`, keep it). `Profile.js` still exists; its `navigate(..., { from: '/settings/profile' })` calls are now unreachable for Super Admin.
+- Test: `constants/routeConfig.test.js`. The Router redirect itself has no test.
+
+**Email Templates page (`pages/Setting/TestEmailTemplates.js`) is now a dropdown.**
+- Options come from `GET api/test-email-templates` -> `data.available` (ordered `[{key,label,source}]`), kept in `adminTestEmailTemplateSlice` (`available`, `systemTemplates`, `systemSaving`). The frontend hard-codes no template list. Eight options today: Test Invitation (Test Taker), Test Invitation (Integrated Partner), Test Link Resent, Start or Resume Test Link, Verify Email Address, Set Password for a New Account, Password Reset, Integrated Partner Test URL.
+- **Default selection:** the option whose key/label matches `/welcome/i`, else the first. **No Welcome template exists in the backend** (checked 2026-10-12), so today the default is the first option, "Test Invitation (Test Taker)". Decision pending with the user.
+- Two kinds of editor: `test_link` / `org_test_link` keep the original inline sections (only the selected one renders; state lives in the page); every `source: 'email_template'` option renders `SystemEmailTemplateEditor.js` (subject + the same `RichTextEditor` with `lockPlaceholders` and `linkTokens`, placeholder info banner, Save/Cancel, last-modified). **No preview** (neither editor has one).
+- **Discard guard:** changing the select with unsaved edits (either kind) opens a `showPopup` "Discard Changes"; the select stays on the current template until Discard. The system editor reports dirtiness up via `onDirtyChange` (ref), and its baseline moves on save and on the editor's first-render normalise.
+- Save goes through thunk `updateSystemEmailTemplate` -> `PUT api/test-email-templates/system/{id}`; client validation requires the template's required link placeholder (`placeholders[*].required`); the server validates again.
+- Select style: bootstrap `form-select` (as `UserTests.js`); header uses `um-header`.
+- Tests: `TestEmailTemplates.test.js` (list/order, Welcome default, switch, discard guard, save endpoint, required-placeholder refusal; RichTextEditor stubbed as a textarea) and the `linkTokens` block in `richTextEditor/emailPlaceholders.test.js`.
+
+**Quill `linkTokens` mode (`richTextEditor/emailPlaceholders.js`, `RichTextEditor.js`).** Quill's link sanitiser rewrites `href="{{reset_url}}"` to `about:blank`. The Test Invitation editor already dodged this with a `testLink` chip blot for `{{verification_link}}`; the blot now carries a `token` (`data-token`), and `toEditorHtml(html, { linkTokens, healBareLink })` / `toTemplateHtml(html, { healBareLink })` take options (defaults reproduce the old behaviour exactly). `RichTextEditor` prop `linkTokens` (array of names without braces) switches on account-email mode: `<a href="{{token}}">` becomes an atomic chip and is written back as an anchor with the standard button style, **except** an anchor whose text is the token itself (the "copy and paste" fallback), which is written back unstyled. A bare `{{token}}` is left as text (not healed into a button); the server re-anchors it (`EmailContent::anchorPlaceholders`).
+- Lost on an edit round trip: inline `style` on non-link elements, `target="_blank"`, and a custom style on a labelled link (replaced by the standard button style). Header and footer (`EmailSignature::HTML`) are separate columns and are never loaded into the editor.

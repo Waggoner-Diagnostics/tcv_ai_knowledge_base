@@ -137,16 +137,12 @@ whenever the form has anything to lose, and done silently when it does not.
 
 ## ☠️ Traps
 
-1. **The two restriction lists have opposite polarity.**
-   - `priceTiers` is an **allow** list: attached tiers *permit* only those credit packages.
-   - `users` is an **exclusion** list: `$discount->users->contains('id', $user->id)` → **fail**, with the
-     message *"This discount code is not available to your account."*
-
-   Both are populated by one method called `syncRestrictions($discount, $userIds, $priceTierIds)` from one
-   admin form field named `user_ids`. Given the naming and the tier behaviour, the user list looks
-   **inverted** (an allow-list implemented as a deny-list) — but the code as written denies listed users,
-   and this KB does not assume which was intended. **Confirm the product intent before changing it**; the
-   fix is one `!` and it flips who can use every existing code.
+1. **Both restriction lists are now ALLOW lists (2026-10-12, uncommitted).** `priceTiers` permit only the
+   attached credit packages; `users` is now a real allowlist in `DiscountCodeService::validate()` (~line 54):
+   non-empty users list = only those users may apply, empty = everyone. It used to be an exclusion list
+   (listed users failed). UI label "Restrict to Specific Users" -> **"Allow Specific Users"**; audit label
+   **"Allowed Users"**. ☠️ No data migration: existing codes with selected users flip meaning. Still populated
+   by `syncRestrictions($discount, $userIds, $priceTierIds)` from the `user_ids` form field.
 
 2. **Usage is counted from `transaction_details`, not from a counter.** `countUses()` aggregates, so
    `max_uses` is only as accurate as the transaction records. A payment that charged but never reached

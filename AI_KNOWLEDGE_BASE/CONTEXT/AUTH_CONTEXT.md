@@ -320,6 +320,11 @@ alone rather than a dangling `Testing Color Vision - `.
 `user_email_templates` still gets the prefix. That is the requirement as specified, not an oversight —
 but it is the first thing to revisit if white-label branding becomes a real requirement.
 
+## Account emails are now editable from Settings (2026-10-12, uncommitted)
+
+`email_template` rows `password_reset`, `set_password` and `email_verification` can now be edited by a Super Admin in the SPA (Settings > Email Templates) through `PUT api/test-email-templates/system/{id}` (subject and body only; header/footer stay SQL/migration-managed; Super Admin only). The save path validates the required link placeholder, rejects unknown, padded or split placeholders, and re-anchors a bare `{{reset_url}}` / `{{set_password_url}}` / `{{verification_link}}` with a label so the stored row stays clickable. The mailers themselves (`ResetPasswordNotification`, `AuthController::sendVerificationEmailForUser`) are unchanged, so trap 8 below still applies to the seeder: a UI edit is per environment and the seeder only reaches fresh databases. Full contract: [INVITATION_CONTEXT](INVITATION_CONTEXT.md), section "Editable account/system emails". Three more emails (test link resent, start/resume link, Integrated Partner test URL) joined the same table in migration `2026_10_12_000002`.
+
+
 ---
 
 ## ☠️ Traps

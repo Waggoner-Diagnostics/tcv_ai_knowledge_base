@@ -150,3 +150,10 @@ That is a **breaking change for the SPA**, which currently treats 403/404 paths 
 work-arounds built on that. Coordinate it with `src/services/errorHandler.js` and the slices that pass
 `skipErrorPopup` ([FRONTEND.md](FRONTEND.md)), and check
 [CHANGE_IMPACT_GUIDE.md](CHANGE_IMPACT_GUIDE.md) first.
+
+---
+
+## Message changes (2026-10-12, uncommitted)
+
+Terminology pass changed `resources/lang/en/api.php` and controller strings (e.g. `AuthController` "Account is restricted",
+patient -> test taker). Clients/tests matching message text must be updated; status codes unchanged.
