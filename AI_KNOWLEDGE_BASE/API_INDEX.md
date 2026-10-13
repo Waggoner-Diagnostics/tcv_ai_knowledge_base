@@ -2,7 +2,7 @@
 
 The exhaustive table is generated: [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md)
 (**166 endpoints**) and [INDEXES/PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md)
-(**17 of 166 endpoints are public**). This page is the shape.
+(**17 of 170 endpoints are public**). This page is the shape.
 
 ## Base
 

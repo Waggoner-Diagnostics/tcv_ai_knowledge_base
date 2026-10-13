@@ -1,12 +1,12 @@
 # Frontend → Backend API Call Index
 
-**89 distinct calls** found across 294 TCV-Frontend source files, matched against the 166 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
+**92 distinct calls** found across 303 TCV-Frontend source files, matched against the 170 backend endpoints in [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md).
 
 > **Lower bound, not a census.** These come from a lexical scan for literal `axios*.<verb>('…')`
 > URLs. A URL built at runtime from variables is invisible to it, so *absent from this table*
 > does **not** prove *never called*. Present rows, though, are real call sites with real line numbers.
 
-## Resolved (81)
+## Resolved (83)
 
 | Method | Client path | Backend | Call site |
 |---|---|---|---|
@@ -50,48 +50,50 @@
 | POST | `/api/payment/setup-intent` | `API-071` PaymentController@createSetupIntent | [src/redux/slices/payment/paymentSlice.js:8](../../../TCV-Frontend/src/redux/slices/payment/paymentSlice.js#L8) |
 | GET | `/api/profile` | `API-077` ProfileController@show | [src/redux/slices/userProfile/profileSlice.js:10](../../../TCV-Frontend/src/redux/slices/userProfile/profileSlice.js#L10) |
 | PUT | `/api/profile` | `API-078` ProfileController@update | [src/redux/slices/userProfile/profileSlice.js:27](../../../TCV-Frontend/src/redux/slices/userProfile/profileSlice.js#L27) |
-| POST | `/api/resend-test-link` | `API-083` PatientController@resendTestLink | [src/redux/slices/tests/patientTestSlice.js:27](../../../TCV-Frontend/src/redux/slices/tests/patientTestSlice.js#L27) |
-| POST | `/api/resend-verification-by-token` | `API-084` AuthController@resendVerificationByToken | [src/apis/miscApis.js:95](../../../TCV-Frontend/src/apis/miscApis.js#L95) |
-| POST | `/api/resend_email_verification_link` | `API-085` AuthController@resendEmailVerificationLink | [src/redux/slices/auth/loginSlice.js:53](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L53) |
-| POST | `/api/stop-impersonate/{param}` | `API-091` AuthController@stopImpersonation | [src/redux/slices/impersonateSlice.js:20](../../../TCV-Frontend/src/redux/slices/impersonateSlice.js#L20) |
-| GET | `/api/stripe/payment-methods` | `API-094` StripePaymentController@getPaymentMethods | [src/redux/slices/payment/paymentSlice.js:90](../../../TCV-Frontend/src/redux/slices/payment/paymentSlice.js#L90) |
-| DELETE | `/api/stripe/payment-methods/{param}` | `API-096` StripePaymentController@removePaymentMethod | [src/redux/slices/payment/paymentSlice.js:102](../../../TCV-Frontend/src/redux/slices/payment/paymentSlice.js#L102) |
-| GET | `/api/stripe/transactions` | `API-097` PaymentController@getTransactions | [src/redux/slices/transaction/transactionSlice.js:9](../../../TCV-Frontend/src/redux/slices/transaction/transactionSlice.js#L9) |
-| GET | `/api/super-admin/dashboard` | `API-098` SuperAdminDashboardController@index | [src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js:8](../../../TCV-Frontend/src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js#L8) |
-| GET | `/api/test-email-templates` | `API-099` TestEmailTemplateController@index | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:10](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L10) |
-| PUT | `/api/test-email-templates/{param}` | `API-101` TestEmailTemplateController@update | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:27](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L27) |
-| POST | `/api/test-invitation/check-validity` | `API-102` TestInvitationController@checkTokenStatus | [src/redux/slices/auth/loginSlice.js:117](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L117) |
-| POST | `/api/test-invitation/verify-code` | `API-103` TestInvitationController@verifyCode | [src/redux/slices/auth/loginSlice.js:100](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L100) |
-| POST | `/api/test-invitations/send` | `API-104` TestInvitationController@sendInvitations | [src/redux/slices/tests/sendTestSlice.js:15](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L15) |
-| GET | `/api/test-invitations/unregistered` | `API-105` TestInvitationController@getUnregisteredInvitations | [src/redux/slices/tests/sendTestSlice.js:38](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L38) |
-| POST | `/api/test-invitations/{param}/cancel` | `API-106` TestInvitationController@cancelUnregisteredInvitation | [src/redux/slices/tests/sendTestSlice.js:72](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L72) |
-| POST | `/api/test-invitations/{param}/resend` | `API-107` TestInvitationController@resendUnregisteredInvitation | [src/redux/slices/tests/sendTestSlice.js:55](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L55) |
-| GET | `/api/test-result/{param}` | `API-108` TestController@getTestResult | [src/redux/slices/tests/testResultSlice.js:9](../../../TCV-Frontend/src/redux/slices/tests/testResultSlice.js#L9) |
-| GET | `/api/test-result/{param}/download-pdf` | `API-109` TestController@downloadTestResultPDF | [src/apis/testResultService.js:5](../../../TCV-Frontend/src/apis/testResultService.js#L5) |
-| GET | `/api/test-session/{param}` | `API-110` TestController@getTestSession | [src/redux/slices/tests/testExecutionSlice.js:9](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L9) |
-| GET | `/api/test-session/{param}/plate/{param}/url` | `API-111` TestController@getPlateUrl | [src/redux/slices/tests/testExecutionSlice.js:60](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L60) |
-| GET | `/api/test-session/{param}/section/{param}/plates` | `API-112` TestController@getSectionPlates | [src/redux/slices/tests/testExecutionSlice.js:25](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L25) |
-| POST | `/api/test/resume` | `API-113` TestResumeController@resume | [src/redux/slices/tests/testResumeSlice.js:23](../../../TCV-Frontend/src/redux/slices/tests/testResumeSlice.js#L23) |
-| POST | `/api/test/send-resume-email` | `API-114` TestResumeController@sendResumeEmail | [src/redux/slices/tests/testResumeSlice.js:8](../../../TCV-Frontend/src/redux/slices/tests/testResumeSlice.js#L8) |
-| POST | `/api/tests/assign` | `API-117` TestController@assignTest | [src/redux/slices/tests/testSessionSlice.js:13](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L13) |
-| POST | `/api/tests/check-active` | `API-118` TestController@getActiveTest | [src/redux/slices/tests/testSessionSlice.js:60](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L60) |
-| POST | `/api/tests/perform` | `API-119` TestController@performTest | [src/redux/slices/tests/testExecutionSlice.js:43](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L43) |
-| POST | `/api/tests/result-pdf` | `API-120` TestController@generateTestResultPDF | [src/redux/slices/tests/testSessionSlice.js:36](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L36) |
-| DELETE | `/api/user-email-template` | `API-145` UserEmailTemplateController@destroy | [src/redux/slices/userProfile/userEmailTemplateSlice.js:48](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L48) |
-| GET | `/api/user-email-template` | `API-146` UserEmailTemplateController@show | [src/redux/slices/userProfile/userEmailTemplateSlice.js:10](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L10) |
-| PUT | `/api/user-email-template` | `API-147` UserEmailTemplateController@update | [src/redux/slices/userProfile/userEmailTemplateSlice.js:27](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L27) |
-| GET | `/api/user/credit-history` | `API-148` PaymentController@getCreditHistory | [src/redux/slices/creditHistory/creditHistorySlice.js:8](../../../TCV-Frontend/src/redux/slices/creditHistory/creditHistorySlice.js#L8) |
-| GET | `/api/user/credits` | `API-149` UserController@getUserCredits | [src/redux/slices/userCredits/userCreditSlice.js:42](../../../TCV-Frontend/src/redux/slices/userCredits/userCreditSlice.js#L42) |
-| GET | `/api/user/tests/all` | `API-151` TestController@getActiveTestsWithAssignmentFlag | [src/hooks/useTestAssignment.js:34](../../../TCV-Frontend/src/hooks/useTestAssignment.js#L34) _(+1)_ |
-| POST | `/api/user/tests/bulk-update-assignment` | `API-152` TestController@bulkUpdateAssignment | [src/redux/slices/tests/testAssignmentSlice.js:24](../../../TCV-Frontend/src/redux/slices/tests/testAssignmentSlice.js#L24) |
-| GET | `/api/user/tests/{param}` | `API-153` TestController@show | [src/redux/slices/tests/userTestSlice.js:15](../../../TCV-Frontend/src/redux/slices/tests/userTestSlice.js#L15) |
-| PUT | `/api/users/change-password` | `API-158` AuthController@changePassword | [src/redux/slices/auth/loginSlice.js:163](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L163) |
-| GET | `/api/users/{param}` | `API-160` UserController@edit | [src/redux/slices/auth/loginSlice.js:223](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L223) |
-| PATCH | `/api/users/{param}` | `API-162` UserController@update | [src/pages/Setting/Profile.js:78](../../../TCV-Frontend/src/pages/Setting/Profile.js#L78) |
-| GET | `/api/validate-token` | `API-163` AuthController@isTokenValid | [src/pages/AuthInit.js:51](../../../TCV-Frontend/src/pages/AuthInit.js#L51) |
-| POST | `/api/verify-email-token` | `API-164` AuthController@verifyEmailByToken | [src/apis/miscApis.js:101](../../../TCV-Frontend/src/apis/miscApis.js#L101) |
-| POST | `/api/verify-password` | `API-166` AuthController@verifyPassword | [src/redux/slices/auth/passwordVerificationSlice.js:9](../../../TCV-Frontend/src/redux/slices/auth/passwordVerificationSlice.js#L9) |
+| GET | `/api/reports/user-tests/test-takers/{param}/export` | `API-085` ReportController@exportTestTakerHistory | [src/redux/slices/reports/userTestsTableSlice.js:98](../../../TCV-Frontend/src/redux/slices/reports/userTestsTableSlice.js#L98) |
+| POST | `/api/resend-test-link` | `API-086` PatientController@resendTestLink | [src/redux/slices/tests/patientTestSlice.js:27](../../../TCV-Frontend/src/redux/slices/tests/patientTestSlice.js#L27) |
+| POST | `/api/resend-verification-by-token` | `API-087` AuthController@resendVerificationByToken | [src/apis/miscApis.js:95](../../../TCV-Frontend/src/apis/miscApis.js#L95) |
+| POST | `/api/resend_email_verification_link` | `API-088` AuthController@resendEmailVerificationLink | [src/redux/slices/auth/loginSlice.js:53](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L53) |
+| POST | `/api/stop-impersonate/{param}` | `API-094` AuthController@stopImpersonation | [src/redux/slices/impersonateSlice.js:20](../../../TCV-Frontend/src/redux/slices/impersonateSlice.js#L20) |
+| GET | `/api/stripe/payment-methods` | `API-097` StripePaymentController@getPaymentMethods | [src/redux/slices/payment/paymentSlice.js:90](../../../TCV-Frontend/src/redux/slices/payment/paymentSlice.js#L90) |
+| DELETE | `/api/stripe/payment-methods/{param}` | `API-099` StripePaymentController@removePaymentMethod | [src/redux/slices/payment/paymentSlice.js:102](../../../TCV-Frontend/src/redux/slices/payment/paymentSlice.js#L102) |
+| GET | `/api/stripe/transactions` | `API-100` PaymentController@getTransactions | [src/redux/slices/transaction/transactionSlice.js:9](../../../TCV-Frontend/src/redux/slices/transaction/transactionSlice.js#L9) |
+| GET | `/api/super-admin/dashboard` | `API-101` SuperAdminDashboardController@index | [src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js:8](../../../TCV-Frontend/src/redux/slices/superAdminDashboard/superAdminDashboardSlice.js#L8) |
+| GET | `/api/test-email-templates` | `API-102` TestEmailTemplateController@index | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:10](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L10) |
+| PUT | `/api/test-email-templates/system/{param}` | `API-104` TestEmailTemplateController@updateSystem | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:48](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L48) |
+| PUT | `/api/test-email-templates/{param}` | `API-105` TestEmailTemplateController@update | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:27](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L27) |
+| POST | `/api/test-invitation/check-validity` | `API-106` TestInvitationController@checkTokenStatus | [src/redux/slices/auth/loginSlice.js:117](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L117) |
+| POST | `/api/test-invitation/verify-code` | `API-107` TestInvitationController@verifyCode | [src/redux/slices/auth/loginSlice.js:100](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L100) |
+| POST | `/api/test-invitations/send` | `API-108` TestInvitationController@sendInvitations | [src/redux/slices/tests/sendTestSlice.js:15](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L15) |
+| GET | `/api/test-invitations/unregistered` | `API-109` TestInvitationController@getUnregisteredInvitations | [src/redux/slices/tests/sendTestSlice.js:38](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L38) |
+| POST | `/api/test-invitations/{param}/cancel` | `API-110` TestInvitationController@cancelUnregisteredInvitation | [src/redux/slices/tests/sendTestSlice.js:72](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L72) |
+| POST | `/api/test-invitations/{param}/resend` | `API-111` TestInvitationController@resendUnregisteredInvitation | [src/redux/slices/tests/sendTestSlice.js:55](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L55) |
+| GET | `/api/test-result/{param}` | `API-112` TestController@getTestResult | [src/redux/slices/tests/testResultSlice.js:9](../../../TCV-Frontend/src/redux/slices/tests/testResultSlice.js#L9) |
+| GET | `/api/test-result/{param}/download-pdf` | `API-113` TestController@downloadTestResultPDF | [src/apis/testResultService.js:5](../../../TCV-Frontend/src/apis/testResultService.js#L5) |
+| GET | `/api/test-session/{param}` | `API-114` TestController@getTestSession | [src/redux/slices/tests/testExecutionSlice.js:9](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L9) |
+| GET | `/api/test-session/{param}/plate/{param}/url` | `API-115` TestController@getPlateUrl | [src/redux/slices/tests/testExecutionSlice.js:60](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L60) |
+| GET | `/api/test-session/{param}/section/{param}/plates` | `API-116` TestController@getSectionPlates | [src/redux/slices/tests/testExecutionSlice.js:25](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L25) |
+| POST | `/api/test/resume` | `API-117` TestResumeController@resume | [src/redux/slices/tests/testResumeSlice.js:23](../../../TCV-Frontend/src/redux/slices/tests/testResumeSlice.js#L23) |
+| POST | `/api/test/send-resume-email` | `API-118` TestResumeController@sendResumeEmail | [src/redux/slices/tests/testResumeSlice.js:8](../../../TCV-Frontend/src/redux/slices/tests/testResumeSlice.js#L8) |
+| POST | `/api/tests/assign` | `API-121` TestController@assignTest | [src/redux/slices/tests/testSessionSlice.js:13](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L13) |
+| POST | `/api/tests/check-active` | `API-122` TestController@getActiveTest | [src/redux/slices/tests/testSessionSlice.js:60](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L60) |
+| POST | `/api/tests/perform` | `API-123` TestController@performTest | [src/redux/slices/tests/testExecutionSlice.js:43](../../../TCV-Frontend/src/redux/slices/tests/testExecutionSlice.js#L43) |
+| POST | `/api/tests/result-pdf` | `API-124` TestController@generateTestResultPDF | [src/redux/slices/tests/testSessionSlice.js:36](../../../TCV-Frontend/src/redux/slices/tests/testSessionSlice.js#L36) |
+| DELETE | `/api/user-email-template` | `API-149` UserEmailTemplateController@destroy | [src/redux/slices/userProfile/userEmailTemplateSlice.js:48](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L48) |
+| GET | `/api/user-email-template` | `API-150` UserEmailTemplateController@show | [src/redux/slices/userProfile/userEmailTemplateSlice.js:10](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L10) |
+| PUT | `/api/user-email-template` | `API-151` UserEmailTemplateController@update | [src/redux/slices/userProfile/userEmailTemplateSlice.js:27](../../../TCV-Frontend/src/redux/slices/userProfile/userEmailTemplateSlice.js#L27) |
+| GET | `/api/user/credit-history` | `API-152` PaymentController@getCreditHistory | [src/redux/slices/creditHistory/creditHistorySlice.js:8](../../../TCV-Frontend/src/redux/slices/creditHistory/creditHistorySlice.js#L8) |
+| GET | `/api/user/credits` | `API-153` UserController@getUserCredits | [src/redux/slices/userCredits/userCreditSlice.js:42](../../../TCV-Frontend/src/redux/slices/userCredits/userCreditSlice.js#L42) |
+| GET | `/api/user/tests/all` | `API-155` TestController@getActiveTestsWithAssignmentFlag | [src/hooks/useTestAssignment.js:34](../../../TCV-Frontend/src/hooks/useTestAssignment.js#L34) _(+1)_ |
+| POST | `/api/user/tests/bulk-update-assignment` | `API-156` TestController@bulkUpdateAssignment | [src/redux/slices/tests/testAssignmentSlice.js:24](../../../TCV-Frontend/src/redux/slices/tests/testAssignmentSlice.js#L24) |
+| GET | `/api/user/tests/{param}` | `API-157` TestController@show | [src/redux/slices/tests/userTestSlice.js:15](../../../TCV-Frontend/src/redux/slices/tests/userTestSlice.js#L15) |
+| PUT | `/api/users/change-password` | `API-162` AuthController@changePassword | [src/redux/slices/auth/loginSlice.js:163](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L163) |
+| GET | `/api/users/{param}` | `API-164` UserController@edit | [src/redux/slices/auth/loginSlice.js:223](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L223) |
+| PATCH | `/api/users/{param}` | `API-166` UserController@update | [src/pages/Setting/Profile.js:78](../../../TCV-Frontend/src/pages/Setting/Profile.js#L78) |
+| GET | `/api/validate-token` | `API-167` AuthController@isTokenValid | [src/pages/AuthInit.js:51](../../../TCV-Frontend/src/pages/AuthInit.js#L51) |
+| POST | `/api/verify-email-token` | `API-168` AuthController@verifyEmailByToken | [src/apis/miscApis.js:101](../../../TCV-Frontend/src/apis/miscApis.js#L101) |
+| POST | `/api/verify-password` | `API-170` AuthController@verifyPassword | [src/redux/slices/auth/passwordVerificationSlice.js:9](../../../TCV-Frontend/src/redux/slices/auth/passwordVerificationSlice.js#L9) |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-01. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._

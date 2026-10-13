@@ -215,7 +215,7 @@ function rules(string $repo): array
     ];
 
     $frontend = [
-        ['R-F01', 'HIGH',     '#axiosInstance\s*\.\s*(get|post|put|patch|delete)\s*\(\s*[`\'"](/api/[^`\'"$]*)#', '', 'New backend call — confirm the endpoint exists (checked below against the route table).', 'INDEXES/CONTRACT_DRIFT.md'],
+        ['R-F01', 'HIGH',     '#axiosInstance\s*\.\s*(get|post|put|patch|delete)\s*\(\s*[`\'"](/api/(?:[^`\'"$]|\$\{[^}]*\})*)#', '', 'New backend call — confirm the endpoint exists (checked below against the route table).', 'INDEXES/CONTRACT_DRIFT.md'],
         ['R-F02', 'MEDIUM',   '#\blazy\s*\(\s*\(\s*\)\s*=>\s*import#',                   'src/router',            'Use `lazyWithRetry` — plain `lazy` breaks on a stale chunk after deploy.', 'FRONTEND.md'],
         ['R-F03', 'MEDIUM',   '#https?://(?!localhost)[^\s\'"`]+#',                       'src/',                  'Hard-coded URL. The API base comes from `REACT_APP_BASE_URL`.', 'ENVIRONMENT.md'],
         ['R-F04', 'LOW',      '#console\.(log|debug)\s*\(#',                              'src/',                  'Leftover console output.', 'CODING_GUIDELINES.md'],
@@ -251,6 +251,9 @@ function patternFindings(string $repo, array $changes, array $facts): array
                 if ($id === 'R-B09' && hunkHas($c['added'], $a['line'], "'Unlimited'")) continue;
                 // R-B01/R-B17 are about mass assignment; inside a Log:: call it's R-B06's business.
                 if (($id === 'R-B01' || $id === 'R-B17') && str_contains($text, 'Log::')) continue;
+                // R-B01 is about mass assignment: `->all()` handed to a validator or a validate*() helper
+                // only validates. It matters when the result reaches create/update/fill.
+                if ($id === 'R-B01' && preg_match('#(Validator::make|validate\w*)\s*\(.*\$request->all\(\)#', $text)) continue;
                 // R-F01 resolves against the real route table below rather than firing blind.
                 if ($id === 'R-F01') {
                     $path = $m[2] ?? '';

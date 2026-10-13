@@ -6,7 +6,7 @@ The clinician/admin portal **and** the patient test player. Served under `/app`
 | | |
 |---|---|
 | Stack | React 18 · Redux Toolkit · React Router **v7** · Axios · Bootstrap 5 / React-Bootstrap · Formik + Yup · Stripe.js · Sass |
-| Scale | 287 source files · ~41.0k lines · 65 top-level routes · 44 Redux slices · 18 hooks |
+| Scale | 287 source files · ~41.0k lines · 65 top-level routes · 45 Redux slices · 18 hooks |
 | Env | `REACT_APP_BASE_URL`, `REACT_APP_STRIPE_PUBLIC_KEY`, `REACT_APP_TURNSTILE_SITE_KEY`, `PUBLIC_URL` |
 | Build | `react-scripts` (CRA 5) |
 
