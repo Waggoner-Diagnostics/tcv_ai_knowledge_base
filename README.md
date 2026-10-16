@@ -1,7 +1,7 @@
 # TCV — AI Knowledge Base
 
 Reusable knowledge base for **TestingColorVision** across all three repos — `TCV-Backend` (`develop`),
-`TCV-Frontend` (`develop`), `TCV-Website` (`main`) — built so an AI assistant can work on the project
+`TCV-Frontend` (`develop`), `TCV-Website` (`develop`) — built so an AI assistant can work on the project
 without rescanning **~61,700 lines across 506 source files** (`TCV-Backend/app` 164 · `TCV-Frontend/src`
 248 · `TCV-Website` 94).
 
@@ -121,16 +121,16 @@ Never regenerate the whole KB. Full detail:
 
 ## Last synced
 
-**2026-10-13.** Indexes built from **`develop` in all three repos**: `TCV-Backend` `362547d7`,
-`TCV-Frontend` `0f44d23`, `TCV-Website` `4d2c0d4`. The website's former `website-integration` exception is
-retired. ⚠️ Routes came from the **AST parser**, not `artisan route:list` — the sync machine has PHP 8.0 and
-Laravel 12 needs 8.2 — so framework/package web routes are missing from the web table (the `api/*` set is
-complete). The backend suite was **not** run at this sync; last measured 1398 passed / 3 failed on
-`a5938b2e`. Compare those SHAs with each repo's `git rev-parse --short HEAD` before trusting the generated
-indexes.
+**2026-10-15.** Indexes built from **`develop` in all three repos**: `TCV-Backend` `9082ae22`,
+`TCV-Frontend` `9ecbf6b`, `TCV-Website` `4d2c0d4` — i.e. including the merged `client-unbilled-changes`
+work (backend PR #315, frontend PR #445). ⚠️ Routes came from the **AST parser**, not `artisan route:list` —
+TCV-Backend has no `vendor/` on the sync machine — so framework/package web routes are missing from the web
+table (the `api/*` set is complete). The backend suite was **not** run at this sync; last measured 1398
+passed / 3 failed on `a5938b2e`. Compare those SHAs with each repo's `git rev-parse --short HEAD` before
+trusting the generated indexes.
 
 First generated 2026-08-19. Per-sync deltas, including this one, are recorded in
-[AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md#what-the-2026-10-13-sync-changed).
+[AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md#what-the-2026-10-15-sync-changed).
 
 > **Folder name.** The docs call this repo `tcv-ai-knowledge-base`; a clone may be named
 > `tcv_ai_knowledge_base` (as on the 2026-10-13 sync machine). Nothing depends on the name —

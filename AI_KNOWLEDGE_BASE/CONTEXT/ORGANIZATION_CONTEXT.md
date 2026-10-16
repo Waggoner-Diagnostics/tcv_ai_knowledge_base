@@ -135,12 +135,21 @@ Both advance the LMS session's status. Remember the status gate only bites for t
 
 ## UI terminology & form changes (2026-10-12, `client-unbilled-changes`)
 
-> Frontend side is on `develop` (PR #445, merged 2026-10-13). Backend side (`generateFieldRules`,
-> `AuthController` message) is on the **unmerged** backend `client-unbilled-changes` branch.
+> Frontend side is on `develop` (PR #445, merged 2026-10-13). Backend side is on `develop` (PR #315, merge
+> `9082ae22`; indexed 2026-10-15).
 
 - "Organization(s)" -> **Integrated Partner(s)** in the UI only (routes/tables/keys unchanged). Org-settings checkboxes keep
   DB option names, displayed via `ORG_OPTION_LABELS` in `OrganisationModal.js`. Only "Distributor" is used (no reseller/affiliate).
 - `run_test_on_subdomain` removed from the SPA create/edit form, payload and validation; backend column/fillable/cast kept, field optional.
-- `patient_id` rule is now `required=false` in `generateFieldRules` (Unique Identifier optional).
-- Account status label **Inactive -> Restricted** (accounts only; test and discount-code Active/Inactive unchanged).
-  `AuthController` message is now "Account is restricted"; the stored value is unchanged.
+- `patient_id` is `required=false` in both the default rules (`OrganizationController.php:904`) and the
+  option-selected branch, which forces it back to false (`:956-958`) (Unique Identifier optional).
+- Status label **Inactive -> Restricted**; stored value unchanged (`inactive`). ☠️ **Not accounts-only in the SPA:**
+  the shared `StatusBadge` (`misc.js:22`) maps `inactive` -> "Restricted" everywhere, so the **Tests list**
+  (`testColumns.js:34-36`) also shows inactive tests as "Restricted" while `EditTestForm.js:172` still says
+  "Inactive". Discount codes use their own badge. Backend: account status-change audit titles/descriptions say
+  "Restricted" (`AuditEventCatalog::statusChangeTitle`, `AuditEventCatalog.php:562-567`, `account.*` keys only);
+  `settings.test_status_changed` still says "(Inactive)". Login API message unchanged (`api.resticted`); only the
+  audit Reason became "Account is restricted" (`AuthController.php:120`).
+- Audit detail labels changed: "Integrated Partner Type/Name", "Test Taker Form Fields", "Deleted Integrated
+  Partner", "Integrated Partner ID", "Test Taker Ref", "Test Taker ID" (`TestController.php:270`). Older rows keep
+  the old labels, so the audit log mixes both — anything parsing `details` by label must accept both.

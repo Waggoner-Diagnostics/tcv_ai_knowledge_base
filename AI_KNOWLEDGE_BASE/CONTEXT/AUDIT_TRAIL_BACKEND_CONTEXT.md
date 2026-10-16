@@ -98,7 +98,7 @@ The seven original keys came from the reference repo. Rederiving them from the s
 | `billing_payment` | Billing & Payments | pricing tiers, discount codes (CRUD/toggle/expiry), checkout discount apply, payment success/failure | 13 |
 | `credits_licensing` | Credits & Licensing | credit assign / revoke / refund, insufficient-credit blocks | 8 |
 | `test_activity` | Test Activity | invitations sent / bulk / resent / cancelled; test started / completed | 6 |
-| `patient_records` | Patient Records | patient added / edited / deleted / exported, Patients-page access | 5 |
+| `patient_records` | Test Taker Records | patient added / edited / deleted / exported, Patients-page access | 5 |
 | `reports_exports` | Reports & Exports | report exports, report filtering, patient-test detail views | 4 |
 | `settings_config` | Settings & Configuration | application settings, email templates, test catalogue status | 3 |
 
@@ -147,6 +147,8 @@ Flips on request.
 ## 5. HIPAA / privacy review — rows that must not be logged as specified
 
 The audit table is a **new store with a new access model**: readable in full by every Super Admin, exportable to CSV, retained indefinitely. Copying patient data into it re-exposes that data to a broader audience than the module it came from. Nine rows in the spreadsheet do exactly that.
+
+> 📌 Design-time sheet names. Since PR #315 (2026-10-15 sync) the live titles are `New Test Taker added`, `Test started for test taker`, `Test Taker test details viewed` (`AuditEventCatalog.php:375,387,431`); category `patient_records` is labelled "Test Taker Records".
 
 | Sheet row | Specified detail | Verdict | Log instead |
 |---|---|---|---|
@@ -339,10 +341,10 @@ description always built from the same resolved local variable so they can't dis
 
 | Event key | Old title | New behaviour |
 |---|---|---|
-| `account.user_status_changed` | `User Status changed (Active/Inactive)` | `User Status changed (Active)` **or** `(Inactive)`, resolved from the actual after-value. Description: `"Account status changed to {Active\|Inactive}."` |
+| `account.user_status_changed` | `User Status changed (Active/Inactive)` | `User Status changed (Active)` **or** `(Restricted)`, resolved from the actual after-value (`statusChangeTitle` maps Inactive→Restricted for `account.*` keys, `AuditEventCatalog.php:562-567`). Description: `"Account status changed to {Active\|Restricted}."` |
 | `account.super_admin_status_changed` | same pattern | same pattern |
-| `account.organization_status_changed` | same pattern | same pattern. Description: `"Organization account status changed to {Active\|Inactive}."` |
-| `settings.test_status_changed` | `Test Status changed (Active/Inactive)` | same pattern. `Test::status` accessor is boolean-backed (`active`/`inactive` only) — no suspended concept here, deliberately left untouched below |
+| `account.organization_status_changed` | same pattern | same pattern; base title now `Integrated Partner Status changed`. Description: `"Integrated Partner account status changed to {Active\|Restricted}."` |
+| `settings.test_status_changed` | `Test Status changed (Active/Inactive)` | same pattern, but **stays "(Inactive)"**: the Restricted mapping is gated on the `account.` prefix. `Test::status` accessor is boolean-backed (`active`/`inactive` only) — no suspended concept here, deliberately left untouched below |
 | `test.invitation_sent` | `Test invitation sent (single / multiple)` | `Test invitation sent (Single)` **or** `(Multiple)`, from the actual recipient count at `TestInvitationController::sendInvitations()`. Description pluralizes too: `"Test invitation sent."` vs `"Test invitations sent."` |
 | `billing.discount_code_create_failed` | `Discount Code create failed (validation)` | reverted (static) to `Discount code creation failed` |
 | `auth.restricted_ip_added` / `_removed` / `_updated` | `Restricted IP address (Added\|Removed\|Updated)` | parentheses dropped (static): `Restricted IP address Added` / `Removed` / `Updated` |
@@ -357,7 +359,7 @@ key instead of `statusChangeTitle()`:
 |---|---|---|---|
 | `account.user_suspended` | `User account suspended` | `accounts_users` | `high` |
 | `account.super_admin_suspended` | `Super Admin account suspended` | `accounts_users` | `high` |
-| `account.organization_suspended` | `Organization account suspended` | `accounts_users` | `high` |
+| `account.organization_suspended` | `Integrated Partner account suspended` | `accounts_users` | `high` |
 
 **Catalog size:** 64 → **67** events on this branch; `accounts_users` category 16 → **19**. (`develop`'s
 current figure is the F-082 row in `FEATURE_INDEX.md` — cross-check that against the real catalog before
@@ -836,7 +838,7 @@ reached the server. The server-side export (`GET` at PR #291, **`POST api/patien
 
 | Outcome | Where | Status | Details |
 |---|---|---|---|
-| exported | `PatientController::export()`, **before** streaming | `success` | Export Format `XLSX` · description `Patient export started.` · **Records Requested** (pre-flight count, never rewritten) · Date Range `from to to (tz)` · Applied Filter. *(At PR #291 it was `CSV` with a provisional Number of Records rewritten by `recordStreamedRowCount()`; that method is gone since 2026-10-05.)* |
+| exported | `PatientController::export()`, **before** streaming | `success` | Export Format `XLSX` · description `Test Taker export started.` · **Records Requested** (pre-flight count, never rewritten) · Date Range `from to to (tz)` · Applied Filter. *(At PR #291 it was `CSV` with a provisional Number of Records rewritten by `recordStreamedRowCount()`; that method is gone since 2026-10-05.)* |
 | outcome | `PatientExportTracker`, after the stream ends | `success` (completed) / `failed` (not completed) | `patient.export_outcome` · Completed `Yes`/`No` · Number of Records (completed) or Reason + Records Sent Before It Stopped (not completed) · Export Entry ID |
 | too many rows | `PatientController::export()` | `failed` | Reason `Export too large` · **Records Requested** (deliberately not "Number of Records") · Row Limit · Date Range · Applied Filter |
 | rate-limited | `AppServiceProvider::patientExportRateLimitedResponse()` | `failed` | Reason only. Nothing from the query string is logged, because it is unvalidated there. Deduped to one row per 60 s per caller |

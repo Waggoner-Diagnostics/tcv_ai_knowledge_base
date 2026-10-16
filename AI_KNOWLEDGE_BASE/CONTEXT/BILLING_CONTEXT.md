@@ -235,7 +235,7 @@ failed"*, which reads to a customer as an outage rather than a deliberate refusa
 added to these handlers has to take the same shape, and the identity comparison has to stay `===` against
 the string ([CREDITS_CONTEXT](CREDITS_CONTEXT.md#unlimited-is-a-string)).
 
-☠️ **That method is `POST api/stripe/create-payment-intent` (`API-093`) — the legacy surface, which the
+☠️ **That method is `POST api/stripe/create-payment-intent` (`API-096`) — the legacy surface, which the
 SPA does not call.** Per *Two parallel payment surfaces* above, buying credits in the portal runs
 `POST api/payment/initialize` → `POST api/payment/confirm` on `PaymentController`, and **as first written
 neither had an unlimited check**. So the guard could not fire on the path that takes money: the
@@ -431,6 +431,6 @@ adjustment move credits, not money.
 _[not deeply traced]: the ACH / bank-transfer branches of `StripeService`, and `TransactionDetail`'s
 exact column semantics._
 
-## ☠️ Deployment warning: allowlist flip (2026-10-13, uncommitted)
+## ☠️ Deployment warning: allowlist flip (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 Before release, review the discount-code users pivot data: after the allowlist flip, any existing code with a **non-empty users pivot becomes usable ONLY by those users** (they were previously excluded). See [DISCOUNT_CONTEXT](DISCOUNT_CONTEXT.md) trap 1. There is no data migration.

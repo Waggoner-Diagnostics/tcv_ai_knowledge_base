@@ -95,6 +95,8 @@ click is a no-op. Phases 2 and 3 attach to seams left in place here.
 ### New files
 
 #### 1. `src/constants/auditTrail.js`
+> 📌 Phase-1 design notes. As of `9ecbf6b` `AUDIT_CATEGORIES` holds the live keys (`sign_ins_security` … `settings_config`, with `patient_records` = "Test Taker Records", `auditTrail.js:13-21`), not the mock's seven chips; `AUDIT_ROLE_LABELS[ORGANIZATION]` is "Integrated Partner" (`:55`).
+
 
 - `AUDIT_CATEGORIES` — a map of `key -> { label, tone }` for all seven chips in the mock:
   Sign-ins & Security, Broadcast Management, Billing & Payment, License Management,

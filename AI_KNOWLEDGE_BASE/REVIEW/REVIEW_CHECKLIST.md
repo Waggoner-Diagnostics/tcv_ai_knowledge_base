@@ -142,6 +142,12 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
 - [ ] A new ServiceProvider is added to `bootstrap/providers.php`, or it never runs.
 - [ ] Config read via `config('…')`, never `env()` outside `config/`.
 - [ ] Nothing logs a token, a password, or `$request->all()`. [LOGGING.md](../LOGGING.md)
+- [ ] A new spreadsheet export runs user-controlled strings through `App\Support\SpreadsheetSafe` (or writes
+      them with `setCellValueExplicit(TYPE_STRING)`). [REPORTING_CONTEXT](../CONTEXT/REPORTING_CONTEXT.md)
+- [ ] An audit helper actually **writes** every argument it is given — `logUserTestsExported()` takes
+      `$scope` and drops it.
+- [ ] Renaming a user-visible audit title/label: old rows keep the old text, so anything that filters or
+      parses audit history must accept both.
 
 ## 8. Frontend (TCV-Frontend)
 
@@ -164,6 +170,13 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
       endpoint.
       [FRONTEND.md](../FRONTEND.md#-settled-not-initialized--error--the-gate-has-to-key-off-something-forward-only)
 - [ ] No client logic that branches on a **403** — the backend returns 500 for those.
+- [ ] A change to a **shared column/badge file** (`userManagementColumns.js`, `misc.js` `StatusBadge`,
+      `UserTest.scss` dropdown styles) is checked on **every** importer — `grep` the import. Removing Manage
+      Credits for `Admin.js` silently removed it from the customer `Users.js` page (PR #445).
+      [FRONTEND.md](../FRONTEND.md)
+- [ ] No logic keyed on a **display label or an API message string** (`item.label === "Test Takers"`,
+      `error?.message === '…'`). Terminology passes rename them and the branch dies silently — key on path,
+      status or `error_code`. [ERROR_HANDLING.md](../ERROR_HANDLING.md)
 - [ ] Paginated tables use `createPaginatedCrudSlice`.
 - [ ] Every sortable header on a `useServerSorting` grid sends a key the endpoint allow-lists (an
       unknown key is silently replaced by the default, so the grid shows a sort it isn't doing), and

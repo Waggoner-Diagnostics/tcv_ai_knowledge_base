@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-166`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-170`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -767,7 +767,7 @@ unstyled, the same trap as the `&--type-*` credit-history badges
 
 ☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
 landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
-`API-093`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`API-096`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
 `POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
 `services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
 `api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
@@ -793,7 +793,7 @@ usertype whose tests the modal manages.
 
 ☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
 user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
-*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-152`, 422
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-156`, 422
 `api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
 rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
 account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
@@ -958,26 +958,43 @@ Renaming that test in the `tests` table un-hides it here *and* changes its diagn
 
 ---
 
-## Terminology, Contact page, Admin screen (2026-10-12, uncommitted)
+## Terminology, Contact page, Admin screen (2026-10-12, merged: frontend PR #445)
 
 UI strings: patient -> Test Taker, Patient ID -> Unique Identifier (optional), Organization -> Integrated Partner,
-Inactive -> Restricted (accounts only). `ContactPage.js`: email Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext);
-TCV-Website still uses info@waggonerdiagnostics.com. `Admin.js` drops Manage Credits / Log-in-as icons
-(`userManagementColumns.js` shared with `Users.js`). `OrganisationModal.js` no longer has `run_test_on_subdomain`.
-Route paths unchanged.
+Inactive -> Restricted via the shared `StatusBadge` (`misc.js:22`), which **also relabels inactive tests** on the Tests
+list (`testColumns.js:34-36`; `EditTestForm.js:172` still says "Inactive"). `ContactPage.js`: email
+Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext); TCV-Website still uses info@waggonerdiagnostics.com.
+`Admin.js` stops passing `onLoginAsUser` (the column renders Log-in-as only when passed, `userManagementColumns.js:125-135`).
+☠️ Manage Credits was deleted from the shared `userManagementColumns.js` itself, so the customer `Users.js` page lost it
+too; `Users.js:142-145` `handleAddCredits` is dead ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). `organisationColumns.js`
+keeps Manage Credits for orgs. With `onLoginAsUser` passed, a row renders two `um-action-divider`s back to back
+(`:133`, `:139`) — cosmetic leftover. `OrganisationModal.js` no longer has `run_test_on_subdomain` (removed from
+`initialForm`, the `Organisation.js` payload, `organisationUtils.js` and `validations.js`), and the "Run Test On
+Subdomain" option checkbox is hidden via `HIDDEN_OPTION_NAMES` (`OrganisationModal.js:31`). Route paths unchanged.
 
-## Tabular User Tests report (2026-10-12, uncommitted)
+- ☠️ **Label-keyed nav:** `Header.js:215` picks the password-gated Test Takers nav button by `item.label === "Test Takers"`.
+  Renaming the label silently drops the password gate — key it on path (`PATIENTS_PATH`).
+  `Sidebar.js` `ROLE_LABELS[4] = 'Integrated Partner'`; menu title "Integrated Partners".
+- Export scope wording is duplicated in backend `PatientXlsxExport` (`:129-131`) and `constants/patientExport.js`
+  (`:107-111`); both say "test takers" — change them together.
+- ☠️ `OrganizationPatient.js:56` matches an error message that the backend never sends — see
+  [ERROR_HANDLING](ERROR_HANDLING.md#message-changes-2026-10-12-merged-backend-pr-315--frontend-pr-445).
+
+## Tabular User Tests report (2026-10-12, merged: frontend PR #445)
 
 `src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and "Export full test history". Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
 
 - State: `redux/slices/reports/userTestsTableSlice.js`, registered as `userTestsTable` in `store.js`.
 - `utils/columns/userTestsTableColumns.js`: column ids **must stay in sync with backend `UserTestsReportService::TABLE_COLUMNS` keys**. Distinct from `userTestsColumns.js` (detail page).
-- Styling: `um-header` classes, bordered card like `DiscountCodeReport.scss`; `UserTest.scss` carries the **shared global `.filter-dropdown` / `.export-dropdown`** styles (Discount Code report also uses them); cells ellipsis at 240px.
-- No UI for `test_id` / `user_id` / `organization_id` filters (API only).
-- Old card list / `list-patients-having-tests` endpoint and `patientTestsSlice` remain (now unused by this screen).
+- Styling: `um-header` classes, bordered card like `DiscountCodeReport.scss`; `UserTest.scss` carries the **shared global `.filter-dropdown` / `.export-dropdown`** styles (also imported by `DiscountCode.js` and `UserTestDetail.js` — check all three screens); cells ellipsis at 240px.
+- No UI for `test_id` / `user_id` / `organization_id`. `patient_id` is not even in the slice's `FILTER_KEYS` (`userTestsTableSlice.js:6`), so the SPA can never send it.
+- The card list is gone. The `list-patients-having-tests` endpoint and `redux/slices/reports/patientTestsSlice.js` remain but have **no page consumer** (only registered in `store.js`); `userTestsReportSlice` is still used by `UserTestDetail.js`. ⚠️ The list screen's **PDF export was removed**: table export and history export are xlsx only (no `format` sent).
+- `loadSelectedColumns()` drops unknown stored ids, re-adds required ones, falls back to all (`userTestsTableColumns.js:28-41`) — old localStorage values are tolerated.
+- Exports send the applied filters plus the current sort, never the page (`UserTests.js:170-172`). The list fetch ignores stale responses via `listRequestId` (slice `:117-133`).
+- ⚠️ The View action puts the **decrypted Test Taker name in the URL** (`/reports/user-tests/patient/:id/:name`, `UserTests.js:186-189`), as the old card list did — PHI in browser history / logs.
 
 
-## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, uncommitted)
+## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, merged: frontend PR #445)
 
 **Settings > Profile is gone for Super Admin only.**
 - `constants/routeConfig.js`: `"profile"` removed from `childRoutes["/settings"]` for `SUPER_ADMIN` (customer/org keep it). That alone drops the sidebar submenu item (Sidebar filters by `tab`) and unregisters the route.
@@ -997,7 +1014,7 @@ Route paths unchanged.
 **Quill `linkTokens` mode (`richTextEditor/emailPlaceholders.js`, `RichTextEditor.js`).** Quill's link sanitiser rewrites `href="{{reset_url}}"` to `about:blank`. The Test Invitation editor already dodged this with a `testLink` chip blot for `{{verification_link}}`; the blot now carries a `token` (`data-token`), and `toEditorHtml(html, { linkTokens, healBareLink })` / `toTemplateHtml(html, { healBareLink })` take options (defaults reproduce the old behaviour exactly). `RichTextEditor` prop `linkTokens` (array of names without braces) switches on account-email mode: `<a href="{{token}}">` becomes an atomic chip and is written back as an anchor with the standard button style, **except** an anchor whose text is the token itself (the "copy and paste" fallback), which is written back unstyled. A bare `{{token}}` is left as text (not healed into a button); the server re-anchors it (`EmailContent::anchorPlaceholders`).
 - Lost on an edit round trip: inline `style` on non-link elements, `target="_blank"`, and a custom style on a labelled link (replaced by the standard button style). Header and footer (`EmailSignature::HTML`) are separate columns and are never loaded into the editor.
 
-## Review fixes: export errors & template fallback (2026-10-13, uncommitted)
+## Review fixes: export errors & template fallback (2026-10-13, merged: frontend PR #445)
 
-- Export thunks (reports) parse a Blob error body into `{message}`; the `rejected` case no longer writes `s.error`, so exactly one popup shows.
-- `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating).
+- `exportUserTestsTable` / `exportTestTakerHistory` (only these two, `userTestsTableSlice.js:21-38`, `:141-146`) parse a Blob error body into `{message}` (`exportErrorPayload`: `message`, else first `errors` entry, else `err.message`). Their `rejected` case does not write `s.error`; `UserTests.js` `runDownload` (`:162-168`) shows the one popup. Discount Code and `userTestsReportSlice` exports are unchanged.
+- `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating). The fallback only runs once `templates.test_link || templates.org_test_link` has loaded (`loaded`/`options` memo); before that, or after a failed fetch, the empty state shows. Covered by `TestEmailTemplates.test.js` (`:82` fallback, `:91` empty state + Retry).

@@ -4,7 +4,7 @@ Derived view: TCV-Frontend / TCV-Website call sites whose URL matches **no route
 [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md). Each one is a request that reaches the API and comes
 back **404**.
 
-**11 unmatched of 92 distinct SPA calls.**
+**9 unmatched of 92 distinct SPA calls.**
 
 Read the `Why` column before acting — a row is one of three things:
 
@@ -19,8 +19,6 @@ Read the `Why` column before acting — a row is one of three things:
 | Method | Client path | Why | Call site |
 |---|---|---|---|
 | GET | `/api/auth/ping-api` | _dead file_ | [src/constants/testDescriptionConstants.js:553](../../../TCV-Frontend/src/constants/testDescriptionConstants.js#L553) |
-| GET | `/api/reports/user-tests/test-takers/{param}/export` | **no such path** | [src/redux/slices/reports/userTestsTableSlice.js:98](../../../TCV-Frontend/src/redux/slices/reports/userTestsTableSlice.js#L98) |
-| PUT | `/api/test-email-templates/system/{param}` | **no such path** | [src/redux/slices/admin/adminTestEmailTemplateSlice.js:48](../../../TCV-Frontend/src/redux/slices/admin/adminTestEmailTemplateSlice.js#L48) |
 | GET | `/api/tests/sent-invitations` | **no such path** | [src/redux/slices/tests/sendTestSlice.js:89](../../../TCV-Frontend/src/redux/slices/tests/sendTestSlice.js#L89) |
 | POST | `/api/user/tests/bulk-update-visibility` | **no such path** | [src/redux/slices/tests/testVisibilitySlice.js:44](../../../TCV-Frontend/src/redux/slices/tests/testVisibilitySlice.js#L44) |
 | GET | `/{param}` | _scanner limit_ | [src/redux/slices/createpaginatedslice.js:65](../../../TCV-Frontend/src/redux/slices/createpaginatedslice.js#L65) |
@@ -47,4 +45,4 @@ the backend, so the browser only ever talks to the website's own origin.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-15. Do not hand-edit — re-run the generator._

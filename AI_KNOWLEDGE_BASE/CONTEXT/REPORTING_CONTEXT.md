@@ -7,7 +7,7 @@
 ## Files
 | File | Role |
 |---|---|
-| `app/Http/Controllers/ReportController.php` (245 lines) | 3 endpoints, thin over the services |
+| `app/Http/Controllers/ReportController.php` (433 lines) | 6 endpoints, thin over the services |
 | `app/Services/Reports/UserTestsReportService.php` | Per-user test activity |
 | `app/Services/Reports/DiscountCodeReportService.php` | Discount redemption |
 | `app/Exports/UserTestsReportExport.php` · `UserTestsDetailExport.php` · `DiscountCodeReportExport.php` | `maatwebsite/excel` |
@@ -22,8 +22,10 @@ GET api/reports/discount-codes               → ReportController::discountCode
 GET api/super-admin/dashboard                → SuperAdminDashboardController::index
 ```
 
-☠️ **None of these carry a policy check or a `usertype` test.** `auth:sanctum` is the only gate, so any
-authenticated user of any role can call `super-admin/dashboard` and the cross-tenant reports. The SPA
+☠️ **No policy anywhere; role/owner checks are per endpoint (as of `9082ae22`).** `list-patients-having-tests`
+and `user-tests` are owner-scoped for non-admins (`ReportController::reportOwnerId()`, `:44-49`, since
+2026-09-18). **`discount-codes` and `super-admin/dashboard` still have no role check** — any authenticated user
+can call them. The three `user-tests/table*` / `test-takers` routes are Super Admin only (403). The SPA
 hides the menu items via `RouteConfig` ([FRONTEND.md](../FRONTEND.md)) — that is a UI affordance, not
 authorisation.
 
@@ -88,8 +90,8 @@ Both are behind `FlexibleAuthMiddleware` and render via `barryvdh/laravel-dompdf
    *Discount* column is not sortable: it has no key in the map.
 9. **`UserTestsReportService::query()` passes `sort_by` straight to `orderBy()` with no allow-list.**
    Observed during `ws-502`, **not changed**. It only feeds the non-patient report and its exports.
-   Today that is unreachable from the SPA with a custom key, because `UserTestsAccordion` renders with
-   `disableHeaderSorting` and `UserTests.js` sends no `sort_by`. The grammar quotes the identifier, but
+   Today that is unreachable from the SPA: since PR #445 `UserTests.js` calls `user-tests/table`, and the
+   non-patient `user-tests` path has no SPA caller (only `UserTestDetail.js`, patient path). The grammar quotes the identifier, but
    an unknown column is still a 500. Add an allow-list before wiring sorting to that screen.
 
 _[not deeply traced]: `SuperAdminDashboardController::index()`'s aggregation queries, the exact column
@@ -97,49 +99,75 @@ sets of the three Export classes, and the dompdf Blade templates._
 
 ---
 
-## Export/PDF wording (2026-10-12, uncommitted)
+## Export/PDF wording (2026-10-12, merged: backend PR #315)
 
 Headers renamed ("Unique Identifier", "Test Taker IP Address", "Test Takers Export"); in-flight tests print
-`PatientTest::statusLabel()` = "In Progress". Audit labels "Expiry Date"/"Invitation Expiry" intentionally **unchanged**:
-the `AuditService` redaction allowlist matches the exact string. Existing audit rows keep old text.
+`PatientTest::statusLabel()` (`PatientTest.php:159`) = "In Progress" (others `ucwords`). Callers:
+`PatientXlsxExport.php:638`, `UserTestsReportExport.php:91`, `UserTestsDetailExport.php:52,58-59`,
+`UserTestsReportService.php:243` (`status_label`). ⚠️ **Except the older list PDF:** `downloadPdf()` runs
+`ucfirst()` on `status` first (`ReportController.php:326-328`), so `statusLabel('Inprogress')` misses and that PDF
+prints "Inprogress" (no SPA caller now). ⚠️ History/detail exports and both report PDFs still head the column
+"Test ID", not "Unique Identifier" (`UserTestsDetailExport.php:37`, `user-tests-detail-pdf.blade.php:64`,
+`user-tests-pdf.blade.php:22`); the older xlsx still says "User Name" (`UserTestsReportExport.php:55-61`).
+`test-result.blade.php:178/184` prints "Test Taker Name:" / "Unique Identifier:" (Prolific still "Prolific ID").
+Audit labels "Expiry Date"/"Invitation Expiry" intentionally **unchanged**: the `AuditService` redaction allowlist
+matches the exact string. Existing audit rows keep old text.
 
 ---
 
-## Tabular User Tests report (2026-10-12, uncommitted)
+## Tabular User Tests report (2026-10-12, merged: backend PR #315, frontend PR #445)
 
-Replaces the card grid on the SPA screen; tests: `tests/Feature/Reports/UserTestsTableReportTest.php`. Indexes **not regenerated** (QA/UAT branches, not `develop`) - pending.
+Replaces the card grid on the SPA screen; tests: `tests/Feature/Reports/UserTestsTableReportTest.php` (403 on all
+three endpoints, 422 on an inverted range, 404 for a missing patient). Indexed 2026-10-15 as `API-083`…`API-085`.
 
 ### Routes (GET, `auth:sanctum`, **Super Admin only**)
 ```
-api/reports/user-tests/table                              → ReportController::userTestsTable
-api/reports/user-tests/table/export                       → ReportController::exportUserTestsTable
-api/reports/user-tests/test-takers/{patient}/export       → ReportController::exportTestTakerHistory
+api/reports/user-tests/table                              → ReportController::userTestsTable          (API-083)
+api/reports/user-tests/table/export                       → ReportController::exportUserTestsTable    (API-084)
+api/reports/user-tests/test-takers/{patient}/export       → ReportController::exportTestTakerHistory  (API-085)
 ```
-Literal segments sit before `{patient}`; route order is fine.
+Literal segments sit before `{patient}`; route order is fine. `{patient}` is `->whereNumber()` (`api.php:317-318`),
+so a non-numeric id is a route-level 404.
+
+**Authorization (verified):** `table` / `table/export` use `UserTestsTableRequest::authorize()` = `isSuperAdmin()`
+(`UserTestsTableRequest.php:19-23`; `failedAuthorization()` → 403 `api.forbidden`, before validation, so a
+non-admin never sees a 422). `test-takers/{patient}/export` checks `isSuperAdmin()` inline **before** the
+`Patient::withTrashed()->find()` 404 (`ReportController.php:233-240`), so a non-admin cannot probe ids. Super Admin
+sees every tenant by design — `tableQuery()` has no owner scoping (docblock, `UserTestsReportService.php:150`).
 
 ### Contract
-- `table` params: `page`, `limit` (1-100), `sort_by`, `sort_order`, `search`, `status` (`pending|inprogress|completed|abandoned`), `test_id`, `user_id`, `organization_id`, `patient_id`, `from_date`, `to_date` (Y-m-d). Returns `data`, `pagination`, `columns`, `required_columns`.
-- `table/export`: same filters + `columns[]` or `all=1`. Required columns are always added; `all=1` overrides `columns[]`.
-- `test-takers/{patient}/export`: full history, **ignores all filters**, includes soft-deleted tests; xlsx default, `?format=pdf`; unknown patient -> 404 `api.patient_not_found`.
-- `UserTestsTableRequest`: non-Super-Admin -> 403 `api.forbidden` **before** validation; `sort_by`/`columns` allow-listed; `to_date < from_date` -> 422.
+- `table` params: `page`, `limit` (1-100, default 10), `sort_by`, `sort_order`, `search`, `status`
+  (`pending|inprogress|completed|abandoned`), `test_id`, `user_id`, `organization_id`, `patient_id`, `from_date`,
+  `to_date` (Y-m-d). Returns `data`, `pagination{total,current_page,last_page,per_page}`, `columns` (key=>label),
+  `required_columns` (`ReportController.php:181-204`).
+- `table/export`: same filters + `columns[]` or `all=1`. **xlsx only** (no PDF); `page`/`limit` accepted but ignored.
+  `all=1` **or an empty/absent `columns[]`** = every column; otherwise required columns are added.
+- `test-takers/{patient}/export`: full history, **ignores all filters**; the Test Taker may be soft-deleted
+  (`Patient::withTrashed()`), but `PatientTest` has no SoftDeletes. xlsx default; any `format` other than `pdf` →
+  xlsx. Unknown patient → 404 `api.patient_not_found`. Columns: Test ID, Test Name, Date, Status; OS+OD pairs grouped
+  into one row (`UserTestsDetailExport.php:35-38`).
+- `UserTestsTableRequest`: `sort_by`/`columns` allow-listed; `to_date < from_date` → 422.
 
 ### Service (`UserTestsReportService`)
 - `TABLE_COLUMNS` (10): Unique Identifier, Test Name, Test Taker, Account, Integrated Partner, Status, Eye Tested, Test Taken Via, Test Taker IP Address, Date. `REQUIRED_TABLE_COLUMNS`: Unique Identifier, Test Name, Status, Date (`unique_test_id`, `test_name`, `status`, `created_at`).
-- `TABLE_SORTS` = sort allow-list. **Test Taker is not sortable** (names are ciphertext); name search is done in PHP via `PatientNameSearch`.
-- `tableQuery()` is the **single filter implementation** shared by screen and export - change filters there only. `tableRow()` decrypts names; `resolveTableColumns($requested, $all)` keeps required columns, order follows `TABLE_COLUMNS`.
-- `UserTestsReportExport` takes optional `?array $columns`; `null` = legacy 5-column export (old callers unchanged).
-- Audit reuses `report.user_tests_exported` with `scope=table|patient_history`; details carry only format, date filter, count.
+- `TABLE_SORTS` = sort allow-list. **Test Taker and Test Taken Via (`invite_type`) are not sortable** (names are ciphertext; `invite_type` is derived); `account_name` sorts by `u.first_name` only (`:136-145`). Name search is done in PHP via `PatientNameSearch`.
+- `tableQuery()` is the **single filter implementation** shared by screen and export - change filters there only. Filter semantics (`:179-215`): `user_id` = `p.user_id` (owning account); `organization_id` matches through `organizations.user_id = p.user_id`, not a patient FK; `organization_name` is a correlated subquery taking the lowest `o.id` per account (`organizations.user_id` is not unique). Search covers `unique_test_id`, test title, account first/last name, org name and decrypted Test Taker names — not status.
+- ☠️ `tableQuery()` is `DB::table()` joining `patients` with **no `deleted_at` filter**: tests of soft-deleted Test Takers are included in the table and its export (`:152-157`; the older `query()` does the same, `:55-57`). Trap 2 does not hold here.
+- `tableRow()` decrypts names; `invite_type`: `is_email_invite` null (migrated) → `''` (SPA "—"), true → "Email Invitation", false → "In-Office"; extra `status_label` drives the SPA Status cell (`:229-250`).
+- `UserTestsReportExport` takes optional `?array $columns`; `null` = legacy 5-column export (old callers unchanged). Its `map()` resolves the service from the container and calls `tableRow()` per row (`UserTestsReportExport.php:70-78`); `created_at` is m/d/Y, `status` = `status_label`.
+- ⚠️ Audit reuses `report.user_tests_exported`, but the `$scope` (`table|patient_history`) and `$patientId` args to `logUserTestsExported()` are **never written** (`ReportController.php:256-262`). Details carry only Export Format, Applied Date Filter ("None" for history) and Number of Records, so table, history and older exports are indistinguishable in the audit log.
 
 ### Traps
-- Trap 3: the new routes are Super Admin gated in the FormRequest/controller, but the legacy `user-tests`, `list-patients-having-tests` stay open to any authenticated user.
-- Trap 9 (unguarded `sort_by` in `query()`) **still true for the legacy path**; the new table path is allow-listed via `TABLE_SORTS`.
+- Trap 3 (authorisation) as of `9082ae22`: the three new routes are Super Admin only; legacy `user-tests` and `list-patients-having-tests` are callable by any authenticated user but **owner-scoped** for non-admins via `reportOwnerId()` (`ReportController.php:44-49`; foreign `patient_id` → 404, `:100-105`). ☠️ `discount-codes` (`:343`) and `super-admin/dashboard` still have **no** role or owner check.
+- Trap 9 (unguarded `sort_by` in `query()`) **still true for the legacy path**, but since PR #445 `UserTests.js` calls `user-tests/table`; only `UserTestDetail.js` (patient path) still uses `user-tests`. The table path is allow-listed via `TABLE_SORTS`.
 
 ### Screen
-`src/pages/Reports/UserTests.js` - see [FRONTEND.md](../FRONTEND.md#tabular-user-tests-report-2026-10-12-uncommitted).
+`src/pages/Reports/UserTests.js` - see [FRONTEND.md](../FRONTEND.md#tabular-user-tests-report-2026-10-12-merged-frontend-pr-445).
 
-## Export sanitising (2026-10-13, uncommitted)
+## Export sanitising (2026-10-13, merged: backend PR #315)
 
-- New `App\Support\SpreadsheetSafe` (`cell()` / `row()`): prefixes an apostrophe to non-numeric strings starting with tab, CR, `=`, `+`, `-` or `@` (formula injection). Applied in `UserTestsReportExport` (legacy and table branches) and `UserTestsDetailExport`. Test: `tests/Unit/Support/SpreadsheetSafeTest.php`.
-- `PatientXlsxExport` is deliberately **unchanged**: it writes `setCellValueExplicit(TYPE_STRING)`, where an apostrophe would show literally.
+- `App\Support\SpreadsheetSafe` (`cell()` / `row()`): prefixes an apostrophe to strings starting with tab or CR (always), or with `=`, `+`, `-`, `@` when the string is not `is_numeric` (so `-5`, `+3`, `-1.5` are left alone). Non-strings and `''` untouched (`SpreadsheetSafe.php:15-31`). Applied in `UserTestsReportExport` (legacy and table branches) and `UserTestsDetailExport`. Test: `tests/Unit/Support/SpreadsheetSafeTest.php`.
+- `PatientXlsxExport` is deliberately **not sanitised** (its headers and status labels did change): it writes `setCellValueExplicit(TYPE_STRING)`, which is never evaluated as a formula. In the Maatwebsite exports the apostrophe is stored as literal text (no `config/excel.php`, no custom value binder) — expect it to show in Excel `[not tested in Excel]`.
+- ☠️ **Not yet the single implementation:** `DiscountCodeReportExport` writes user-controlled strings (description, username, email, company) with `setCellValue` and **no** sanitising (`DiscountCodeReportExport.php:132-148`); `AuditLogCsvExport` has its own copy of the logic (`:137-148`).
 - **Known limitation:** report name search decrypts names in PHP (`PatientNameSearch`) and the export has **no row cap**; large datasets cost time and memory.
-- SPA: export thunks now parse a Blob error body into `{message}` ([FRONTEND.md](../FRONTEND.md)).
+- SPA: only `exportUserTestsTable` / `exportTestTakerHistory` parse a Blob error body into `{message}` ([FRONTEND.md](../FRONTEND.md)); Discount Code and `userTestsReportSlice` exports are unchanged.

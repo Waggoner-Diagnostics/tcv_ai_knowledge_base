@@ -130,19 +130,28 @@ type being abandoned. `resetForm()` also clears `touched`/`errors`, which is wha
 "Cannot exceed 100%." surviving the switch. **`BLANK_VALUES` must therefore list every field the form
 owns** — add a field without adding it there and that field silently survives a type switch. Because the
 reset reaches well past the two type-specific fields — it reactivates the code, clears its dates and
-empties the **user deny-list**, widening who may redeem — it is confirmed through `window.confirm()`
+empties the **user allowlist** (empty = everyone), widening who may redeem — it is confirmed through `window.confirm()`
 whenever the form has anything to lose, and done silently when it does not.
 
 ---
 
 ## ☠️ Traps
 
-1. **Both restriction lists are now ALLOW lists (2026-10-12, uncommitted).** `priceTiers` permit only the
+1. **Both restriction lists are now ALLOW lists (2026-10-12, merged: backend PR #315 / frontend PR #445).** `priceTiers` permit only the
    attached credit packages; `users` is now a real allowlist in `DiscountCodeService::validate()` (~line 54):
    non-empty users list = only those users may apply, empty = everyone. It used to be an exclusion list
    (listed users failed). UI label "Restrict to Specific Users" -> **"Allow Specific Users"**; audit label
    **"Allowed Users"**. ☠️ No data migration: existing codes with selected users flip meaning. Still populated
    by `syncRestrictions($discount, $userIds, $priceTierIds)` from the `user_ids` form field.
+   - The allowlist 403 ("This discount code is not available to your account.") runs **after** the expiry,
+     minimum-order and package checks (`DiscountCodeService.php:39-52`), so a non-listed user sees those 400s
+     first — leaking the code's minimum order and package restriction.
+   - Internal names were **not** renamed: `discountRestrictedUsers()` (`DiscountCodeController.php:50`) and
+     `$restrictedUsersBefore/After` (`:236`) now hold the *allowed* users.
+   - Audit history mixes meanings: pre-merge rows say "Restricted Users" (exclusion), new rows "Allowed Users".
+     Anything reading audit history must handle both.
+   - **No test covers the flip** — `AuditedDiscountCodeControllerTest.php` only had label renames.
+   - SPA copy: `DiscountCodeModal.jsx:331` (label), `:376` (empty-state hint).
 
 2. **Usage is counted from `transaction_details`, not from a counter.** `countUses()` aggregates, so
    `max_uses` is only as accurate as the transaction records. A payment that charged but never reached
@@ -279,6 +288,6 @@ row being edited.
    not counting, legacy credits counting, `show` agreeing with `index`, filter + stats split). The last
    one also asserts the dashboard's `active_discount_codes` matches the Active card (`ws-521` PR review).
 
-## ☠️ Deployment warning: allowlist flip (2026-10-13, uncommitted)
+## ☠️ Deployment warning: allowlist flip (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 Before release, review the discount-code users pivot data: after the allowlist flip, any existing code with a **non-empty users pivot becomes usable ONLY by those users** (they were previously excluded). See [DISCOUNT_CONTEXT](DISCOUNT_CONTEXT.md) trap 1. There is no data migration.

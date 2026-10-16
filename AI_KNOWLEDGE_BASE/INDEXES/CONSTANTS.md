@@ -128,18 +128,18 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `BLUE_DARK` | `'1D579B'` | [49](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L49) |
-| `GRAY_TEXT` | `'6B7280'` | [51](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L51) |
-| `DARK_TEXT` | `'1F2937'` | [53](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L53) |
-| `BORDER_CLR` | `'E5E7EB'` | [55](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L55) |
-| `WHITE` | `'FFFFFF'` | [57](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L57) |
-| `BLACK` | `'000000'` | [59](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L59) |
-| `END_ROW_FILL` | `'E5E7EB'` | [62](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L62) |
-| `MAX_CELL_CHARS` | `32767` | [65](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L65) |
-| `HEADER_ROW` | `5` | [68](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L68) |
-| `TEMP_FILE_PREFIX` | `'tcv-patient-export-'` | [71](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L71) |
-| `STALE_TEMP_FILE_SECONDS` | `3600` | [74](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L74) |
-| `COLUMNS` | `[…]` | [87](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L87) |
+| `BLUE_DARK` | `'1D579B'` | [50](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L50) |
+| `GRAY_TEXT` | `'6B7280'` | [52](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L52) |
+| `DARK_TEXT` | `'1F2937'` | [54](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L54) |
+| `BORDER_CLR` | `'E5E7EB'` | [56](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L56) |
+| `WHITE` | `'FFFFFF'` | [58](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L58) |
+| `BLACK` | `'000000'` | [60](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L60) |
+| `END_ROW_FILL` | `'E5E7EB'` | [63](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L63) |
+| `MAX_CELL_CHARS` | `32767` | [66](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L66) |
+| `HEADER_ROW` | `5` | [69](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L69) |
+| `TEMP_FILE_PREFIX` | `'tcv-patient-export-'` | [72](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L72) |
+| `STALE_TEMP_FILE_SECONDS` | `3600` | [75](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L75) |
+| `COLUMNS` | `[…]` | [88](../../../TCV-Backend/app/Exports/PatientXlsxExport.php#L88) |
 
 ### `AuditLogController` — `app/Http/Controllers/AuditLogController.php`
 
@@ -189,6 +189,13 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `ENVIRONMENTS` | `[…]` | [36](../../../TCV-Backend/app/Http/Controllers/Qa/QaAutomationController.php#L36) |
 
+### `TestEmailTemplateController` — `app/Http/Controllers/TestEmailTemplateController.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `SYSTEM_TEMPLATES` | `[…]` | [35](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php#L35) |
+| `SYSTEM_LINK_LABELS` | `[…]` | [45](../../../TCV-Backend/app/Http/Controllers/TestEmailTemplateController.php#L45) |
+
 ### `TestInvitationController` — `app/Http/Controllers/TestInvitationController.php`
 
 | Constant | Value | Line |
@@ -199,7 +206,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `TOKEN_EXPIRY_DAYS` | `7` | [17](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L17) |
+| `TOKEN_EXPIRY_DAYS` | `7` | [18](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L18) |
 
 ### `UserController` — `app/Http/Controllers/UserController.php`
 
@@ -496,6 +503,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `PATIENT_TEST_SORTS` | `[…]` | [19](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L19) |
+| `TABLE_COLUMNS` | `[…]` | [119](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L119) |
+| `REQUIRED_TABLE_COLUMNS` | `[…]` | [133](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L133) |
+| `TABLE_SORTS` | `[…]` | [136](../../../TCV-Backend/app/Services/Reports/UserTestsReportService.php#L136) |
 
 ### `TestAssignmentService` — `app/Services/TestAssignmentService.php`
 
@@ -507,7 +517,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `UNKNOWN_PATIENT_NAME` | `'Patient'` | [25](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L25) |
+| `UNKNOWN_PATIENT_NAME` | `'Test Taker'` | [25](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L25) |
 | `SPACING_OR_TAG` | `'(?:\s|&nbsp;|&#160;|<[^<>]*>)'` | [34](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L34) |
 | `HUGGING_PUNCTUATION` | `'.,;:!?)]}'` | [44](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L44) |
 | `WORD_START` | `'/^[\p{L}\p{N}\{]/u'` | [60](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L60) |
@@ -577,6 +587,13 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `CHUNK` | `2000` | [38](../../../TCV-Backend/app/Support/Legacy/PatientNameSearch.php#L38) |
 
+### `SystemEmailDefaults` — `app/Support/SystemEmailDefaults.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `RESUME_BUTTON` | `'display:inline-block;padding:12px 28px;background-color:#007bff;color:#ffffff;text-decoration:none;border-radius:4px;font-weight:600;'` | [18](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L18) |
+| `BUTTON` | `'display:inline-block;padding:12px 24px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:4px;'` | [21](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L21) |
+
 ### `TestConstants` — `app/Support/TestConstants.php`
 
 | Constant | Value | Line |
@@ -595,4 +612,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-15. Do not hand-edit — re-run the generator._

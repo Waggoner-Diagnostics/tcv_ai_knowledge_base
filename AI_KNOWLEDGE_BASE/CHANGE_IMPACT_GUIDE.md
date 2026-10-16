@@ -237,35 +237,37 @@ either way ([FRONTEND.md](FRONTEND.md#report-date-filters-ws-455)).
 
 ---
 
-## 2026-10-12 terminology / allowlist / super-admin credits (uncommitted)
+## 2026-10-12 terminology / allowlist / super-admin credits (merged: backend PR #315 / frontend PR #445)
 
 - `DiscountCodeService` users list flipped to allowlist: existing codes change meaning ([DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md)).
-- `Credits::ensureUnlimitedForSuperAdmin()` (new) + backfill migration; `UserController::update` promotion and `DELETE api/credits/{id}` not covered ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)).
+- `Credits::ensureUnlimitedForSuperAdmin()` (new) + backfill migration; promotion/demotion via `UserController::update` is synced (see Review fixes below); `DELETE api/credits/{id}` still not covered ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)).
+- ☠️ `userManagementColumns.js` is shared by `Admin.js` **and** `Users.js`: removing the Manage Credits button there removed it for customers too (`Users.js` `handleAddCredits` is now dead). Any column change hits both screens ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)).
 - Audit labels "Expiry Date"/"Invitation Expiry" must stay: `AuditService` redaction allowlist matches the exact string.
 - `PatientTest::statusLabel()` (new) feeds exports/PDFs; `patient_id` now optional end to end.
 
-## Tabular User Tests report (2026-10-12, uncommitted)
+## Tabular User Tests report (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 - `UserTestsReportService::TABLE_COLUMNS` keys <-> SPA `userTestsTableColumns.js` ids <-> localStorage `tcv.userTestsReport.columns`: rename/remove breaks the chooser and exports; stored ids from old versions need tolerating.
 - `tableQuery()` feeds both screen and export; a filter change affects both. `UserTestsReportExport` `$columns = null` must keep the legacy 5-column output.
-- `.filter-dropdown` / `.export-dropdown` styles in `UserTest.scss` are global and shared with the Discount Code report; check both screens.
-- Audit event `report.user_tests_exported` gained `scope` values `table|patient_history`.
-- Indexes not regenerated (pending).
+- `.filter-dropdown` / `.export-dropdown` styles in `UserTest.scss` are global and imported by `UserTests.js`, `UserTestDetail.js` and `DiscountCode.js`; check all three screens.
+- Audit event `report.user_tests_exported` is reused for the table and history exports; `scope` is passed but **not persisted** (`ReportController.php:256-262`) — add it to `$details` if audits must tell them apart.
+- Indexes regenerated 2026-10-15 (`API-083`…`085`, `API-104`).
 
 
-## Review fixes (2026-10-13, uncommitted)
+## Review fixes (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 - `App\Support\SpreadsheetSafe` is shared by `UserTestsReportExport` and `UserTestsDetailExport`; any new export writing user-controlled strings should use it, except explicit-string writers like `PatientXlsxExport`.
 - Credits role sync: `UserController::update` <-> `Credits::ensureUnlimitedForSuperAdmin` / `revokeDefaultSuperAdminUnlimited`. Changing the grant shape (`source`, `credited_by`, `has_expiry`) changes what demotion revokes; seeder/CLI grants with `credited_by` NULL are revoked too.
 - `TestEmailTemplateController`: `update` Super Admin only, `index` role-filtered; a non-admin caller of `PUT api/test-email-templates/{id}` now gets 403.
-- Indexes not regenerated (pending).
+- Indexes regenerated 2026-10-15 (`API-083`…`085`, `API-104`).
 
-## Ticket 8: Settings Profile removal & editable emails (2026-10-12, uncommitted)
+## Ticket 8: Settings Profile removal & editable emails (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 - `routeConfig.js` `/settings` children are the single switch for both the Settings submenu and route registration; the `Router.js` Super Admin redirects (`SUPER_ADMIN_SETTINGS_HOME`) must name a child the role still has. The avatar-menu "Profile" is hidden separately in `Sidebar.js` (two places) and `Header.js`.
 - `GET api/test-email-templates` gained `system_templates` / `available`; the SPA dropdown is built from `available`. `SYSTEM_TEMPLATES` (controller) is the order and label source: adding a name there needs a catalogue arm in `EmailTemplatePlaceholders::catalogue()`, a `SYSTEM_LINK_LABELS` entry, a seeded row, and the mailer reading it.
 - `PUT api/test-email-templates/system/{id}` is Super Admin only; keep the route **before** `/{id}`.
+- `AuditedTestEmailTemplateControllerTest` now acts as `SUPER_ADMIN` (`:28`): any new test hitting `PUT test-email-templates/{id}` needs a Super Admin actor or it gets 403.
 - `emailPlaceholders.js` `toEditorHtml` / `toTemplateHtml` gained an options argument; defaults keep the invitation flow identical. `RichTextEditor` `linkTokens` is the only switch for account-email mode.
 - `emails/testLink.blade.php` now requires `$content`; `TestService::generateAndSendTestLink`, `TestResumeController::dispatchResumeEmail` and `OrganizationTestUrlNotification` read `SystemEmailTemplateService`. Changing `SystemEmailDefaults` affects only fresh DBs and the missing-row fallback.
 - Known unrelated failure: `NormalizeLegacyBracketPlaceholdersMigrationTest` "a row already using canonical tokens is left untouched" fails with or without these changes.
-- Indexes not regenerated (pending): new route, `updateSystem`, `SystemEmailTemplateService`, `SystemEmailDefaults`, `SystemEmailTemplateEditor.js`, `updateSystemEmailTemplate` thunk.
+- Indexes regenerated 2026-10-15: `API-102`…`105`, `updateSystem` (METHOD_INDEX), `SystemEmailTemplateService` / `SystemEmailDefaults` (CLASS/FILE_INDEX), `updateSystemEmailTemplate` (FRONTEND_API_CALL_INDEX). Frontend components are not file-indexed.

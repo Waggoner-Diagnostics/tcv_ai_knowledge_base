@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **55 tables**, reconstructed from 156 migrations — the indexed snapshot, taken from
+MySQL, **55 tables**, reconstructed from 158 migrations — the indexed snapshot, taken from
 `TCV-Backend@develop` at `0197fd1b` (2026-09-23 sync). The jump of 20 migrations at the 2026-09-21 sync
 was almost all `ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
 **patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
@@ -48,9 +48,9 @@ before writing any `where()` against them.
 
 ---
 
-## `email_template` is now written by the API (2026-10-12, uncommitted)
+## `email_template` is now written by the API (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
-`email_template` (singular) holds six named rows: `password_reset`, `set_password`, `email_verification` (seeder) and `test_link_resent`, `test_resume_link`, `organization_test_url` (seeder + migration `2026_10_12_000002_seed_editable_system_email_templates`, defaults from `App\Support\SystemEmailDefaults`). `TestEmailTemplateController::updateSystem` updates `subject`, `body`, `updated_at` by id; `header`/`footer` are never written by the app. Rows are read by name with `status = 'enable'` (`SystemEmailTemplateService`, `ResetPasswordNotification`, `AuthController`). The migration skips a name that already exists, and its `down()` only deletes rows still holding the seeded body. `email_template.id` is not `test_email_templates.id`. See [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md).
+`email_template` (singular) holds six named rows: `password_reset`, `set_password`, `email_verification` (seeder) and `test_link_resent`, `test_resume_link`, `organization_test_url` (seeder + migration `2026_10_12_000002_seed_editable_system_email_templates`, defaults from `App\Support\SystemEmailDefaults`). `TestEmailTemplateController::updateSystem` updates `subject`, `body`, `updated_at` by id; `header`/`footer` are never written by the app. Rows are read by name with `status = 'enable'` (`SystemEmailTemplateService`, `ResetPasswordNotification`, `AuthController`). The Settings API (`TestEmailTemplateController::systemTemplates` / `updateSystem`) reads and writes them with **no** `status` filter. The migration skips a name that already exists, and its `down()` only deletes rows still holding the seeded body. `email_template.id` is not `test_email_templates.id`. See [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md).
 
 
 ## Naming is inconsistent — know the exceptions

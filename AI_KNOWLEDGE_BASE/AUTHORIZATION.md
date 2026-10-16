@@ -80,11 +80,11 @@ further check:
 |---|---|---|
 | `api/admin/lms/*` (8 endpoints) | `auth:sanctum` | any user reads/rotates any org's signing key ([S-06](SECURITY.md#s-06--lms-provider-secrets-are-stored-in-plaintext)) |
 | `api/super-admin/dashboard` | `auth:sanctum` | any user sees the admin dashboard |
-| `api/reports/*` | `auth:sanctum` | any user runs cross-tenant reports |
+| `api/reports/discount-codes` | `auth:sanctum` | any user runs the cross-tenant discount report. (`user-tests` / `list-patients-having-tests` are owner-scoped for non-admins via `reportOwnerId()`; `user-tests/table*` and `test-takers/{patient}/export`, API-083..085, are Super Admin only — see [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md)) |
 | `api/test-session/*`, `api/test-result/*`, `api/tests/perform` | `FlexibleAuthMiddleware` | any session touches any test ([S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)) — `test-result/{id}/download-pdf` is now scoped, the rest are not |
 | `api/patient-tests/{id}/revoke-credit` | `auth:sanctum` | any user abandons any test ([S-04](SECURITY.md#s-04--revokecredit-has-no-ownership-check)) |
 
-**Updated 2026-10-13, uncommitted - `api/test-email-templates`:** `PUT /{id}` (API-101) and `PUT /system/{id}` are Super Admin only (403). `GET` (API-099) stays open to any authenticated user but returns empty `system_templates` and no account-email `available` entries for non-Super-Admins ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). The API index still shows no extra guard (pending regeneration).
+**Updated 2026-10-13, merged PR #315 - `api/test-email-templates`:** `PUT /{id}` (API-105) and `PUT /system/{id}` (API-104) are Super Admin only (403 `{success:false,message:'Forbidden'}`). `GET` (API-102) stays open to any authenticated user but returns empty `system_templates` and no account-email `available` entries for non-Super-Admins ([INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md)). The endpoint index lists only `auth:sanctum` because the check is in the controller (`TestEmailTemplateController.php:178`, `:317`), not middleware. `GET placeholders/{type}` (API-103) is unguarded. ⚠️ The SPA still registers `/settings/test-email-template-configuraion` (child `"setting"`) for CUSTOMER and ORGANIZATION (`routeConfig.js:110`, `:158`): a customer opening it directly sees the admin-default invitation bodies from the open `GET`, and Save gets 403 — a dead end, not a hole.
 
 **The SPA hides these surfaces by role** through `RouteConfig` in
 `src/constants/routeConfig.js` ([FRONTEND.md](FRONTEND.md)). That is a menu, not a permission — every

@@ -475,18 +475,40 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 
 ---
 
-## Super Admins get unlimited credits by default (2026-10-12, uncommitted)
+## Super Admins get unlimited credits by default (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 `Credits::ensureUnlimitedForSuperAdmin()` grants an `is_unlimited_credit` row; called from
 `UserController::store` and `SuperAdminSeeder`; migration `2026_10_12_000001_backfill_unlimited_credits_for_super_admins.php`
-backfills existing Super Admins. Known gap: `DELETE api/credits/{id}` can still revoke it. (The earlier gap "promotion via `UserController::update` does not grant it" is **closed**, see below.) SPA: Manage Credits
-and "Log in as user" icons removed from the `Admin.js` screen (`userManagementColumns.js` is shared with `Users.js`;
-the login icon renders only if `onLoginAsUser` is passed). Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
+backfills existing Super Admins. Known gap: `DELETE api/credits/{id}` can still revoke it. (The earlier gap "promotion via `UserController::update` does not grant it" is **closed**, see below.) SPA: "Log in as user" removed from the `Admin.js` screen (`userManagementColumns.js` renders it
+only if `onLoginAsUser` is passed). ☠️ **Manage Credits was deleted from the shared `userManagementColumns.js`
+itself**, so it is gone from **both** `Admin.js` and the customer `Users.js` page. `Users.js:142-145`
+`handleAddCredits` (CUSTOMER → `/add-credits`) is still passed at `:160` but nothing reads it — dead code, and
+customers have no Manage Credits entry from the Users list (`Organisation.js` → `organisationColumns.js` still
+has one). Unconfirmed whether that is intended — ask the product owner before "fixing" either way.
+Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
 
-## Role change syncs the default unlimited grant (2026-10-13, uncommitted)
+Traps (verified on `9082ae22`):
+- ⚠️ `ensureUnlimitedForSuperAdmin()` (`Credits.php:169`) is a no-op whenever `hasUnlimited()` (`:101`) is
+  already true — **including an expiring unlimited grant**. A Super Admin holding only a time-limited grant gets
+  no default; when it expires they fall to finite credits and nothing re-grants. The backfill uses the same
+  predicate. `usertype` has no cast, hence the `(int)` at `:174`.
+- The default grant's shape is the contract demotion matches on: `source` 0 (`SOURCE_MANUAL`), `credited_by`
+  NULL, `has_expiry` 0, `credits`/price 0. Don't change one without the other.
+- The backfill skips soft-deleted users and its `down()` is a no-op (not reversible).
+- No test covers `UserController::store`'s grant, `SuperAdminSeeder`, or the backfill migration.
+
+## Role change syncs the default unlimited grant (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 `UserController::update()` runs the update plus credit sync inside `DB::transaction`:
 - **Promotion to Super Admin** -> `Credits::ensureUnlimitedForSuperAdmin()`.
 - **Demotion** -> new `Credits::revokeDefaultSuperAdminUnlimited()`, which goes through `revokeGrant()` so negative-balance settlement still runs. It revokes only grants that are unlimited, `source` manual, `credited_by` NULL and `has_expiry` 0.
 - ☠️ **Blind spot:** seeder/CLI-created grants also have `credited_by` NULL, so they are indistinguishable and are revoked on demotion too.
-- Tests: `tests/Feature/Users/AuditedUserControllerTest.php`. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.
+- ☠️ **Demotion hard-deletes the grant** (`Credits` has no `SoftDeletes`; `revokeGrant()` ~`Credits.php:500`) and
+  `revokeGrant()` writes **no credits audit row** — only `CreditsController::destroy` audits. The only trace is the
+  account-updated audit for the `usertype` change. `settleNegativeBalance()` (~`:613`) then writes a
+  `SOURCE_ADJUSTMENT` row for everything consumed while unlimited (`credited_by` = acting admin); the demoted
+  user ends at balance 0.
+- Runs only on a usertype **transition** (before-value captured `UserController.php:223`, compared `:251-255`);
+  a non-role update never re-grants.
+- Tests: `tests/Feature/Users/AuditedUserControllerTest.php` — ⚠️ both role-sync tests call
+  `skipWithoutOutboundDns()`, so a CI host without DNS skips them silently. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.
