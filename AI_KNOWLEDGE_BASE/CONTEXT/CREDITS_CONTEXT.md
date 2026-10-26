@@ -480,8 +480,9 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 `Credits::ensureUnlimitedForSuperAdmin()` grants an `is_unlimited_credit` row; called from
 `UserController::store` and `SuperAdminSeeder`; migration `2026_10_12_000001_backfill_unlimited_credits_for_super_admins.php`
 backfills existing Super Admins. Known gap: `DELETE api/credits/{id}` can still revoke it. (The earlier gap "promotion via `UserController::update` does not grant it" is **closed**, see below.) SPA: Manage Credits
-and "Log in as user" icons removed from the `Admin.js` screen (`userManagementColumns.js` is shared with `Users.js`;
-the login icon renders only if `onLoginAsUser` is passed). Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
+and "Log in as user" icons removed from the `Admin.js` (Super Admin) screen only (`userManagementColumns.js` is shared with `Users.js`;
+each icon renders only if its handler is passed: `Admin.js` passes neither `onAddCredits` nor `onLoginAsUser`, `Users.js` passes both,
+so regular users keep Manage Credits). Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
 
 ## Role change syncs the default unlimited grant (2026-10-13, uncommitted)
 

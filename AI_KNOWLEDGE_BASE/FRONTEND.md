@@ -961,8 +961,8 @@ Renaming that test in the `tests` table un-hides it here *and* changes its diagn
 
 UI strings: patient -> Test Taker, Patient ID -> Unique Identifier (optional), Organization -> Integrated Partner,
 Inactive -> Restricted (accounts only). `ContactPage.js`: email Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext);
-TCV-Website still uses info@waggonerdiagnostics.com. `Admin.js` drops Manage Credits / Log-in-as icons
-(`userManagementColumns.js` shared with `Users.js`). `OrganisationModal.js` no longer has `run_test_on_subdomain`.
+TCV-Website still uses info@waggonerdiagnostics.com. `Admin.js` (Super Admin list only) drops Manage Credits / Log-in-as icons
+(`userManagementColumns.js` shared with `Users.js`; each icon renders only when its `onAddCredits` / `onLoginAsUser` prop is passed, and `Users.js` still passes both). `OrganisationModal.js` no longer has `run_test_on_subdomain`.
 Route paths unchanged.
 
 ## Tabular User Tests report (2026-10-12, uncommitted)
