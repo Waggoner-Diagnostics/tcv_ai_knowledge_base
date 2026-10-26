@@ -482,7 +482,10 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 backfills existing Super Admins. Known gap: `DELETE api/credits/{id}` can still revoke it. (The earlier gap "promotion via `UserController::update` does not grant it" is **closed**, see below.) SPA: Manage Credits
 and "Log in as user" icons removed from the `Admin.js` (Super Admin) screen only (`userManagementColumns.js` is shared with `Users.js`;
 each icon renders only if its handler is passed: `Admin.js` passes neither `onAddCredits` nor `onLoginAsUser`, `Users.js` passes both,
-so regular users keep Manage Credits). Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
+so regular users keep Manage Credits). Wording: "Credits" in page text (website "Test Credits" -> "Credits"), **except** the user-panel nav item in
+`src/pages/UserPannel/Header/Header.js` (`NAV_ITEMS`), which reads "Test Credits" since Frontend `fd48cdb` (2026-10-26).
+QA flagged the C1 wording as unresolved ("Credits" vs "Tests/Test Credits"): the target term per screen is still undecided, so treat
+the nav label and the page text as inconsistent until QA names the exact screens.
 
 ## Role change syncs the default unlimited grant (2026-10-13, uncommitted)
 
