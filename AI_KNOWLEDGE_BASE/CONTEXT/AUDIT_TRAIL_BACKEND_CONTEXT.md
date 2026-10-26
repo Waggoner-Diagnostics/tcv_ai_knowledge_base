@@ -854,3 +854,26 @@ reached the server. The new server-side `GET api/patients/export` writes it from
 > Organizations / Users / Reports — unrelated to this feature, noted here only so a reader scanning `develop`'s
 > recent commits doesn't mistake it for audit work.
 
+
+## Account status shows "Restricted", not "Inactive" (`client-unbilled-changes`, 2026-10-26, Backend `f9c3eafb`)
+
+Ticket C3 (QA fail): the audit trail still said "Inactive" for restricted Super Admins / Users / Integrated Partners.
+The earlier fix only renamed event titles/descriptions; the before/after values in `changes` and `details` were still the
+raw column value `inactive`, which the SPA capitalised to "Inactive". Account status only: **test status and discount-code
+status stay Active/Inactive** (`AuditedTestStatusChangeTest` still expects `active`/`inactive`).
+
+- `AuditEventCatalog::accountStatusLabel()` is the single mapping: `inactive` -> `Restricted`, other values capitalised
+  (`Active`, `Suspended`). `statusChangeTitle()` uses it for `account.*` keys; `UserController` (~270) and
+  `OrganizationController` (~585) call it instead of their inline ternaries.
+- `BuildsAuditDiffs::labelAuditValue()` (private) applies the mapping in `auditChanges()` and `auditDetails()` for the
+  `account_status` field only. Newly written `changes` values are therefore `Active` / `Restricted` / `Suspended`
+  (previously lowercase); the SPA renders them the same.
+- Legacy rows: `AuditEventCatalog::normalizeAccountStatusText()` rewrites only
+  `"<User|Super Admin|Integrated Partner> Status changed (Inactive)"` and
+  `"[Integrated Partner ]account status changed to Inactive."`. `AuditLog` accessors for `event_title` and
+  `event_description` call it, so the list, detail drawer, related activity and the CSV export all read "Restricted" for old rows.
+- **Not rewritten:** stored `changes` JSON on old rows (the SPA fixes the display, see
+  [AUDIT_TRAIL_FRONTEND_CONTEXT](AUDIT_TRAIL_FRONTEND_CONTEXT.md)); and the audit search runs on the stored column, so
+  searching "Restricted" will not match old rows.
+- Tests: `AuditedOrganizationControllerTest` (expects `Active`/`Restricted`/`Suspended`), `AuditedUserControllerTest`,
+  `AuditLogTest` (old text read as Restricted; test/discount "Inactive" untouched), `AuditEventCatalogTest`.
