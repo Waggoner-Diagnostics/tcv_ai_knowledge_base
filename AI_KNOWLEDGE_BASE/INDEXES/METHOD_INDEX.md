@@ -1,6 +1,6 @@
 # Method Index
 
-**1336 methods across 254 classes.**
+**1342 methods across 254 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -556,35 +556,37 @@ method — several controllers here run 400–900 lines.
 | AuthController | [`login()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L51) | 51 | public | `Request $request` | — |
 | AuthController | [`createStripeCustomer()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L240) | 240 | private | `User $user` | — |
 | AuthController | [`register()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L249) | 249 | public | `UserRequest $request` | — |
-| AuthController | [`sendResetLinkEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L334) | 334 | public | `Request $request` | — |
-| AuthController | [`setOrResetPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L379) | 379 | public | `Request $request` | — |
-| AuthController | [`verifySetupToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L490) | 490 | public | `Request $request` | — |
-| AuthController | [`verifyEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L513) | 513 | public | `Request $request` | — |
-| AuthController | [`logout()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L548) | 548 | public | `Request $request` | — |
-| AuthController | [`impersonationTargetLabel()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L577) | 577 | private | `User $target` | string |
-| AuthController | [`impersonateUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L586) | 586 | public | `Request $request`, `$id` | — |
-| AuthController | [`stopImpersonation()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L625) | 625 | public | `Request $request`, `$id` | — |
-| AuthController | [`isTokenValid()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L669) | 669 | public static | `Request $request` | — |
-| AuthController | [`verifyPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L728) | 728 | public | `Request $request` | — |
-| AuthController | [`changePassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L768) | 768 | public | `Request $request` | — |
-| AuthController | [`sendVerificationEmailForUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L806) | 806 | private | `User $user` | — |
-| AuthController | [`verifyEmailByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L932) | 932 | public | `Request $request` | — |
-| AuthController | [`resendVerificationByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1006) | 1006 | public | `Request $request` | — |
-| AuthController | [`resendEmailVerificationLink()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1037) | 1037 | public | `Request $request` | — |
+| AuthController | [`sendResetLinkEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L337) | 337 | public | `Request $request` | — |
+| AuthController | [`setOrResetPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L382) | 382 | public | `Request $request` | — |
+| AuthController | [`verifySetupToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L493) | 493 | public | `Request $request` | — |
+| AuthController | [`verifyResetToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L519) | 519 | public | `Request $request` | — |
+| AuthController | [`verifyEmail()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L542) | 542 | public | `Request $request` | — |
+| AuthController | [`logout()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L577) | 577 | public | `Request $request` | — |
+| AuthController | [`impersonationTargetLabel()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L606) | 606 | private | `User $target` | string |
+| AuthController | [`impersonateUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L615) | 615 | public | `Request $request`, `$id` | — |
+| AuthController | [`stopImpersonation()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L654) | 654 | public | `Request $request`, `$id` | — |
+| AuthController | [`isTokenValid()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L698) | 698 | public static | `Request $request` | — |
+| AuthController | [`verifyPassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L757) | 757 | public | `Request $request` | — |
+| AuthController | [`changePassword()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L797) | 797 | public | `Request $request` | — |
+| AuthController | [`sendVerificationEmailForUser()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L835) | 835 | private | `User $user` | — |
+| AuthController | [`verifyEmailByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L961) | 961 | public | `Request $request` | — |
+| AuthController | [`resendVerificationByToken()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1035) | 1035 | public | `Request $request` | — |
+| AuthController | [`resendEmailVerificationLink()`](../../../TCV-Backend/app/Http/Controllers/AuthController.php#L1066) | 1066 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/Concerns/BuildsAuditDiffs.php`
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| BuildsAuditDiffs | [`auditSnapshot()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L31) | 31 | protected | `$model`, `array $fields`, `array $booleanFields = []` | array |
-| BuildsAuditDiffs | [`auditChanges()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L57) | 57 | protected | `array $before`, `array $changes`, `array $fields`, `array $booleanFields = []` | array |
-| BuildsAuditDiffs | [`auditDetails()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L100) | 100 | protected | `$model`, `array $fields`, `array $booleanFields = []` | array |
-| BuildsAuditDiffs | [`castAuditValue()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L124) | 124 | private | `$value`, `bool $isBoolean` | — |
-| BuildsAuditDiffs | [`normalizeAuditDate()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L141) | 141 | private | `$value` | — |
-| BuildsAuditDiffs | [`looksLikeAuditDate()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L161) | 161 | private | `$value` | bool |
-| BuildsAuditDiffs | [`fullAuditDateValue()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L173) | 173 | private | `$value` | — |
-| BuildsAuditDiffs | [`auditFieldLabel()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L203) | 203 | private | `string $field` | string |
-| BuildsAuditDiffs | [`resolveAuditRelation()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L216) | 216 | private | `string $field`, `$value` | — |
+| BuildsAuditDiffs | [`auditSnapshot()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L32) | 32 | protected | `$model`, `array $fields`, `array $booleanFields = []` | array |
+| BuildsAuditDiffs | [`auditChanges()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L58) | 58 | protected | `array $before`, `array $changes`, `array $fields`, `array $booleanFields = []` | array |
+| BuildsAuditDiffs | [`auditDetails()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L101) | 101 | protected | `$model`, `array $fields`, `array $booleanFields = []` | array |
+| BuildsAuditDiffs | [`castAuditValue()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L125) | 125 | private | `$value`, `bool $isBoolean` | — |
+| BuildsAuditDiffs | [`normalizeAuditDate()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L142) | 142 | private | `$value` | — |
+| BuildsAuditDiffs | [`looksLikeAuditDate()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L162) | 162 | private | `$value` | bool |
+| BuildsAuditDiffs | [`fullAuditDateValue()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L174) | 174 | private | `$value` | — |
+| BuildsAuditDiffs | [`auditFieldLabel()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L204) | 204 | private | `string $field` | string |
+| BuildsAuditDiffs | [`resolveAuditRelation()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L217) | 217 | private | `string $field`, `$value` | — |
+| BuildsAuditDiffs | [`labelAuditValue()`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L233) | 233 | private | `string $field`, `$value` | — |
 
 ### `app/Http/Controllers/Concerns/FormatsLocationLabels.php`
 
@@ -724,8 +726,8 @@ method — several controllers here run 400–900 lines.
 | PatientController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L486) | 486 | public | `Request $request`, `$id` | — |
 | PatientController | [`callerOwnsPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L525) | 525 | private | `Request $request`, `Patient $patient` | bool |
 | PatientController | [`resendTestLink()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L561) | 561 | public | `Request $request` | — |
-| PatientController | [`getPatientTests()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L635) | 635 | public | `$id` | JsonResponse |
-| PatientController | [`storeOrganizationPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L698) | 698 | public | `Request $request` | — |
+| PatientController | [`getPatientTests()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L654) | 654 | public | `$id` | JsonResponse |
+| PatientController | [`storeOrganizationPatient()`](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L717) | 717 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/PaymentController.php`
 
@@ -909,14 +911,14 @@ method — several controllers here run 400–900 lines.
 | TestInvitationController | [`compareOutstanding()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L470) | 470 | private | `array $a`, `array $b` | int |
 | TestInvitationController | [`pendingInvitationQuery()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L482) | 482 | private | `int $userId` | — |
 | TestInvitationController | [`pendingInvitationItems()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L497) | 497 | private | `int $userId`, `?int $limit = null` | array |
-| TestInvitationController | [`unfinishedTestQuery()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L558) | 558 | private | `int $userId` | — |
-| TestInvitationController | [`unfinishedTestItems()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L568) | 568 | private | `int $userId`, `?int $limit = null` | array |
-| TestInvitationController | [`filterOutstanding()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L635) | 635 | private | `array $items`, `string $search` | array |
-| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L656) | 656 | public | `int $invitationId` | — |
-| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L727) | 727 | public | `int $invitationId` | — |
-| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L829) | 829 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
-| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L837) | 837 | public | `Request $request` | — |
-| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L957) | 957 | public | `Request $request` | — |
+| TestInvitationController | [`unfinishedTestQuery()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L561) | 561 | private | `int $userId` | — |
+| TestInvitationController | [`unfinishedTestItems()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L571) | 571 | private | `int $userId`, `?int $limit = null` | array |
+| TestInvitationController | [`filterOutstanding()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L638) | 638 | private | `array $items`, `string $search` | array |
+| TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L659) | 659 | public | `int $invitationId` | — |
+| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L730) | 730 | public | `int $invitationId` | — |
+| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L832) | 832 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId` | void |
+| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L840) | 840 | public | `Request $request` | — |
+| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L960) | 960 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/TestResumeController.php`
 
@@ -1318,7 +1320,7 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| SendAfterPasswordReset | [`handle()`](../../../TCV-Backend/app/Listeners/SendAfterPasswordReset.php#L16) | 16 | public | `UserPasswordSet $event` | void |
+| SendAfterPasswordReset | [`handle()`](../../../TCV-Backend/app/Listeners/SendAfterPasswordReset.php#L17) | 17 | public | `UserPasswordSet $event` | void |
 
 ### `app/Mail/VerifyEmail.php`
 
@@ -1336,11 +1338,13 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuditLog | [`casts()`](../../../TCV-Backend/app/Models/AuditLog.php#L46) | 46 | protected | — | array |
-| AuditLog | [`toListArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L63) | 63 | public | — | array |
-| AuditLog | [`toDetailArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L87) | 87 | public | — | array |
-| AuditLog | [`failureReason()`](../../../TCV-Backend/app/Models/AuditLog.php#L117) | 117 | public | — | ?string |
-| AuditLog | [`personArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L128) | 128 | private | `string $prefix`, `bool $withIp = false` | ?array |
+| AuditLog | [`casts()`](../../../TCV-Backend/app/Models/AuditLog.php#L48) | 48 | protected | — | array |
+| AuditLog | [`eventTitle()`](../../../TCV-Backend/app/Models/AuditLog.php#L64) | 64 | protected | — | Attribute |
+| AuditLog | [`eventDescription()`](../../../TCV-Backend/app/Models/AuditLog.php#L69) | 69 | protected | — | Attribute |
+| AuditLog | [`toListArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L80) | 80 | public | — | array |
+| AuditLog | [`toDetailArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L104) | 104 | public | — | array |
+| AuditLog | [`failureReason()`](../../../TCV-Backend/app/Models/AuditLog.php#L134) | 134 | public | — | ?string |
+| AuditLog | [`personArray()`](../../../TCV-Backend/app/Models/AuditLog.php#L145) | 145 | private | `string $prefix`, `bool $withIp = false` | ?array |
 
 ### `app/Models/Compliance.php`
 
@@ -1549,20 +1553,20 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| PatientTest | [`emailInviteFlag()`](../../../TCV-Backend/app/Models/PatientTest.php#L58) | 58 | public static | `mixed $value` | ?bool |
-| PatientTest | [`scopeOpenInvitation()`](../../../TCV-Backend/app/Models/PatientTest.php#L89) | 89 | public | `$query` | — |
-| PatientTest | [`isTakeable()`](../../../TCV-Backend/app/Models/PatientTest.php#L110) | 110 | public | — | bool |
-| PatientTest | [`takeableUniqueTestIds()`](../../../TCV-Backend/app/Models/PatientTest.php#L121) | 121 | public static | `array $uniqueTestIds` | array |
-| PatientTest | [`patient()`](../../../TCV-Backend/app/Models/PatientTest.php#L138) | 138 | public | — | — |
-| PatientTest | [`test()`](../../../TCV-Backend/app/Models/PatientTest.php#L146) | 146 | public | — | — |
-| PatientTest | [`testInvitation()`](../../../TCV-Backend/app/Models/PatientTest.php#L151) | 151 | public | — | — |
-| PatientTest | [`statusLabel()`](../../../TCV-Backend/app/Models/PatientTest.php#L159) | 159 | public static | `?string $status` | string |
-| PatientTest | [`scopeInProgress()`](../../../TCV-Backend/app/Models/PatientTest.php#L169) | 169 | public | `$query` | — |
-| PatientTest | [`scopeCompleted()`](../../../TCV-Backend/app/Models/PatientTest.php#L174) | 174 | public | `$query` | — |
-| PatientTest | [`scopePending()`](../../../TCV-Backend/app/Models/PatientTest.php#L179) | 179 | public | `$query` | — |
-| PatientTest | [`isBothEyesTest()`](../../../TCV-Backend/app/Models/PatientTest.php#L188) | 188 | public | — | bool |
-| PatientTest | [`getPairedTest()`](../../../TCV-Backend/app/Models/PatientTest.php#L197) | 197 | public | — | — |
-| PatientTest | [`getGroupedTests()`](../../../TCV-Backend/app/Models/PatientTest.php#L211) | 211 | public | — | — |
+| PatientTest | [`emailInviteFlag()`](../../../TCV-Backend/app/Models/PatientTest.php#L60) | 60 | public static | `mixed $value` | ?bool |
+| PatientTest | [`scopeOpenInvitation()`](../../../TCV-Backend/app/Models/PatientTest.php#L91) | 91 | public | `$query` | — |
+| PatientTest | [`isTakeable()`](../../../TCV-Backend/app/Models/PatientTest.php#L112) | 112 | public | — | bool |
+| PatientTest | [`takeableUniqueTestIds()`](../../../TCV-Backend/app/Models/PatientTest.php#L123) | 123 | public static | `array $uniqueTestIds` | array |
+| PatientTest | [`patient()`](../../../TCV-Backend/app/Models/PatientTest.php#L140) | 140 | public | — | — |
+| PatientTest | [`test()`](../../../TCV-Backend/app/Models/PatientTest.php#L148) | 148 | public | — | — |
+| PatientTest | [`testInvitation()`](../../../TCV-Backend/app/Models/PatientTest.php#L153) | 153 | public | — | — |
+| PatientTest | [`statusLabel()`](../../../TCV-Backend/app/Models/PatientTest.php#L161) | 161 | public static | `?string $status` | string |
+| PatientTest | [`scopeInProgress()`](../../../TCV-Backend/app/Models/PatientTest.php#L171) | 171 | public | `$query` | — |
+| PatientTest | [`scopeCompleted()`](../../../TCV-Backend/app/Models/PatientTest.php#L176) | 176 | public | `$query` | — |
+| PatientTest | [`scopePending()`](../../../TCV-Backend/app/Models/PatientTest.php#L181) | 181 | public | `$query` | — |
+| PatientTest | [`isBothEyesTest()`](../../../TCV-Backend/app/Models/PatientTest.php#L190) | 190 | public | — | bool |
+| PatientTest | [`getPairedTest()`](../../../TCV-Backend/app/Models/PatientTest.php#L199) | 199 | public | — | — |
+| PatientTest | [`getGroupedTests()`](../../../TCV-Backend/app/Models/PatientTest.php#L213) | 213 | public | — | — |
 
 ### `app/Models/PriceDetail.php`
 
@@ -1735,7 +1739,7 @@ method — several controllers here run 400–900 lines.
 | OrganizationTestUrlNotification | [`__construct()`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L21) | 21 | public | `Organization $organization` | — |
 | OrganizationTestUrlNotification | [`via()`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L31) | 31 | public | `object $notifiable` | array |
 | OrganizationTestUrlNotification | [`toMail()`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L39) | 39 | public | `object $notifiable` | MailMessage |
-| OrganizationTestUrlNotification | [`toArray()`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L71) | 71 | public | `object $notifiable` | array |
+| OrganizationTestUrlNotification | [`toArray()`](../../../TCV-Backend/app/Notifications/OrganizationTestUrlNotification.php#L63) | 63 | public | `object $notifiable` | array |
 
 ### `app/Notifications/ResetPasswordNotification.php`
 
@@ -1840,12 +1844,14 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| AuditEventCatalog | [`get()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L492) | 492 | public static | `string $eventKey` | array |
-| AuditEventCatalog | [`categoryLabel()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L506) | 506 | public static | `?string $key` | string |
-| AuditEventCatalog | [`accountEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L521) | 521 | public static | `int $usertype`, `string $action` | string |
-| AuditEventCatalog | [`creditEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L541) | 541 | public static | `int $usertype`, `string $action` | string |
-| AuditEventCatalog | [`statusChangeTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L560) | 560 | public static | `string $eventKey`, `string $afterStatus` | string |
-| AuditEventCatalog | [`invitationSentTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L575) | 575 | public static | `int $recipientCount` | string |
+| AuditEventCatalog | [`get()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L500) | 500 | public static | `string $eventKey` | array |
+| AuditEventCatalog | [`categoryLabel()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L514) | 514 | public static | `?string $key` | string |
+| AuditEventCatalog | [`accountEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L529) | 529 | public static | `int $usertype`, `string $action` | string |
+| AuditEventCatalog | [`creditEventKey()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L549) | 549 | public static | `int $usertype`, `string $action` | string |
+| AuditEventCatalog | [`statusChangeTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L568) | 568 | public static | `string $eventKey`, `string $afterStatus` | string |
+| AuditEventCatalog | [`normalizeAccountStatusText()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L590) | 590 | public static | `?string $text` | ?string |
+| AuditEventCatalog | [`accountStatusLabel()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L606) | 606 | public static | `?string $status` | string |
+| AuditEventCatalog | [`invitationSentTitle()`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L618) | 618 | public static | `int $recipientCount` | string |
 
 ### `app/Services/Audit/AuditLogFilter.php`
 
@@ -2095,8 +2101,8 @@ method — several controllers here run 400–900 lines.
 | PatientTestTransformer | [`transformTests()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L24) | 24 | public | `Collection $patientTests` | array |
 | PatientTestTransformer | [`groupTests()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L50) | 50 | private | `Collection $patientTests` | array |
 | PatientTestTransformer | [`transformSingleTest()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L80) | 80 | private | `PatientTest $test` | array |
-| PatientTestTransformer | [`transformPairedTests()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L112) | 112 | private | `array $tests` | array |
-| PatientTestTransformer | [`calculateAggregateStatus()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L182) | 182 | private | `PatientTest $osTest`, `PatientTest $odTest` | string |
+| PatientTestTransformer | [`transformPairedTests()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L113) | 113 | private | `array $tests` | array |
+| PatientTestTransformer | [`calculateAggregateStatus()`](../../../TCV-Backend/app/Services/PatientTestTransformer.php#L185) | 185 | private | `PatientTest $osTest`, `PatientTest $odTest` | string |
 
 ### `app/Services/PaymentManager.php`
 
@@ -2353,16 +2359,16 @@ method — several controllers here run 400–900 lines.
 |---|---|---|---|---|---|
 | EmailTemplatePlaceholders | [`catalogue()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L23) | 23 | public static | `string $type` | array |
 | EmailTemplatePlaceholders | [`unlisted()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L184) | 184 | private static | `string $type` | array |
-| EmailTemplatePlaceholders | [`known()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L197) | 197 | public static | `string $type` | array |
-| EmailTemplatePlaceholders | [`required()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L210) | 210 | public static | `string $type` | array |
-| EmailTemplatePlaceholders | [`tokensIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L229) | 229 | private static | `string $content` | array |
-| EmailTemplatePlaceholders | [`unknownIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L249) | 249 | public static | `string $content`, `string $type` | array |
-| EmailTemplatePlaceholders | [`markupBrokenIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L278) | 278 | public static | `string $content`, `string $type` | array |
-| EmailTemplatePlaceholders | [`paddedIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L298) | 298 | public static | `string $content`, `string $type` | array |
-| EmailTemplatePlaceholders | [`messageForPadded()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L322) | 322 | public static | `string $content`, `string $type` | ?string |
-| EmailTemplatePlaceholders | [`suggestionFor()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L345) | 345 | public static | `string $unknown`, `string $type` | ?string |
-| EmailTemplatePlaceholders | [`messageForMarkupBroken()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L367) | 367 | public static | `string $content`, `string $type` | ?string |
-| EmailTemplatePlaceholders | [`messageForUnknown()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L385) | 385 | public static | `string $content`, `string $type` | ?string |
+| EmailTemplatePlaceholders | [`known()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L199) | 199 | public static | `string $type` | array |
+| EmailTemplatePlaceholders | [`required()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L212) | 212 | public static | `string $type` | array |
+| EmailTemplatePlaceholders | [`tokensIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L231) | 231 | private static | `string $content` | array |
+| EmailTemplatePlaceholders | [`unknownIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L251) | 251 | public static | `string $content`, `string $type` | array |
+| EmailTemplatePlaceholders | [`markupBrokenIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L280) | 280 | public static | `string $content`, `string $type` | array |
+| EmailTemplatePlaceholders | [`paddedIn()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L300) | 300 | public static | `string $content`, `string $type` | array |
+| EmailTemplatePlaceholders | [`messageForPadded()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L324) | 324 | public static | `string $content`, `string $type` | ?string |
+| EmailTemplatePlaceholders | [`suggestionFor()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L347) | 347 | public static | `string $unknown`, `string $type` | ?string |
+| EmailTemplatePlaceholders | [`messageForMarkupBroken()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L369) | 369 | public static | `string $content`, `string $type` | ?string |
+| EmailTemplatePlaceholders | [`messageForUnknown()`](../../../TCV-Backend/app/Support/EmailTemplatePlaceholders.php#L387) | 387 | public static | `string $content`, `string $type` | ?string |
 
 ### `app/Support/HttpStatus.php`
 
@@ -2466,9 +2472,9 @@ method — several controllers here run 400–900 lines.
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
 | AuditLogSeeder | [`scenarios()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L54) | 54 | private | — | array |
-| AuditLogSeeder | [`run()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L158) | 158 | public | — | void |
-| AuditLogSeeder | [`offsetFor()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L193) | 193 | private | `int $index` | Carbon |
-| AuditLogSeeder | [`row()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L204) | 204 | private | `string $category`, `string $eventTitle`, `string $sensitivity`, `?array $actor`, `?array $target`, `string $status`, `Carbon $createdAt`, `array $details = []`, `array $changes = []` | array |
+| AuditLogSeeder | [`run()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L159) | 159 | public | — | void |
+| AuditLogSeeder | [`offsetFor()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L194) | 194 | private | `int $index` | Carbon |
+| AuditLogSeeder | [`row()`](../../../TCV-Backend/database/seeders/AuditLogSeeder.php#L205) | 205 | private | `string $category`, `string $eventTitle`, `string $sensitivity`, `?array $actor`, `?array $target`, `string $status`, `Carbon $createdAt`, `array $details = []`, `array $changes = []` | array |
 
 ### `database/seeders/BaselineTestSectionSeeder.php`
 
@@ -2614,4 +2620,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._

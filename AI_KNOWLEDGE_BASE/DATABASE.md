@@ -1,6 +1,6 @@
 # Database
 
-MySQL, **55 tables**, reconstructed from 158 migrations — the indexed snapshot, taken from
+MySQL, **55 tables**, reconstructed from 161 migrations — the indexed snapshot, taken from
 `TCV-Backend@develop` at `0197fd1b` (2026-09-23 sync). The jump of 20 migrations at the 2026-09-21 sync
 was almost all `ws-459`, which merged as PR #255 on 2026-09-18 and brought the legacy migration tooling and
 **patient PII encryption at rest** onto `develop` — [DATA_MIGRATION_CONTEXT](CONTEXT/DATA_MIGRATION_CONTEXT.md).
@@ -214,3 +214,18 @@ recreates them. **Only `discount_code_users` is live.**
   `Log::warning` the rows you skip. The widths worth knowing: `test_email_templates.test_email_subject`
   is `VARCHAR(225)`, `user_email_templates.subject` is `VARCHAR(250)` — and `UpdateUserEmailTemplateRequest`
   accepts a subject of exactly 250, so that column has no headroom at all.
+
+
+---
+
+## 2026-10-28 migrations (uncommitted)
+
+- `2026_10_28_000001_add_last_resent_at_to_patient_tests_table`: nullable `timestamp` `patient_tests.last_resent_at` after
+  `resend_count` (guarded by `hasColumn`; `patient_tests` now 25 columns in the index union).
+- `2026_10_28_000002_restore_organization_test_url_email_structure`: data migration on `email_template`
+  (`organization_test_url`), swaps body only when it equals `SystemEmailDefaults::ORGANIZATION_TEST_URL_BODY_V1`.
+- `2026_10_28_000003_state_link_expiry_in_password_emails`: data migration, adds the expiry sentence to `password_reset` /
+  `set_password` bodies only when they equal the seeded text.
+Both data migrations leave edited rows alone and are reversible under the same rule. Migration count is now 161.
+Remember the Settings email dropdown lists only emails with an `email_template` row, so a database that missed
+`2026_10_12_000002` shows fewer entries ([HOW_TO_DEBUG](GUIDES/HOW_TO_DEBUG.md)).

@@ -151,7 +151,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_RELATION_FIELDS` | `[…]` | [193](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L193) |
+| `AUDIT_RELATION_FIELDS` | `[…]` | [194](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L194) |
 
 ### `DiscountCodeController` — `app/Http/Controllers/DiscountCodeController.php`
 
@@ -439,7 +439,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `EVENTS` | `[…]` | [73](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L73) |
-| `CATEGORY_LABELS` | `[…]` | [481](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L481) |
+| `CATEGORY_LABELS` | `[…]` | [489](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L489) |
 
 ### `AuditService` — `app/Services/Audit/AuditService.php`
 
@@ -593,6 +593,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `RESUME_BUTTON` | `'display:inline-block;padding:12px 28px;background-color:#007bff;color:#ffffff;text-decoration:none;border-radius:4px;font-weight:600;'` | [18](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L18) |
 | `BUTTON` | `'display:inline-block;padding:12px 24px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:4px;'` | [21](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L21) |
+| `ORGANIZATION_TEST_URL_BODY_V1` | — | [65](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L65) |
+| `ORGANIZATION_TEST_URL_BODY` | — | [74](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L74) |
 
 ### `TestConstants` — `app/Support/TestConstants.php`
 
@@ -612,4 +614,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._

@@ -176,9 +176,9 @@ one envelope — see [CODING_GUIDELINES.md](../CODING_GUIDELINES.md).
 
 ☠️ **Both brokers share one table** (`password_reset_tokens`, keyed by email). Issuing a reset token
 therefore **overwrites** a pending setup token and vice versa — only one can be live per address at a
-time. `register()` creates the setup token with the **default** broker (`Password::broker()`), while
-`verifySetupToken()` validates it with the **`setup`** broker; that works only because they share the
-table, and it means the effective expiry is the *validating* broker's 48 h.
+time. 📌 **Updated 2026-10-28 (uncommitted):** `register()` (`AuthController` ~275) now creates the setup
+token with `Password::broker('setup')`; it used to use the default broker and only worked because the
+validating (`setup`) broker's 48 h applied. See [the 2026-10-28 section](#2026-10-28-qa-fixes-uncommitted).
 
 `UserPasswordSet` → `SendAfterPasswordReset` → mails `OrganizationTestUrlNotification` **if the user
 owns an Organization**. That is how an org gets its test URL. Wired by auto-discovery, *not* by
@@ -324,6 +324,49 @@ but it is the first thing to revisit if white-label branding becomes a real requ
 
 `email_template` rows `password_reset`, `set_password` and `email_verification` can now be edited by a Super Admin in the SPA (Settings > Email Templates) through `PUT api/test-email-templates/system/{id}` (subject and body only; header/footer stay SQL/migration-managed; Super Admin only). The save path validates the required link placeholder, rejects unknown, padded or split placeholders, and re-anchors a bare `{{reset_url}}` / `{{set_password_url}}` / `{{verification_link}}` with a label so the stored row stays clickable. The mailers themselves (`ResetPasswordNotification`, `AuthController::sendVerificationEmailForUser`) are unchanged, so trap 8 below still applies to the seeder: a UI edit is per environment and the seeder only reaches fresh databases. Full contract: [INVITATION_CONTEXT](INVITATION_CONTEXT.md), section "Editable account/system emails". Three more emails (test link resent, start/resume link, Integrated Partner test URL) joined the same table in migration `2026_10_12_000002`.
 
+
+---
+
+## 2026-10-28 QA fixes (uncommitted)
+
+Branch `client-unbilled-changes`, working tree, not committed.
+
+**Link windows (verified in `config/auth.php` and the code cited):**
+
+| Link | Window | Source |
+|---|---|---|
+| Password reset | 60 min | default broker `users`, `expire => 60` |
+| Set password (new account / admin-created) | 48 h | `setup` broker, `AUTH_PASSWORD_SETUP_TOKEN_EXPIRE` (2880 min) |
+| Email verification | 24 h | `users.email_verification_expires_at` (`AuthController` ~862) |
+| Test invitation / resume | 7 days | `TestInvitation::INVITATION_VALIDITY_DAYS` / `TestResumeController::TOKEN_EXPIRY_DAYS` |
+
+**New public route `POST api/password/verify-reset-token` (`API-058`)** -> `AuthController::verifyResetToken`,
+`throttle:password-reset` (the limiter comment in `AppServiceProvider` now lists four routes). Read-only:
+`Password::broker()->tokenExists()` does not consume the token. Returns 200 `api.success`, or 400
+`api.link_expired` for an expired, wrong, replaced or unknown-email token. ⚠️ A failed validation (missing/invalid
+`token` or `email`) is also mapped to 400 `api.link_expired`, not 422. Any other exception is 500 `api.error`.
+It is in the public zone with `verify-setup-token` ([PUBLIC_ROUTE_AUDIT](../INDEXES/PUBLIC_ROUTE_AUDIT.md): 18 public).
+It only tests the **default** (reset) broker, so it is correct for `/reset-password/{token}` links and would
+wrongly say "expired" for a 48 h setup token older than 60 min; setup links use `/set-password/` and
+`verify-setup-token` instead.
+
+**`setOrResetPassword` is unchanged:** it still returns the same `api.invalid_token` for expired and invalid. Only the
+new pre-check distinguishes the "expired" page.
+
+**Registration** now uses `Password::broker('setup')->createToken` so token and `verifySetupToken` agree on 48 h.
+`users.password_setup_token` is effectively vestigial for registered users: validity lives in `password_reset_tokens`;
+the column is still written (register ~279, `OrganizationController` ~375, `UserController` ~148) and nulled on set.
+
+**Email wording:** `EmailTemplateSeeder` adds "This link expires in 60 minutes." (`password_reset`) and "This link
+expires in 48 hours." (`set_password`). Existing databases: migration `2026_10_28_000003_state_link_expiry_in_password_emails`
+rewrites a row **only if its body is exactly the seeded text** (idempotent; `down()` reverses under the same rule), so
+edited rows are left alone. These expiry lines are a deliberate difference from the client's email document
+([INVITATION_CONTEXT](INVITATION_CONTEXT.md#2026-10-28-qa-fixes-uncommitted)).
+
+**SPA:** `loginSlice.js` `verifyResetToken` thunk (`skipErrorPopup: true`); `ResetPassword.js` calls it on mount
+(`linkStatus`: `checking` spinner / `valid` form / `expired`) and the expired state shows "Link Expired" with links to
+`/forgot-password` and `/login`. Missing `token` or `email` in the URL is treated as expired without a call. Tests:
+`PasswordLinkWindowsTest`, `PasswordEmailExpiryMigrationTest`, `ResetPassword.test.js`.
 
 ---
 

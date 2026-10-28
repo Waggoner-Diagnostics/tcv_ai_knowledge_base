@@ -11,7 +11,7 @@ grew by 44 files with `ws-459`'s first PR and 3 more with its location follow-up
 | **Branches indexed** | `develop` · `develop` · `website-integration` — both code repos indexed from `develop`. The website is indexed from `website-integration` ([WEBSITE.md](WEBSITE.md)). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ✅ **2026-10-01:** the server-side **patient CSV export** (backend PR #291, frontend PR #420) is merged and indexed — see [What the 2026-10-01 sync changed](#what-the-2026-10-01-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`). |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `a5938b2e` (develop) · `TCV-Frontend` `308fe7a` (develop) · `TCV-Website` `6dc5223` (website-integration, **not re-indexed** — carried over from 2026-09-29) — generated **2026-10-01**. Anything merged to `develop` after `a5938b2e` / `308fe7a` is not here. |
-| **Backend scale** | 254 classes/interfaces/traits · 1336 methods · 170 API endpoints · 55 tables · 158 migrations · suite ☠️ **1398 passed / 3 failed** on `a5938b2e` (1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Backend scale** | 254 classes/interfaces/traits · 1342 methods · 171 API endpoints · 55 tables · 161 migrations · suite ☠️ **1398 passed / 3 failed** on `a5938b2e` (1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
 | **Client scale** | 65 top-level routes · 45 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -691,7 +691,7 @@ before writing code.
 | Index | Rows |
 |---|---|
 | [API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) | 163 — ⚠️ **excludes `api/qa/*`**, see [S-20](SECURITY.md#s-20--the-qa-automation-endpoints-are-an-account-takeover-surface-gated-only-by-app_env) |
-| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **17 public** (non-QA environment) |
+| [PUBLIC_ROUTE_AUDIT.md](INDEXES/PUBLIC_ROUTE_AUDIT.md) | **18 public** (non-QA environment) |
 | [CLASS_INDEX.md](INDEXES/CLASS_INDEX.md) | 210 |
 | [METHOD_INDEX.md](INDEXES/METHOD_INDEX.md) | 903 |
 | [MODEL_INDEX.md](INDEXES/MODEL_INDEX.md) | 41 |

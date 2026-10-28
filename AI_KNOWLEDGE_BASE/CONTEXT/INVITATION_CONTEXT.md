@@ -868,8 +868,66 @@ There is **no "Welcome" template** anywhere in the backend; "Welcome" only survi
 - `App\Support\SystemEmailDefaults::all()` holds each default subject/body: the exact HTML the mailers used to emit, with the dynamic values turned into placeholders. It is the single source for the seeding migration `2026_10_12_000002_seed_editable_system_email_templates` (idempotent: skips a name that already exists, header/footer `''`; `down()` removes only rows still holding the seeded body), for `EmailTemplateSeeder`, and for the fallback.
 - `App\Services\SystemEmailTemplateService::render($name, $values, $fallbackToDefaults = true)` reads the enabled `email_template` row (header + body + footer), replaces `{{name}}` with the **HTML-escaped** value in the body (the subject is plain text, unescaped), runs `EmailContent::linkify`, and returns `['subject','content']`. It deliberately does **not** run `styleAnchors`, so seeded output stays byte-identical to the old mail.
 - Resume and Resent mails: with the seeded row the content equals the old output (tests compare against a copy of the old heredoc / blade render); with the row missing or disabled the service uses `SystemEmailDefaults`, same output. `emails/testLink.blade.php` now just wraps a `$content` variable in the same document shell.
-- Integrated Partner Test URL: `OrganizationTestUrlNotification` renders the row through `emails.dynamic-template` (like reset/set-password). **Visual change:** it previously used Laravel's default markdown mail layout (greeting, button, "Regards" footer, trouble-clicking subcopy). The words and button are reproduced, but the layout shell is now the `dynamic-template` container. With the row missing the notification returns the original `MailMessage` unchanged.
+- Integrated Partner Test URL: `OrganizationTestUrlNotification` renders the row through `emails.dynamic-template` (like reset/set-password). **Visual change:** it previously used Laravel's default markdown mail layout (greeting, button, "Regards" footer, trouble-clicking subcopy). The words and button are reproduced, but the layout shell is now the `dynamic-template` container. ~~With the row missing the notification returns the original `MailMessage` unchanged.~~ 📌 Superseded 2026-10-28 (uncommitted): the hard-coded `MailMessage` is gone; a missing/disabled row falls back to `SystemEmailDefaults` ([below](#2026-10-28-qa-fixes-uncommitted)).
 - Editing: bodies pass through Quill in `linkTokens` mode ([FRONTEND](../FRONTEND.md), section "Settings: Super Admin Profile removal & Email Templates dropdown"). The resume button's original inline style (`padding:12px 28px; font-weight:600`) is replaced by the standard editor button style the first time the body is saved from the SPA.
 - Tests: `tests/Feature/Mail/SystemEmailTemplateMailTest.php`, `tests/Feature/Settings/SystemEmailTemplateTest.php`.
 
 ☠️ **Changing a default body in `SystemEmailDefaults` changes only fresh databases and the fallback.** Existing rows keep their stored text, like every `email_template` row ([AUTH_CONTEXT](AUTH_CONTEXT.md) trap 8).
+
+
+---
+
+## 2026-10-28 QA fixes (uncommitted)
+
+Branch `client-unbilled-changes`, working tree, not committed. Password-link windows and the reset-link check:
+[AUTH_CONTEXT](AUTH_CONTEXT.md#2026-10-28-qa-fixes-uncommitted).
+
+### Resent test email (Patient Test List) and "Resent <date>"
+
+- `PatientController::resendTestLink` (`API-087`, `POST api/resend-test-link`) now, **after** the send succeeds, increments
+  `resend_count`, stamps new nullable column **`patient_tests.last_resent_at`** (migration
+  `2026_10_28_000001_add_last_resent_at_to_patient_tests_table`, idempotent, `down()` drops it; `PatientTest` fillable +
+  `datetime` cast) and writes audit event **`test.link_resent`** ("Test link resent", `test_activity`, `medium`;
+  [AUDIT_TRAIL_BACKEND_CONTEXT](AUDIT_TRAIL_BACKEND_CONTEXT.md#2026-10-28-testlink_resent-uncommitted)). A failed or refused
+  (422) resend writes neither the stamp nor an audit row. Response `data` is `{resend_count, last_resent_at}` (ISO 8601 UTC).
+- `PatientTestTransformer` exposes `last_resent_at`; for a paired (both-eyes) test it is the **latest of the two eye rows**.
+- `TestInvitationController` invited list item (~519) adds **`last_sent_at`** = `email_sent_at`, falling back to
+  `created_at`; **`sent_at` is unchanged** (still `created_at`). In `send()` the `$isResend` branch (~232; the implementer calls it a dead branch, but `send` still
+  accepts an optional `unique_test_id`, so it is reachable by any client that sends one) describes a resend as "Test invitation resent." instead of "sent.". The unregistered
+  invitation resend (`resendUnregisteredInvitation`) is a different path and still logs `test.invitation_resent`.
+- SPA: `PatientTestList.js` button label "Resend Test" -> **"Resend Test Email"** and a `Resent <date>` line
+  (`formatLocalDate`, shown when `resend_count > 0 && last_resent_at`); `InvitedPatientsTab.js` shows the same line from
+  `last_sent_at` (its button still says **"Resend Test"**); `patientTestSlice.js` stores `last_resent_at` from the response.
+  Test: `PatientTestList.test.js`, backend `ResendTestLinkStatusTest`, `AuditedInvitationSendingTest`.
+
+### Organization (Integrated Partner) Test URL email
+
+- The editable body of `organization_test_url` now carries the whole layout that Laravel's default mail shell used to supply:
+  TCV header, "Hello, {{organization_name}}", "Your integrated partner has been created successfully.", **Take the Test**
+  button, thanks, "Regards,<br>TCV", a trouble-clicking paragraph with the `{{test_url}}` link, and the footer
+  `&copy; {{current_year}} TCV. All rights reserved.` (`SystemEmailDefaults::ORGANIZATION_TEST_URL_BODY`; the first-seeded
+  body is kept as `ORGANIZATION_TEST_URL_BODY_V1`). The subject is unchanged ("Your Integrated Partner Test URL").
+- `SystemEmailTemplateService::render()` now fills **`{{current_year}}`** (`date('Y')`) for **every** system email at render
+  time. It is not a user-listed placeholder: `EmailTemplatePlaceholders` returns it as an *unlisted* placeholder for
+  `organization_test_url` only, so the editor accepts it but does not offer it.
+- `OrganizationTestUrlNotification::toMail` always renders through the service (fallback to `SystemEmailDefaults` when the row
+  is missing/disabled) and uses `$org->test_url ?: $org->generateTestUrl()`, so an org created before `test_url` was stored no
+  longer gets a blank link.
+- `SendAfterPasswordReset` wraps `notify()` in try/catch + `Log::error` (user_id, organization_id, message only): the password
+  is already saved, so a mail error no longer turns the reset into a 500.
+- Migration `2026_10_28_000002_restore_organization_test_url_email_structure` swaps V1 -> new body **only if the row equals V1**
+  (edited rows untouched; `down()` reverses under the same rule). Tests: `SystemEmailTemplateMailTest` (rewritten),
+  `OrganizationTestUrlListenerTest`.
+
+### Document vs system (email wording, kept on purpose)
+
+The client's email document lists **7 emails**; the Settings dropdown shows **8 entries** because the test invitation is two
+templates (`test_link`, `org_test_link`). Differences kept by decision of the product owner, not bugs:
+- Email #7 subject and first sentence say **"Integrated Partner"** where the document says "Organization".
+- Email #2 (Test Link Resent) greets "**Dear Test Taker**".
+- Emails #5 and #6 carry an extra line stating link expiry (48 hours / 60 minutes).
+
+☠️ **The dropdown depends on stored rows.** `TestEmailTemplateController::availableTemplates` (private) lists a system email only if its
+`email_template` row exists. If an environment has not run migration `2026_10_12_000002_seed_editable_system_email_templates`
+the dropdown silently shows fewer entries (a local DB showed 5 of 8). Check `email_template` and run migrations before
+debugging the SPA. Likewise the content-restoring migrations above only fix rows that still hold the seeded text.

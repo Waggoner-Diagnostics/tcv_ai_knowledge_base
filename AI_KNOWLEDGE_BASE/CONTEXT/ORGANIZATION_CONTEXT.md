@@ -141,3 +141,15 @@ Both advance the LMS session's status. Remember the status gate only bites for t
 - `patient_id` rule is now `required=false` in `generateFieldRules` (Unique Identifier optional).
 - Account status label **Inactive -> Restricted** (accounts only; test and discount-code Active/Inactive unchanged).
   `AuthController` message is now "Account is restricted"; the stored value is unchanged.
+
+
+---
+
+## 2026-10-28 Test URL email structure (uncommitted)
+
+The email an Integrated Partner gets after setting its password (`UserPasswordSet` -> `SendAfterPasswordReset` ->
+`OrganizationTestUrlNotification`) is now fully editable and keeps its TCV header, Regards sign-off, trouble-clicking link
+and `&copy; {{current_year}}` footer inside the body. It falls back to `SystemEmailDefaults` when the row is missing, uses
+`$org->test_url ?: $org->generateTestUrl()` for orgs without a stored URL, and a mail failure is logged, no longer a 500 on
+the password request. "Integrated Partner" wording in this email is kept on purpose. Detail and migration:
+[INVITATION_CONTEXT](INVITATION_CONTEXT.md#2026-10-28-qa-fixes-uncommitted).

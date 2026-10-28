@@ -8,7 +8,7 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 | ID | Model | File:Line | Traits | Relations | Methods |
 |---|---|---|---|---|---|
 | `MODEL-001` | `AllowedTest` | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | — | — | 0 |
-| `MODEL-002` | `AuditLog` | [app/Models/AuditLog.php:8](../../../TCV-Backend/app/Models/AuditLog.php#L8) | `Searchable` | — | 5 |
+| `MODEL-002` | `AuditLog` | [app/Models/AuditLog.php:10](../../../TCV-Backend/app/Models/AuditLog.php#L10) | `Searchable` | — | 7 |
 | `MODEL-003` | `Compliance` | [app/Models/Compliance.php:7](../../../TCV-Backend/app/Models/Compliance.php#L7) | — | — | 0 |
 | `MODEL-004` | `Country` | [app/Models/Country.php:8](../../../TCV-Backend/app/Models/Country.php#L8) | `HasFactory` | `states`→State | 1 |
 | `MODEL-005` | `Credit` | [app/Models/Credit.php:8](../../../TCV-Backend/app/Models/Credit.php#L8) | `HasFactory` | `user`→User | 1 |
@@ -52,4 +52,4 @@ foreign key. Check the trait column before writing a uniqueness or re-create pat
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._

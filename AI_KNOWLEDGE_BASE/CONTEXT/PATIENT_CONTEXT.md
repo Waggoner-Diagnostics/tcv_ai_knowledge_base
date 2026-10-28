@@ -417,3 +417,15 @@ UI only; identifiers, routes and DB keys unchanged. "Patient" -> **Test Taker**;
 is `nullable`, `OrganizationController::generateFieldRules` returns `required=false` for `patient_id`.
 `PatientTest::statusLabel()` returns "In Progress" for exports/PDFs. Export headers renamed: "Unique Identifier",
 "Test Taker IP Address", "Test Takers Export". Expiry wording: "Expires on" / "Expiration date" / "No expiration".
+
+
+---
+
+## 2026-10-28 resend test email (uncommitted)
+
+`POST api/resend-test-link` (`PatientController::resendTestLink`, `API-087`) now stamps `patient_tests.last_resent_at`,
+writes audit event `test.link_resent` (details: Test, Resend Count, Patient Reference = patient id; **no email address**)
+and returns `{resend_count, last_resent_at}`. `PatientTestTransformer` exposes `last_resent_at` (latest of the two eye rows
+for a paired test). The Patient Test List button reads "Resend Test Email" and shows "Resent <date>". Full detail:
+[INVITATION_CONTEXT](INVITATION_CONTEXT.md#2026-10-28-qa-fixes-uncommitted). This change did not touch the
+ownership checks of that endpoint.

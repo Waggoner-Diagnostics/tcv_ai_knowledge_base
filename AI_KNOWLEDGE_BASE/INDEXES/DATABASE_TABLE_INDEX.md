@@ -1,6 +1,6 @@
 # Database Table Index
 
-**55 tables**, reconstructed from 158 migrations.
+**55 tables**, reconstructed from 161 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -36,7 +36,7 @@ the only authority before you write a migration against a column.
 | `TABLE-026` | `organization_types` | 5 | `2025_06_19_104359_create_organization_types_table.php` | 2 |
 | `TABLE-027` | `organizations` | 33 | `2025_06_19_104358_create_organizations.php` | 5 |
 | `TABLE-028` | `password_reset_tokens` | 3 | `0001_01_01_000001_create_users_table.php` | 2 |
-| `TABLE-029` | `patient_tests` | 24 | `2025_06_23_131210_create_patient_tests_table.php` | 24 |
+| `TABLE-029` | `patient_tests` | 25 | `2025_06_23_131210_create_patient_tests_table.php` | 26 |
 | `TABLE-030` | `patients` | 28 | `2025_06_23_085520_create_patients_table.php` | 15 |
 | `TABLE-031` | `personal_access_tokens` | 5 | `2025_06_09_101232_create_personal_access_tokens_table.php` | 2 |
 | `TABLE-032` | `price_details` | 3 | `2025_06_24_100030_create_price_details_table.php` | 2 |
@@ -465,8 +465,9 @@ _Dropped later by a migration (may still be listed above): `logo`, `subdomain_ur
 | `test_invitation_id` | unsignedBigInteger | `2026_05_05_000001_add_test_invitation_id_to_patient_tests_table.php` |
 | `resend_count` | unsignedInteger | `2026_05_06_140922_add_resend_count_to_patient_tests_table.php` |
 | `legacy_id` | unsignedBigInteger | `2026_09_16_000002_add_legacy_id_to_patient_tests_table.php` |
+| `last_resent_at` | timestamp | `2026_10_28_000001_add_last_resent_at_to_patient_tests_table.php` |
 
-_Dropped later by a migration (may still be listed above): `eye_tested`, `condition`, `parent_test_id`, `is_email_invite`, `ip_address`, `test_invitation_id`, `resend_count`, `legacy_id`._
+_Dropped later by a migration (may still be listed above): `eye_tested`, `condition`, `parent_test_id`, `is_email_invite`, `ip_address`, `test_invitation_id`, `resend_count`, `legacy_id`, `last_resent_at`._
 
 ### `patients` — `TABLE-030`
 
@@ -822,4 +823,4 @@ _Dropped later by a migration (may still be listed above): `usertype`, `includeW
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._

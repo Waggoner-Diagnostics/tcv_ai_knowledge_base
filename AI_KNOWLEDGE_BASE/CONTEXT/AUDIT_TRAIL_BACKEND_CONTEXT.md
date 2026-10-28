@@ -877,3 +877,15 @@ status stay Active/Inactive** (`AuditedTestStatusChangeTest` still expects `acti
   searching "Restricted" will not match old rows.
 - Tests: `AuditedOrganizationControllerTest` (expects `Active`/`Restricted`/`Suspended`), `AuditedUserControllerTest`,
   `AuditLogTest` (old text read as Restricted; test/discount "Inactive" untouched), `AuditEventCatalogTest`.
+
+
+## 2026-10-28 `test.link_resent` (uncommitted)
+
+New catalog event **`test.link_resent`** ("Test link resent", `test_activity`, sensitivity `medium`) in
+`AuditEventCatalog`, seeded in `AuditLogSeeder`. Written by `PatientController::resendTestLink` after the mail was sent
+(description "Test link resent.", details Test / Resend Count / Patient Reference = patient id, no email), so a failed or refused
+resend is not audited. It is distinct from `test.invitation_resent` (re-sending an *unregistered invitation*).
+
+**Counts on this branch: catalog 69 -> 70 events; `test_activity` 5 -> 6** (`AuditEventCatalogTest` asserts 70 and 6). The
+68 stated at the top of this file is `develop`; 69 included `patient.export_outcome`. The category table in section 3 already
+printed 6 for `test_activity` from earlier history; treat the counts here as current.

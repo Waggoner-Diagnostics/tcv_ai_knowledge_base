@@ -1000,3 +1000,17 @@ Route paths unchanged.
 
 - Export thunks (reports) parse a Blob error body into `{message}`; the `rejected` case no longer writes `s.error`, so exactly one popup shows.
 - `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating).
+
+
+## 2026-10-28 QA fixes (uncommitted)
+
+- `pages/ResetPassword.js`: on mount dispatches `verifyResetToken({token, email})` (new thunk in `redux/slices/auth/loginSlice.js`,
+  `POST api/password/verify-reset-token`, `skipErrorPopup`). `linkStatus` = `checking` (spinner) / `valid` (existing form) /
+  `expired` ("Link Expired", links to `/forgot-password` and `/login`). Missing `token`/`email` in the URL = expired, no call.
+  ⚠️ Any rejection, including a network error or 500, shows "expired". `pages/ResetPassword.test.js` added.
+- `UserPannel/PatientTestList/PatientTestList.js`: button "Resend Test" -> "Resend Test Email"; "Resent <date>" line from
+  `last_resent_at` when `resend_count > 0`. `redux/slices/tests/patientTestSlice.js` stores `last_resent_at` on resend.
+  `PatientTestList.test.js` added.
+- `UserPannel/PatientPage/InvitedPatientsTab.js`: "Resent <date>" line from `last_sent_at`; its button still reads "Resend Test".
+- Backend counterparts: [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#2026-10-28-qa-fixes-uncommitted),
+  [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md#2026-10-28-qa-fixes-uncommitted).

@@ -269,3 +269,15 @@ either way ([FRONTEND.md](FRONTEND.md#report-date-filters-ws-455)).
 - `emails/testLink.blade.php` now requires `$content`; `TestService::generateAndSendTestLink`, `TestResumeController::dispatchResumeEmail` and `OrganizationTestUrlNotification` read `SystemEmailTemplateService`. Changing `SystemEmailDefaults` affects only fresh DBs and the missing-row fallback.
 - Known unrelated failure: `NormalizeLegacyBracketPlaceholdersMigrationTest` "a row already using canonical tokens is left untouched" fails with or without these changes.
 - Indexes not regenerated (pending): new route, `updateSystem`, `SystemEmailTemplateService`, `SystemEmailDefaults`, `SystemEmailTemplateEditor.js`, `updateSystemEmailTemplate` thunk.
+
+
+## 2026-10-28 QA fixes (uncommitted)
+
+- `AuditEventCatalog::EVENTS`: adding a key changes `AuditEventCatalogTest` (total 70, `test_activity` 6) and needs an `AuditLogSeeder` entry; prose counts in `AUDIT_TRAIL_BACKEND_CONTEXT` are hand-maintained (`verify.php` does not check them).
+- `PatientTestTransformer` (single and paired shapes) and the `resend-test-link` response now carry `last_resent_at`; the SPA reads it in `PatientTestList.js` and `patientTestSlice.js`. The invited-list item gained `last_sent_at` (`sent_at` unchanged, still `created_at`).
+- `SystemEmailTemplateService::render()` now adds `{{current_year}}` for every system email; a row using that token elsewhere renders the year. `SystemEmailDefaults::ORGANIZATION_TEST_URL_BODY` is matched byte-for-byte by migration `..._000002`, so editing V1 or the new constant changes what the migration recognises.
+- `EmailTemplateSeeder` password bodies are matched byte-for-byte by migration `..._000003`; change the seeder text and the migration together.
+- `OrganizationTestUrlNotification` no longer has a hard-coded fallback; it depends on `SystemEmailDefaults`. `SendAfterPasswordReset` swallows mail errors (logged).
+- Registration uses the `setup` broker; `verify-reset-token` checks the default broker only, so do not point a set-password link at `/reset-password/`.
+- New route `POST api/password/verify-reset-token` shares the `password-reset` limiter (5/min per email+ip) with forgot/reset/verify-setup-token.
+- Indexes regenerated 2026-10-28 (171 endpoints, 18 public, 161 migrations).

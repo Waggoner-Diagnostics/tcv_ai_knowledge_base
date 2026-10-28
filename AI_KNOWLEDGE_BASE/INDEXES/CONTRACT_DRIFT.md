@@ -4,7 +4,7 @@ Derived view: TCV-Frontend / TCV-Website call sites whose URL matches **no route
 [API_ENDPOINT_INDEX.md](API_ENDPOINT_INDEX.md). Each one is a request that reaches the API and comes
 back **404**.
 
-**9 unmatched of 92 distinct SPA calls.**
+**9 unmatched of 93 distinct SPA calls.**
 
 Read the `Why` column before acting — a row is one of three things:
 
@@ -41,8 +41,8 @@ the backend, so the browser only ever talks to the website's own origin.
 | `/api/countries` | GET | `/api/countries-with-states` | ✅ `API-015` |
 | `/api/distributor-enquiry` | POST | `/api/distributor-enquiry` | ✅ `API-032` |
 | `/api/logout` | POST | `/api/logout` | ✅ `API-040` |
-| `/api/register` | POST | `/api/register` | ✅ `API-079` |
+| `/api/register` | POST | `/api/register` | ✅ `API-080` |
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._

@@ -51,8 +51,8 @@
 | [`app/Http/Controllers/Auth/RegisterController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/RegisterController.php) | RegisterController | 3 |
 | [`app/Http/Controllers/Auth/ResetPasswordController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/ResetPasswordController.php) | ResetPasswordController | 0 |
 | [`app/Http/Controllers/Auth/VerificationController.php`](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php) | VerificationController | 1 |
-| [`app/Http/Controllers/AuthController.php`](../../../TCV-Backend/app/Http/Controllers/AuthController.php) | AuthController | 19 |
-| [`app/Http/Controllers/Concerns/BuildsAuditDiffs.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php) | BuildsAuditDiffs | 9 |
+| [`app/Http/Controllers/AuthController.php`](../../../TCV-Backend/app/Http/Controllers/AuthController.php) | AuthController | 20 |
+| [`app/Http/Controllers/Concerns/BuildsAuditDiffs.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php) | BuildsAuditDiffs | 10 |
 | [`app/Http/Controllers/Concerns/FormatsLocationLabels.php`](../../../TCV-Backend/app/Http/Controllers/Concerns/FormatsLocationLabels.php) | FormatsLocationLabels | 1 |
 | [`app/Http/Controllers/ContactController.php`](../../../TCV-Backend/app/Http/Controllers/ContactController.php) | ContactController | 2 |
 | [`app/Http/Controllers/Controller.php`](../../../TCV-Backend/app/Http/Controllers/Controller.php) | Controller | 0 |
@@ -127,7 +127,7 @@
 | [`app/Listeners/SendAfterPasswordReset.php`](../../../TCV-Backend/app/Listeners/SendAfterPasswordReset.php) | SendAfterPasswordReset | 1 |
 | [`app/Mail/VerifyEmail.php`](../../../TCV-Backend/app/Mail/VerifyEmail.php) | VerifyEmail | 2 |
 | [`app/Models/AllowedTest.php`](../../../TCV-Backend/app/Models/AllowedTest.php) | AllowedTest | 0 |
-| [`app/Models/AuditLog.php`](../../../TCV-Backend/app/Models/AuditLog.php) | AuditLog | 5 |
+| [`app/Models/AuditLog.php`](../../../TCV-Backend/app/Models/AuditLog.php) | AuditLog | 7 |
 | [`app/Models/Compliance.php`](../../../TCV-Backend/app/Models/Compliance.php) | Compliance | 0 |
 | [`app/Models/Concerns/HasLegacyEncryptedAttributes.php`](../../../TCV-Backend/app/Models/Concerns/HasLegacyEncryptedAttributes.php) | HasLegacyEncryptedAttributes | 3 |
 | [`app/Models/Country.php`](../../../TCV-Backend/app/Models/Country.php) | Country | 1 |
@@ -180,7 +180,7 @@
 | [`app/Providers/LmsServiceProvider.php`](../../../TCV-Backend/app/Providers/LmsServiceProvider.php) | LmsServiceProvider | 2 |
 | [`app/Repositories/EmailTemplateRepository.php`](../../../TCV-Backend/app/Repositories/EmailTemplateRepository.php) | EmailTemplateRepository | 5 |
 | [`app/Rules/TurnstileToken.php`](../../../TCV-Backend/app/Rules/TurnstileToken.php) | TurnstileToken | 2 |
-| [`app/Services/Audit/AuditEventCatalog.php`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php) | AuditEventCatalog | 6 |
+| [`app/Services/Audit/AuditEventCatalog.php`](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php) | AuditEventCatalog | 8 |
 | [`app/Services/Audit/AuditLogFilter.php`](../../../TCV-Backend/app/Services/Audit/AuditLogFilter.php) | AuditLogFilter | 4 |
 | [`app/Services/Audit/AuditLogger.php`](../../../TCV-Backend/app/Services/Audit/AuditLogger.php) | AuditLogger | 1 |
 | [`app/Services/Audit/AuditService.php`](../../../TCV-Backend/app/Services/Audit/AuditService.php) | AuditService | 17 |
@@ -261,4 +261,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-13. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-28. Do not hand-edit — re-run the generator._
