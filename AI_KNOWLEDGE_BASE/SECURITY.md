@@ -844,7 +844,7 @@ readable — it disables the decrypt path too.
 
 ### S-22 — Any signed-in account can promote itself to super admin through `PUT api/users/{id}`
 
-**Severity: critical.** ✅ **Mitigated 2026-11-03 on branch `fix/test-emails-part-1` (uncommitted, NOT yet on `develop`) — still open on `develop` `0197fd1b` until that merges.** See the status block at the end of this section. Found 2026-09-23 while fixing the `ws-459` legacy
+**Severity: critical.** ✅ **Mitigated 2026-11-03 on branch `fix/protected-routes-03nov` (backend `a257ccf2` + `53a55322`, committed, NOT yet on `develop`) — still open on `develop` `0197fd1b` until that merges.** See the status block at the end of this section. Found 2026-09-23 while fixing the `ws-459` legacy
 location payloads. **Reproduced** against `develop` with a throwaway feature test (not committed), acting
 as a plain customer through Sanctum:
 
@@ -877,7 +877,7 @@ hold real migrated accounts.
 **Where:** `routes/api.php:171-174` · `app/Http/Controllers/UserController.php` ·
 `app/Http/Requests/UserRequest.php:15`.
 
-**Status 2026-11-03 — fixed on `fix/test-emails-part-1`, uncommitted.** Done without a `UserPolicy`:
+**Status 2026-11-03 — fixed on `fix/protected-routes-03nov`, committed (merged with develop 2026-11-04, `7c5792da`; the `update` conflict kept both the usertype/status guard and develop's unconditional `email_verified` drop).** Done without a `UserPolicy`:
 - `UserController` — `index`, `store`, `destroy` and `userWithType` return 403 (`api.forbidden`) unless
   `isSuperAdmin()`. `edit` (`GET api/users/{id}`) and `update` allow a Super Admin or the account's own id
   (private helper `canManageUser()`).
@@ -920,7 +920,7 @@ hold real migrated accounts.
 | `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 | `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
-| `S-22` | ☠️ **(mitigated on `fix/test-emails-part-1` 2026-11-03, unmerged)** **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
+| `S-22` | ☠️ **(mitigated on `fix/protected-routes-03nov` 2026-11-03, committed, unmerged)** **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
 
 ---
 

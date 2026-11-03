@@ -1,6 +1,6 @@
 # Method Index
 
-**1344 methods across 254 classes.**
+**1348 methods across 255 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -684,16 +684,16 @@ method — several controllers here run 400–900 lines.
 | OrganizationController | [`store()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L349) | 349 | public | `OrganizationRequest $request` | — |
 | OrganizationController | [`show()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L433) | 433 | public | `$id` | — |
 | OrganizationController | [`update()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L447) | 447 | public | `OrganizationRequest $request`, `$id` | — |
-| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L627) | 627 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L654) | 654 | public | `Request $request`, `$id` | — |
-| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L708) | 708 | public | `Request $request` | — |
-| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L768) | 768 | public | `Request $request` | — |
-| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L897) | 897 | private | `$organizationId` | — |
-| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L976) | 976 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1024) | 1024 | public | `Request $request` | — |
-| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1063) | 1063 | public | `Request $request` | — |
-| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1097) | 1097 | private | `$orgCollection` | Collection |
-| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1143) | 1143 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
+| OrganizationController | [`uploadLogo()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L629) | 629 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L656) | 656 | public | `Request $request`, `$id` | — |
+| OrganizationController | [`getPatientForm()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L710) | 710 | public | `Request $request` | — |
+| OrganizationController | [`verifySignature()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L770) | 770 | public | `Request $request` | — |
+| OrganizationController | [`generateFieldRules()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L899) | 899 | private | `$organizationId` | — |
+| OrganizationController | [`getDefaultTests()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L978) | 978 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationPrivileges()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1026) | 1026 | public | `Request $request` | — |
+| OrganizationController | [`getOrganizationRedirectUrl()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1065) | 1065 | public | `Request $request` | — |
+| OrganizationController | [`addCreditsToOrganizations()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1099) | 1099 | private | `$orgCollection` | Collection |
+| OrganizationController | [`createOrganizationConfig()`](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L1145) | 1145 | private | `$organizationId`, `?array $fields = null`, `?string $redirectUrl = null` | — |
 
 ### `app/Http/Controllers/OrganizationPatientController.php`
 
@@ -960,11 +960,11 @@ method — several controllers here run 400–900 lines.
 | UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L125) | 125 | public | `UserRequest $request` | — |
 | UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L222) | 222 | public | `string $id` | — |
 | UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L235) | 235 | public | `UserRequest $request`, `$id` | — |
-| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L371) | 371 | public | — | — |
-| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L388) | 388 | public | `Request $request`, `string $id` | — |
-| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L432) | 432 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L585) | 585 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L603) | 603 | private | `$userCollection` | — |
+| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L372) | 372 | public | — | — |
+| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L389) | 389 | public | `Request $request`, `string $id` | — |
+| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L433) | 433 | public | `Request $request`, `$usertype` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L586) | 586 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L604) | 604 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -998,6 +998,14 @@ method — several controllers here run 400–900 lines.
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
 | LmsSessionStatusMiddleware | [`handle()`](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L11) | 11 | public | `Request $request`, `Closure $next`, `string $allowedStatuses` | Response |
+
+### `app/Http/Middleware/RestrictAccountMiddleware.php`
+
+| Class | Method | Line | Vis | Params | Returns |
+|---|---|---|---|---|---|
+| RestrictAccountMiddleware | [`handle()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L33) | 33 | public | `Request $request`, `Closure $next` | — |
+| RestrictAccountMiddleware | [`impersonatorId()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L63) | 63 | private | `mixed $token` | ?int |
+| RestrictAccountMiddleware | [`restricted()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L79) | 79 | private | — | — |
 
 ### `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -1699,26 +1707,27 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| User | [`displayCountry()`](../../../TCV-Backend/app/Models/User.php#L107) | 107 | public | — | array |
-| User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L126) | 126 | public | — | array |
-| User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L140) | 140 | private | `?string $mapped`, `?string $legacy` | array |
-| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L153) | 153 | public | — | — |
-| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L163) | 163 | protected | — | array |
-| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L181) | 181 | public | `?string $plain` | bool |
-| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L218) | 218 | public | — | bool |
-| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L239) | 239 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
-| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L255) | 255 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
-| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L260) | 260 | public | — | bool |
-| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L265) | 265 | public | — | — |
-| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L282) | 282 | public | — | — |
-| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L287) | 287 | public | — | — |
-| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L292) | 292 | public | — | bool |
-| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L297) | 297 | public | — | bool |
-| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L302) | 302 | public | `User $target` | — |
-| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L316) | 316 | public | — | — |
-| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L321) | 321 | public | — | — |
-| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L331) | 331 | public | — | — |
-| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L336) | 336 | public | — | — |
+| User | [`displayCountry()`](../../../TCV-Backend/app/Models/User.php#L108) | 108 | public | — | array |
+| User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L127) | 127 | public | — | array |
+| User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L141) | 141 | private | `?string $mapped`, `?string $legacy` | array |
+| User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L154) | 154 | public | — | — |
+| User | [`booted()`](../../../TCV-Backend/app/Models/User.php#L172) | 172 | protected static | — | void |
+| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L196) | 196 | protected | — | array |
+| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L214) | 214 | public | `?string $plain` | bool |
+| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L251) | 251 | public | — | bool |
+| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L272) | 272 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
+| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L288) | 288 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
+| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L293) | 293 | public | — | bool |
+| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L298) | 298 | public | — | — |
+| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L315) | 315 | public | — | — |
+| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L320) | 320 | public | — | — |
+| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L325) | 325 | public | — | bool |
+| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L330) | 330 | public | — | bool |
+| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L335) | 335 | public | `User $target` | — |
+| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L349) | 349 | public | — | — |
+| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L354) | 354 | public | — | — |
+| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L364) | 364 | public | — | — |
+| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L369) | 369 | public | — | — |
 
 ### `app/Models/UserEmailTemplate.php`
 
