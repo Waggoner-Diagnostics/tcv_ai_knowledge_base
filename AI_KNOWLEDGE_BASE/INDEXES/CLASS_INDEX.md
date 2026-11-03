@@ -1,6 +1,6 @@
 # Class Index
 
-**255 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
+**254 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
 
 | ID | Class | Kind | Extends | File:Line | Methods |
 |---|---|---|---|---|---|
@@ -40,7 +40,7 @@
 | `CTRL-034` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) | 4 |
 | `CTRL-035` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-036` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
-| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:28](../../../TCV-Backend/app/Http/Controllers/UserController.php#L28) | 11 |
+| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:28](../../../TCV-Backend/app/Http/Controllers/UserController.php#L28) | 12 |
 | `CTRL-038` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L16) | 4 |
 | `CTRL-039` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
@@ -82,7 +82,7 @@
 | `MODEL-037` | `TestSession` | class | Model | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | 2 |
 | `MODEL-038` | `Transaction` | class | Model | [app/Models/Transaction.php:8](../../../TCV-Backend/app/Models/Transaction.php#L8) | 4 |
 | `MODEL-039` | `TransactionDetail` | class | Model | [app/Models/TransactionDetail.php:8](../../../TCV-Backend/app/Models/TransactionDetail.php#L8) | 2 |
-| `MODEL-040` | `User` | class | Authenticatable | [app/Models/User.php:19](../../../TCV-Backend/app/Models/User.php#L19) | 21 |
+| `MODEL-040` | `User` | class | Authenticatable | [app/Models/User.php:18](../../../TCV-Backend/app/Models/User.php#L18) | 20 |
 | `MODEL-041` | `UserEmailTemplate` | class | Model | [app/Models/UserEmailTemplate.php:9](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L9) | 2 |
 | `MODEL-042` | `UserStripeDetail` | class | Model | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | 1 |
 | `SVC-001` | `AuditEventCatalog` | class | — | [app/Services/Audit/AuditEventCatalog.php:71](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L71) | 8 |
@@ -133,8 +133,7 @@
 | `MW-001` | `AddRequestId` | class | — | [app/Http/Middleware/AddRequestId.php:20](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php#L20) | 1 |
 | `MW-002` | `FlexibleAuthMiddleware` | class | — | [app/Http/Middleware/FlexibleAuthMiddleware.php:17](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L17) | 7 |
 | `MW-003` | `LmsSessionStatusMiddleware` | class | — | [app/Http/Middleware/LmsSessionStatusMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L9) | 1 |
-| `MW-004` | `RestrictAccountMiddleware` | class | — | [app/Http/Middleware/RestrictAccountMiddleware.php:27](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L27) | 3 |
-| `MW-005` | `RestrictIpMiddleware` | class | — | [app/Http/Middleware/RestrictIpMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L9) | 1 |
+| `MW-004` | `RestrictIpMiddleware` | class | — | [app/Http/Middleware/RestrictIpMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L9) | 1 |
 | `REQ-001` | `AuditLogExportRequest` | class | FormRequest | [app/Http/Requests/AuditLogExportRequest.php:22](../../../TCV-Backend/app/Http/Requests/AuditLogExportRequest.php#L22) | 4 |
 | `REQ-002` | `AuditLogIndexRequest` | class | FormRequest | [app/Http/Requests/AuditLogIndexRequest.php:13](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L13) | 4 |
 | `REQ-003` | `ChangePasswordRequest` | class | FormRequest | [app/Http/Requests/ChangePasswordRequest.php:8](../../../TCV-Backend/app/Http/Requests/ChangePasswordRequest.php#L8) | 4 |

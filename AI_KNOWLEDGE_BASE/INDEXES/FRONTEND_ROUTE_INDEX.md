@@ -10,20 +10,20 @@ but **unreachable by every role**.
 | ID | Kind | Path | Component | Roles allowed |
 |---|---|---|---|---|
 | `FE-001` | protected | `/add-credits` | `AddCredits` | SUPER_ADMIN |
-| `FE-002` | protected | `/admin` | `Admin` | SUPER_ADMIN, CUSTOMER |
+| `FE-002` | protected | `/admin` | `Admin` | SUPER_ADMIN |
 | `FE-003` | protected | `/audit-trail` | `AuditTrail` | SUPER_ADMIN |
 | `FE-004` | protected | `/credit-history` | `CreditHistory` | SUPER_ADMIN |
-| `FE-005` | protected | `/dashboard` | `DashboardWrapper` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
+| `FE-005` | protected | `/dashboard` | `DashboardWrapper` | SUPER_ADMIN |
 | `FE-006` | protected | `/discount` | `DiscountCodes` | SUPER_ADMIN |
 | `FE-007` | public | `/forgot-password` | `ForgotPassword` | _n/a — public_ |
 | `FE-008` | public | `/login` | `Login` | _n/a — public_ |
-| `FE-009` | protected | `/organisation` | `Organisation` | SUPER_ADMIN, ORGANIZATION |
+| `FE-009` | protected | `/organisation` | `Organisation` | SUPER_ADMIN |
 | `FE-010` | public | `/organization/instruction/:uniqueTestId` | `InstructionPageForTest` | _n/a — public_ |
 | `FE-011` | public | `/organization/patients/add` | `OrganizationPatient` | _n/a — public_ |
 | `FE-012` | public | `/organization/verified/default-user` | `VerifiedDefaultUser` | _n/a — public_ |
 | `FE-013` | public | `/organization/verified/tests` | `OrganizationTestHome` | _n/a — public_ |
 | `FE-014` | public | `/payment/return` | `PaymentReturn` | _n/a — public_ |
-| `FE-015` | protected | `/pricing` | `Pricing` | SUPER_ADMIN, CUSTOMER |
+| `FE-015` | protected | `/pricing` | `Pricing` | SUPER_ADMIN |
 | `FE-016` | protected | `/public-pages` | `PublicPagesWraper` | SUPER_ADMIN |
 | `FE-017` | public | `/register` | `Register` | _n/a — public_ |
 | `FE-018` | protected | `/reports` | `ReportsWrapper` | SUPER_ADMIN, SUPER_ADMIN |
@@ -42,7 +42,7 @@ but **unreachable by every role**.
 | `FE-031` | public | `/test-invitation/verified/:token/add-patient` | `VerifiedUserAddPAtient` | _n/a — public_ |
 | `FE-032` | public | `/test-invitation/verify/:token` | `VerifyTestUser` | _n/a — public_ |
 | `FE-033` | public | `/test/resume/:token` | `ResumeTest` | _n/a — public_ |
-| `FE-034` | protected | `/tests` | `Test` | SUPER_ADMIN, CUSTOMER |
+| `FE-034` | protected | `/tests` | `Test` | SUPER_ADMIN |
 | `FE-035` | protected | `/user-panel` | `UserPanelHome` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-036` | protected | `/user-panel/checkout` | `CheckoutPage` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-037` | protected | `/user-panel/contact` | `ContactUs` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
@@ -70,7 +70,7 @@ but **unreachable by every role**.
 | `FE-059` | protected | `/user-panel/start-test/test/:uniqueTestId` | `TestPage` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-060` | protected | `/user-panel/start-test/transition/:uniqueTestId` | `TransitionScreen` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
 | `FE-061` | protected | `/user-panel/timer` | `TimerScreen` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
-| `FE-062` | protected | `/users` | `Users` | SUPER_ADMIN, CUSTOMER, ORGANIZATION |
+| `FE-062` | protected | `/users` | `Users` | SUPER_ADMIN |
 | `FE-063` | public | `/verify-email` | `VerifyEmail` | _n/a — public_ |
 | `FE-064` | protected | `/view-test-plate` | `ViewTestPlate` | SUPER_ADMIN, ORGANIZATION |
 | `FE-065` | protected | `/view-webgl-report` | `ViewWebglReport` | SUPER_ADMIN, ORGANIZATION |

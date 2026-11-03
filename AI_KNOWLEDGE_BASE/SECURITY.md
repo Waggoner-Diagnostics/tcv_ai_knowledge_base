@@ -844,7 +844,7 @@ readable — it disables the decrypt path too.
 
 ### S-22 — Any signed-in account can promote itself to super admin through `PUT api/users/{id}`
 
-**Severity: critical.** Open on `develop` `0197fd1b`. Found 2026-09-23 while fixing the `ws-459` legacy
+**Severity: critical.** ✅ **Mitigated 2026-11-03 on branch `fix/test-emails-part-1` (uncommitted, NOT yet on `develop`) — still open on `develop` `0197fd1b` until that merges.** See the status block at the end of this section. Found 2026-09-23 while fixing the `ws-459` legacy
 location payloads. **Reproduced** against `develop` with a throwaway feature test (not committed), acting
 as a plain customer through Sanctum:
 
@@ -877,6 +877,23 @@ hold real migrated accounts.
 **Where:** `routes/api.php:171-174` · `app/Http/Controllers/UserController.php` ·
 `app/Http/Requests/UserRequest.php:15`.
 
+**Status 2026-11-03 — fixed on `fix/test-emails-part-1`, uncommitted.** Done without a `UserPolicy`:
+- `UserController` — `index`, `store`, `destroy` and `userWithType` return 403 (`api.forbidden`) unless
+  `isSuperAdmin()`. `edit` (`GET api/users/{id}`) and `update` allow a Super Admin or the account's own id
+  (private helper `canManageUser()`).
+- On `update`, a non-Super-Admin has `usertype` and `account_status` forced back to the stored values and
+  `email_verified` dropped, so self-promotion no longer works.
+- `UserRequest::authorize()` enforces the same rule for the `users.*` routes, so a refusal is a 403 **before**
+  validation (not a 422). It returns `true` for every other route — the class is also used by public
+  `POST api/register` and hand-built in `OrganizationController` — so do not tighten that branch.
+- Tests: new `tests/Feature/Users/UserEndpointAuthorizationTest.php`; `LegacyLocationAdminPayloadTest::
+  test_the_user_grid_withholds_the_legacy_text_from_anyone_else` now expects **403** (it used to expect 200).
+- ⚠️ **Not covered:** a self-edit can still set `show_occupational_questions`, `allow_monocular_test` and the
+  `include*` flags, because `update()` reads them straight from the request for customer/org accounts.
+  The "never credit and test-assignment fields" bullet above is therefore only partly met.
+- ⚠️ The sibling surfaces `admin`, `pricing`, `tests` and `super-admin/dashboard` were **not** audited for the
+  same gap. The SPA-side counterpart is in [FRONTEND.md](FRONTEND.md#spa-route-grants-for-customer-and-organization-trimmed-2026-11-03).
+
 ---
 
 ## Summary table
@@ -903,7 +920,7 @@ hold real migrated accounts.
 | `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 | `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
-| `S-22` | ☠️ **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
+| `S-22` | ☠️ **(mitigated on `fix/test-emails-part-1` 2026-11-03, unmerged)** **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
 
 ---
 

@@ -225,13 +225,6 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `TIER_LMS_SESSION` | `'lms_session'` | [29](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L29) |
 | `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [30](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L30) |
 
-### `RestrictAccountMiddleware` — `app/Http/Middleware/RestrictAccountMiddleware.php`
-
-| Constant | Value | Line |
-|---|---|---|
-| `ERROR_CODE` | `'ACCOUNT_RESTRICTED'` | [29](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L29) |
-| `IMPERSONATED_BY` | `'impersonated-by:'` | [31](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L31) |
-
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
 | Constant | Value | Line |
@@ -422,10 +415,10 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SUPER_ADMIN` | `1` | [29](../../../TCV-Backend/app/Models/User.php#L29) |
-| `CUSTOMER` | `2` | [31](../../../TCV-Backend/app/Models/User.php#L31) |
-| `ORGANIZATION` | `4` | [33](../../../TCV-Backend/app/Models/User.php#L33) |
-| `LEGACY_LOCATION_FIELDS` | `[…]` | [90](../../../TCV-Backend/app/Models/User.php#L90) |
+| `SUPER_ADMIN` | `1` | [28](../../../TCV-Backend/app/Models/User.php#L28) |
+| `CUSTOMER` | `2` | [30](../../../TCV-Backend/app/Models/User.php#L30) |
+| `ORGANIZATION` | `4` | [32](../../../TCV-Backend/app/Models/User.php#L32) |
+| `LEGACY_LOCATION_FIELDS` | `[…]` | [89](../../../TCV-Backend/app/Models/User.php#L89) |
 
 ### `UserEmailTemplate` — `app/Models/UserEmailTemplate.php`
 

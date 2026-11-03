@@ -1013,6 +1013,13 @@ Subdomain" option checkbox is hidden via `HIDDEN_OPTION_NAMES` (`OrganisationMod
 - ⚠️ The View action puts the **decrypted Test Taker name in the URL** (`/reports/user-tests/patient/:id/:name`, `UserTests.js:186-189`), as the old card list did — PHI in browser history / logs.
 
 
+## SPA route grants for CUSTOMER and ORGANIZATION trimmed (2026-11-03)
+
+`constants/routeConfig.js` used to grant the Super Admin pages to the other roles, so typing `app/users` or `app/organisation` opened them for an organization user. Removed: `/dashboard`, `/users`, `/organisation` from `ORGANIZATION`; `/dashboard`, `/users`, `/admin`, `/pricing`, `/tests` from `CUSTOMER`. Those paths now fall through to `NotFound`.
+- `pages/AuthInit.js`: the post-hydration redirect from a public path now sends only `SUPER_ADMIN` to `/dashboard` and every other role to `/user-panel` (it used to send everything except `CUSTOMER` to `/dashboard`, which would 404 an organization user).
+- ⚠️ Still client-side only: `ProtectedRoute` checks authentication, not role, and `userType` is seeded from `localStorage` (`loginSlice.js:210`), so editing it renders the page shell. The data is protected by the backend change in [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid).
+- Branch `fix/test-emails-part-1`, uncommitted. `constants/routeConfig.test.js` (existing, Settings > Profile only) was not extended to cover these grants.
+
 ## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, merged: frontend PR #445)
 
 **Settings > Profile is gone for Super Admin only.**

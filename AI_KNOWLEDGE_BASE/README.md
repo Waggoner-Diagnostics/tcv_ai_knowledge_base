@@ -11,7 +11,7 @@ work on the project **without rescanning ~82,800 lines across 603 source files**
 | **Branches indexed** | `develop` · `develop` · `develop` — ✅ **since 2026-10-13 all three repos are indexed from `develop`**; the website's `website-integration` exception is retired ([WEBSITE.md](WEBSITE.md#branch-state--indexed-from-develop-again-2026-10-13)). ✅ **2026-10-15:** `client-unbilled-changes` (backend PR #315, frontend PR #445 — editable system emails, tabular User Tests report, Super Admin unlimited credits, discount allowlist, terminology) is merged and indexed; every "(uncommitted)" label on it is flipped — see [What the 2026-10-15 sync changed](#what-the-2026-10-15-sync-changed). ✅ **2026-10-13:** the export follow-up (PR #298/#432, `POST` + XLSX), `ws-521` (PR #300/#434), export derived dates (PR #308), patients newest first (PR #310) and the result-close/date-filter fix (frontend PR #441) are merged and indexed — see [What the 2026-10-13 sync changed](#what-the-2026-10-13-sync-changed). ✅ **The three branches this row warned about have all merged** (2026-09-17/18) and are now indexed: `ws-502` (list sort tiebreaks), `ws-480` (credit purchase gate) and `tcv_data_migration` → **`ws-459`** (patient encryption at rest — `INDEXES/` now shows the **post**-encryption shape). `develop` also carries `ws-404`, `ws-449`, every audit-trail follow-up (PRs #238–#245, #250, #251, #261; frontend #384/#386, #391, #393, #398) and `fix/countries-list-update` (PR #265). ✅ **2026-09-23:** `ws-401` round 2 (PRs #252/#276/#278), the `ws-459` compliance dedup (PR #271) and location follow-up (backend PR #282, frontend PR #414) are merged and indexed — see [What the 2026-09-23 sync changed](#what-the-2026-09-23-sync-changed). ✅ **2026-09-29:** `ws-451` free-order checkout (backend PRs #285/#287, frontend PR #416) and the backend half of `ws-459-legacy-location-visible` (PR #284) are merged and indexed — see [What the 2026-09-29 sync changed](#what-the-2026-09-29-sync-changed). ✅ **2026-10-01:** the server-side **patient CSV export** (backend PR #291, frontend PR #420) is merged and indexed — see [What the 2026-10-01 sync changed](#what-the-2026-10-01-sync-changed). ⏳ Still unmerged: frontend `ws-459-legacy-location-visible` (`c1dd22a`) and backend `ws-401-stale-template-test` (`b2541667`) — ☠️ **neither commit exists on `origin`** (checked 2026-10-13); both were local to the machine the KB was first built on and must be redone. |
 | **First generated** | 2026-08-19 |
 | **Code state at sync** | `TCV-Backend` `9082ae22` (incl. PR #315 `client-unbilled-changes`) · `TCV-Frontend` `9ecbf6b` (incl. PR #445 `client-unbilled-changes`) · `TCV-Website` `4d2c0d4` — all local `develop` (⚠️ `git fetch` failed from the sync shell, so `origin/develop` was **not** re-checked) — generated **2026-10-15**. Routes from the ⚠️ **AST parser**, not `artisan route:list` (no backend `vendor/`; see [the sync note](#what-the-2026-10-15-sync-changed)). Anything merged to `develop` after these SHAs is not here. |
-| **Backend scale** | 255 classes/interfaces/traits · 1347 methods · 171 API endpoints · 55 tables · 162 migrations · suite **not re-run at this sync** (last measured ☠️ **1398 passed / 3 failed** on `a5938b2e`: 1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
+| **Backend scale** | 254 classes/interfaces/traits · 1344 methods · 171 API endpoints · 55 tables · 162 migrations · suite **not re-run at this sync** (last measured ☠️ **1398 passed / 3 failed** on `a5938b2e`: 1 real stale `ws-401` test + 2 environmental) — see [TESTING.md](TESTING.md#-develop-is-red-since-2026-09-22-one-stale-ws-401-test) |
 | **Client scale** | 65 top-level routes · 45 Redux slices (SPA) · 32 marketing pages (website) |
 
 > **Check freshness before trusting prose.** Compare the SHAs above with `git -C <repo> rev-parse --short HEAD`.
@@ -157,6 +157,13 @@ corner-clipping fix, written up in
 website repo holds local branches under both names, so read every `ws-373` note together with the repo
 it belongs to — as with `ws-343` / `ws-website-343`.
 
+### What the 2026-11-03 update changed
+
+Regenerated all `INDEXES/` against the checked-out working trees — **not** `develop`: `TCV-Backend` and `TCV-Frontend` are on `fix/test-emails-part-1` (`563de816`, `9ab27a7`) with uncommitted changes, `TCV-Website` `cb4a1b6`. So the indexes include the user-endpoint authorization and `routeConfig.js` changes below, which are not on `develop`. Class/method counts moved 255→254 and 1347→1344 (branch difference, not investigated).
+- [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid) mitigated on the branch (unmerged); [AUTHORIZATION.md](AUTHORIZATION.md), [POLICIES.md](POLICIES.md).
+- SPA route grants for customer/organization trimmed — [FRONTEND.md](FRONTEND.md#spa-route-grants-for-customer-and-organization-trimmed-2026-11-03).
+- Not run: the full backend suite (only `tests/Feature/Users`, `Auth` and the legacy-location test — 87 passed).
+
 ### What the 2026-10-15 sync changed
 
 Backend `develop` `362547d7` → **`9082ae22`** (+8 commits, PR #315 `client-unbilled-changes`), frontend
@@ -249,7 +256,7 @@ byte-identical apart from the generation date.
 
 📌 **Also found:** `ws-401-stale-template-test` (`b2541667`) and frontend `ws-459-legacy-location-visible`
 (`c1dd22a`) were never pushed, so they cannot merge as written — redo them. [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid)
-re-checked and **still open** (no `UserPolicy`; `UserRequest::authorize()` returns `true`).
+re-checked and **still open** on `develop` (no `UserPolicy`; `UserRequest::authorize()` returns `true`) — ⚠️ superseded: mitigated 2026-11-03 on `fix/test-emails-part-1`, see [What the 2026-11-03 update changed](#what-the-2026-11-03-update-changed).
 
 ### What the 2026-10-01 sync changed
 

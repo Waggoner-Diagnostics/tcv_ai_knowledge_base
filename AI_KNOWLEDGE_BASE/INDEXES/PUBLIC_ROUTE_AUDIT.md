@@ -12,8 +12,8 @@ read or mutate money, credits, or another user's data.
 
 | ID | Method | URI | Action |
 |---|---|---|---|
-| `API-001` | GET | `api/access-check` | _(closure)_ |
-| `API-015` | GET | `api/countries-with-states` | DropdownValuesController@getCountriesWithStates |
+| `API-001` | GET|HEAD | `api/access-check` | _(closure)_ |
+| `API-015` | GET|HEAD | `api/countries-with-states` | DropdownValuesController@getCountriesWithStates |
 | `API-032` | POST | `api/distributor-enquiry` | DistributorController@submit |
 | `API-039` | POST | `api/login` | AuthController@login |
 | `API-048` | POST | `api/organization/verify-signature` | OrganizationController@verifySignature |
@@ -24,19 +24,30 @@ read or mutate money, credits, or another user's data.
 | `API-080` | POST | `api/register` | AuthController@register |
 | `API-088` | POST | `api/resend-verification-by-token` | AuthController@resendVerificationByToken |
 | `API-089` | POST | `api/resend_email_verification_link` | AuthController@resendEmailVerificationLink |
-| `API-090` | GET | `api/reset-password/{token}` | _(closure)_ |
+| `API-090` | GET|HEAD | `api/reset-password/{token}` | _(closure)_ |
 | `API-107` | POST | `api/test-invitation/check-validity` | TestInvitationController@checkTokenStatus |
 | `API-108` | POST | `api/test-invitation/verify-code` | TestInvitationController@verifyCode |
 | `API-118` | POST | `api/test/resume` | TestResumeController@resume |
-| `API-168` | GET | `api/validate-token` | AuthController@isTokenValid |
+| `API-168` | GET|HEAD | `api/validate-token` | AuthController@isTokenValid |
 | `API-169` | POST | `api/verify-email-token` | AuthController@verifyEmailByToken |
 
 ## Also public: `routes/web.php`
 
 | Method | URI | Action |
 |---|---|---|
-| GET | `/` | _(closure)_ |
-| GET | `payment/callback` | StripePaymentController@paymentCallback |
+| GET|HEAD | `/` | _(closure)_ |
+| GET|HEAD | `payment/callback` | StripePaymentController@paymentCallback |
+| GET|HEAD | `sanctum/csrf-cookie` | Laravel\Sanctum\Http\Controllers\CsrfCookieController@show |
+| GET|HEAD | `storage/{path}` | _(closure)_ |
+| PUT | `storage/{path}` | _(closure)_ |
+| GET|HEAD | `up` | _(closure)_ |
+| GET|HEAD | `{prefix?}/cities` | Nnjeim\World\Http\Controllers\City\CityController@index |
+| GET|HEAD | `{prefix?}/countries` | Nnjeim\World\Http\Controllers\Country\CountryController@index |
+| GET|HEAD | `{prefix?}/currencies` | Nnjeim\World\Http\Controllers\Currency\CurrencyController@index |
+| GET|HEAD | `{prefix?}/geolocate` | Nnjeim\World\Http\Controllers\Geolocate\GeolocateController@index |
+| GET|HEAD | `{prefix?}/languages` | Nnjeim\World\Http\Controllers\Language\LanguageController@index |
+| GET|HEAD | `{prefix?}/states` | Nnjeim\World\Http\Controllers\State\StateController@index |
+| GET|HEAD | `{prefix?}/timezones` | Nnjeim\World\Http\Controllers\Timezone\TimezoneController@index |
 
 ---
 
