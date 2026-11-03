@@ -915,10 +915,10 @@ method — several controllers here run 400–900 lines.
 | TestInvitationController | [`unfinishedTestItems()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L571) | 571 | private | `int $userId`, `?int $limit = null` | array |
 | TestInvitationController | [`filterOutstanding()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L642) | 642 | private | `array $items`, `string $search` | array |
 | TestInvitationController | [`resendUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L664) | 664 | public | `int $invitationId` | — |
-| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L737) | 737 | public | `int $invitationId` | — |
-| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L839) | 839 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId`, `bool $isResend = false` | void |
-| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L847) | 847 | public | `Request $request` | — |
-| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L967) | 967 | public | `Request $request` | — |
+| TestInvitationController | [`cancelUnregisteredInvitation()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L744) | 744 | public | `int $invitationId` | — |
+| TestInvitationController | [`sendInvitationEmail()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L846) | 846 | private | `$email`, `$test`, `$token`, `$verificationCode`, `$expiresAt`, `int $userId`, `bool $isResend = false` | void |
+| TestInvitationController | [`verifyCode()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L854) | 854 | public | `Request $request` | — |
+| TestInvitationController | [`checkTokenStatus()`](../../../TCV-Backend/app/Http/Controllers/TestInvitationController.php#L974) | 974 | public | `Request $request` | — |
 
 ### `app/Http/Controllers/TestResumeController.php`
 

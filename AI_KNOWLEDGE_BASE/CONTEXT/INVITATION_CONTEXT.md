@@ -135,9 +135,13 @@ with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = aut
 every email the test taker already held. It also no longer mails the sender's `test_link` /
 `org_test_link`: `TestInvitationMailer::send(..., isResend: true)` takes `sendResend()`, which renders the
 Super Admin's editable **Test Link Resent** (`email_template.test_link_resent`) for **every** sender,
-organizations included, with `{{test_url}}` = this invitation's own `/test-invitation/verify/{token}`, via
+organizations included — **if the row was already mailed** (`email_status = 'sent'`) — with `{{test_url}}` =
+this invitation's own `/test-invitation/verify/{token}`, via
 the `emails.testLink` view (the same as `TestService::generateAndSendTestLink()`). The resend carries **no
-code or expiry** — the test taker uses the original email's code (planned improvement I-7); an
+code or expiry** — the test taker uses the original email's code (planned improvement I-7). ☠️ A row
+still `'pending'` (queued, or deferred after the mail host did not answer) was never received, so its
+resend sends the **full first invitation** instead: the resend marks the row `'sent'`, which takes it out
+of the batch, and a codeless resend would leave the test taker with no code at all. An
 organization-specific resend template is planned as I-1. The first send is unchanged. Pinned by
 `tests/Feature/TestInvitations/ResendUnregisteredInvitationTest.php`.
 

@@ -234,11 +234,15 @@ missing from `errorCodeMap` falls through to the generic 401 case, which says "Y
 — so **every new backend `error_code` on a 401 needs an entry here**, or the user is told the wrong thing.
 
 **`sendTestResumeEmail` is silent** (same branch). `testResumeSlice.js` passes `{ skipErrorPopup: true }`:
-all three callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite and dashboard
-start-test paths) fire it in the background while the test starts, so a 404 or a `send-resume-email`
+both callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite path) fire it in
+the background while the test starts, so a 404 or a `send-resume-email`
 429 must not pop up over "Test Taker added successfully!". Failures are `console.warn`ed. `AddPatient`
 sends it only on a **fresh** assignment — each send revokes the previous resume link, so a re-submitted
 form must not break the email already delivered. (`VerifiedDefaultUser` still sends on every submit.)
+☠️ **Not from the dashboard start-test path, on purpose.** There the clinic runs the test on its own
+device: the emailed link would open a second, unsupervised way into the same test (`resume()` supersedes
+only test-taker `TestSession`s, not the clinic's Sanctum session), and a two-eye (`both`) assignment
+returns only the left eye's `unique_test_id`. Adding it needs its own setting (plan improvement I-8).
 
 ⚠️ **The backend's SPA boot gate has no caller.** `ws-449` (backend, on `develop` since 2026-09-14) added a
 public `GET api/access-check` so a blocked client could see a full "access denied" page before the login
