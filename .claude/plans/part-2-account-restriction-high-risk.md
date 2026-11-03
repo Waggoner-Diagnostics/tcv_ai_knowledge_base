@@ -1,7 +1,7 @@
 # Part 2 of 2 — Account restriction and email verification (high risk)
 
-**Branch:** `fix/account-restriction-part-2` in TCV-Backend (`b57298ff`) and TCV-Frontend (`279d9f0`).
-**Merge after Part 1.** This branch is built on `fix/test-emails-part-1`, so its diff against `develop` includes Part 1; review **only the top commit**, or diff against `fix/test-emails-part-1`.
+**Branch:** `fix/account-restriction-part-2` in TCV-Backend (`b57298ff`) and TCV-Frontend (`279d9f0`), with the Part 1 review fixes merged in (`cda6cecb` / `a2165ee`).
+**Merge after Part 1.** This branch is built on `fix/test-emails-part-1`, so its diff against `develop` includes Part 1; review **only its own commit** (`b57298ff` / `279d9f0`), or diff against `fix/test-emails-part-1`.
 Background and decisions: [test-email-and-account-restriction-fixes.md](test-email-and-account-restriction-fixes.md) (items 4–5).
 
 ## Why it is high risk
