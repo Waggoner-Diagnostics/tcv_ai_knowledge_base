@@ -130,6 +130,17 @@ the address again from Send Test, which charges properly.
 `POST api/test-invitations/{id}/resend` → `resendUnregisteredInvitation()` issues a *fresh* token + code
 with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = auth()->id()`.
 
+**Changed on branch `fix/test-email-and-account-restriction` (2026-11-03, unmerged):** the resend now
+**keeps** the token and code and renews only the 7-day window — rotating them killed the link and code in
+every email the test taker already held. It also no longer mails the sender's `test_link` /
+`org_test_link`: `TestInvitationMailer::send(..., isResend: true)` takes `sendResend()`, which renders the
+Super Admin's editable **Test Link Resent** (`email_template.test_link_resent`) for **every** sender,
+organizations included, with `{{test_url}}` = this invitation's own `/test-invitation/verify/{token}`, via
+the `emails.testLink` view (the same as `TestService::generateAndSendTestLink()`). The resend carries **no
+code or expiry** — the test taker uses the original email's code (planned improvement I-7); an
+organization-specific resend template is planned as I-1. The first send is unchanged. Pinned by
+`tests/Feature/TestInvitations/ResendUnregisteredInvitationTest.php`.
+
 ### How the invitation body is assembled
 
 `TestInvitationMailer::send()` is a sequence of passes over one string, and the order matters. (It was

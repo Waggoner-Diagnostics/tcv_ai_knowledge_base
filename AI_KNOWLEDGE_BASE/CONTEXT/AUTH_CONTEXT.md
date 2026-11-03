@@ -98,8 +98,9 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 
 ## Sanctum specifics
 
-- **Tokens expire after 15 minutes** — `config/sanctum.php` → `'expiration' => 900`. This is the answer
-  to most "it logged me out" reports.
+- **Tokens expire after 900 minutes (15 hours)** — `config/sanctum.php` → `'expiration' => 900`.
+  Sanctum reads `expiration` in **minutes**; the inline comment there saying "15 minutes" is wrong
+  (corrected here 2026-11-03). This is the answer to most "it logged me out" reports.
 - Token names carry meaning:
   | Name | Created in | Abilities |
   |---|---|---|
@@ -121,6 +122,8 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 POST api/login
   ├─ Authorization header present and token unexpired?
   │     → 200 "Already logged in"   ← skips account_status, trashed, email_verified   [S-07]
+  │       (branch fix/test-email-and-account-restriction: a restricted account's token never
+  │        gets here — RestrictAccountMiddleware answers it first with ACCOUNT_RESTRICTED)
   ├─ validate(email, password)
   ├─ User::withTrashed()->where(email)          → 401 api.unauthorized  if missing
   ├─ account_status !== 'active' || trashed()   → 401 api.resticted     (sic — typo'd lang key)
@@ -161,6 +164,42 @@ unverified user is the login screen's **Resend Verification Link** button
 Note the response envelope: `login()` returns a **hand-built** shape, not `ApiResponse`. So do
 `isTokenValid()` (`{valid, …}`) and `verifyEmailByToken()` (`{status, message}`). Clients cannot assume
 one envelope — see [CODING_GUIDELINES.md](../CODING_GUIDELINES.md).
+
+---
+
+## Account restriction ends the session (2026-11-03, branch `fix/test-email-and-account-restriction`, unmerged)
+
+"Restricted" in the UI is `users.account_status = 'inactive'` (`'suspended'` behaves the same).
+Before this branch a restriction only blocked the *next* `login()`; an existing token kept working.
+
+| Event | Tokens of the account | Impersonation tokens it minted (`impersonated-by:{id}`) |
+|---|---|---|
+| Restricted (`active` → anything else) | **kept**, on purpose | deleted |
+| Re-activated (→ `active`) | deleted (fresh login required) | — |
+
+Wired in `User::booted()` (`static::updated`, on `wasChanged('account_status')`), so every path that
+changes the status is covered — `UserController::update()`, `OrganizationController::update()`, or code.
+
+**Why tokens are kept:** `RestrictAccountMiddleware` (global, [MIDDLEWARE.md](../MIDDLEWARE.md)) answers
+each one with 401 `error_code: ACCOUNT_RESTRICTED` and `api.resticted`'s message; the SPA shows that and
+logs out. A deleted token would surface as a bare "Unauthenticated." → "Your session has expired", and
+the user would not know they were restricted. The login screen's own message for a restricted account
+(`api.resticted`, from `login()`) is unchanged.
+
+- A restricted user can still `POST api/logout`. `api/login` is **not** exempt (see the S-07 note above).
+- A Super Admin's "Login as" session on a restricted account keeps working; it stops as soon as that
+  **admin** is restricted.
+
+### Admin edits no longer change email verification (same branch)
+
+`UserController::update()` and `OrganizationController::update()` drop `email_verified` from the
+validated input, and the SPA's user/organization forms no longer send it. Before, both forms re-sent it
+with a `"no"` default, so restricting and re-activating a verified user could leave them facing "Please
+verify your email" at login. Verification now changes only through `verifyEmailByToken()` and the
+`setup` password flow. ⚠️ Accounts already flipped need a one-off repair after review:
+`SELECT id, email FROM users WHERE email_verified = 'no' AND email_verified_at IS NOT NULL`.
+
+`tests/Feature/Auth/AccountRestrictionTest.php` pins all of the above.
 
 ---
 
@@ -245,6 +284,14 @@ The `is_null` arm is load-bearing: a token with no expiry never goes stale, whic
 ☠️ **`login()` must never write to the token or its expiry.** The deadline a user is given is the one
 they were mailed; restarting it on a login attempt would silently extend a link they cannot see.
 `tests/Feature/RegistrationVerificationEmailTest.php` pins this.
+
+**Every send now restarts the 24 h** (2026-11-03, branch `fix/test-email-and-account-restriction`,
+unmerged). The `email_verification` body states "This link expires in 24 hours." directly below the link
+(migration `2026_11_03_000001_state_link_expiry_in_verification_email`, plus the seeder), so a resend
+that *reuses* a still-valid token now also resets `email_verification_expires_at` to `now()+24h`; the
+token itself is kept, so earlier emails keep working. A send is still never triggered by `login()`.
+☠️ Combined with the two resend endpoints having **no rate limit**, a link can be kept alive
+indefinitely by resending — tracked as improvement I-4 in the plan, not fixed here.
 
 ## A missing template is no longer mistaken for an SMTP blip
 

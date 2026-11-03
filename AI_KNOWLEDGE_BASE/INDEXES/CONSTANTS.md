@@ -151,7 +151,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_RELATION_FIELDS` | `[…]` | [193](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L193) |
+| `AUDIT_RELATION_FIELDS` | `[…]` | [194](../../../TCV-Backend/app/Http/Controllers/Concerns/BuildsAuditDiffs.php#L194) |
 
 ### `DiscountCodeController` — `app/Http/Controllers/DiscountCodeController.php`
 
@@ -174,8 +174,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_FIELDS` | `[…]` | [41](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L41) |
-| `FILTER_LABELS` | `[…]` | [51](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L51) |
+| `AUDIT_FIELDS` | `[…]` | [42](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L42) |
+| `FILTER_LABELS` | `[…]` | [52](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L52) |
 
 ### `ProfileController` — `app/Http/Controllers/ProfileController.php`
 
@@ -224,6 +224,13 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `TIER_TEST_SESSION` | `'test_session'` | [28](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L28) |
 | `TIER_LMS_SESSION` | `'lms_session'` | [29](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L29) |
 | `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [30](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L30) |
+
+### `RestrictAccountMiddleware` — `app/Http/Middleware/RestrictAccountMiddleware.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `ERROR_CODE` | `'ACCOUNT_RESTRICTED'` | [29](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L29) |
+| `IMPERSONATED_BY` | `'impersonated-by:'` | [31](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L31) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -415,10 +422,10 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SUPER_ADMIN` | `1` | [28](../../../TCV-Backend/app/Models/User.php#L28) |
-| `CUSTOMER` | `2` | [30](../../../TCV-Backend/app/Models/User.php#L30) |
-| `ORGANIZATION` | `4` | [32](../../../TCV-Backend/app/Models/User.php#L32) |
-| `LEGACY_LOCATION_FIELDS` | `[…]` | [89](../../../TCV-Backend/app/Models/User.php#L89) |
+| `SUPER_ADMIN` | `1` | [29](../../../TCV-Backend/app/Models/User.php#L29) |
+| `CUSTOMER` | `2` | [31](../../../TCV-Backend/app/Models/User.php#L31) |
+| `ORGANIZATION` | `4` | [33](../../../TCV-Backend/app/Models/User.php#L33) |
+| `LEGACY_LOCATION_FIELDS` | `[…]` | [90](../../../TCV-Backend/app/Models/User.php#L90) |
 
 ### `UserEmailTemplate` — `app/Models/UserEmailTemplate.php`
 
@@ -439,7 +446,7 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | Constant | Value | Line |
 |---|---|---|
 | `EVENTS` | `[…]` | [73](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L73) |
-| `CATEGORY_LABELS` | `[…]` | [481](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L481) |
+| `CATEGORY_LABELS` | `[…]` | [489](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L489) |
 
 ### `AuditService` — `app/Services/Audit/AuditService.php`
 
@@ -593,6 +600,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 |---|---|---|
 | `RESUME_BUTTON` | `'display:inline-block;padding:12px 28px;background-color:#007bff;color:#ffffff;text-decoration:none;border-radius:4px;font-weight:600;'` | [18](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L18) |
 | `BUTTON` | `'display:inline-block;padding:12px 24px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:4px;'` | [21](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L21) |
+| `ORGANIZATION_TEST_URL_BODY_V1` | — | [65](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L65) |
+| `ORGANIZATION_TEST_URL_BODY` | — | [74](../../../TCV-Backend/app/Support/SystemEmailDefaults.php#L74) |
 
 ### `TestConstants` — `app/Support/TestConstants.php`
 
@@ -612,4 +621,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-10-15. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._

@@ -362,7 +362,16 @@ if ($accessToken && (!$accessToken->expires_at || !$accessToken->expires_at->isP
 
 That path never re-checks `account_status`, `trashed()`, or `email_verified`. A user suspended or
 soft-deleted *after* their token was issued keeps getting a success response from `/api/login` for the
-remainder of the token's life. (The 15-minute expiry bounds the damage.)
+remainder of the token's life. ~~(The 15-minute expiry bounds the damage.)~~ Sanctum's `expiration` is in
+minutes, so `900` is **15 hours**, not 15 minutes — the damage window is much wider than this said.
+
+**Status (2026-11-03): the restricted-account half is closed on branch
+`fix/test-email-and-account-restriction` (unmerged).** The global `RestrictAccountMiddleware`
+([MIDDLEWARE.md](MIDDLEWARE.md)) answers every bearer token of a restricted account — `api/login`
+included — with 401 `ACCOUNT_RESTRICTED` before the short-circuit runs, and restricting a Super Admin also
+kills the "Login as" tokens they minted (previously those outlived the admin for up to 15 hours). ⚠️ Still
+open: the short-circuit itself, and its `trashed()` / `email_verified` gaps — a soft-deleted user's token
+is not revoked and still gets "Already logged in".
 
 Separately, `login()`'s failure responses distinguish "no such user" (`api.unauthorized`) from
 "restricted" (`api.resticted` — note the typo in the key) from "unverified", which is an enumeration
@@ -884,7 +893,7 @@ hold real migrated accounts.
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
-| `S-07` | `login()` Bearer short-circuit skips account gates | medium | `AuthController::login()` |
+| `S-07` | `login()` Bearer short-circuit skips account gates. ⚠️ restricted accounts closed on branch `fix/test-email-and-account-restriction` (unmerged); `trashed()`/`email_verified` still open | medium | `AuthController::login()` · `RestrictAccountMiddleware` |
 | `S-08` | `email_verified` vs `email_verified_at` disagree — ✅ **fixed `ws-417`**, columns not collapsed | medium | `User` · `AuthController` |
 | `S-15` | Terminal LMS tokens keep **read** access by design; mutations 409 via `lms.status` | low | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware` |
 | `S-09` | `stopImpersonation` deletes nothing | low | `AuthController::stopImpersonation()` |

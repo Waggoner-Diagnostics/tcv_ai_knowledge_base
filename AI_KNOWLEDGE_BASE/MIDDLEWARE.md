@@ -1,7 +1,8 @@
 # Middleware
 
 Four classes exist in `app/Http/Middleware/` on `develop` (verified 2026-09-17). **Two are global, two
-are aliased.**
+are aliased.** Branch `fix/test-email-and-account-restriction` (2026-11-03, unmerged) adds a fifth,
+`RestrictAccountMiddleware`, making **three global**.
 
 | Class | ID | How it runs | Notes |
 |---|---|---|---|
@@ -9,6 +10,7 @@ are aliased.**
 | `FlexibleAuthMiddleware` | `MW-002` | alias `FlexibleAuthMiddleware` | The four-tier session gate |
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
 | `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request. Since `ws-449` also the whole of `GET api/access-check` |
+| `RestrictAccountMiddleware` | `MW-005` | **appended globally**, after `RestrictIpMiddleware` (branch only, see below) | Refuses every bearer token of a restricted account with `ACCOUNT_RESTRICTED` |
 
 📌 `EnsureTokenIsValid` (dead, never aliased) was **deleted** when `tcv-backend-codefix` merged; its old
 `MW-001` slot is now `AddRequestId`. Earlier text here saying it was "still present on `develop`" was stale.
@@ -44,6 +46,37 @@ return $request->bearerToken()
 
 If you add caching here, remember the cache store is `database` by default
 ([CACHE.md](CACHE.md)) — caching a DB lookup in the DB buys less than it looks.
+
+---
+
+## `RestrictAccountMiddleware` — global (2026-11-03, branch `fix/test-email-and-account-restriction`, unmerged)
+
+```php
+if (!$request->bearerToken() || $request->is('api/logout')) return $next($request);
+$user = Auth::guard('sanctum')->user();            // cached on the guard: auth:sanctum and
+if (!$user instanceof User) return $next($request); // FlexibleAuth tier 1 reuse it, no 2nd lookup
+if ($impersonatorId = /* 'impersonated-by:{id}' ability on the token */)
+    return User::find($impersonatorId)?->isActiveAccount() ? $next($request) : restricted();
+return $user->isActiveAccount() ? $next($request) : restricted();
+// restricted(): 401 {success:false, status_code:401, message: __('api.resticted'), error_code:'ACCOUNT_RESTRICTED'}
+```
+
+- **Why it exists:** before it, restricting an account only blocked the *next login*; a token issued
+  earlier kept working until logout ([AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md#account-restriction-ends-the-session-2026-11-03-branch-fixtest-email-and-account-restriction-unmerged)).
+- ☠️ **It depends on the token still existing.** `User::booted()` deliberately does **not** delete a
+  restricted account's tokens: a deleted token reaches `auth:sanctum` as a bare 401 "Unauthenticated.",
+  which the SPA shows as "Your session has expired" and the user never learns why. Tokens are deleted on
+  **re-activation** instead. Do not "tidy up" by revoking on restriction.
+- `api/logout` is exempt; **`api/login` is not** — `AuthController::login()` hands any still-valid bearer
+  token back as "Already logged in" (200), so exempting it let a restricted user straight back in.
+- **"Login as" (impersonation) tokens** stand or fall with the Super Admin who minted them, not with the
+  target: allowed on a restricted target (support needs it), refused once that admin is restricted.
+  `User::booted()` also deletes them when the admin is restricted.
+- Cost: none for anonymous requests; for a token, the `sanctum` guard lookup it triggers is the one
+  `auth:sanctum` would make anyway. Impersonation tokens add one `users` lookup.
+- The SPA keys on `error_code: 'ACCOUNT_RESTRICTED'` in `src/services/errorHandler.js` (`errorCodeMap`)
+  and `POPUP_MESSAGES.ACCOUNT_RESTRICTED` — see [FRONTEND.md](FRONTEND.md). Do not rename the code
+  without changing the client.
 
 ---
 
@@ -119,7 +152,8 @@ non-LMS sessions through and blocks *only* LMS ones with a 409. See
    `Kernel.php`; there is nowhere else to put it.
 2. Apply it per route or per group in `routes/api.php`.
 3. If it should run on everything, use `$middleware->append(...)` — but weigh the per-request cost, and
-   remember `RestrictIpMiddleware` already pays a DB round-trip there.
+   remember `RestrictIpMiddleware` already pays a DB round-trip there (and, on the branch above,
+   `RestrictAccountMiddleware` resolves the Sanctum user for every bearer request).
 4. Re-run the generator: the middleware column in
    [INDEXES/API_ENDPOINT_INDEX.md](INDEXES/API_ENDPOINT_INDEX.md) is derived from the group stack, so it
    picks the change up automatically.

@@ -221,9 +221,24 @@ Table column definitions live one-file-per-table in `src/utils/columns/`, fed st
 ## Error handling
 
 `src/services/errorHandler.js` is a singleton with an `errorCodeMap` keyed on the backend's
-`error_code` (today only `IP_RESTRICTED`, from
+`error_code` (on `develop` only `IP_RESTRICTED`, from
 [`RestrictIpMiddleware`](MIDDLEWARE.md)). The Axios response interceptor calls it automatically unless
 the request passes `skipErrorPopup: true` (or a thunk passes `showPopup: false`).
+
+**`ACCOUNT_RESTRICTED`** (2026-11-03, branch `fix/test-email-and-account-restriction`, unmerged) is the
+second entry, from `RestrictAccountMiddleware`, with its text in
+`POPUP_MESSAGES.ACCOUNT_RESTRICTED` (`src/constants/messages.js`). A Super Admin restricting an account
+mid-session makes its next request 401 with this code; the interceptor's existing "401 with an
+`error_code`" branch then clears the session, shows the message and goes to `/login` after 2.5 s. ☠️ A code
+missing from `errorCodeMap` falls through to the generic 401 case, which says "Your session has expired"
+— so **every new backend `error_code` on a 401 needs an entry here**, or the user is told the wrong thing.
+
+**`sendTestResumeEmail` is silent** (same branch). `testResumeSlice.js` passes `{ skipErrorPopup: true }`:
+all three callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite and dashboard
+start-test paths) fire it in the background while the test starts, so a 404 or a `send-resume-email`
+429 must not pop up over "Test Taker added successfully!". Failures are `console.warn`ed. `AddPatient`
+sends it only on a **fresh** assignment — each send revokes the previous resume link, so a re-submitted
+form must not break the email already delivered. (`VerifiedDefaultUser` still sends on every submit.)
 
 ⚠️ **The backend's SPA boot gate has no caller.** `ws-449` (backend, on `develop` since 2026-09-14) added a
 public `GET api/access-check` so a blocked client could see a full "access denied" page before the login
