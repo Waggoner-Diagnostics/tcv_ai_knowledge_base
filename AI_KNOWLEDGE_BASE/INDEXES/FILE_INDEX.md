@@ -116,7 +116,7 @@
 | [`app/Http/Requests/UpdateProfileRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php) | UpdateProfileRequest | 4 |
 | [`app/Http/Requests/UpdateSettingsRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateSettingsRequest.php) | UpdateSettingsRequest | 2 |
 | [`app/Http/Requests/UpdateUserEmailTemplateRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateUserEmailTemplateRequest.php) | UpdateUserEmailTemplateRequest | 5 |
-| [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 3 |
+| [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 4 |
 | [`app/Http/Requests/UserTestsTableRequest.php`](../../../TCV-Backend/app/Http/Requests/UserTestsTableRequest.php) | UserTestsTableRequest | 5 |
 | [`app/Http/Requests/ValidateDiscountCodeRequest.php`](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php) | ValidateDiscountCodeRequest | 2 |
 | [`app/Jobs/ProcessLmsDeliveryJob.php`](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php) | ProcessLmsDeliveryJob | 3 |

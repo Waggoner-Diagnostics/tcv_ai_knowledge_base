@@ -212,8 +212,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_FIELDS` | `[…]` | [39](../../../TCV-Backend/app/Http/Controllers/UserController.php#L39) |
-| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [49](../../../TCV-Backend/app/Http/Controllers/UserController.php#L49) |
+| `SELF_EDIT_FIELDS` | `[…]` | [35](../../../TCV-Backend/app/Http/Controllers/UserController.php#L35) |
+| `AUDIT_FIELDS` | `[…]` | [46](../../../TCV-Backend/app/Http/Controllers/UserController.php#L46) |
+| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [56](../../../TCV-Backend/app/Http/Controllers/UserController.php#L56) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
