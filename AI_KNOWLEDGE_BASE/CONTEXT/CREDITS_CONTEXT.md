@@ -485,7 +485,7 @@ itself**, so it is gone from **both** `Admin.js` and the customer `Users.js` pag
 `handleAddCredits` (CUSTOMER → `/add-credits`) is still passed at `:160` but nothing reads it — dead code, and
 customers have no Manage Credits entry from the Users list (`Organisation.js` → `organisationColumns.js` still
 has one). Unconfirmed whether that is intended — ask the product owner before "fixing" either way.
-Wording: "Credits" everywhere (website "Test Credits" -> "Credits").
+Wording: ~~"Credits" everywhere~~ — **superseded 2026-11-04: the dashboard now says "Test Credits"** (see the last section of this file).
 
 Traps (verified on `9082ae22`):
 - ⚠️ `ensureUnlimitedForSuperAdmin()` (`Credits.php:169`) is a no-op whenever `hasUnlimited()` (`:101`) is
@@ -512,3 +512,20 @@ Traps (verified on `9082ae22`):
   a non-role update never re-grants.
 - Tests: `tests/Feature/Users/AuditedUserControllerTest.php` — ⚠️ both role-sync tests call
   `skipWithoutOutboundDns()`, so a CI host without DNS skips them silently. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.
+
+## Terminology: "Test Credits" in the dashboard UI (2026-11-04, merged: frontend PR #461, `6177cfe`)
+
+**Display-only rename — no API, schema, route or backend change.** Bare "Credit(s)" labels in the SPA became
+"Test Credits": Super Admin dashboard and admin tables (`SuperAdminDashboard.js`, `adminColumns.js`,
+`dashboardColumns.js`, `organisationColumns.js`, `userManagementColumns.js`, `addCreditsColumns.js`), Integrated
+Partners (`Organisation.js`), the Add / Manage Credits page and modal (`AddCredits.js`, `AddCreditsModal.js`),
+the user-panel credit page, header chip, checkout and payment form (`CreditPage.js`, `Header.js`, `Checkout.js`,
+`PaymentForm.js`), and the add-credits validation messages (`validationSchemaAddCredits.js`).
+
+- Reverses the earlier "Credits everywhere" note above, so website and dashboard now agree on "Test Credits".
+- ☠️ **Grep traps:** code identifiers, Redux keys (`userCredits`), API fields (`credits`, `credits_remaining`),
+  routes (`/add-credits`, `api/credits`) and the backend's own message keys are **unchanged**. Searching the UI
+  string "Test Credits" will not find the API, and searching `credits` will not find the label.
+- The **Audit Trail** is the exception that needs a map — see [AUDIT_TRAIL_FRONTEND_CONTEXT](AUDIT_TRAIL_FRONTEND_CONTEXT.md#test-credits-labels-in-the-detail-modal-2026-11-04-merged-frontend-pr-461).
+  Audit rows store the backend's label text, so history cannot be rewritten; the SPA relabels on display.
+- Copy-only change: `AddCredits.test.js` and `AuditDetailSections.test.js` were updated; no other behaviour moved.

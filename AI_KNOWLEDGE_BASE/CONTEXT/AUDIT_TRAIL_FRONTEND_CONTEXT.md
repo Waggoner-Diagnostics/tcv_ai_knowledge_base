@@ -915,3 +915,22 @@ full-screen layout; `AuditTrail.scss` gains the responsive rules.
 `auditFilters.test.js` (+132 lines — `rangeLengthInDays`, `exceedsMaxRange`, offset pairing incl. the UTC-0
 case) and `AuditDateRange.test.js` (+80 — the clamped calendar and the hint). Counted, not run, for the
 2026-09-18 KB sync.
+
+## "Test Credits" labels in the detail modal (2026-11-04, merged: frontend PR #461)
+
+`pages/AuditTrail/AuditDetailSections.js` gains `testCreditLabel(label)`, applied to the **label** column of
+`DetailList` (Details) and the field column of `ChangeTable` (What Changed, after `formatFieldLabel`). It is an
+**exact-match** map (`label.trim()` lookup), not a pattern:
+
+| Backend sends | Shown as |
+|---|---|
+| `Credits` | `Test Credits` |
+| `Credits Used` / `Credits Purchased` / `Credits Refunded` | `Test Credits Used` / `… Purchased` / `… Refunded` |
+| `Required Credits` / `Available Credits` | `Required Test Credits` / `Available Test Credits` |
+
+- Sources of those strings: `CreditsController`, `StripeProvider`, `TestInvitationController`,
+  `DiscountCodeController`. Stored audit rows are untouched; this is display only.
+- ⚠️ Anything not in the map ("Credit Card", "Credit Revoked", …) is shown exactly as sent, and **a new backend
+  credit label will not be renamed until it is added to `TEST_CREDIT_LABELS`**. Non-strings pass through.
+- Values and the raw `field` key are not affected; only the rendered label.
+- Tests: `AuditDetailSections.test.js` (+33 lines). Wider context: [CREDITS_CONTEXT](CREDITS_CONTEXT.md).
