@@ -1019,6 +1019,7 @@ Subdomain" option checkbox is hidden via `HIDDEN_OPTION_NAMES` (`OrganisationMod
 - `pages/AuthInit.js`: the post-hydration redirect from a public path now sends only `SUPER_ADMIN` to `/dashboard` and every other role to `/user-panel` (it used to send everything except `CUSTOMER` to `/dashboard`, which would 404 an organization user).
 - ⚠️ Still client-side only: `ProtectedRoute` checks authentication, not role, and `userType` is seeded from `localStorage` (`loginSlice.js:210`), so editing it renders the page shell. The data is protected by the backend change in [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid).
 - Branch `fix/protected-routes-03nov` (frontend `8210531`, committed, unmerged; contains develop through #450). `constants/routeConfig.test.js` (existing, Settings > Profile only) was not extended to cover these grants.
+- `pages/Setting/Profile.js` (Settings > Profile, Customer and Organization only, linked from the sidebar user menu): the Email field is `disabled`, because `PATCH api/users/{id}` ignores `email` for a non-admin self-edit (backend `d6553d46`). The form still posts the unchanged value.
 
 ## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, merged: frontend PR #445)
 
