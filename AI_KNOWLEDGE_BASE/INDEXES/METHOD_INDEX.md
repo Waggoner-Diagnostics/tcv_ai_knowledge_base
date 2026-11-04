@@ -1,6 +1,6 @@
 # Method Index
 
-**1349 methods across 255 classes.**
+**1356 methods across 255 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -953,18 +953,18 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L60) | 60 | public | `AuditService $auditService` | — |
-| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L73) | 73 | private | `User $user` | array |
-| UserController | [`canManageUser()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L100) | 100 | private | `?User $actor`, `$id` | bool |
-| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L108) | 108 | public | `Request $request` | — |
-| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L132) | 132 | public | `UserRequest $request` | — |
-| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L229) | 229 | public | `string $id` | — |
-| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L242) | 242 | public | `UserRequest $request`, `$id` | — |
-| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L381) | 381 | public | — | — |
-| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L398) | 398 | public | `Request $request`, `string $id` | — |
-| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L442) | 442 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L595) | 595 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L613) | 613 | private | `$userCollection` | — |
+| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L64) | 64 | public | `AuditService $auditService` | — |
+| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L77) | 77 | private | `User $user` | array |
+| UserController | [`canManageUser()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L104) | 104 | private | `?User $actor`, `$id` | bool |
+| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L112) | 112 | public | `Request $request` | — |
+| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L136) | 136 | public | `UserRequest $request` | — |
+| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L233) | 233 | public | `string $id` | — |
+| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L246) | 246 | public | `UserRequest $request`, `$id` | — |
+| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L385) | 385 | public | — | — |
+| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L402) | 402 | public | `Request $request`, `string $id` | — |
+| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L446) | 446 | public | `Request $request`, `$usertype` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L599) | 599 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L617) | 617 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -1003,9 +1003,16 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| RestrictAccountMiddleware | [`handle()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L33) | 33 | public | `Request $request`, `Closure $next` | — |
-| RestrictAccountMiddleware | [`impersonatorId()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L63) | 63 | private | `mixed $token` | ?int |
-| RestrictAccountMiddleware | [`restricted()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L79) | 79 | private | — | — |
+| RestrictAccountMiddleware | [`handle()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L65) | 65 | public | `Request $request`, `Closure $next` | — |
+| RestrictAccountMiddleware | [`handleMissingUser()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L102) | 102 | private | `Request $request`, `Closure $next` | — |
+| RestrictAccountMiddleware | [`blockedOrFinishTest()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L124) | 124 | private | `Request $request`, `Closure $next`, `User $account`, `string $code` | — |
+| RestrictAccountMiddleware | [`isOwnFinishableTest()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L141) | 141 | private | `Request $request`, `User $account` | bool |
+| RestrictAccountMiddleware | [`requestedUniqueTestId()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L165) | 165 | private | `Request $request` | ?string |
+| RestrictAccountMiddleware | [`isUnfinished()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L198) | 198 | private | `PatientTest $test` | bool |
+| RestrictAccountMiddleware | [`unfinishedTests()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L205) | 205 | private | `User $account` | — |
+| RestrictAccountMiddleware | [`isExpired()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L213) | 213 | private | `PersonalAccessToken $token` | bool |
+| RestrictAccountMiddleware | [`impersonatorId()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L222) | 222 | private | `mixed $token` | ?int |
+| RestrictAccountMiddleware | [`blocked()`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L238) | 238 | private | `string $code`, `bool $testMayFinish` | — |
 
 ### `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -1712,23 +1719,23 @@ method — several controllers here run 400–900 lines.
 | User | [`displayState()`](../../../TCV-Backend/app/Models/User.php#L127) | 127 | public | — | array |
 | User | [`resolveLocationLabel()`](../../../TCV-Backend/app/Models/User.php#L141) | 141 | private | `?string $mapped`, `?string $legacy` | array |
 | User | [`getEmailForVerification()`](../../../TCV-Backend/app/Models/User.php#L154) | 154 | public | — | — |
-| User | [`booted()`](../../../TCV-Backend/app/Models/User.php#L172) | 172 | protected static | — | void |
-| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L196) | 196 | protected | — | array |
-| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L214) | 214 | public | `?string $plain` | bool |
-| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L251) | 251 | public | — | bool |
-| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L272) | 272 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
-| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L288) | 288 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
-| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L293) | 293 | public | — | bool |
-| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L298) | 298 | public | — | — |
-| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L315) | 315 | public | — | — |
-| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L320) | 320 | public | — | — |
-| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L325) | 325 | public | — | bool |
-| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L330) | 330 | public | — | bool |
-| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L335) | 335 | public | `User $target` | — |
-| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L349) | 349 | public | — | — |
-| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L354) | 354 | public | — | — |
-| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L364) | 364 | public | — | — |
-| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L369) | 369 | public | — | — |
+| User | [`booted()`](../../../TCV-Backend/app/Models/User.php#L174) | 174 | protected static | — | void |
+| User | [`casts()`](../../../TCV-Backend/app/Models/User.php#L205) | 205 | protected | — | array |
+| User | [`checkPassword()`](../../../TCV-Backend/app/Models/User.php#L223) | 223 | public | `?string $plain` | bool |
+| User | [`hasLegacyMd5Password()`](../../../TCV-Backend/app/Models/User.php#L260) | 260 | public | — | bool |
+| User | [`candidatesForEmail()`](../../../TCV-Backend/app/Models/User.php#L281) | 281 | public static | `?string $email`, `bool $withTrashed = false` | Collection |
+| User | [`primaryForEmail()`](../../../TCV-Backend/app/Models/User.php#L297) | 297 | public static | `?string $email`, `bool $withTrashed = false` | ?self |
+| User | [`isActiveAccount()`](../../../TCV-Backend/app/Models/User.php#L302) | 302 | public | — | bool |
+| User | [`markEmailAsVerified()`](../../../TCV-Backend/app/Models/User.php#L307) | 307 | public | — | — |
+| User | [`hasVerifiedEmail()`](../../../TCV-Backend/app/Models/User.php#L324) | 324 | public | — | — |
+| User | [`isSuperAdmin()`](../../../TCV-Backend/app/Models/User.php#L329) | 329 | public | — | — |
+| User | [`canImpersonate()`](../../../TCV-Backend/app/Models/User.php#L334) | 334 | public | — | bool |
+| User | [`canBeImpersonated()`](../../../TCV-Backend/app/Models/User.php#L339) | 339 | public | — | bool |
+| User | [`canImpersonateUser()`](../../../TCV-Backend/app/Models/User.php#L344) | 344 | public | `User $target` | — |
+| User | [`stripeDetail()`](../../../TCV-Backend/app/Models/User.php#L358) | 358 | public | — | — |
+| User | [`assignedTests()`](../../../TCV-Backend/app/Models/User.php#L363) | 363 | public | — | — |
+| User | [`organization()`](../../../TCV-Backend/app/Models/User.php#L373) | 373 | public | — | — |
+| User | [`country()`](../../../TCV-Backend/app/Models/User.php#L378) | 378 | public | — | — |
 
 ### `app/Models/UserEmailTemplate.php`
 
