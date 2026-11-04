@@ -853,6 +853,36 @@ stay consistent.
 only the last remaining row. The client check is not a mirror of a rule that would otherwise catch it —
 on this path it is the rule.
 
+### Assigned Tests: Cancel no longer reverts saved selections (2026-11-04, merged: frontend PR #459, `feb9d78`)
+
+`hooks/useTestAssignment.js` is shared by `pages/UserPannel/SettingPage/ProfilePage.js` (Cancel → Discard,
+Save) and `components/NewUserModal.js` (`reset()` on close/open, `updateOriginal()` after a successful
+`bulkUpdateAssignment`).
+
+☠️ **Bug (introduced by PR #240 / `c86fb92`):** save a change to Assigned Tests, then click Cancel → Discard,
+and the checkboxes snapped back to the *pre-save* selection while the server held the new one.
+- `reset()` called `setIsInitialized(false)`, which re-ran the init effect and rebuilt the baseline from
+  `allTests[].is_assigned`. `allTests` is the list fetched on mount and is **never updated after a save**, so
+  it still carries the old flags.
+- The baseline lived in a ref (`originalAssignedRef`). `hasChanges` is a `useMemo` over `[assignedTests]`, so
+  after `updateOriginal()` it did not recompute and stayed `true` — Cancel then showed "Discard changes?"
+  instead of "no changes".
+- The old `useTestProfileVisibility` had the same logic but was masked: its Redux slice wrote the new flags back
+  into `allTests` after save.
+
+**Fix:** the baseline is state (`originalAssigned`). `reset()` only restores `assignedTests` to that baseline
+and no longer re-initialises; `updateOriginal()` advances it; `hasChanges` / `getChanges` depend on it, so both
+clear after Save. Cancel therefore reverts only what was changed *since the last save*.
+Tests: new `hooks/useTestAssignment.test.js` (save-then-cancel, cancel-only-unsaved).
+
+⚠️ **Still open (not part of #459):** `ProfilePage.handleSave` runs `Promise.all([updateProfile,
+bulkUpdateAssignment])`. If one rejects, neither `profileForm.updateOriginal()` nor
+`testAssignment.updateOriginal()` runs, so a partly-saved result (tests saved, profile failed) leaves the UI
+showing the tests as unsaved and Cancel → Discard reverts the UI away from what the DB holds. Re-sending is safe
+(`bulkUpdateAssignment` uses `syncWithoutDetaching` / `detach`; no-op changes are not audited). A planned
+follow-up switches to `Promise.allSettled` and advances each baseline independently. Also unverified by hand:
+`NewUserModal` close/reopen, new-user default test, edit-existing-user.
+
 ---
 
 ## Migrated records read differently from native ones (`ws-459`)
@@ -1022,7 +1052,7 @@ Subdomain" option checkbox is hidden via `HIDDEN_OPTION_NAMES` (`OrganisationMod
 
 ## Tabular User Tests report (2026-10-12, merged: frontend PR #445)
 
-`src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and "Export full test history". Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
+`src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and a per-row **"Export"** button (full test history; label shortened from "Export full test history" in PR #459 because it clipped in the Actions column — the `title` tooltip still says "Export this Test Taker's full test history", and `UserTests.test.js` now finds the row button by that tooltip). Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
 
 - State: `redux/slices/reports/userTestsTableSlice.js`, registered as `userTestsTable` in `store.js`.
 - `utils/columns/userTestsTableColumns.js`: column ids **must stay in sync with backend `UserTestsReportService::TABLE_COLUMNS` keys**. Distinct from `userTestsColumns.js` (detail page).
