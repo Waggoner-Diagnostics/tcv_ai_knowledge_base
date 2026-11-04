@@ -130,6 +130,30 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    lone **Close** button. That button used to be dead: `window.close()` is refused on a tab no script
    opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
    with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+10. ☠️ **Deleting an Integrated Partner fails with "Something went wrong" once its launch URL has been
+    used (open, product decision pending, found 2026-11-04).** `OrganizationController::destroy`
+    (`:656`) force-deletes the linked user, then `$organization->delete()` (`:674`). Three foreign keys
+    are `ON DELETE RESTRICT`, so MySQL refuses while any child row exists:
+    `lms_provider_configs.org_id` → `organizations.id` (`2026_05_08_000001`, line 22),
+    `lms_sessions.org_id` → `organizations.id` (`…000002`, line 36) and
+    `lms_sessions.lms_provider_config_id` → `lms_provider_configs.id` (`…000002`, line 37).
+    `getOrCreateProviderConfig` (`LmsLaunchService.php:17`, called from
+    `OrganizationController.php:834`) creates the config row lazily the **first time the launch URL is
+    opened**. So partners never launched delete fine and used partners always fail, which looks random.
+    The `catch` (`:698`) rolls back (the user is restored too), logs, and returns **500 `api.error`**
+    with **`$e->getMessage()` as the body**, so raw SQL (table and constraint names) reaches the
+    browser. Same leak at `:345`, `:429`, `:443`, `:625`, `:652`.
+    - **`lms_provider_configs` has `softDeletes()`, which does not help:** the DB foreign key ignores
+      soft-deleted rows. Tear-down order must be `lms_sessions`, then `lms_provider_configs`
+      (`forceDelete`), then the org. `lms_delivery_queue` (cascade from session) and
+      `lms_delivery_tokens` (cascade from config) clean themselves up.
+    - **Not yet verified:** other tables that point at `organizations` (patients, tests, credits) may
+      also be `RESTRICT`. Check before declaring a fix complete.
+    - **Options:** (A) delete sessions and configs inside `destroy`, which is small but loses LMS
+      history permanently; (B) catch the FK violation and return a clear 409, a stopgap;
+      (C) soft-delete `Organization`, which keeps history but touches every partner list, lookup and
+      name/email uniqueness check. Stop echoing `$e->getMessage()` in all cases. Decision owner:
+      product. Product-owner brief: https://claude.ai/artifact/PHHpEuMpMePgVyoRpsHCt8
 
 ---
 

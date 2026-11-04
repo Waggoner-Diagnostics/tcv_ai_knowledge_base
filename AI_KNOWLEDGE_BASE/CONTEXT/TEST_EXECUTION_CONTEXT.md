@@ -157,3 +157,8 @@ The 880/900 split is deliberate: the cache must expire before the URL does, neve
    `finalizeTestIfCompleted()` opens a nested one. Nested transactions are savepoints, so a rollback in
    the outer one discards the inner commit — but `TestCompleted` has *already fired* outside it. An
    outer failure after finalisation can therefore deliver an LMS completion for a rolled-back test.
+8. **A deleted or restricted clinic can still run its own test** (branch `fix/account-deleted-popup`, unmerged). The in-clinic
+   flow uses the clinic's login token; `RestrictAccountMiddleware` keeps six of these routes open for that
+   account's own `pending`/`inprogress` test and its result for 30 minutes — and checks ownership there, which
+   the controllers themselves still do not ([S-02](../SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)).
+   Rename one of these routes and finishing silently stops: [MIDDLEWARE.md](../MIDDLEWARE.md).

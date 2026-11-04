@@ -133,7 +133,7 @@
 | `MW-001` | `AddRequestId` | class | — | [app/Http/Middleware/AddRequestId.php:20](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php#L20) | 1 |
 | `MW-002` | `FlexibleAuthMiddleware` | class | — | [app/Http/Middleware/FlexibleAuthMiddleware.php:17](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L17) | 7 |
 | `MW-003` | `LmsSessionStatusMiddleware` | class | — | [app/Http/Middleware/LmsSessionStatusMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L9) | 1 |
-| `MW-004` | `RestrictAccountMiddleware` | class | — | [app/Http/Middleware/RestrictAccountMiddleware.php:27](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L27) | 3 |
+| `MW-004` | `RestrictAccountMiddleware` | class | — | [app/Http/Middleware/RestrictAccountMiddleware.php:41](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L41) | 10 |
 | `MW-005` | `RestrictIpMiddleware` | class | — | [app/Http/Middleware/RestrictIpMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L9) | 1 |
 | `REQ-001` | `AuditLogExportRequest` | class | FormRequest | [app/Http/Requests/AuditLogExportRequest.php:22](../../../TCV-Backend/app/Http/Requests/AuditLogExportRequest.php#L22) | 4 |
 | `REQ-002` | `AuditLogIndexRequest` | class | FormRequest | [app/Http/Requests/AuditLogIndexRequest.php:13](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L13) | 4 |

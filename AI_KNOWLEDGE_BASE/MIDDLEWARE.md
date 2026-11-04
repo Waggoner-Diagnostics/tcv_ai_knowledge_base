@@ -2,7 +2,8 @@
 
 Four classes exist in `app/Http/Middleware/` on `develop` (verified 2026-09-17). **Two are global, two
 are aliased.** Branch `fix/test-email-and-account-restriction` (2026-11-03, unmerged) adds a fifth,
-`RestrictAccountMiddleware`, making **three global**.
+`RestrictAccountMiddleware`, making **three global**. Branch `fix/account-deleted-popup` (2026-11-04, off `develop`, backend + frontend,
+unmerged) extends that one to **deleted** accounts and to letting an in-clinic test finish.
 
 | Class | ID | How it runs | Notes |
 |---|---|---|---|
@@ -10,7 +11,7 @@ are aliased.** Branch `fix/test-email-and-account-restriction` (2026-11-03, unme
 | `FlexibleAuthMiddleware` | `MW-002` | alias `FlexibleAuthMiddleware` | The four-tier session gate |
 | `LmsSessionStatusMiddleware` | `MW-003` | alias `lms.status` | Parameterised; conditional |
 | `RestrictIpMiddleware` | `MW-004` | **appended globally** in `bootstrap/app.php` | Runs on every request. Since `ws-449` also the whole of `GET api/access-check` |
-| `RestrictAccountMiddleware` | `MW-005` | **appended globally**, after `RestrictIpMiddleware` (branch only, see below) | Refuses every bearer token of a restricted account with `ACCOUNT_RESTRICTED` |
+| `RestrictAccountMiddleware` | `MW-005` | **appended globally**, after `RestrictIpMiddleware` (branch only, see below) | Refuses every bearer token of a restricted account with `ACCOUNT_RESTRICTED`, and (branch `fix/account-deleted-popup`) of a deleted one with `ACCOUNT_DELETED` — except six test-taking routes, for the account's own unfinished test |
 
 📌 `EnsureTokenIsValid` (dead, never aliased) was **deleted** when `tcv-backend-codefix` merged; its old
 `MW-001` slot is now `AddRequestId`. Earlier text here saying it was "still present on `develop`" was stale.
@@ -54,11 +55,13 @@ If you add caching here, remember the cache store is `database` by default
 ```php
 if (!$request->bearerToken() || $request->is('api/logout')) return $next($request);
 $user = Auth::guard('sanctum')->user();            // cached on the guard: auth:sanctum and
-if (!$user instanceof User) return $next($request); // FlexibleAuth tier 1 reuse it, no 2nd lookup
+if (!$user instanceof User) return handleMissingUser(); // FlexibleAuth tier 1 reuse it, no 2nd lookup
 if ($impersonatorId = /* 'impersonated-by:{id}' ability on the token */)
-    return User::find($impersonatorId)?->isActiveAccount() ? $next($request) : restricted();
-return $user->isActiveAccount() ? $next($request) : restricted();
-// restricted(): 401 {success:false, status_code:401, message: __('api.resticted'), error_code:'ACCOUNT_RESTRICTED'}
+    return User::find($impersonatorId)?->isActiveAccount() ? $next($request) : blocked(RESTRICTED, false);
+if ($user->isActiveAccount()) return $next($request);
+return blockedOrFinishTest($request, $next, $user, RESTRICTED);
+// blocked(): 401 {success:false, status_code:401, message, error_code:'ACCOUNT_RESTRICTED'|'ACCOUNT_DELETED',
+//                 test_may_finish: bool}   (message: api.resticted / api.account_deleted)
 ```
 
 - **Why it exists:** before it, restricting an account only blocked the *next login*; a token issued
@@ -72,11 +75,61 @@ return $user->isActiveAccount() ? $next($request) : restricted();
 - **"Login as" (impersonation) tokens** stand or fall with the Super Admin who minted them, not with the
   target: allowed on a restricted target (support needs it), refused once that admin is restricted.
   `User::booted()` also deletes them when the admin is restricted.
-- Cost: none for anonymous requests; for a token, the `sanctum` guard lookup it triggers is the one
-  `auth:sanctum` would make anyway. Impersonation tokens add one `users` lookup.
-- The SPA keys on `error_code: 'ACCOUNT_RESTRICTED'` in `src/services/errorHandler.js` (`errorCodeMap`)
-  and `POPUP_MESSAGES.ACCOUNT_RESTRICTED` — see [FRONTEND.md](FRONTEND.md). Do not rename the code
+- Cost: none for anonymous requests; for a Sanctum token, the `sanctum` guard lookup it triggers is the one
+  `auth:sanctum` would make anyway. Impersonation tokens add one `users` lookup. ⚠️ Since branch `fix/account-deleted-popup` a
+  bearer the guard **cannot** resolve — a test-session / LMS / org-patient token, or an unknown one — costs one
+  extra indexed `personal_access_tokens` lookup (`handleMissingUser()`), on a global middleware; a second `users`
+  query only when the token is a Sanctum one with a missing owner. Open as [R-13](OPEN_RISKS_PROTECTED_ROUTES.md).
+- The SPA keys on `error_code: 'ACCOUNT_RESTRICTED'` / `'ACCOUNT_DELETED'` in `src/services/errorHandler.js`
+  (`errorCodeMap`) and `POPUP_MESSAGES.*` — see [FRONTEND.md](FRONTEND.md). Do not rename a code
   without changing the client.
+
+### Deleted accounts (2026-11-04, branch `fix/account-deleted-popup`, unmerged)
+
+- **Why a separate path:** for a soft-deleted owner (or a force-deleted one) the Sanctum guard returns "no
+  user" — the same as for an unknown token — so the request used to reach `auth:sanctum` as a bare
+  401 "Unauthenticated." with no `error_code`, and the SPA jumped to `/login` with no popup.
+  `handleMissingUser()` therefore looks the token up itself: `PersonalAccessToken::findToken()`; ignore
+  non-`User` owners and **expired** tokens (Sanctum's own rule: `sanctum.expiration` minutes from
+  `created_at`, or `expires_at`); then `User::withTrashed()->find(tokenable_id)`. Trashed → `ACCOUNT_DELETED`;
+  row missing (a force-deleted Integrated Partner) → `ACCOUNT_DELETED` with `test_may_finish: false`.
+- **Tokens are kept on delete and deleted on restore** (`User::booted()`, `static::restored`: the user's own
+  tokens plus any `impersonated-by:{id}` tokens). Same reasoning as restriction: a deleted token would be a
+  bare 401. Force-deleting a partner (`OrganizationController::destroy`) leaves its token rows orphaned;
+  nothing cleans them up.
+- A deleted **impersonator** is reported as `ACCOUNT_RESTRICTED` (`User::find()` skips trashed rows) — the
+  user is blocked either way; only the code differs.
+- `api/logout` passes this middleware, but `auth:sanctum` still 401s for a deleted user (there is no user to
+  log out); the SPA clears the browser itself.
+
+### Letting an in-clinic test finish (2026-11-04, branch `fix/account-deleted-popup`, unmerged)
+
+An in-clinic test (`/user-panel/start-test/*`) runs on the **clinic's own login token**. Once that account is
+deleted or restricted the next answer would 401 and the patient would lose the test, so for a blocked
+account these routes — and only these — stay open (`FINISH_TEST_ROUTES`, keyed `METHOD uri`):
+
+`GET api/test-session/{unique_test_id}` · `…/section/{section_id}/plates` · `…/plate/{test_answer_id}/url` ·
+`POST api/tests/perform` · `GET api/test-result/{unique_test_id}` · `…/download-pdf`
+
+- **Which test:** matched with `app('router')->getRoutes()->match($request)`, because a global middleware runs
+  *before* routing and `$request->route()` is null. `perform` names its test through `test_answer_id` →
+  `testanswers.unique_test_id`; a plate-URL `test_answer_id` must belong to the same `unique_test_id`.
+- **Ownership (the only place the test routes check it — compare [S-02](SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)):**
+  the `patient_tests` row must belong to a patient whose `user_id` is the blocked account.
+- **Open tests:** `pending` or `inprogress`, and not an emailed invitation (`is_email_invite`; those use their
+  own `TestSession`). **Completed tests:** readable only for `RESULT_GRACE_MINUTES = 30` after
+  `patient_tests.updated_at`, so the result page can load. Any later write to the row extends that window.
+- **Passing through:** the middleware calls `setUser($account)` on **both** the `sanctum` guard
+  (FlexibleAuth tier 1 reads it) and the default `api` guard (`auth()->user()` in
+  `callerOwnsPatientTest()`), because a soft-deleted owner was never resolved. `lms.status` only acts when an
+  `LmsSession` is attached, so it is inert here.
+- **Everything else:** 401 + the error code + `test_may_finish` = the account has at least one unfinished
+  in-clinic test (same `pending`/`inprogress` rule). The SPA keeps the session on a test page when it is true.
+- ☠️ **`FINISH_TEST_ROUTES` fails closed:** rename or re-version one of those routes and finishing quietly stops
+  working. No test checks the list against the route table.
+- Restricted accounts get exactly the same exception. A force-deleted partner cannot finish (`patients.user_id`
+  cascades, the test is gone). The product choices behind all of this are [R-13](OPEN_RISKS_PROTECTED_ROUTES.md).
+- Tests: `tests/Feature/Auth/DeletedAccountSessionTest.php` (14).
 
 ---
 

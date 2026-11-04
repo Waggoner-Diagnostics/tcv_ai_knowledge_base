@@ -190,6 +190,21 @@ the user would not know they were restricted. The login screen's own message for
 - A Super Admin's "Login as" session on a restricted account keeps working; it stops as soon as that
   **admin** is restricted.
 
+### Deleting an account (2026-11-04, branch `fix/account-deleted-popup`, unmerged)
+
+| Event | Tokens of the account | Answered with |
+|---|---|---|
+| Deleted — soft (`UserController::destroy`) or forced (`OrganizationController::destroy`, Integrated Partner) | **kept**, on purpose (a force-deleted owner's rows are orphaned) | 401 `error_code: ACCOUNT_DELETED`, message `api.account_deleted` |
+| Restored (`User::restored`) | deleted — own tokens and any `impersonated-by:{id}` ones; fresh login required | — |
+
+Before this, a deleted user's next request was a bare 401 "Unauthenticated." (no `error_code`) and the SPA
+jumped to `/login` with no popup; `?sessionExpired=true` was never read by anything. The Sanctum guard cannot
+tell a deleted owner from an unknown token, so `RestrictAccountMiddleware` looks the token up itself — see
+[MIDDLEWARE.md](../MIDDLEWARE.md). It also lets a deleted or restricted clinic **finish its own in-clinic
+test** (six routes, own unfinished test only), with `test_may_finish` in the 401 body; product choices open as
+[R-13](../OPEN_RISKS_PROTECTED_ROUTES.md). Nothing about login changes: `login()` still gates on
+`trashed()` / `account_status` itself, and a deleted user's *token* is now caught before `login()` runs.
+
 ### Admin edits no longer change email verification (same branch)
 
 `UserController::update()` and `OrganizationController::update()` drop `email_verified` from the
@@ -199,7 +214,8 @@ verify your email" at login. Verification now changes only through `verifyEmailB
 `setup` password flow. ⚠️ Accounts already flipped need a one-off repair after review:
 `SELECT id, email FROM users WHERE email_verified = 'no' AND email_verified_at IS NOT NULL`.
 
-`tests/Feature/Auth/AccountRestrictionTest.php` pins all of the above.
+`tests/Feature/Auth/AccountRestrictionTest.php` pins the restriction parts of the above;
+`tests/Feature/Auth/DeletedAccountSessionTest.php` (14) pins deletion, restore and the finish-test exception.
 
 ---
 

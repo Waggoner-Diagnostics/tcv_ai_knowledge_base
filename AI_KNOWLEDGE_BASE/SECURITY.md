@@ -373,6 +373,14 @@ kills the "Login as" tokens they minted (previously those outlived the admin for
 open: the short-circuit itself, and its `trashed()` / `email_verified` gaps — a soft-deleted user's token
 is not revoked and still gets "Already logged in".
 
+**Update (2026-11-04, branch `fix/account-deleted-popup`, unmerged):** the soft-deleted half is closed the same way. The same
+global middleware answers a deleted owner's token — `api/login` included, since it runs before the controller —
+with 401 `ACCOUNT_DELETED` (no test posts to `api/login` with a deleted user's token, so that path is by
+construction). The short-circuit and the `email_verified` gap are still open. One deliberate new exposure: a
+**deleted or restricted clinic's leftover token can still call six test routes** for its own unfinished test, and
+read that test's result for 30 minutes; ownership is checked there, unlike the rest of the flow (S-02).
+Product choices: [R-13](OPEN_RISKS_PROTECTED_ROUTES.md).
+
 Separately, `login()`'s failure responses distinguish "no such user" (`api.unauthorized`) from
 "restricted" (`api.resticted` — note the typo in the key) from "unverified", which is an enumeration
 oracle. The resend endpoints deliberately avoid this; `login()` does not.
