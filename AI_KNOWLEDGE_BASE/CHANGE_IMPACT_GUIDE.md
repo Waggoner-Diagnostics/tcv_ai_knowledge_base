@@ -254,6 +254,15 @@ either way ([FRONTEND.md](FRONTEND.md#report-date-filters-ws-455)).
 - Indexes regenerated 2026-10-15 (`API-083`…`085`, `API-104`).
 
 
+## Protected routes, user-management authorization and email links (branch `fix/protected-routes-03nov`, 2026-11-04, unmerged)
+
+- `SystemEmailTemplateService::render()` now runs `EmailContent::styleAnchors` after `linkify`. Anything asserting rendered email HTML byte-for-byte (`SystemEmailTemplateMailTest`) sees the added `style="color:#007bff;..."` on unstyled anchors.
+- Moving a link inside an `email_template` body needs the three-edit set (seeder, `SystemEmailDefaults`, fragment migration). `2026_11_04_000001_put_email_fallback_link_on_new_line` is the model; it must run after `2026_10_28_000003`, which matches the older markup.
+- `UserController` authorization lives in the controller (`canManageUser()` for `edit`/`update`, inline `isSuperAdmin()` for `index`/`store`/`destroy`/`userWithType`) and in `UserRequest::authorize()` for `users.store` only, because the same request class serves public registration. A new `users.*` route needs its own check. Tests: `tests/Feature/Users/UserEndpointAuthorizationTest.php` (Customer, Organization and Super Admin each driven with a real login token); `LegacyLocationAdminPayloadTest` was adjusted to act as a Super Admin.
+- `UserController::update`: a non-Super-Admin's validated data is cut down to `SELF_EDIT_FIELDS` (so `usertype`, `account_status` and the six test-permission flags can neither be set nor reset to 0 by a profile save), `email` is not in that list (a non-admin's email change is silently ignored; `UserRequest` still validates it), and `email_verified` is always dropped (develop's rule). Only a Super Admin edit runs the permission-flag block. The SPA profile form (`Profile.js`) still PATCHes `api/users/{id}`, see [OPEN_RISKS_PROTECTED_ROUTES](OPEN_RISKS_PROTECTED_ROUTES.md).
+- Frontend: `routeConfig.js` no longer grants Super Admin pages to CUSTOMER/ORGANIZATION and `AuthInit.js` sends only `SUPER_ADMIN` to `/dashboard` ([FRONTEND](FRONTEND.md)). A new role-specific page needs its path added to that role's `parentRoutes`.
+- Not run: the full backend suite aborts on a duplicate `PatientExportTest::invitation()` (`tests/Feature/PatientExportTest.php:1375`). Generated indexes were not regenerated for this note.
+
 ## Review fixes (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 - `App\Support\SpreadsheetSafe` is shared by `UserTestsReportExport` and `UserTestsDetailExport`; any new export writing user-controlled strings should use it, except explicit-string writers like `PatientXlsxExport`.

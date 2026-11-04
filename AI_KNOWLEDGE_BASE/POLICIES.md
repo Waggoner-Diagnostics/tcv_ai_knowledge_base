@@ -85,7 +85,7 @@ row. Purchased (`1`) and revoked (`2`) grants are undeletable by anyone.
 `TestAnswerController` (tests), `OrganizationController` (orgs), `CreditsController::destroy()` (credits).
 
 Everything else — `LmsAdminController`, `SuperAdminDashboardController`, `ReportController`,
-`UserController`, `DiscountCodeController`, `PaymentController`, `PatientController` — has **no policy
+`UserController` (⚠️ since 2026-11-04 gated in the controller/`UserRequest` on `fix/protected-routes-03nov`, not by a policy — [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid)), `DiscountCodeController`, `PaymentController`, `PatientController` — has **no policy
 check at all**. See [AUTHORIZATION.md](AUTHORIZATION.md#where-there-is-no-authorization-at-all).
 
 ## Adding a policy

@@ -40,7 +40,7 @@
 | `CTRL-034` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) | 4 |
 | `CTRL-035` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-036` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
-| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:28](../../../TCV-Backend/app/Http/Controllers/UserController.php#L28) | 11 |
+| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:29](../../../TCV-Backend/app/Http/Controllers/UserController.php#L29) | 12 |
 | `CTRL-038` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L16) | 4 |
 | `CTRL-039` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
@@ -161,7 +161,7 @@
 | `REQ-024` | `UpdateProfileRequest` | class | FormRequest | [app/Http/Requests/UpdateProfileRequest.php:9](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php#L9) | 4 |
 | `REQ-025` | `UpdateSettingsRequest` | class | FormRequest | [app/Http/Requests/UpdateSettingsRequest.php:7](../../../TCV-Backend/app/Http/Requests/UpdateSettingsRequest.php#L7) | 2 |
 | `REQ-026` | `UpdateUserEmailTemplateRequest` | class | FormRequest | [app/Http/Requests/UpdateUserEmailTemplateRequest.php:11](../../../TCV-Backend/app/Http/Requests/UpdateUserEmailTemplateRequest.php#L11) | 5 |
-| `REQ-027` | `UserRequest` | class | FormRequest | [app/Http/Requests/UserRequest.php:10](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L10) | 3 |
+| `REQ-027` | `UserRequest` | class | FormRequest | [app/Http/Requests/UserRequest.php:13](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L13) | 4 |
 | `REQ-028` | `UserTestsTableRequest` | class | FormRequest | [app/Http/Requests/UserTestsTableRequest.php:17](../../../TCV-Backend/app/Http/Requests/UserTestsTableRequest.php#L17) | 5 |
 | `REQ-029` | `ValidateDiscountCodeRequest` | class | FormRequest | [app/Http/Requests/ValidateDiscountCodeRequest.php:7](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php#L7) | 2 |
 | `REQ-030` | `ValidatesAuditDateRange` | trait | — | [app/Http/Requests/Concerns/ValidatesAuditDateRange.php:30](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesAuditDateRange.php#L30) | 1 |
@@ -267,4 +267,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._

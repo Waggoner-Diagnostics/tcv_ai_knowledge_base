@@ -1,6 +1,6 @@
 # Database Table Index
 
-**55 tables**, reconstructed from 162 migrations.
+**55 tables**, reconstructed from 163 migrations.
 
 Columns are the **union of every `create`/`table` migration** touching the table, so a column added
 and later dropped may still appear. The `Migrations` count is the audit trail — and `DESCRIBE` is
@@ -823,4 +823,4 @@ _Dropped later by a migration (may still be listed above): `usertype`, `includeW
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._

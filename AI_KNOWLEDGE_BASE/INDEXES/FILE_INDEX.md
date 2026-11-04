@@ -81,7 +81,7 @@
 | [`app/Http/Controllers/TestResumeController.php`](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php) | TestResumeController | 4 |
 | [`app/Http/Controllers/TestSectionController.php`](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php) | TestSectionController | 5 |
 | [`app/Http/Controllers/TestSectionPlateController.php`](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php) | TestSectionPlateController | 5 |
-| [`app/Http/Controllers/UserController.php`](../../../TCV-Backend/app/Http/Controllers/UserController.php) | UserController | 11 |
+| [`app/Http/Controllers/UserController.php`](../../../TCV-Backend/app/Http/Controllers/UserController.php) | UserController | 12 |
 | [`app/Http/Controllers/UserEmailTemplateController.php`](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php) | UserEmailTemplateController | 4 |
 | [`app/Http/Middleware/AddRequestId.php`](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php) | AddRequestId | 1 |
 | [`app/Http/Middleware/FlexibleAuthMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php) | FlexibleAuthMiddleware | 7 |
@@ -116,7 +116,7 @@
 | [`app/Http/Requests/UpdateProfileRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php) | UpdateProfileRequest | 4 |
 | [`app/Http/Requests/UpdateSettingsRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateSettingsRequest.php) | UpdateSettingsRequest | 2 |
 | [`app/Http/Requests/UpdateUserEmailTemplateRequest.php`](../../../TCV-Backend/app/Http/Requests/UpdateUserEmailTemplateRequest.php) | UpdateUserEmailTemplateRequest | 5 |
-| [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 3 |
+| [`app/Http/Requests/UserRequest.php`](../../../TCV-Backend/app/Http/Requests/UserRequest.php) | UserRequest | 4 |
 | [`app/Http/Requests/UserTestsTableRequest.php`](../../../TCV-Backend/app/Http/Requests/UserTestsTableRequest.php) | UserTestsTableRequest | 5 |
 | [`app/Http/Requests/ValidateDiscountCodeRequest.php`](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php) | ValidateDiscountCodeRequest | 2 |
 | [`app/Jobs/ProcessLmsDeliveryJob.php`](../../../TCV-Backend/app/Jobs/ProcessLmsDeliveryJob.php) | ProcessLmsDeliveryJob | 3 |
@@ -262,4 +262,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._
