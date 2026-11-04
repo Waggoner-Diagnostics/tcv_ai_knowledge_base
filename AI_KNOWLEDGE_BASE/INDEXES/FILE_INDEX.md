@@ -81,7 +81,7 @@
 | [`app/Http/Controllers/TestResumeController.php`](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php) | TestResumeController | 4 |
 | [`app/Http/Controllers/TestSectionController.php`](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php) | TestSectionController | 5 |
 | [`app/Http/Controllers/TestSectionPlateController.php`](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php) | TestSectionPlateController | 5 |
-| [`app/Http/Controllers/UserController.php`](../../../TCV-Backend/app/Http/Controllers/UserController.php) | UserController | 12 |
+| [`app/Http/Controllers/UserController.php`](../../../TCV-Backend/app/Http/Controllers/UserController.php) | UserController | 11 |
 | [`app/Http/Controllers/UserEmailTemplateController.php`](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php) | UserEmailTemplateController | 4 |
 | [`app/Http/Middleware/AddRequestId.php`](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php) | AddRequestId | 1 |
 | [`app/Http/Middleware/FlexibleAuthMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php) | FlexibleAuthMiddleware | 7 |
@@ -262,4 +262,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._

@@ -1,6 +1,6 @@
 # Method Index
 
-**1349 methods across 255 classes.**
+**1348 methods across 255 classes.**
 
 Grouped by file; jump straight to the line. Use this instead of opening a controller to find a
 method — several controllers here run 400–900 lines.
@@ -953,18 +953,17 @@ method — several controllers here run 400–900 lines.
 
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
-| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L60) | 60 | public | `AuditService $auditService` | — |
-| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L73) | 73 | private | `User $user` | array |
-| UserController | [`canManageUser()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L100) | 100 | private | `?User $actor`, `$id` | bool |
-| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L108) | 108 | public | `Request $request` | — |
-| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L132) | 132 | public | `UserRequest $request` | — |
-| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L229) | 229 | public | `string $id` | — |
-| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L242) | 242 | public | `UserRequest $request`, `$id` | — |
-| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L381) | 381 | public | — | — |
-| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L398) | 398 | public | `Request $request`, `string $id` | — |
-| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L442) | 442 | public | `Request $request`, `$usertype` | — |
-| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L595) | 595 | public | — | — |
-| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L613) | 613 | private | `$userCollection` | — |
+| UserController | [`__construct()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L53) | 53 | public | `AuditService $auditService` | — |
+| UserController | [`accountCreateDetails()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L66) | 66 | private | `User $user` | array |
+| UserController | [`index()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L93) | 93 | public | `Request $request` | — |
+| UserController | [`store()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L117) | 117 | public | `UserRequest $request` | — |
+| UserController | [`edit()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L214) | 214 | public | `string $id` | — |
+| UserController | [`update()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L223) | 223 | public | `UserRequest $request`, `$id` | — |
+| UserController | [`show()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L350) | 350 | public | — | — |
+| UserController | [`destroy()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L367) | 367 | public | `Request $request`, `string $id` | — |
+| UserController | [`userWithType()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L411) | 411 | public | `Request $request`, `$usertype` | — |
+| UserController | [`getUserCredits()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L564) | 564 | public | — | — |
+| UserController | [`addCreditsToUsers()`](../../../TCV-Backend/app/Http/Controllers/UserController.php#L582) | 582 | private | `$userCollection` | — |
 
 ### `app/Http/Controllers/UserEmailTemplateController.php`
 
@@ -1236,9 +1235,9 @@ method — several controllers here run 400–900 lines.
 | Class | Method | Line | Vis | Params | Returns |
 |---|---|---|---|---|---|
 | UserRequest | [`authorize()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L18) | 18 | public | — | bool |
-| UserRequest | [`failedAuthorization()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L46) | 46 | protected | — | — |
-| UserRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L56) | 56 | public | `$id = null`, `array $data = []` | array |
-| UserRequest | [`emailIsChanging()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L106) | 106 | private | `mixed $id`, `mixed $email` | bool |
+| UserRequest | [`failedAuthorization()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L35) | 35 | protected | — | — |
+| UserRequest | [`rules()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L45) | 45 | public | `$id = null`, `array $data = []` | array |
+| UserRequest | [`emailIsChanging()`](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L95) | 95 | private | `mixed $id`, `mixed $email` | bool |
 
 ### `app/Http/Requests/UserTestsTableRequest.php`
 
@@ -2632,4 +2631,4 @@ method — several controllers here run 400–900 lines.
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._

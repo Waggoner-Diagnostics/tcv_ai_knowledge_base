@@ -212,9 +212,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SELF_EDIT_FIELDS` | `[…]` | [35](../../../TCV-Backend/app/Http/Controllers/UserController.php#L35) |
-| `AUDIT_FIELDS` | `[…]` | [46](../../../TCV-Backend/app/Http/Controllers/UserController.php#L46) |
-| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [56](../../../TCV-Backend/app/Http/Controllers/UserController.php#L56) |
+| `AUDIT_FIELDS` | `[…]` | [39](../../../TCV-Backend/app/Http/Controllers/UserController.php#L39) |
+| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [49](../../../TCV-Backend/app/Http/Controllers/UserController.php#L49) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
@@ -622,4 +621,4 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._

@@ -40,7 +40,7 @@
 | `CTRL-034` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) | 4 |
 | `CTRL-035` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-036` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
-| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:29](../../../TCV-Backend/app/Http/Controllers/UserController.php#L29) | 12 |
+| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:28](../../../TCV-Backend/app/Http/Controllers/UserController.php#L28) | 11 |
 | `CTRL-038` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L16) | 4 |
 | `CTRL-039` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
@@ -267,4 +267,4 @@
 
 ---
 
-_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-03. Do not hand-edit — re-run the generator._
+_Generated from source by `tools/extract.php` + `tools/extract-clients.php` + `tools/render.php` on 2026-11-04. Do not hand-edit — re-run the generator._
