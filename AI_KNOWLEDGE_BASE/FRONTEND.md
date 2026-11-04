@@ -233,6 +233,27 @@ mid-session makes its next request 401 with this code; the interceptor's existin
 missing from `errorCodeMap` falls through to the generic 401 case, which says "Your session has expired"
 — so **every new backend `error_code` on a 401 needs an entry here**, or the user is told the wrong thing.
 
+**`ACCOUNT_DELETED`** (2026-11-04, branch `fix/account-deleted-popup`, unmerged) is the third entry, with
+`POPUP_MESSAGES.ACCOUNT_DELETED` (and `ACCOUNT_DELETED_FINISH_TEST`, `ACCOUNT_RESTRICTED_FINISH_TEST`,
+`ACCOUNT_ENDING_SIGN_OUT`). Before it a deleted user's bare 401 went straight to `/login` with no popup
+(`handleAuthError()` writes `?sessionExpired=true`, but nothing in `src/` reads it).
+
+**Finishing a test after the account is removed** is `src/utils/accountEnding.js`. The response interceptor
+(`AxiosInstance.js`) calls `handleAccountEndingDuringTest(data, path)` first on a 401 — **before** the
+`skipAuthRedirect` check, so a background poll can raise it. When the body has `test_may_finish: true` **and**
+the page is a test page (`TEST_FLOW_PATH`: `/user-panel/start-test/{instruction|prepare|countdown|test|section-complete|transition|result}/:id`)
+it stores `sessionStorage['tcv_account_ending']`, shows the "you can finish this test, then you'll be signed
+out" popup once, **keeps the session**, and rejects the call. `ResultPage` then runs
+`promptSignOutIfAccountEnding()` once the result has loaded (or its fetch failed): OK →
+`signOutAndGoToLogin()`. The flag and the once-only guard are cleared by `clearAccountEnding()` on
+`loginSuccess`, `logoutSuccess`, `logoutUser.fulfilled` and the interceptor's ordinary 401 sign-out, so it can
+never reach a healthy later session in the same tab. The backend half is in [MIDDLEWARE.md](MIDDLEWARE.md).
+- ☠️ `TEST_FLOW_PATH` is a **hard-coded copy** of the test routes in `protectedRoutes.js`; adding a test page
+  means editing it.
+- The popup appears on the **first flagged response**, not at the moment of deletion: test calls keep
+  succeeding, so it is usually the next background credits poll (`useCreditsSync`, ~60 s). Not run in a browser.
+- Tests: `utils/accountEnding.test.js` (5). The interceptor change and the new `ResultPage` effect have none.
+
 **`sendTestResumeEmail` is silent** (same branch). `testResumeSlice.js` passes `{ skipErrorPopup: true }`:
 both callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite path) fire it in
 the background while the test starts, so a 404 or a `send-resume-email`
