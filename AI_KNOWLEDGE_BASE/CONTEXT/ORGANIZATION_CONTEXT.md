@@ -130,6 +130,32 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    lone **Close** button. That button used to be dead: `window.close()` is refused on a tab no script
    opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
    with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+10. ☠️ **Deleting an Integrated Partner whose launch URL was used returns an informational 409 (backend
+    branch `fix/partner-delete-friendly-error`, commit `bd010d3a`, on top of `origin/develop`, unmerged;
+    2026-11-04).** Was: a 500 "Something went wrong" with the raw SQL error as the body. Cause:
+    `lms_provider_configs.org_id`, `lms_sessions.org_id` and `lms_sessions.lms_provider_config_id` are
+    `ON DELETE RESTRICT`, and the config row is created lazily the first time the launch URL is opened
+    (`LmsLaunchService::getOrCreateProviderConfig`), so only used partners were blocked.
+    - **Chosen behaviour is option B (refuse, keep LMS history), not tear-down.** `destroy()` counts
+      blockers *before* touching the owner user: `LmsProviderConfig::withTrashed()` (the FK still sees
+      soft-deleted configs) and `LmsSession`. Any count > 0 → **409**
+      `{success:false, status_code:409, message, error_code:'ORGANIZATION_HAS_LINKED_RECORDS', errors:{lms_provider_configs, lms_sessions}}`.
+      The message names the partner and the counts and suggests restricting the account instead
+      (`api.organization_delete_blocked`).
+    - **Race / future RESTRICT keys:** a `QueryException` that is a foreign-key violation (MySQL 1451, or
+      SQLite "foreign key") inside the transaction rolls back (the owner user is restored) and returns the
+      same 409 with `error_code` but **no `errors` counts**, message `api.organization_delete_blocked_generic`.
+    - **Also changed:** `authorize('delete', Organization::class)` moved *outside* the `try`, so a denied
+      policy is 403, not a 500; an unknown id is an explicit 404 (`api.organization_not_found`); the 500
+      fallback no longer returns `$e->getMessage()` (this method only; the same leak remains at the other
+      `catch` blocks in the controller).
+    - **Still open:** the 409 body is hand-built (no `data` key) and its "LMS configuration(s)/session(s)"
+      wording is built with `Str::plural` in PHP, not in `resources/lang`. `auditService->log()` runs after
+      `DB::commit()` inside the `try`, so an audit failure reports an error for a delete that happened.
+      Unverified: other tables pointing at `organizations` (patients, tests, credits) may also be `RESTRICT`
+      (the generic 409 would catch them). The SPA's handling of the 409 was not checked.
+    - Pinned by `tests/Feature/Organizations/AuditedOrganizationControllerTest.php` (13 tests pass,
+      including used partner, soft-deleted config, mid-delete FK, 404, 403).
 
 ---
 
