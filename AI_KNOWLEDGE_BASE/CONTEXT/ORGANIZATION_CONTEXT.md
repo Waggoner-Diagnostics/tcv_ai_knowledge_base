@@ -131,8 +131,8 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
    with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
 10. ☠️ **Deleting an Integrated Partner fails with "Something went wrong" once its launch URL has been
-    used (open, product decision pending, found 2026-11-04).** `OrganizationController::destroy`
-    (`:656`) force-deletes the linked user, then `$organization->delete()` (`:674`). Three foreign keys
+    used (found 2026-11-04; ✅ fixed on backend branch `fix/partner-delete-friendly-error`, commit `bd010d3a`, unmerged - now an informational 409, see below).** `OrganizationController::destroy`
+    (was `:656`) force-deletes the linked user, then `$organization->delete()`. Three foreign keys
     are `ON DELETE RESTRICT`, so MySQL refuses while any child row exists:
     `lms_provider_configs.org_id` → `organizations.id` (`2026_05_08_000001`, line 22),
     `lms_sessions.org_id` → `organizations.id` (`…000002`, line 36) and
@@ -147,13 +147,26 @@ Both advance the LMS session's status. Remember the status gate only bites for t
       soft-deleted rows. Tear-down order must be `lms_sessions`, then `lms_provider_configs`
       (`forceDelete`), then the org. `lms_delivery_queue` (cascade from session) and
       `lms_delivery_tokens` (cascade from config) clean themselves up.
-    - **Not yet verified:** other tables that point at `organizations` (patients, tests, credits) may
-      also be `RESTRICT`. Check before declaring a fix complete.
-    - **Options:** (A) delete sessions and configs inside `destroy`, which is small but loses LMS
-      history permanently; (B) catch the FK violation and return a clear 409, a stopgap;
-      (C) soft-delete `Organization`, which keeps history but touches every partner list, lookup and
-      name/email uniqueness check. Stop echoing `$e->getMessage()` in all cases. Decision owner:
-      product. Product-owner brief: https://claude.ai/artifact/PHHpEuMpMePgVyoRpsHCt8
+    - **Fix: option B (refuse, keep LMS history), not tear-down.** `destroy()` counts
+      blockers *before* touching the owner user: `LmsProviderConfig::withTrashed()` (the FK still sees
+      soft-deleted configs) and `LmsSession`. Any count > 0 → **409**
+      `{success:false, status_code:409, message, error_code:'ORGANIZATION_HAS_LINKED_RECORDS', errors:{lms_provider_configs, lms_sessions}}`.
+      The message names the partner and the counts and suggests restricting the account instead
+      (`api.organization_delete_blocked`).
+    - **Race / future RESTRICT keys:** a `QueryException` that is a foreign-key violation (MySQL 1451, or
+      SQLite "foreign key") inside the transaction rolls back (the owner user is restored) and returns the
+      same 409 with `error_code` but **no `errors` counts**, message `api.organization_delete_blocked_generic`.
+    - **Also changed:** `authorize('delete', Organization::class)` moved *outside* the `try`, so a denied
+      policy is 403, not a 500; an unknown id is an explicit 404 (`api.organization_not_found`); the 500
+      fallback no longer returns `$e->getMessage()` (this method only; the same leak remains at the other
+      `catch` blocks in the controller).
+    - **Still open:** the 409 body is hand-built (no `data` key) and its "LMS configuration(s)/session(s)"
+      wording is built with `Str::plural` in PHP, not in `resources/lang`. `auditService->log()` runs after
+      `DB::commit()` inside the `try`, so an audit failure reports an error for a delete that happened.
+      Unverified: other tables pointing at `organizations` (patients, tests, credits) may also be `RESTRICT`
+      (the generic 409 would catch them). The SPA's handling of the 409 was not checked.
+    - Pinned by `tests/Feature/Organizations/AuditedOrganizationControllerTest.php` (13 tests pass,
+      including used partner, soft-deleted config, mid-delete FK, 404, 403).
 
 ---
 
