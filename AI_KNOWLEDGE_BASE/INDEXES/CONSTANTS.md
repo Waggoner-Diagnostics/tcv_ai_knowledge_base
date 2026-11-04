@@ -212,9 +212,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SELF_EDIT_FIELDS` | `[…]` | [35](../../../TCV-Backend/app/Http/Controllers/UserController.php#L35) |
-| `AUDIT_FIELDS` | `[…]` | [46](../../../TCV-Backend/app/Http/Controllers/UserController.php#L46) |
-| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [56](../../../TCV-Backend/app/Http/Controllers/UserController.php#L56) |
+| `SELF_EDIT_FIELDS` | `[…]` | [39](../../../TCV-Backend/app/Http/Controllers/UserController.php#L39) |
+| `AUDIT_FIELDS` | `[…]` | [50](../../../TCV-Backend/app/Http/Controllers/UserController.php#L50) |
+| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [60](../../../TCV-Backend/app/Http/Controllers/UserController.php#L60) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
@@ -230,8 +230,11 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `ERROR_CODE` | `'ACCOUNT_RESTRICTED'` | [29](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L29) |
-| `IMPERSONATED_BY` | `'impersonated-by:'` | [31](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L31) |
+| `RESTRICTED` | `'ACCOUNT_RESTRICTED'` | [43](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L43) |
+| `DELETED` | `'ACCOUNT_DELETED'` | [45](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L45) |
+| `IMPERSONATED_BY` | `'impersonated-by:'` | [47](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L47) |
+| `RESULT_GRACE_MINUTES` | `30` | [50](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L50) |
+| `FINISH_TEST_ROUTES` | `[…]` | [56](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L56) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 

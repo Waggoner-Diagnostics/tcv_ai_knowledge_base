@@ -86,7 +86,7 @@
 | [`app/Http/Middleware/AddRequestId.php`](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php) | AddRequestId | 1 |
 | [`app/Http/Middleware/FlexibleAuthMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php) | FlexibleAuthMiddleware | 7 |
 | [`app/Http/Middleware/LmsSessionStatusMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php) | LmsSessionStatusMiddleware | 1 |
-| [`app/Http/Middleware/RestrictAccountMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php) | RestrictAccountMiddleware | 3 |
+| [`app/Http/Middleware/RestrictAccountMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php) | RestrictAccountMiddleware | 10 |
 | [`app/Http/Middleware/RestrictIpMiddleware.php`](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php) | RestrictIpMiddleware | 1 |
 | [`app/Http/Requests/AuditLogExportRequest.php`](../../../TCV-Backend/app/Http/Requests/AuditLogExportRequest.php) | AuditLogExportRequest | 4 |
 | [`app/Http/Requests/AuditLogIndexRequest.php`](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php) | AuditLogIndexRequest | 4 |

@@ -130,13 +130,24 @@ Both advance the LMS session's status. Remember the status gate only bites for t
    lone **Close** button. That button used to be dead: `window.close()` is refused on a tab no script
    opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
    with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
-10. ☠️ **Deleting an Integrated Partner whose launch URL was used returns an informational 409 (backend
-    branch `fix/partner-delete-friendly-error`, commit `bd010d3a`, on top of `origin/develop`, unmerged;
-    2026-11-04).** Was: a 500 "Something went wrong" with the raw SQL error as the body. Cause:
-    `lms_provider_configs.org_id`, `lms_sessions.org_id` and `lms_sessions.lms_provider_config_id` are
-    `ON DELETE RESTRICT`, and the config row is created lazily the first time the launch URL is opened
-    (`LmsLaunchService::getOrCreateProviderConfig`), so only used partners were blocked.
-    - **Chosen behaviour is option B (refuse, keep LMS history), not tear-down.** `destroy()` counts
+10. ☠️ **Deleting an Integrated Partner fails with "Something went wrong" once its launch URL has been
+    used (found 2026-11-04; ✅ fixed on backend branch `fix/partner-delete-friendly-error`, commit `bd010d3a`, unmerged - now an informational 409, see below).** `OrganizationController::destroy`
+    (was `:656`) force-deletes the linked user, then `$organization->delete()`. Three foreign keys
+    are `ON DELETE RESTRICT`, so MySQL refuses while any child row exists:
+    `lms_provider_configs.org_id` → `organizations.id` (`2026_05_08_000001`, line 22),
+    `lms_sessions.org_id` → `organizations.id` (`…000002`, line 36) and
+    `lms_sessions.lms_provider_config_id` → `lms_provider_configs.id` (`…000002`, line 37).
+    `getOrCreateProviderConfig` (`LmsLaunchService.php:17`, called from
+    `OrganizationController.php:834`) creates the config row lazily the **first time the launch URL is
+    opened**. So partners never launched delete fine and used partners always fail, which looks random.
+    The `catch` (`:698`) rolls back (the user is restored too), logs, and returns **500 `api.error`**
+    with **`$e->getMessage()` as the body**, so raw SQL (table and constraint names) reaches the
+    browser. Same leak at `:345`, `:429`, `:443`, `:625`, `:652`.
+    - **`lms_provider_configs` has `softDeletes()`, which does not help:** the DB foreign key ignores
+      soft-deleted rows. Tear-down order must be `lms_sessions`, then `lms_provider_configs`
+      (`forceDelete`), then the org. `lms_delivery_queue` (cascade from session) and
+      `lms_delivery_tokens` (cascade from config) clean themselves up.
+    - **Fix: option B (refuse, keep LMS history), not tear-down.** `destroy()` counts
       blockers *before* touching the owner user: `LmsProviderConfig::withTrashed()` (the FK still sees
       soft-deleted configs) and `LmsSession`. Any count > 0 → **409**
       `{success:false, status_code:409, message, error_code:'ORGANIZATION_HAS_LINKED_RECORDS', errors:{lms_provider_configs, lms_sessions}}`.
