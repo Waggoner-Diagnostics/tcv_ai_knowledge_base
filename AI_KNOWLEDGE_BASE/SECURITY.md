@@ -879,7 +879,7 @@ hold real migrated accounts.
 
 **Status 2026-11-04 - mitigated on `fix/protected-routes-03nov`, committed, NOT on `develop`.** Done without a `UserPolicy`:
 - `UserController` - `index`, `store`, `destroy` and `userWithType` return 403 (`api.forbidden`) unless `isSuperAdmin()`. `edit` (`GET api/users/{id}`) and `update` allow a Super Admin or the account's own id (private helper `canManageUser()`).
-- On `update`, a non-Super-Admin's validated data is cut to `SELF_EDIT_FIELDS` (profile fields only): `usertype`, `account_status` and the six test-permission flags cannot be set, and are not reset to 0 by a profile save. `email_verified` is dropped for everyone (develop's rule).
+- On `update`, a non-Super-Admin's validated data is cut to `SELF_EDIT_FIELDS` (profile fields only, **`email` excluded** since 2026-11-04: a stolen token could otherwise install an attacker's address as verified): `usertype`, `account_status` and the six test-permission flags cannot be set, and are not reset to 0 by a profile save. `email_verified` is dropped for everyone (develop's rule).
 - `UserRequest::authorize()` refuses `users.store` for a non-admin before validation and returns the `ApiResponse` 403 envelope; it returns `true` for every other route (the class also serves public `POST api/register` and is hand-built in `OrganizationController`), so do not tighten that branch.
 - Tests: new `tests/Feature/Users/UserEndpointAuthorizationTest.php`; `LegacyLocationAdminPayloadTest::
   test_the_user_grid_withholds_the_legacy_text_from_anyone_else` now expects **403** (it used to expect 200).
