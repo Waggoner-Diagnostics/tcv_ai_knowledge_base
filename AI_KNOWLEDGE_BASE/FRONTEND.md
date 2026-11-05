@@ -103,7 +103,7 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`
 (`src/pages/UserPannel/Header/Header.js`) opens `components/PasswordVerificationModal.js`, which POSTs
-`api/verify-password` (`API-166`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
+`api/verify-password` (`API-170`) through `slices/auth/passwordVerificationSlice.js`; only on a 200 does
 the header navigate to `/user-panel/patients`. The navigate is deferred to the modal's `onExited` via a
 `pendingNav` flag, so the route changes *after* the exit animation — move it back into `onSuccess` and
 the modal unmounts mid-transition.
@@ -221,9 +221,49 @@ Table column definitions live one-file-per-table in `src/utils/columns/`, fed st
 ## Error handling
 
 `src/services/errorHandler.js` is a singleton with an `errorCodeMap` keyed on the backend's
-`error_code` (today only `IP_RESTRICTED`, from
+`error_code` (on `develop` only `IP_RESTRICTED`, from
 [`RestrictIpMiddleware`](MIDDLEWARE.md)). The Axios response interceptor calls it automatically unless
 the request passes `skipErrorPopup: true` (or a thunk passes `showPopup: false`).
+
+**`ACCOUNT_RESTRICTED`** (2026-11-03, branch `fix/test-email-and-account-restriction`, unmerged) is the
+second entry, from `RestrictAccountMiddleware`, with its text in
+`POPUP_MESSAGES.ACCOUNT_RESTRICTED` (`src/constants/messages.js`). A Super Admin restricting an account
+mid-session makes its next request 401 with this code; the interceptor's existing "401 with an
+`error_code`" branch then clears the session, shows the message and goes to `/login` after 2.5 s. ☠️ A code
+missing from `errorCodeMap` falls through to the generic 401 case, which says "Your session has expired"
+— so **every new backend `error_code` on a 401 needs an entry here**, or the user is told the wrong thing.
+
+**`ACCOUNT_DELETED`** (2026-11-04, branch `fix/account-deleted-popup`, unmerged) is the third entry, with
+`POPUP_MESSAGES.ACCOUNT_DELETED` (and `ACCOUNT_DELETED_FINISH_TEST`, `ACCOUNT_RESTRICTED_FINISH_TEST`,
+`ACCOUNT_ENDING_SIGN_OUT`). Before it a deleted user's bare 401 went straight to `/login` with no popup
+(`handleAuthError()` writes `?sessionExpired=true`, but nothing in `src/` reads it).
+
+**Finishing a test after the account is removed** is `src/utils/accountEnding.js`. The response interceptor
+(`AxiosInstance.js`) calls `handleAccountEndingDuringTest(data, path)` first on a 401 — **before** the
+`skipAuthRedirect` check, so a background poll can raise it. When the body has `test_may_finish: true` **and**
+the page is a test page (`TEST_FLOW_PATH`: `/user-panel/start-test/{instruction|prepare|countdown|test|section-complete|transition|result}/:id`)
+it stores `sessionStorage['tcv_account_ending']`, shows the "you can finish this test, then you'll be signed
+out" popup once, **keeps the session**, and rejects the call. `ResultPage` then runs
+`promptSignOutIfAccountEnding()` once the result has loaded (or its fetch failed): OK →
+`signOutAndGoToLogin()`. The flag and the once-only guard are cleared by `clearAccountEnding()` on
+`loginSuccess`, `logoutSuccess`, `logoutUser.fulfilled` and the interceptor's ordinary 401 sign-out, so it can
+never reach a healthy later session in the same tab. The backend half is in [MIDDLEWARE.md](MIDDLEWARE.md).
+- ☠️ `TEST_FLOW_PATH` is a **hard-coded copy** of the test routes in `protectedRoutes.js`; adding a test page
+  means editing it.
+- The popup appears on the **first flagged response**, not at the moment of deletion: test calls keep
+  succeeding, so it is usually the next background credits poll (`useCreditsSync`, ~60 s). Not run in a browser.
+- Tests: `utils/accountEnding.test.js` (5). The interceptor change and the new `ResultPage` effect have none.
+
+**`sendTestResumeEmail` is silent** (same branch). `testResumeSlice.js` passes `{ skipErrorPopup: true }`:
+both callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite path) fire it in
+the background while the test starts, so a 404 or a `send-resume-email`
+429 must not pop up over "Test Taker added successfully!". Failures are `console.warn`ed. `AddPatient`
+sends it only on a **fresh** assignment — each send revokes the previous resume link, so a re-submitted
+form must not break the email already delivered. (`VerifiedDefaultUser` still sends on every submit.)
+☠️ **Not from the dashboard start-test path, on purpose.** There the clinic runs the test on its own
+device: the emailed link would open a second, unsupervised way into the same test (`resume()` supersedes
+only test-taker `TestSession`s, not the clinic's Sanctum session), and a two-eye (`both`) assignment
+returns only the left eye's `unique_test_id`. Adding it needs its own setting (plan improvement I-8).
 
 ⚠️ **The backend's SPA boot gate has no caller.** `ws-449` (backend, on `develop` since 2026-09-14) added a
 public `GET api/access-check` so a blocked client could see a full "access denied" page before the login
@@ -335,9 +375,9 @@ into the slice without any request at all.
 
 ## Patient export (PR #420, on `develop` 2026-09-29)
 
-> 🔶 **Unmerged follow-up on `ui/refine-export-patient-modal` (2026-10-01)** changes this section: `exportPatients.js` becomes a `POST` body with an abort `signal`, a one-export-at-a-time guard, timezone omission/notice and a 429 "try again in N seconds" message; `ExportPatientModal.js` blocks Esc/backdrop/X while exporting, keeps Cancel enabled (it aborts), shows a wait note and a UTC hint; the picker adopts the shared outlined `DateRangeInput` (`allowTyping`, `aria-required`) with an `aria-hidden` asterisk. Details and traps: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-pending-not-on-develop-yet-export-review-follow-up-2026-10-01).
+> ✅ **Follow-up `ui/refine-export-patient-modal` merged 2026-10-05 (PR #432)** — the two notes below are the current `develop` behaviour and **supersede the table and the "three strings" note further down**, which describe the 2026-09-29 CSV/GET version. It changes this section: `exportPatients.js` becomes a `POST` body with an abort `signal`, a one-export-at-a-time guard, timezone omission/notice and a 429 "try again in N seconds" message; `ExportPatientModal.js` blocks Esc/backdrop/X while exporting, keeps Cancel enabled (it aborts), shows a wait note and a UTC hint; the picker adopts the shared outlined `DateRangeInput` (`allowTyping`, `aria-required`) with an `aria-hidden` asterisk. Details and traps: [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-export-review-follow-up--on-develop-since-2026-10-05-pr-298--432).
 >
-> 🔶 **Then `80e6de7` (2026-10-05, same branch):** the download is an **XLSX** (`isCompleteXlsx()` checks the zip end record; the `End of Export` regex is gone; `EXPORT_FAILED_MESSAGE`, `EXPORT_TIMED_OUT_MESSAGE` for 502/503/504); a slow-export note after 15 s; the picker's "today" is always the local date; `DateRangeInput` gets an `onClear` / `clearLabel` clear button (`allowTyping` only, so the report screens are unchanged); and the Export, Password Verification and Send Test modals share `src/styles/components/UserPanelModal.scss` (`user-panel-modal`). Needs backend `f361256d` or later. [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button).
+> ✅ **Then `80e6de7` (2026-10-05, same PR):** the download is an **XLSX** (`isCompleteXlsx()` checks the zip end record; the `End of Export` regex is gone; `EXPORT_FAILED_MESSAGE`, `EXPORT_TIMED_OUT_MESSAGE` for 502/503/504); a slow-export note after 15 s; the picker's "today" is always the local date; `DateRangeInput` gets an `onClear` / `clearLabel` clear button (`allowTyping` only, so the report screens are unchanged); and the Export, Password Verification and Send Test modals share `src/styles/components/UserPanelModal.scss` (`user-panel-modal`). Needs backend `f361256d` or later. [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md#-update-2026-10-05-xlsx-workbook-5-000-row-cap-clear-button).
 
 **Patients ▸ Registered ▸ Export Patients** now asks the server for the CSV. The deleted
 `components/ExportPatients.js` used to build one in the browser from `filteredPatients`. Backend
@@ -349,7 +389,7 @@ behaviour and the full trap list are in
 | `pages/UserPannel/PatientPage/PatientPage.js` | Owns `showExportModal` and the tab's current quick filter (`onExportScopeChange({count, filter})`, a stable `useCallback`). The button is disabled when the tab lists 0 rows. Hidden in the start-test flow |
 | `PatientPage/RegisteredPatientsTab.js` | Sets `exportFnRef.current = ({from, to}) => …`. It sends **parameters, not rows**: `search` when there is one, otherwise `activeFilter`, the same precedence as its own `filteredPatients`. Triggers the download with an anchor click and revokes the object URL after 1.5 s (Safari aborts if revoked in the same tick) |
 | `PatientPage/ExportPatientModal.js` | From/To `react-datepicker` fields (mm/dd/yyyy), portalled to `<body>`, one portal id per field. Shows the scope note and an error line per field. The fake password check is gone |
-| `apis/exportPatients.js` | `GET api/patients/export` with `responseType: 'blob'` and `skipErrorPopup: true`. Sends `timezone` from `Intl.DateTimeFormat().resolvedOptions().timeZone`. Parses JSON error bodies out of the `Blob` (`messageFromBlobError`). Rejects a file without the `End of Export, N row(s)` trailer as `EXPORT_INCOMPLETE` |
+| `apis/exportPatients.js` | `POST api/patients/export` (since 2026-10-05; was `GET`) with the filters in the **body**, `responseType: 'blob'` and `skipErrorPopup: true`. Sends `timezone` from `Intl.DateTimeFormat().resolvedOptions().timeZone` (omitted if unresolvable). Parses JSON error bodies out of the `Blob` (`messageFromBlobError`). Rejects a file that is not a complete xlsx (`isCompleteXlsx()`, zip end record) as `EXPORT_INCOMPLETE` — the CSV-era trailer check is gone |
 | `constants/patientExport.js` | `MAX_RANGE_YEARS` (1) · `shiftYears()` (UTC-only, clamps 29 Feb) · `rangeViolation(field, {from, to, today})` → `RANGE_VIOLATION` code · `exportScopeNote()` |
 
 ☠️ **Dates stay `'YYYY-MM-DD'` strings everywhere except at the picker boundary.** `isoToLocalDate()` /
@@ -362,9 +402,10 @@ users ahead of UTC (IST) during review. "Today" for the future-date check is the
 required → future → order → too-wide. That ordering is why two dates entered the wrong way round
 report "cannot be before/after", not "range too wide". It is pinned by `patientExport.test.js`.
 
-⚠️ **Three strings are mirrored from the backend and must stay in step:** `exportScopeNote()` ↔
-`PatientCsvExport::exportNote()`, the trailer regex ↔ `PatientCsvExport::stream()`, and the year rule ↔
-`ValidatesPatientExportDateRange`. Tests: `apis/exportPatients.test.js`, `constants/patientExport.test.js`,
+⚠️ **Things mirrored from the backend that must stay in step:** `exportScopeNote()` ↔
+`PatientXlsxExport::exportNote()`, `EXPORT_FAILED_MESSAGE` ↔ `api.patient_export_failed`, and the year rule ↔
+`ValidatesPatientExportDateRange`. (The CSV trailer regex ↔ `PatientCsvExport::stream()` pairing is gone
+since 2026-10-05.) Tests: `apis/exportPatients.test.js`, `constants/patientExport.test.js`,
 `PatientPage/ExportPatientModal.test.js`.
 
 ## Send Test & invited patients (`ws-404`)
@@ -488,9 +529,9 @@ input ends up with the wrapper's 12 px padding **plus** `UserTest.scss`'s 42 px 
 padding, inside a 260 px menu. That cut the locked To placeholder to *"Select From date fi…"* and pushed
 it off-centre. How bad it looks depends on which report pages the user has visited.
 
-### 🔶 Update: one stylesheet, labels, tooltips (frontend `fix/ux-result-close-datefilter`, unmerged, 2026-10-08)
+### ✅ Update: one stylesheet, labels, tooltips (frontend `fix/ux-result-close-datefilter`, PR #441, on `develop` since 2026-10-09)
 
-Cut from `develop`. This supersedes the "three stylesheets" paragraphs above once merged.
+This supersedes the "three stylesheets" paragraphs above, which now describe history.
 
 - **Styles.**
   - New `components/DateRangeInput.scss`, imported by `DateRangeInput.js`. In report mode (no
@@ -567,7 +608,7 @@ script opened. Every invitation and organisation flow reaches this page by plain
 impersonation, report downloads and print. So the call is refused with *"Scripts may close only the
 windows that were opened by them."*
 
-🔶 **Fix on frontend `fix/ux-result-close-datefilter` (unmerged, 2026-10-08).** `handleClose` still tries
+✅ **Fix on frontend `fix/ux-result-close-datefilter` (PR #441, on `develop` since 2026-10-09).** `handleClose` still tries
 `window.close()`. If the tab is still open 200 ms later, it:
 
 1. removes `test_invitation_session_token` and `verification_data` from `localStorage`;
@@ -766,7 +807,7 @@ unstyled, the same trap as the `&--type-*` credit-history badges
 
 ☠️ **The backend half of `ws-480` at first guarded only the surface the SPA does not use.** The 422
 landed in `StripePaymentController::createPaymentIntent()` — `POST api/stripe/create-payment-intent`,
-`API-093`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
+`API-096`, the **deprecated** surface. The SPA's checkout runs on `POST api/payment/initialize` →
 `POST api/payment/confirm` (`slices/payment/paymentSlice.js`,
 `services/paymentProviders/StripeProvider.js`), and nothing in `TCV-Frontend/src` calls
 `api/stripe/create-payment-intent` at all — so the live money path was gated client-side only.
@@ -792,7 +833,7 @@ usertype whose tests the modal manages.
 
 ☠️ **The order of the two calls is the whole reason it exists.** `handleSubmit` creates or updates the
 user first, then dispatches `bulkUpdateAssignment` for the test selection — the invariant lives on the
-*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-152`, 422
+*assignment* endpoint (`POST api/user/tests/bulk-update-assignment`, `API-156`, 422
 `api.at_least_one_test_required`), which only runs once the row exists. Worse, that second dispatch's
 rejection is caught and `console.error`'d, so before `ws-480` clearing every checkbox **created the
 account** and then dropped the 422 in the console: a saved user with a selection nobody agreed to, and no
@@ -811,6 +852,36 @@ stay consistent.
 (`if (! empty($unassign))` in `TestController::bulkUpdateAssignment()`), and `unassignUserTest()` refuses
 only the last remaining row. The client check is not a mirror of a rule that would otherwise catch it —
 on this path it is the rule.
+
+### Assigned Tests: Cancel no longer reverts saved selections (2026-11-04, merged: frontend PR #459, `feb9d78`)
+
+`hooks/useTestAssignment.js` is shared by `pages/UserPannel/SettingPage/ProfilePage.js` (Cancel → Discard,
+Save) and `components/NewUserModal.js` (`reset()` on close/open, `updateOriginal()` after a successful
+`bulkUpdateAssignment`).
+
+☠️ **Bug (introduced by PR #240 / `c86fb92`):** save a change to Assigned Tests, then click Cancel → Discard,
+and the checkboxes snapped back to the *pre-save* selection while the server held the new one.
+- `reset()` called `setIsInitialized(false)`, which re-ran the init effect and rebuilt the baseline from
+  `allTests[].is_assigned`. `allTests` is the list fetched on mount and is **never updated after a save**, so
+  it still carries the old flags.
+- The baseline lived in a ref (`originalAssignedRef`). `hasChanges` is a `useMemo` over `[assignedTests]`, so
+  after `updateOriginal()` it did not recompute and stayed `true` — Cancel then showed "Discard changes?"
+  instead of "no changes".
+- The old `useTestProfileVisibility` had the same logic but was masked: its Redux slice wrote the new flags back
+  into `allTests` after save.
+
+**Fix:** the baseline is state (`originalAssigned`). `reset()` only restores `assignedTests` to that baseline
+and no longer re-initialises; `updateOriginal()` advances it; `hasChanges` / `getChanges` depend on it, so both
+clear after Save. Cancel therefore reverts only what was changed *since the last save*.
+Tests: new `hooks/useTestAssignment.test.js` (save-then-cancel, cancel-only-unsaved).
+
+⚠️ **Still open (not part of #459):** `ProfilePage.handleSave` runs `Promise.all([updateProfile,
+bulkUpdateAssignment])`. If one rejects, neither `profileForm.updateOriginal()` nor
+`testAssignment.updateOriginal()` runs, so a partly-saved result (tests saved, profile failed) leaves the UI
+showing the tests as unsaved and Cancel → Discard reverts the UI away from what the DB holds. Re-sending is safe
+(`bulkUpdateAssignment` uses `syncWithoutDetaching` / `detach`; no-op changes are not audited). A planned
+follow-up switches to `Promise.allSettled` and advances each baseline independently. Also unverified by hand:
+`NewUserModal` close/reopen, new-user default test, edit-existing-user.
 
 ---
 
@@ -957,26 +1028,51 @@ Renaming that test in the `tests` table un-hides it here *and* changes its diagn
 
 ---
 
-## Terminology, Contact page, Admin screen (2026-10-12, uncommitted)
+## Terminology, Contact page, Admin screen (2026-10-12, merged: frontend PR #445)
 
 UI strings: patient -> Test Taker, Patient ID -> Unique Identifier (optional), Organization -> Integrated Partner,
-Inactive -> Restricted (accounts only). `ContactPage.js`: email Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext);
-TCV-Website still uses info@waggonerdiagnostics.com. `Admin.js` (Super Admin list only) drops Manage Credits / Log-in-as icons
-(`userManagementColumns.js` shared with `Users.js`; each icon renders only when its `onAddCredits` / `onLoginAsUser` prop is passed, and `Users.js` still passes both). `OrganisationModal.js` no longer has `run_test_on_subdomain`.
-Route paths unchanged.
+Inactive -> Restricted via the shared `StatusBadge` (`misc.js:22`), which **also relabels inactive tests** on the Tests
+list (`testColumns.js:34-36`; `EditTestForm.js:172` still says "Inactive"). `ContactPage.js`: email
+Help@WaggonerDiagnostics.com, phone +1 (949) 396-1694 (no ext); TCV-Website still uses info@waggonerdiagnostics.com.
+`Admin.js` stops passing `onLoginAsUser` (the column renders Log-in-as only when passed, `userManagementColumns.js:125-135`).
+☠️ Manage Credits was deleted from the shared `userManagementColumns.js` itself, so the customer `Users.js` page lost it
+too; `Users.js:142-145` `handleAddCredits` is dead ([CREDITS_CONTEXT](CONTEXT/CREDITS_CONTEXT.md)). `organisationColumns.js`
+keeps Manage Credits for orgs. With `onLoginAsUser` passed, a row renders two `um-action-divider`s back to back
+(`:133`, `:139`) — cosmetic leftover. `OrganisationModal.js` no longer has `run_test_on_subdomain` (removed from
+`initialForm`, the `Organisation.js` payload, `organisationUtils.js` and `validations.js`), and the "Run Test On
+Subdomain" option checkbox is hidden via `HIDDEN_OPTION_NAMES` (`OrganisationModal.js:31`). Route paths unchanged.
 
-## Tabular User Tests report (2026-10-12, uncommitted)
+- ☠️ **Label-keyed nav:** `Header.js:215` picks the password-gated Test Takers nav button by `item.label === "Test Takers"`.
+  Renaming the label silently drops the password gate — key it on path (`PATIENTS_PATH`).
+  `Sidebar.js` `ROLE_LABELS[4] = 'Integrated Partner'`; menu title "Integrated Partners".
+- Export scope wording is duplicated in backend `PatientXlsxExport` (`:129-131`) and `constants/patientExport.js`
+  (`:107-111`); both say "test takers" — change them together.
+- ☠️ `OrganizationPatient.js:56` matches an error message that the backend never sends — see
+  [ERROR_HANDLING](ERROR_HANDLING.md#message-changes-2026-10-12-merged-backend-pr-315--frontend-pr-445).
 
-`src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and "Export full test history". Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
+## Tabular User Tests report (2026-10-12, merged: frontend PR #445)
+
+`src/pages/Reports/UserTests.js` rewritten from a card grid to `TableWithGlobalFilter`: search, Filter dropdown (date range + status), server-side pagination/sorting, Columns chooser (required columns locked; selection persisted in localStorage `tcv.userTestsReport.columns`), Export selected / all, per-row View and a per-row **"Export"** button (full test history; label shortened from "Export full test history" in PR #459 because it clipped in the Actions column — the `title` tooltip still says "Export this Test Taker's full test history", and `UserTests.test.js` now finds the row button by that tooltip). Contract: [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md).
 
 - State: `redux/slices/reports/userTestsTableSlice.js`, registered as `userTestsTable` in `store.js`.
 - `utils/columns/userTestsTableColumns.js`: column ids **must stay in sync with backend `UserTestsReportService::TABLE_COLUMNS` keys**. Distinct from `userTestsColumns.js` (detail page).
-- Styling: `um-header` classes, bordered card like `DiscountCodeReport.scss`; `UserTest.scss` carries the **shared global `.filter-dropdown` / `.export-dropdown`** styles (Discount Code report also uses them); cells ellipsis at 240px.
-- No UI for `test_id` / `user_id` / `organization_id` filters (API only).
-- Old card list / `list-patients-having-tests` endpoint and `patientTestsSlice` remain (now unused by this screen).
+- Styling: `um-header` classes, bordered card like `DiscountCodeReport.scss`; `UserTest.scss` carries the **shared global `.filter-dropdown` / `.export-dropdown`** styles (also imported by `DiscountCode.js` and `UserTestDetail.js` — check all three screens); cells ellipsis at 240px.
+- No UI for `test_id` / `user_id` / `organization_id`. `patient_id` is not even in the slice's `FILTER_KEYS` (`userTestsTableSlice.js:6`), so the SPA can never send it.
+- The card list is gone. The `list-patients-having-tests` endpoint and `redux/slices/reports/patientTestsSlice.js` remain but have **no page consumer** (only registered in `store.js`); `userTestsReportSlice` is still used by `UserTestDetail.js`. ⚠️ The list screen's **PDF export was removed**: table export and history export are xlsx only (no `format` sent).
+- `loadSelectedColumns()` drops unknown stored ids, re-adds required ones, falls back to all (`userTestsTableColumns.js:28-41`) — old localStorage values are tolerated.
+- Exports send the applied filters plus the current sort, never the page (`UserTests.js:170-172`). The list fetch ignores stale responses via `listRequestId` (slice `:117-133`).
+- ⚠️ The View action puts the **decrypted Test Taker name in the URL** (`/reports/user-tests/patient/:id/:name`, `UserTests.js:186-189`), as the old card list did — PHI in browser history / logs.
 
 
-## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, uncommitted)
+## SPA route grants for CUSTOMER and ORGANIZATION trimmed (2026-11-03)
+
+`constants/routeConfig.js` used to grant the Super Admin pages to the other roles, so typing `app/users` or `app/organisation` opened them for an organization user. Removed: `/dashboard`, `/users`, `/organisation` from `ORGANIZATION`; `/dashboard`, `/users`, `/admin`, `/pricing`, `/tests` from `CUSTOMER`. Those paths now fall through to `NotFound`.
+- `pages/AuthInit.js`: the post-hydration redirect from a public path now sends only `SUPER_ADMIN` to `/dashboard` and every other role to `/user-panel` (it used to send everything except `CUSTOMER` to `/dashboard`, which would 404 an organization user).
+- ⚠️ Still client-side only: `ProtectedRoute` checks authentication, not role, and `userType` is seeded from `localStorage` (`loginSlice.js:210`), so editing it renders the page shell. The data is protected by the backend change in [S-22](SECURITY.md#s-22--any-signed-in-account-can-promote-itself-to-super-admin-through-put-apiusersid).
+- Branch `fix/protected-routes-03nov` (frontend `8210531`, committed, unmerged; contains develop through #450). `constants/routeConfig.test.js` (existing, Settings > Profile only) was not extended to cover these grants.
+- `pages/Setting/Profile.js` (Settings > Profile, Customer and Organization only, linked from the sidebar user menu): the Email field is `disabled`, because `PATCH api/users/{id}` ignores `email` for a non-admin self-edit (backend `d6553d46`). The form still posts the unchanged value.
+
+## Settings: Super Admin Profile removal & Email Templates dropdown (2026-10-12, merged: frontend PR #445)
 
 **Settings > Profile is gone for Super Admin only.**
 - `constants/routeConfig.js`: `"profile"` removed from `childRoutes["/settings"]` for `SUPER_ADMIN` (customer/org keep it). That alone drops the sidebar submenu item (Sidebar filters by `tab`) and unregisters the route.
@@ -996,10 +1092,10 @@ Route paths unchanged.
 **Quill `linkTokens` mode (`richTextEditor/emailPlaceholders.js`, `RichTextEditor.js`).** Quill's link sanitiser rewrites `href="{{reset_url}}"` to `about:blank`. The Test Invitation editor already dodged this with a `testLink` chip blot for `{{verification_link}}`; the blot now carries a `token` (`data-token`), and `toEditorHtml(html, { linkTokens, healBareLink })` / `toTemplateHtml(html, { healBareLink })` take options (defaults reproduce the old behaviour exactly). `RichTextEditor` prop `linkTokens` (array of names without braces) switches on account-email mode: `<a href="{{token}}">` becomes an atomic chip and is written back as an anchor with the standard button style, **except** an anchor whose text is the token itself (the "copy and paste" fallback), which is written back unstyled. A bare `{{token}}` is left as text (not healed into a button); the server re-anchors it (`EmailContent::anchorPlaceholders`).
 - Lost on an edit round trip: inline `style` on non-link elements, `target="_blank"`, and a custom style on a labelled link (replaced by the standard button style). Header and footer (`EmailSignature::HTML`) are separate columns and are never loaded into the editor.
 
-## Review fixes: export errors & template fallback (2026-10-13, uncommitted)
+## Review fixes: export errors & template fallback (2026-10-13, merged: frontend PR #445)
 
-- Export thunks (reports) parse a Blob error body into `{message}`; the `rejected` case no longer writes `s.error`, so exactly one popup shows.
-- `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating).
+- `exportUserTestsTable` / `exportTestTakerHistory` (only these two, `userTestsTableSlice.js:21-38`, `:141-146`) parse a Blob error body into `{message}` (`exportErrorPayload`: `message`, else first `errors` entry, else `err.message`). Their `rejected` case does not write `s.error`; `UserTests.js` `runDownload` (`:162-168`) shows the one popup. Discount Code and `userTestsReportSlice` exports are unchanged.
+- `TestEmailTemplates.js`: if `available` is empty after load it falls back to `test_link` / `org_test_link`; if still nothing it shows "No email templates could be loaded." with a Retry button. For non-Super-Admins `available` carries no account-email entries (backend gating). The fallback only runs once `templates.test_link || templates.org_test_link` has loaded (`loaded`/`options` memo); before that, or after a failed fetch, the empty state shows. Covered by `TestEmailTemplates.test.js` (`:82` fallback, `:91` empty state + Retry).
 
 
 ## 2026-10-28 QA fixes (uncommitted)

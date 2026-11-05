@@ -153,7 +153,24 @@ work-arounds built on that. Coordinate it with `src/services/errorHandler.js` an
 
 ---
 
-## Message changes (2026-10-12, uncommitted)
+## Message changes (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
-Terminology pass changed `resources/lang/en/api.php` and controller strings (e.g. `AuthController` "Account is restricted",
-patient -> test taker). Clients/tests matching message text must be updated; status codes unchanged.
+Terminology pass changed `resources/lang/en/api.php` and controller literals ("Organization" -> "Integrated
+Partner", "patient" -> "test taker"). Clients/tests matching message text must be updated; status codes unchanged.
+The restricted-account login 401 is **unchanged** (`api.resticted`, `AuthController.php:125`); only the audit Reason
+detail became "Account is restricted" (`:120`).
+
+Changed strings — `api.php`: `organization_created/updated/deleted`, `patient_export_too_large` /
+`too_many_patients` / `audit_failed`, `patient_no_email`, `patient_not_found` ("Test Taker not found."),
+`download_not_allowed`. Controller literals: "Test Taker created/updated/deleted successfully", "An error
+occurred while creating the test taker.", "Integrated Partner not found", "Integrated Partner session not found",
+"No allowed tests found for integrated partner", "Prolific ID is required for this integrated partner"
+(`PatientController.php:785`), "Test Taker form configuration retrieved successfully",
+`TestAssignmentService.php:61` "…already exists for this test taker…".
+
+☠️ **Dead string match:** `OrganizationPatient.js:56` tests `error?.message === 'Organization configuration not
+found'` against `verifyOrganizationSignature`, whose backend returns `'Integrated Partner not found or
+restricted'` (`OrganizationController.php:827`). It never matched (previously `'Organization not found or
+inactive'`), and the nearest backend string is now `'Integrated Partner configuration not found'` (`:727`,
+`getPatientForm`). The "Integrated Partner Not Found" popup is unreachable; users get the generic "Failed to load
+integrated partner data". Match on status / `error_code`, never on text.

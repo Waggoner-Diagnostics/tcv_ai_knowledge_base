@@ -174,8 +174,8 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_FIELDS` | `[…]` | [41](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L41) |
-| `FILTER_LABELS` | `[…]` | [51](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L51) |
+| `AUDIT_FIELDS` | `[…]` | [42](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L42) |
+| `FILTER_LABELS` | `[…]` | [52](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L52) |
 
 ### `ProfileController` — `app/Http/Controllers/ProfileController.php`
 
@@ -212,8 +212,9 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `AUDIT_FIELDS` | `[…]` | [39](../../../TCV-Backend/app/Http/Controllers/UserController.php#L39) |
-| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [49](../../../TCV-Backend/app/Http/Controllers/UserController.php#L49) |
+| `SELF_EDIT_FIELDS` | `[…]` | [39](../../../TCV-Backend/app/Http/Controllers/UserController.php#L39) |
+| `AUDIT_FIELDS` | `[…]` | [50](../../../TCV-Backend/app/Http/Controllers/UserController.php#L50) |
+| `AUDIT_BOOLEAN_FIELDS` | `[…]` | [60](../../../TCV-Backend/app/Http/Controllers/UserController.php#L60) |
 
 ### `FlexibleAuthMiddleware` — `app/Http/Middleware/FlexibleAuthMiddleware.php`
 
@@ -224,6 +225,16 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 | `TIER_TEST_SESSION` | `'test_session'` | [28](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L28) |
 | `TIER_LMS_SESSION` | `'lms_session'` | [29](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L29) |
 | `TIER_ORG_PATIENT_SESSION` | `'org_patient_session'` | [30](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L30) |
+
+### `RestrictAccountMiddleware` — `app/Http/Middleware/RestrictAccountMiddleware.php`
+
+| Constant | Value | Line |
+|---|---|---|
+| `RESTRICTED` | `'ACCOUNT_RESTRICTED'` | [43](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L43) |
+| `DELETED` | `'ACCOUNT_DELETED'` | [45](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L45) |
+| `IMPERSONATED_BY` | `'impersonated-by:'` | [47](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L47) |
+| `RESULT_GRACE_MINUTES` | `30` | [50](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L50) |
+| `FINISH_TEST_ROUTES` | `[…]` | [56](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L56) |
 
 ### `RestrictIpMiddleware` — `app/Http/Middleware/RestrictIpMiddleware.php`
 
@@ -415,10 +426,10 @@ those is the recurring source of bugs. See also [ENUM_INDEX.md](ENUM_INDEX.md).
 
 | Constant | Value | Line |
 |---|---|---|
-| `SUPER_ADMIN` | `1` | [28](../../../TCV-Backend/app/Models/User.php#L28) |
-| `CUSTOMER` | `2` | [30](../../../TCV-Backend/app/Models/User.php#L30) |
-| `ORGANIZATION` | `4` | [32](../../../TCV-Backend/app/Models/User.php#L32) |
-| `LEGACY_LOCATION_FIELDS` | `[…]` | [89](../../../TCV-Backend/app/Models/User.php#L89) |
+| `SUPER_ADMIN` | `1` | [29](../../../TCV-Backend/app/Models/User.php#L29) |
+| `CUSTOMER` | `2` | [31](../../../TCV-Backend/app/Models/User.php#L31) |
+| `ORGANIZATION` | `4` | [33](../../../TCV-Backend/app/Models/User.php#L33) |
+| `LEGACY_LOCATION_FIELDS` | `[…]` | [90](../../../TCV-Backend/app/Models/User.php#L90) |
 
 ### `UserEmailTemplate` — `app/Models/UserEmailTemplate.php`
 

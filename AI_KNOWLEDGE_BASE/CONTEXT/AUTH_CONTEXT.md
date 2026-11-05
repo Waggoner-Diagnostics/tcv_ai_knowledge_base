@@ -98,8 +98,9 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 
 ## Sanctum specifics
 
-- **Tokens expire after 15 minutes** — `config/sanctum.php` → `'expiration' => 900`. This is the answer
-  to most "it logged me out" reports.
+- **Tokens expire after 900 minutes (15 hours)** — `config/sanctum.php` → `'expiration' => 900`.
+  Sanctum reads `expiration` in **minutes**; the inline comment there saying "15 minutes" is wrong
+  (corrected here 2026-11-03). This is the answer to most "it logged me out" reports.
 - Token names carry meaning:
   | Name | Created in | Abilities |
   |---|---|---|
@@ -121,6 +122,8 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 POST api/login
   ├─ Authorization header present and token unexpired?
   │     → 200 "Already logged in"   ← skips account_status, trashed, email_verified   [S-07]
+  │       (branch fix/test-email-and-account-restriction: a restricted account's token never
+  │        gets here — RestrictAccountMiddleware answers it first with ACCOUNT_RESTRICTED)
   ├─ validate(email, password)
   ├─ User::withTrashed()->where(email)          → 401 api.unauthorized  if missing
   ├─ account_status !== 'active' || trashed()   → 401 api.resticted     (sic — typo'd lang key)
@@ -164,6 +167,58 @@ one envelope — see [CODING_GUIDELINES.md](../CODING_GUIDELINES.md).
 
 ---
 
+## Account restriction ends the session (2026-11-03, branch `fix/test-email-and-account-restriction`, unmerged)
+
+"Restricted" in the UI is `users.account_status = 'inactive'` (`'suspended'` behaves the same).
+Before this branch a restriction only blocked the *next* `login()`; an existing token kept working.
+
+| Event | Tokens of the account | Impersonation tokens it minted (`impersonated-by:{id}`) |
+|---|---|---|
+| Restricted (`active` → anything else) | **kept**, on purpose | deleted |
+| Re-activated (→ `active`) | deleted (fresh login required) | — |
+
+Wired in `User::booted()` (`static::updated`, on `wasChanged('account_status')`), so every path that
+changes the status is covered — `UserController::update()`, `OrganizationController::update()`, or code.
+
+**Why tokens are kept:** `RestrictAccountMiddleware` (global, [MIDDLEWARE.md](../MIDDLEWARE.md)) answers
+each one with 401 `error_code: ACCOUNT_RESTRICTED` and `api.resticted`'s message; the SPA shows that and
+logs out. A deleted token would surface as a bare "Unauthenticated." → "Your session has expired", and
+the user would not know they were restricted. The login screen's own message for a restricted account
+(`api.resticted`, from `login()`) is unchanged.
+
+- A restricted user can still `POST api/logout`. `api/login` is **not** exempt (see the S-07 note above).
+- A Super Admin's "Login as" session on a restricted account keeps working; it stops as soon as that
+  **admin** is restricted.
+
+### Deleting an account (2026-11-04, branch `fix/account-deleted-popup`, unmerged)
+
+| Event | Tokens of the account | Answered with |
+|---|---|---|
+| Deleted — soft (`UserController::destroy`) or forced (`OrganizationController::destroy`, Integrated Partner) | **kept**, on purpose (a force-deleted owner's rows are orphaned) | 401 `error_code: ACCOUNT_DELETED`, message `api.account_deleted` |
+| Restored (`User::restored`) | deleted — own tokens and any `impersonated-by:{id}` ones; fresh login required | — |
+
+Before this, a deleted user's next request was a bare 401 "Unauthenticated." (no `error_code`) and the SPA
+jumped to `/login` with no popup; `?sessionExpired=true` was never read by anything. The Sanctum guard cannot
+tell a deleted owner from an unknown token, so `RestrictAccountMiddleware` looks the token up itself — see
+[MIDDLEWARE.md](../MIDDLEWARE.md). It also lets a deleted or restricted clinic **finish its own in-clinic
+test** (six routes, own unfinished test only), with `test_may_finish` in the 401 body; product choices open as
+[R-13](../OPEN_RISKS_PROTECTED_ROUTES.md). Nothing about login changes: `login()` still gates on
+`trashed()` / `account_status` itself, and a deleted user's *token* is now caught before `login()` runs.
+
+### Admin edits no longer change email verification (same branch)
+
+`UserController::update()` and `OrganizationController::update()` drop `email_verified` from the
+validated input, and the SPA's user/organization forms no longer send it. Before, both forms re-sent it
+with a `"no"` default, so restricting and re-activating a verified user could leave them facing "Please
+verify your email" at login. Verification now changes only through `verifyEmailByToken()` and the
+`setup` password flow. ⚠️ Accounts already flipped need a one-off repair after review:
+`SELECT id, email FROM users WHERE email_verified = 'no' AND email_verified_at IS NOT NULL`.
+
+`tests/Feature/Auth/AccountRestrictionTest.php` pins the restriction parts of the above;
+`tests/Feature/Auth/DeletedAccountSessionTest.php` (14) pins deletion, restore and the finish-test exception.
+
+---
+
 ## Password set vs. reset — one endpoint, two brokers
 
 `POST api/password/reset` → `setOrResetPassword()` branches on a required `type` of `setup` | `reset`.
@@ -204,7 +259,7 @@ page is therefore still accepted through the emailed reset link. See
 
 ## `verify-password` is a fourth path, and it decides nothing
 
-`POST api/verify-password` (`API-166`, `auth:sanctum`, no throttle — the only rate limit in
+`POST api/verify-password` (`API-170`, `auth:sanctum`, no throttle — the only rate limit in
 `routes/api.php` is on `/contact`) → `AuthController::verifyPassword()`: validate, `Hash::check`,
 return 200, or 422 `api.incorrect_password`. It writes **nothing** — no session flag, no token
 ability, no log line. Its only caller is the SPA's Patients-menu prompt, which treats the 200 as
@@ -245,6 +300,14 @@ The `is_null` arm is load-bearing: a token with no expiry never goes stale, whic
 ☠️ **`login()` must never write to the token or its expiry.** The deadline a user is given is the one
 they were mailed; restarting it on a login attempt would silently extend a link they cannot see.
 `tests/Feature/RegistrationVerificationEmailTest.php` pins this.
+
+**Every send now restarts the 24 h** (2026-11-03, branch `fix/test-email-and-account-restriction`,
+unmerged). The `email_verification` body states "This link expires in 24 hours." directly below the link
+(migration `2026_11_03_000001_state_link_expiry_in_verification_email`, plus the seeder), so a resend
+that *reuses* a still-valid token now also resets `email_verification_expires_at` to `now()+24h`; the
+token itself is kept, so earlier emails keep working. A send is still never triggered by `login()`.
+☠️ Combined with the two resend endpoints having **no rate limit**, a link can be kept alive
+indefinitely by resending — tracked as improvement I-4 in the plan, not fixed here.
 
 ## A missing template is no longer mistaken for an SMTP blip
 
@@ -320,7 +383,7 @@ alone rather than a dangling `Testing Color Vision - `.
 `user_email_templates` still gets the prefix. That is the requirement as specified, not an oversight —
 but it is the first thing to revisit if white-label branding becomes a real requirement.
 
-## Account emails are now editable from Settings (2026-10-12, uncommitted)
+## Account emails are now editable from Settings (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 `email_template` rows `password_reset`, `set_password` and `email_verification` can now be edited by a Super Admin in the SPA (Settings > Email Templates) through `PUT api/test-email-templates/system/{id}` (subject and body only; header/footer stay SQL/migration-managed; Super Admin only). The save path validates the required link placeholder, rejects unknown, padded or split placeholders, and re-anchors a bare `{{reset_url}}` / `{{set_password_url}}` / `{{verification_link}}` with a label so the stored row stays clickable. The mailers themselves (`ResetPasswordNotification`, `AuthController::sendVerificationEmailForUser`) are unchanged, so trap 8 below still applies to the seeder: a UI edit is per environment and the seeder only reaches fresh databases. Full contract: [INVITATION_CONTEXT](INVITATION_CONTEXT.md), section "Editable account/system emails". Three more emails (test link resent, start/resume link, Integrated Partner test URL) joined the same table in migration `2026_10_12_000002`.
 

@@ -475,7 +475,7 @@ lengthening `POLL_INTERVAL_MS` only trades freshness away.
 
 ---
 
-## Super Admins get unlimited credits by default (2026-10-12, uncommitted)
+## Super Admins get unlimited credits by default (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 `Credits::ensureUnlimitedForSuperAdmin()` grants an `is_unlimited_credit` row; called from
 `UserController::store` and `SuperAdminSeeder`; migration `2026_10_12_000001_backfill_unlimited_credits_for_super_admins.php`
@@ -486,11 +486,47 @@ so regular users keep Manage Credits). Wording: "Credits" in page text (website 
 `src/pages/UserPannel/Header/Header.js` (`NAV_ITEMS`), which reads "Test Credits" since Frontend `fd48cdb` (2026-10-26).
 QA flagged the C1 wording as unresolved ("Credits" vs "Tests/Test Credits"): the target term per screen is still undecided, so treat
 the nav label and the page text as inconsistent until QA names the exact screens.
+📌 2026-11-04 (main): the dashboard now says "Test Credits" (see the last section of this file).
 
-## Role change syncs the default unlimited grant (2026-10-13, uncommitted)
+Traps (verified on `9082ae22`):
+- ⚠️ `ensureUnlimitedForSuperAdmin()` (`Credits.php:169`) is a no-op whenever `hasUnlimited()` (`:101`) is
+  already true — **including an expiring unlimited grant**. A Super Admin holding only a time-limited grant gets
+  no default; when it expires they fall to finite credits and nothing re-grants. The backfill uses the same
+  predicate. `usertype` has no cast, hence the `(int)` at `:174`.
+- The default grant's shape is the contract demotion matches on: `source` 0 (`SOURCE_MANUAL`), `credited_by`
+  NULL, `has_expiry` 0, `credits`/price 0. Don't change one without the other.
+- The backfill skips soft-deleted users and its `down()` is a no-op (not reversible).
+- No test covers `UserController::store`'s grant, `SuperAdminSeeder`, or the backfill migration.
+
+## Role change syncs the default unlimited grant (2026-10-13, merged: backend PR #315 / frontend PR #445)
 
 `UserController::update()` runs the update plus credit sync inside `DB::transaction`:
 - **Promotion to Super Admin** -> `Credits::ensureUnlimitedForSuperAdmin()`.
 - **Demotion** -> new `Credits::revokeDefaultSuperAdminUnlimited()`, which goes through `revokeGrant()` so negative-balance settlement still runs. It revokes only grants that are unlimited, `source` manual, `credited_by` NULL and `has_expiry` 0.
 - ☠️ **Blind spot:** seeder/CLI-created grants also have `credited_by` NULL, so they are indistinguishable and are revoked on demotion too.
-- Tests: `tests/Feature/Users/AuditedUserControllerTest.php`. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.
+- ☠️ **Demotion hard-deletes the grant** (`Credits` has no `SoftDeletes`; `revokeGrant()` ~`Credits.php:500`) and
+  `revokeGrant()` writes **no credits audit row** — only `CreditsController::destroy` audits. The only trace is the
+  account-updated audit for the `usertype` change. `settleNegativeBalance()` (~`:613`) then writes a
+  `SOURCE_ADJUSTMENT` row for everything consumed while unlimited (`credited_by` = acting admin); the demoted
+  user ends at balance 0.
+- Runs only on a usertype **transition** (before-value captured `UserController.php:223`, compared `:251-255`);
+  a non-role update never re-grants.
+- Tests: `tests/Feature/Users/AuditedUserControllerTest.php` — ⚠️ both role-sync tests call
+  `skipWithoutOutboundDns()`, so a CI host without DNS skips them silently. Remaining gap: `DELETE api/credits/{id}` can still revoke the grant.
+
+## Terminology: "Test Credits" in the dashboard UI (2026-11-04, merged: frontend PR #461, `6177cfe`)
+
+**Display-only rename — no API, schema, route or backend change.** Bare "Credit(s)" labels in the SPA became
+"Test Credits": Super Admin dashboard and admin tables (`SuperAdminDashboard.js`, `adminColumns.js`,
+`dashboardColumns.js`, `organisationColumns.js`, `userManagementColumns.js`, `addCreditsColumns.js`), Integrated
+Partners (`Organisation.js`), the Add / Manage Credits page and modal (`AddCredits.js`, `AddCreditsModal.js`),
+the user-panel credit page, header chip, checkout and payment form (`CreditPage.js`, `Header.js`, `Checkout.js`,
+`PaymentForm.js`), and the add-credits validation messages (`validationSchemaAddCredits.js`).
+
+- Reverses the earlier "Credits everywhere" note above, so website and dashboard now agree on "Test Credits".
+- ☠️ **Grep traps:** code identifiers, Redux keys (`userCredits`), API fields (`credits`, `credits_remaining`),
+  routes (`/add-credits`, `api/credits`) and the backend's own message keys are **unchanged**. Searching the UI
+  string "Test Credits" will not find the API, and searching `credits` will not find the label.
+- The **Audit Trail** is the exception that needs a map — see [AUDIT_TRAIL_FRONTEND_CONTEXT](AUDIT_TRAIL_FRONTEND_CONTEXT.md#test-credits-labels-in-the-detail-modal-2026-11-04-merged-frontend-pr-461).
+  Audit rows store the backend's label text, so history cannot be rewritten; the SPA relabels on display.
+- Copy-only change: `AddCredits.test.js` and `AuditDetailSections.test.js` were updated; no other behaviour moved.

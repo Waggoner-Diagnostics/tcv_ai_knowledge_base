@@ -156,14 +156,15 @@ key hashing cannot silently turn it into one row per retry. `PATIENT_EXPORT_PER_
 
 ## `config/exports.php` (2026-09-29)
 
-`patient_max_rows` ← `PATIENT_EXPORT_MAX_ROWS` (default **50 000**). It is the row ceiling
+`patient_max_rows` ← `PATIENT_EXPORT_MAX_ROWS` (default **5 000** since 2026-10-05, `config/exports.php:34`;
+was 50 000 at PR #291). It is the row ceiling
 `PatientController::export()` checks **before** streaming: patients × attached tests, plus one row per
 patient with none. Over the ceiling, the request gets a 422 `api.patient_export_too_large` and a failed audit row. The setting is
 per environment, unlike `AuditLogController::MAX_EXPORT_ROWS` (hardcoded 50 000), because the safe value
 depends on nginx's `fastcgi_read_timeout` and PHP's `max_execution_time`. ⚠️ With `config:cache` at boot, a
 change needs a container restart.
 
-🔶 **Unmerged (`improve/export-format`, 2026-10-05): default 5 000.** The export becomes an XLSX workbook built
+✅ **Default 5 000 since 2026-10-05 (`improve/export-format`, PR #298).** The export is an XLSX workbook built
 in memory before it is sent; 50 000 rows measured 522 MB (over the 512 MB `memory_limit`) and 113 s (past nginx's
 60 s default). Over the cap the 422 now carries `error_code` `EXPORT_TOO_MANY_PATIENTS` or `EXPORT_TOO_LARGE`.
 ⚠️ Make sure no environment sets `PATIENT_EXPORT_MAX_ROWS` back up to 50 000

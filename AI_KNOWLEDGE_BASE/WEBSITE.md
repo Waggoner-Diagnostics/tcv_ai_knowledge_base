@@ -14,29 +14,32 @@
 
 Generated view: [INDEXES/WEBSITE_ROUTE_INDEX.md](INDEXES/WEBSITE_ROUTE_INDEX.md)
 
-### Branch state — indexes and prose both describe `website-integration` (2026-09-12)
+### Branch state — indexed from `develop` again (2026-10-13)
 
-⭐ **The three-tier split is gone.** The generated indexes are now synced from `website-integration`
-at `deb667a`, the same branch this prose describes, so index and prose no longer disagree. The old
-`3ec94ec` tier — no Docker, no nginx, no workflows — is history; every generated view now includes the
-deployment story below.
+✅ **All three repos are now indexed from `develop`** (team decision, 2026-10-13). The website exception
+below is retired: `develop` absorbed `website-integration` — merge `4d2c0d4` — so it now carries both
+workflows (`non-prod.yml`, `uat-prod.yml`), the Docker/nginx stack, `c308caf` (signup success view), the
+merged `ws-website-373` (`05e66ce`) and the distributor→HubSpot work (`deb667a`).
 
-| Branch | State at 2026-09-12 |
+| Branch | State at 2026-10-13 |
 |---|---|
-| `develop` (`feabac8`) | the container/CI stack plus the copy and distributor-form work |
-| `website-integration` (`deb667a`) | ⭐ **indexed.** `develop`, **plus** `uat-prod.yml` with its approval gate, a slimmed `non-prod.yml`, and app commits not on `develop` — `c308caf` (signup success view), `41c0383` (comparison table removed), `edc69f8` (plate counts), the merged `ws-website-373`, and the distributor→HubSpot work |
+| `develop` (`4d2c0d4`) | ⭐ **indexed.** Everything this page describes |
+| `website-integration` (`6dc5223`) | **one** commit ahead of `develop`: `6dc5223` "remove gradient" — deletes the `AuthModal` top strip (12 lines, `components/AuthModal.jsx`). Not indexed; cosmetic, no route or page change |
 
-`website-integration` is a strict superset of `develop` — `git log website-integration..develop` is empty
-(verified 2026-09-12: `develop` is **19 commits behind** and has nothing of its own).
-**It is the branch the deployment workflows are shaped around, so treat it, not `develop`, as the
-integration truth for anything infrastructural.**
+⚠️ **The `AuthModal` strip still exists on `develop`** (`components/AuthModal.jsx:627`, painted as a
+background per [the rounded-clip section](#the-auth-modals-rounded-clip--ws-website-373-merged-into-website-integration-pr-7)).
+It disappears only if `6dc5223` reaches `develop`. Check which branch a QA build came from before calling
+a missing/present strip a bug.
 
-⭐ **`ws-website-373` has merged** into this line (PR #7, `05e66ce`) — the `AuthModal` corner fix below
-is shipped, and the strip is painted on the panel itself on `website-integration`.
+<details><summary>History — why the website was indexed from <code>website-integration</code> (2026-09-12 → 2026-10-13)</summary>
 
-⚠️ **This is the one repo of the three indexed off `develop`.** The backend and frontend indexes come
-from their `develop`; the website's come from `website-integration`, because that is where its
-deployable truth lives. See the README's branch rule before extending this to any other repo.
+From 2026-09-12 the website indexes were generated from `website-integration` (`deb667a`), because it was
+a strict superset of `develop` (`develop` sat 19 commits behind with nothing of its own) and was the branch
+the deploy workflows were shaped around. Indexing `develop` then meant indexing a tree with no
+`Dockerfile`, no `nginx.conf` and neither deploy workflow. That reason no longer holds now `develop` has
+caught up.
+
+</details>
 
 The repo ships its own `CLAUDE.md`. **The "no API routes, static content only" claim was corrected on
 2026-08-26** — it describes the proxy routes accurately, though it predates the fifth
@@ -71,7 +74,7 @@ POST /api/auth                 → {API_URL}/api/login
 POST /api/register             → {API_URL}/api/register
 GET  /api/countries            → {API_URL}/api/countries-with-states
 POST /api/logout               → {API_URL}/api/logout
-POST /api/distributor-enquiry  → {API_URL}/api/distributor-enquiry   ← added on website-integration
+POST /api/distributor-enquiry  → {API_URL}/api/distributor-enquiry   ← added on website-integration, now on develop
 ```
 
 They exist to solve **CORS**: the browser only ever talks to the website's own origin, and Next.js
@@ -317,11 +320,11 @@ otherwise.
 11. ☠️ **Plate counts appear on four pages and one of them is knowingly still wrong** — the Instructions
     page's `26 of the 29` pass threshold. See the plate-count section; do not rescale it yourself.
 12. ☠️ **`AuthModal`'s top gradient strip is a *background*, not a child element** — `ws-website-373`
-    (2026-09-09, unmerged). See below; do not "simplify" it back into a child `<div>`.
+    (2026-09-09, merged as PR #7 `05e66ce`, on `develop` via `4d2c0d4`). See below; do not "simplify" it back into a child `<div>`.
 
 ---
 
-## The auth modal's signup success view — `c308caf` (on `website-integration`, not on `develop`)
+## The auth modal's signup success view — `c308caf` (on `develop` since merge `4d2c0d4`)
 
 `SignUpForm` renders its own "Account created!" panel on success, but the **parent** owns the chrome
 around it. Until `c308caf` the Sign In / Sign Up tab switcher and the "Create your account" headline

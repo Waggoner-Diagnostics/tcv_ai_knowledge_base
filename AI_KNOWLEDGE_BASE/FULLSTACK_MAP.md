@@ -31,7 +31,7 @@ browser with a Bearer token.
 | **Login / register** | `AuthController` · `UserRequest` | `pages/Login.js`, `Register.js` · `redux/slices/auth/` · `apis/AxiosInstance.js` | `components/AuthModal.jsx` · `app/api/auth`, `app/api/register` | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
 | **Password set / reset** | `AuthController::setOrResetPassword` · `ResetPasswordNotification` | `pages/SetPassword.js`, `ResetPassword.js`, `ForgotPassword.js` | — | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
 | **Email verification** | `AuthController::verifyEmail*` | `pages/VerifyEmail.js` | — | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
-| **Patients** | `PatientController` · `Patient` · `AuthController::verifyPassword` | `pages/UserPannel/PatientPage/`, `AddPatient/` · `hooks/usePatientForm.js` + `utils/formUtils.js` (two validators, one screen — `ws-407`) · `Header/Header.js` + `components/PasswordVerificationModal.js` (client-only menu gate) · **export**: `PatientPage/ExportPatientModal.js` → `apis/exportPatients.js` (blob, `GET api/patients/export`) + `constants/patientExport.js`; backend `PatientController::export()` · `Reports/PatientExportService` · `Exports/PatientCsvExport` | — | [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) |
+| **Patients** | `PatientController` · `Patient` · `AuthController::verifyPassword` | `pages/UserPannel/PatientPage/`, `AddPatient/` · `hooks/usePatientForm.js` + `utils/formUtils.js` (two validators, one screen — `ws-407`) · `Header/Header.js` + `components/PasswordVerificationModal.js` (client-only menu gate) · **export**: `PatientPage/ExportPatientModal.js` → `apis/exportPatients.js` (blob, `POST api/patients/export`, XLSX — filters in the body, keep both repos deployed in lockstep) + `constants/patientExport.js`; backend `PatientController::export()` · `Reports/PatientExportService` · `Reports/PatientExportTracker` · `Exports/PatientXlsxExport` | — | [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) |
 | **Test execution** | `TestExecutionService` · `TestController` · `SecureImageService` | `pages/UserPannel/TestPage/` + the 6 sibling screens · `redux/slices/tests/testExecutionSlice.js` · `constants/testConfig.js` | — | [TEST_EXECUTION_CONTEXT](CONTEXT/TEST_EXECUTION_CONTEXT.md) |
 | **Result / PDF** | `TestResultService` · `ColorVisionDiagnosisService` · dompdf | `pages/UserPannel/ResultPage/` · ⚠️ dead `utils/calculateColorVisionResult.js` | — | [TEST_EXECUTION_CONTEXT](CONTEXT/TEST_EXECUTION_CONTEXT.md) |
 | **Email invitations** | `TestInvitationController` | `redux/slices/tests/sendTestSlice.js` · `pages/UserPannel/SendTestModal/`, `PatientPage/InvitedPatientsTab.js` | — | [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md) |
@@ -42,6 +42,8 @@ browser with a Bearer token.
 | **Discount codes** | `DiscountCodeService` · `DiscountCodeController` | `pages/DiscountCodes/` · `redux/slices/discount/` | — | [DISCOUNT_CONTEXT](CONTEXT/DISCOUNT_CONTEXT.md) |
 | **Organisations / LMS launch** | `OrganizationController::verifySignature` · `Lms/*` | `pages/Organisation/` · `redux/slices/auth/signatureVerificationSlice.js` · `pages/UserPannel/AddPatient/OrganizationPatient.js` | — | [ORGANIZATION_CONTEXT](CONTEXT/ORGANIZATION_CONTEXT.md) · [LMS_CONTEXT](CONTEXT/LMS_CONTEXT.md) |
 | **Reports** | `ReportController` · `Reports/*` · `Exports/*` | `pages/Reports/` · `redux/slices/reports/` | — | [REPORTING_CONTEXT](CONTEXT/REPORTING_CONTEXT.md) |
+| **Account restriction** (branch `fix/test-email-and-account-restriction`, unmerged) | `RestrictAccountMiddleware` (global) · `User::booted()` (token handling on status change) · `UserController::update` / `OrganizationController::update` (`email_verified` no longer editable) | `services/errorHandler.js` (`ACCOUNT_RESTRICTED`) · `constants/messages.js` · `components/NewUserModal.js`, `OrganisationModal.js` (status toggle) | — | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md#account-restriction-ends-the-session-2026-11-03-branch-fixtest-email-and-account-restriction-unmerged) · [MIDDLEWARE.md](MIDDLEWARE.md) |
+| **Account deleted / finishing an in-clinic test** (branch `fix/account-deleted-popup`, unmerged) | `RestrictAccountMiddleware` (`ACCOUNT_DELETED`, `FINISH_TEST_ROUTES`) · `User::booted()` (`restored` deletes tokens) | `services/errorHandler.js` · `utils/accountEnding.js` · `apis/AxiosInstance.js` · `pages/UserPannel/ResultPage/ResultPage.js` · `redux/slices/auth/loginSlice.js` · `constants/messages.js` | — | [MIDDLEWARE.md](MIDDLEWARE.md) · [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) · [R-13](OPEN_RISKS_PROTECTED_ROUTES.md) |
 | **IP restriction** | `RestrictIpMiddleware` · `RestrictedIpController` · `GET api/access-check` (`ws-449`) · `trustProxies()` | `pages/Setting/RestrictedIps.js` · `services/errorHandler.js` (`IP_RESTRICTED`) — ⚠️ nothing calls `access-check` yet | ☠️ `nginx.conf` (the edge) — its `set_real_ip_from 0.0.0.0/0` decides what the backend thinks the client IP is | [MIDDLEWARE.md](MIDDLEWARE.md) · [S-16](SECURITY.md#status-2026-09-17--both-backend-halves-shipped-the-frontend-nginx-precondition-did-not) |
 | **Marketing content** | — | — | `app/**` + `views/*Client.jsx` | [WEBSITE.md](WEBSITE.md) |
 
@@ -52,11 +54,21 @@ browser with a Bearer token.
 - **`usertype`: `1` SUPER_ADMIN · `2` CUSTOMER · `4` ORGANIZATION** — no `3`. Defined in
   `User.php` and mirrored in `TCV-Frontend/src/constants/dataObjects.js` → `USER_ROLES`. Changing one
   without the other breaks role gating silently.
-- **Auth = Sanctum bearer, 15-minute expiry.** The SPA's token priority is impersonation → query param →
+- **Auth = Sanctum bearer, 900-minute (15-hour) expiry** — `expiration` is in minutes; earlier text here said 15 minutes. The SPA's token priority is impersonation → query param →
   invitation session → normal ([FRONTEND.md](FRONTEND.md)). There is **no refresh flow** — a longer
   session means changing `config/sanctum.php`, not the client.
 - **`error_code: 'IP_RESTRICTED'`** is a literal string contract between `RestrictIpMiddleware` and
   `src/services/errorHandler.js`'s `errorCodeMap`. Renaming it breaks the user-facing message.
+- **`error_code: 'ACCOUNT_RESTRICTED'`** (branch `fix/test-email-and-account-restriction`, unmerged) is
+  the same kind of contract, between `RestrictAccountMiddleware` and that `errorCodeMap`. An `error_code`
+  the map does not know falls through to "Your session has expired".
+- **`error_code: 'ACCOUNT_DELETED'` and the `test_may_finish` flag** (branch `fix/account-deleted-popup`, unmerged). Every
+  blocked 401 from `RestrictAccountMiddleware` is `{success, status_code, message, error_code:
+  'ACCOUNT_RESTRICTED'|'ACCOUNT_DELETED', test_may_finish: boolean}`. The SPA keeps the session when the flag is
+  true **and** the path matches `TEST_FLOW_PATH` (`utils/accountEnding.js`), then signs out on the result page.
+  Two literal contracts to keep in step: the code strings, and the path list vs `protectedRoutes.js`. ☠️
+  **Merge backend first.** A frontend without the backend does nothing new; a backend without the new frontend
+  shows the generic "session expired" message for `ACCOUNT_DELETED` and still cuts a test off.
 - **The public-path list is duplicated.** The backend decides which routes need no token
   (`routes/api.php`); the SPA decides which paths must survive a 401 without redirecting
   (`isPublicRoute()` in `AxiosInstance.js`: `/test-invitation/`, `/organization/`, `/test/resume/`).

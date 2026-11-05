@@ -362,7 +362,24 @@ if ($accessToken && (!$accessToken->expires_at || !$accessToken->expires_at->isP
 
 That path never re-checks `account_status`, `trashed()`, or `email_verified`. A user suspended or
 soft-deleted *after* their token was issued keeps getting a success response from `/api/login` for the
-remainder of the token's life. (The 15-minute expiry bounds the damage.)
+remainder of the token's life. ~~(The 15-minute expiry bounds the damage.)~~ Sanctum's `expiration` is in
+minutes, so `900` is **15 hours**, not 15 minutes — the damage window is much wider than this said.
+
+**Status (2026-11-03): the restricted-account half is closed on branch
+`fix/test-email-and-account-restriction` (unmerged).** The global `RestrictAccountMiddleware`
+([MIDDLEWARE.md](MIDDLEWARE.md)) answers every bearer token of a restricted account — `api/login`
+included — with 401 `ACCOUNT_RESTRICTED` before the short-circuit runs, and restricting a Super Admin also
+kills the "Login as" tokens they minted (previously those outlived the admin for up to 15 hours). ⚠️ Still
+open: the short-circuit itself, and its `trashed()` / `email_verified` gaps — a soft-deleted user's token
+is not revoked and still gets "Already logged in".
+
+**Update (2026-11-04, branch `fix/account-deleted-popup`, unmerged):** the soft-deleted half is closed the same way. The same
+global middleware answers a deleted owner's token — `api/login` included, since it runs before the controller —
+with 401 `ACCOUNT_DELETED` (no test posts to `api/login` with a deleted user's token, so that path is by
+construction). The short-circuit and the `email_verified` gap are still open. One deliberate new exposure: a
+**deleted or restricted clinic's leftover token can still call six test routes** for its own unfinished test, and
+read that test's result for 30 minutes; ownership is checked there, unlike the rest of the flow (S-02).
+Product choices: [R-13](OPEN_RISKS_PROTECTED_ROUTES.md).
 
 Separately, `login()`'s failure responses distinguish "no such user" (`api.unauthorized`) from
 "restricted" (`api.resticted` — note the typo in the key) from "unverified", which is an enumeration
@@ -835,7 +852,7 @@ readable — it disables the decrypt path too.
 
 ### S-22 — Any signed-in account can promote itself to super admin through `PUT api/users/{id}`
 
-**Severity: critical.** Open on `develop` `0197fd1b`. Found 2026-09-23 while fixing the `ws-459` legacy
+**Severity: critical.** ✅ **Mitigated 2026-11-03 on branch `fix/protected-routes-03nov` (backend `a257ccf2` + `53a55322`, committed, NOT yet on `develop`) — still open on `develop` `0197fd1b` until that merges.** See the status block at the end of this section. Found 2026-09-23 while fixing the `ws-459` legacy
 location payloads. **Reproduced** against `develop` with a throwaway feature test (not committed), acting
 as a plain customer through Sanctum:
 
@@ -868,6 +885,18 @@ hold real migrated accounts.
 **Where:** `routes/api.php:171-174` · `app/Http/Controllers/UserController.php` ·
 `app/Http/Requests/UserRequest.php:15`.
 
+**Status 2026-11-04 - mitigated on `fix/protected-routes-03nov`, committed, NOT on `develop`.** Done without a `UserPolicy`:
+- `UserController` - `index`, `store`, `destroy` and `userWithType` return 403 (`api.forbidden`) unless `isSuperAdmin()`. `edit` (`GET api/users/{id}`) and `update` allow a Super Admin or the account's own id (private helper `canManageUser()`).
+- On `update`, a non-Super-Admin's validated data is cut to `SELF_EDIT_FIELDS` (profile fields only, **`email` excluded** since 2026-11-04: a stolen token could otherwise install an attacker's address as verified): `usertype`, `account_status` and the six test-permission flags cannot be set, and are not reset to 0 by a profile save. `email_verified` is dropped for everyone (develop's rule).
+- `UserRequest::authorize()` refuses `users.store` for a non-admin before validation and returns the `ApiResponse` 403 envelope; it returns `true` for every other route (the class also serves public `POST api/register` and is hand-built in `OrganizationController`), so do not tighten that branch.
+- Tests: new `tests/Feature/Users/UserEndpointAuthorizationTest.php`; `LegacyLocationAdminPayloadTest::
+  test_the_user_grid_withholds_the_legacy_text_from_anyone_else` now expects **403** (it used to expect 200).
+- ⚠️ **Not covered:** a self-edit can still set `show_occupational_questions`, `allow_monocular_test` and the
+  `include*` flags, because `update()` reads them straight from the request for customer/org accounts.
+  The "never credit and test-assignment fields" bullet above is therefore only partly met.
+- ⚠️ The sibling surfaces `admin`, `pricing`, `tests` and `super-admin/dashboard` were **not** audited for the
+  same gap. The SPA-side counterpart is in [FRONTEND.md](FRONTEND.md#spa-route-grants-for-customer-and-organization-trimmed-2026-11-03).
+
 ---
 
 ## Summary table
@@ -884,7 +913,7 @@ hold real migrated accounts.
 | `S-04` | `revokeCredit` IDOR (abandons any test) | medium | `CreditsController::revokeCredit()` |
 | `S-05` | Static org launch signature + permanent `APP_KEY` fallback | medium | `OrganizationController::verifySignature()` |
 | `S-06` | LMS provider secrets stored plaintext; signing key readable | medium | `LmsLaunchService` · `LmsAdminController` |
-| `S-07` | `login()` Bearer short-circuit skips account gates | medium | `AuthController::login()` |
+| `S-07` | `login()` Bearer short-circuit skips account gates. ⚠️ restricted accounts closed on branch `fix/test-email-and-account-restriction` (unmerged); `trashed()`/`email_verified` still open | medium | `AuthController::login()` · `RestrictAccountMiddleware` |
 | `S-08` | `email_verified` vs `email_verified_at` disagree — ✅ **fixed `ws-417`**, columns not collapsed | medium | `User` · `AuthController` |
 | `S-15` | Terminal LMS tokens keep **read** access by design; mutations 409 via `lms.status` | low | `FlexibleAuthMiddleware` · `LmsSessionStatusMiddleware` |
 | `S-09` | `stopImpersonation` deletes nothing | low | `AuthController::stopImpersonation()` |
@@ -894,7 +923,7 @@ hold real migrated accounts.
 | `S-16` | Proxy IP made all rate limits one global bucket and `RestrictIpMiddleware` inert. ☠️ **Shape changed 2026-09-14 (`ws-449`):** backend nginx now forwards XFF and `trustProxies()` is **always on**, defaulting to every private range — but `set_real_ip_from 0.0.0.0/0` was never narrowed in `TCV-Website/nginx.conf` (the edge) or `TCV-Frontend/nginx.conf`, so by the documented trace a client-supplied `X-Forwarded-For` becomes `$request->ip()`: per-account limiter budgets, `restricted_ips` and `audit_logs.ip_address` all forgeable; `X-Real-IP` is now overwritten with a Docker address. Not yet reproduced on a live stack. Fix is nginx-only, in the two client repos | **high** | `TCV-Website/nginx.conf` · `TCV-Frontend/nginx.conf` · `bootstrap/app.php` |
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 | `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
-| `S-22` | ☠️ **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
+| `S-22` | ☠️ **(mitigated on `fix/protected-routes-03nov` 2026-11-04, committed, unmerged)** **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
 
 ---
 

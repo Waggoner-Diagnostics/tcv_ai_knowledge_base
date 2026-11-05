@@ -26,8 +26,8 @@
 | GET | `/api/dropdown/organization-types` | `API-036` DropdownValuesController@activeOrganizationTypes | [src/apis/miscApis.js:34](../../../TCV-Frontend/src/apis/miscApis.js#L34) |
 | GET | `/api/dropdown/privileges` | `API-037` DropdownValuesController@activePrivileges | [src/apis/miscApis.js:52](../../../TCV-Frontend/src/apis/miscApis.js#L52) |
 | POST | `/api/impersonate/{param}` | `API-038` AuthController@impersonateUser | [src/redux/slices/impersonateSlice.js:8](../../../TCV-Frontend/src/redux/slices/impersonateSlice.js#L8) |
-| POST | `/api/login` | `API-039` AuthController@login | [src/redux/slices/auth/loginSlice.js:11](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L11) |
-| POST | `/api/logout` | `API-040` AuthController@logout | [src/redux/slices/auth/loginSlice.js:73](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L73) |
+| POST | `/api/login` | `API-039` AuthController@login | [src/redux/slices/auth/loginSlice.js:12](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L12) |
+| POST | `/api/logout` | `API-040` AuthController@logout | [src/redux/slices/auth/loginSlice.js:74](../../../TCV-Frontend/src/redux/slices/auth/loginSlice.js#L74) |
 | POST | `/api/organization/patient/default` | `API-041` OrganizationPatientController@storeDefaultPatient | [src/redux/slices/patientSlice.js:38](../../../TCV-Frontend/src/redux/slices/patientSlice.js#L38) |
 | GET | `/api/organization/patientForm` | `API-043` OrganizationController@getPatientForm | [src/redux/slices/patientSlice.js:20](../../../TCV-Frontend/src/redux/slices/patientSlice.js#L20) |
 | GET | `/api/organization/privileges` | `API-044` OrganizationController@getOrganizationPrivileges | [src/apis/miscApis.js:61](../../../TCV-Frontend/src/apis/miscApis.js#L61) |

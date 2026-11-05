@@ -1,7 +1,7 @@
 # TCV — AI Knowledge Base
 
 Reusable knowledge base for **TestingColorVision** across all three repos — `TCV-Backend` (`develop`),
-`TCV-Frontend` (`develop`), `TCV-Website` (`main`) — built so an AI assistant can work on the project
+`TCV-Frontend` (`develop`), `TCV-Website` (`develop`) — built so an AI assistant can work on the project
 without rescanning **~61,700 lines across 506 source files** (`TCV-Backend/app` 164 · `TCV-Frontend/src`
 248 · `TCV-Website` 94).
 
@@ -121,25 +121,20 @@ Never regenerate the whole KB. Full detail:
 
 ## Last synced
 
-**2026-09-17.** Indexes built from `TCV-Backend` `ff9be500` (`develop`), `TCV-Frontend` `80403e7`
-(`develop`), `TCV-Website` `cb4a1b6` (`website-integration` — the one deliberate exception, see
-[HOW_TO_REGENERATE](AI_KNOWLEDGE_BASE/GUIDES/HOW_TO_REGENERATE.md); not re-synced this time). Routes came
-from `artisan route:list --json`, the authoritative source. Backend suite on that SHA: **812 passed, 0
-failed**. Compare those SHAs with each repo's `git rev-parse --short HEAD` before trusting the generated
-indexes.
+**2026-10-15.** Indexes built from **`develop` in all three repos**: `TCV-Backend` `9082ae22`,
+`TCV-Frontend` `9ecbf6b`, `TCV-Website` `4d2c0d4` — i.e. including the merged `client-unbilled-changes`
+work (backend PR #315, frontend PR #445). ⚠️ Routes came from the **AST parser**, not `artisan route:list` —
+TCV-Backend has no `vendor/` on the sync machine — so framework/package web routes are missing from the web
+table (the `api/*` set is complete). The backend suite was **not** run at this sync; last measured 1398
+passed / 3 failed on `a5938b2e`. Compare those SHAs with each repo's `git rev-parse --short HEAD` before
+trusting the generated indexes.
 
-First generated 2026-08-19. Per-sync deltas are recorded in
-[AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md).
+First generated 2026-08-19. Per-sync deltas, including this one, are recorded in
+[AI_KNOWLEDGE_BASE/README.md](AI_KNOWLEDGE_BASE/README.md#what-the-2026-10-15-sync-changed).
 
-✅ `ws-404` and `ws-449` are now **merged and indexed**. ⚠️ `ws-502` and `ws-480` (both repos each) are
-ahead of `develop` and are **not** indexed — feature branches never are. Both are written up in the prose,
-labelled `unmerged`: `ws-502` in
-[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#server-sorted-grids-ws-502-unmerged), `ws-480` (credit
-purchase gate + the user modal's test check) in
-[FRONTEND.md](AI_KNOWLEDGE_BASE/FRONTEND.md#credit-purchase-gate-ws-480-unmerged) and
-[BILLING_CONTEXT trap 9](AI_KNOWLEDGE_BASE/CONTEXT/BILLING_CONTEXT.md#9--the-unlimited-purchase-refusal-is-on-the-deprecated-surface-ws-480),
-whose *Status 2026-09-17* covers the review fix that moved the unlimited-credit refusal onto the live
-`api/payment/*` path — a change made **after** the branch shas quoted there, and uncommitted at the time.
+> **Folder name.** The docs call this repo `tcv-ai-knowledge-base`; a clone may be named
+> `tcv_ai_knowledge_base` (as on the 2026-10-13 sync machine). Nothing depends on the name —
+> `config.json` paths are relative — so read either spelling as this folder.
 
 ## Honest scope
 
@@ -147,7 +142,7 @@ whose *Status 2026-09-17* covers the review fix that moved the unlimited-credit 
 - Prose is marked **`[not deeply traced]`** where the code was not read closely (PDF templates, the
   Export classes, the super-admin dashboard aggregation, HubSpot, the ACH/bank-transfer payment
   branches) rather than padded with plausible-sounding text.
-- Table columns are a **union across 109 migrations** — a column added then dropped may still appear.
+- Table columns are a **union across 156 migrations** — a column added then dropped may still appear.
   Confirm with `DESCRIBE` before relying on it.
 - [`SECURITY.md`](AI_KNOWLEDGE_BASE/SECURITY.md)'s 14 findings are **observations from reading the
   code**, not the output of a pen test. Each names the file it came from so you can re-verify it in one

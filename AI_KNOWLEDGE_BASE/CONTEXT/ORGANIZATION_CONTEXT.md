@@ -127,20 +127,69 @@ Both advance the LMS session's status. Remember the status gate only bites for t
 9. **No redirect URL means the patient lands on the result page with nowhere to go.**
    `getOrganizationRedirectUrl()` is what the SPA's `ResultPage` checks first. An org with no
    `organization_configs.redirect_url` shows the result, and, without print or download privileges, a
-   lone **Close** button. On `develop` that button is dead: `window.close()` is refused on a tab no script
-   opened. 🔶 Fixed on the unmerged frontend `fix/ux-result-close-datefilter` with a "you can now close
-   this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+   lone **Close** button. That button used to be dead: `window.close()` is refused on a tab no script
+   opened. ✅ Fixed by frontend PR #441 (`fix/ux-result-close-datefilter`, on `develop` since 2026-10-09)
+   with a "you can now close this tab" fallback ([FRONTEND.md](../FRONTEND.md#the-result-page-close-button)).
+10. ☠️ **Deleting an Integrated Partner fails with "Something went wrong" once its launch URL has been
+    used (found 2026-11-04; ✅ fixed on backend branch `fix/partner-delete-friendly-error`, commit `bd010d3a`, unmerged - now an informational 409, see below).** `OrganizationController::destroy`
+    (was `:656`) force-deletes the linked user, then `$organization->delete()`. Three foreign keys
+    are `ON DELETE RESTRICT`, so MySQL refuses while any child row exists:
+    `lms_provider_configs.org_id` → `organizations.id` (`2026_05_08_000001`, line 22),
+    `lms_sessions.org_id` → `organizations.id` (`…000002`, line 36) and
+    `lms_sessions.lms_provider_config_id` → `lms_provider_configs.id` (`…000002`, line 37).
+    `getOrCreateProviderConfig` (`LmsLaunchService.php:17`, called from
+    `OrganizationController.php:834`) creates the config row lazily the **first time the launch URL is
+    opened**. So partners never launched delete fine and used partners always fail, which looks random.
+    The `catch` (`:698`) rolls back (the user is restored too), logs, and returns **500 `api.error`**
+    with **`$e->getMessage()` as the body**, so raw SQL (table and constraint names) reaches the
+    browser. Same leak at `:345`, `:429`, `:443`, `:625`, `:652`.
+    - **`lms_provider_configs` has `softDeletes()`, which does not help:** the DB foreign key ignores
+      soft-deleted rows. Tear-down order must be `lms_sessions`, then `lms_provider_configs`
+      (`forceDelete`), then the org. `lms_delivery_queue` (cascade from session) and
+      `lms_delivery_tokens` (cascade from config) clean themselves up.
+    - **Fix: option B (refuse, keep LMS history), not tear-down.** `destroy()` counts
+      blockers *before* touching the owner user: `LmsProviderConfig::withTrashed()` (the FK still sees
+      soft-deleted configs) and `LmsSession`. Any count > 0 → **409**
+      `{success:false, status_code:409, message, error_code:'ORGANIZATION_HAS_LINKED_RECORDS', errors:{lms_provider_configs, lms_sessions}}`.
+      The message names the partner and the counts and suggests restricting the account instead
+      (`api.organization_delete_blocked`).
+    - **Race / future RESTRICT keys:** a `QueryException` that is a foreign-key violation (MySQL 1451, or
+      SQLite "foreign key") inside the transaction rolls back (the owner user is restored) and returns the
+      same 409 with `error_code` but **no `errors` counts**, message `api.organization_delete_blocked_generic`.
+    - **Also changed:** `authorize('delete', Organization::class)` moved *outside* the `try`, so a denied
+      policy is 403, not a 500; an unknown id is an explicit 404 (`api.organization_not_found`); the 500
+      fallback no longer returns `$e->getMessage()` (this method only; the same leak remains at the other
+      `catch` blocks in the controller).
+    - **Still open:** the 409 body is hand-built (no `data` key) and its "LMS configuration(s)/session(s)"
+      wording is built with `Str::plural` in PHP, not in `resources/lang`. `auditService->log()` runs after
+      `DB::commit()` inside the `try`, so an audit failure reports an error for a delete that happened.
+      Unverified: other tables pointing at `organizations` (patients, tests, credits) may also be `RESTRICT`
+      (the generic 409 would catch them). The SPA's handling of the 409 was not checked.
+    - Pinned by `tests/Feature/Organizations/AuditedOrganizationControllerTest.php` (13 tests pass,
+      including used partner, soft-deleted config, mid-delete FK, 404, 403).
 
 ---
 
-## UI terminology & form changes (2026-10-12, uncommitted)
+## UI terminology & form changes (2026-10-12, `client-unbilled-changes`)
+
+> Frontend side is on `develop` (PR #445, merged 2026-10-13). Backend side is on `develop` (PR #315, merge
+> `9082ae22`; indexed 2026-10-15).
 
 - "Organization(s)" -> **Integrated Partner(s)** in the UI only (routes/tables/keys unchanged). Org-settings checkboxes keep
   DB option names, displayed via `ORG_OPTION_LABELS` in `OrganisationModal.js`. Only "Distributor" is used (no reseller/affiliate).
 - `run_test_on_subdomain` removed from the SPA create/edit form, payload and validation; backend column/fillable/cast kept, field optional.
-- `patient_id` rule is now `required=false` in `generateFieldRules` (Unique Identifier optional).
-- Account status label **Inactive -> Restricted** (accounts only; test and discount-code Active/Inactive unchanged).
-  `AuthController` message is now "Account is restricted"; the stored value is unchanged.
+- `patient_id` is `required=false` in both the default rules (`OrganizationController.php:904`) and the
+  option-selected branch, which forces it back to false (`:956-958`) (Unique Identifier optional).
+- Status label **Inactive -> Restricted**; stored value unchanged (`inactive`). ☠️ **Not accounts-only in the SPA:**
+  the shared `StatusBadge` (`misc.js:22`) maps `inactive` -> "Restricted" everywhere, so the **Tests list**
+  (`testColumns.js:34-36`) also shows inactive tests as "Restricted" while `EditTestForm.js:172` still says
+  "Inactive". Discount codes use their own badge. Backend: account status-change audit titles/descriptions say
+  "Restricted" (`AuditEventCatalog::statusChangeTitle`, `AuditEventCatalog.php:562-567`, `account.*` keys only);
+  `settings.test_status_changed` still says "(Inactive)". Login API message unchanged (`api.resticted`); only the
+  audit Reason became "Account is restricted" (`AuthController.php:120`).
+- Audit detail labels changed: "Integrated Partner Type/Name", "Test Taker Form Fields", "Deleted Integrated
+  Partner", "Integrated Partner ID", "Test Taker Ref", "Test Taker ID" (`TestController.php:270`). Older rows keep
+  the old labels, so the audit log mixes both — anything parsing `details` by label must accept both.
 
 
 ---

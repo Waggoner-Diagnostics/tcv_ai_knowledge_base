@@ -130,6 +130,21 @@ the address again from Send Test, which charges properly.
 `POST api/test-invitations/{id}/resend` → `resendUnregisteredInvitation()` issues a *fresh* token + code
 with a *fresh* 7-day window, consumes no credit, and is scoped to `user_id = auth()->id()`.
 
+**Changed on branch `fix/test-email-and-account-restriction` (2026-11-03, unmerged):** the resend now
+**keeps** the token and code and renews only the 7-day window — rotating them killed the link and code in
+every email the test taker already held. It also no longer mails the sender's `test_link` /
+`org_test_link`: `TestInvitationMailer::send(..., isResend: true)` takes `sendResend()`, which renders the
+Super Admin's editable **Test Link Resent** (`email_template.test_link_resent`) for **every** sender,
+organizations included — **if the row was already mailed** (`email_status = 'sent'`) — with `{{test_url}}` =
+this invitation's own `/test-invitation/verify/{token}`, via
+the `emails.testLink` view (the same as `TestService::generateAndSendTestLink()`). The resend carries **no
+code or expiry** — the test taker uses the original email's code (planned improvement I-7). ☠️ A row
+still `'pending'` (queued, or deferred after the mail host did not answer) was never received, so its
+resend sends the **full first invitation** instead: the resend marks the row `'sent'`, which takes it out
+of the batch, and a codeless resend would leave the test taker with no code at all. An
+organization-specific resend template is planned as I-1. The first send is unchanged. Pinned by
+`tests/Feature/TestInvitations/ResendUnregisteredInvitationTest.php`.
+
 ### How the invitation body is assembled
 
 `TestInvitationMailer::send()` is a sequence of passes over one string, and the order matters. (It was
@@ -444,8 +459,8 @@ email. ⚠️ **`orderBy('id')`, not `latest('id')`, and it has to stay that way
 patient per address, so this can find several, and `TestController::patientByEmail()` resolves the same
 duplicates oldest-first. Disagree with it and the invitation greets one name while the test that
 invitation leads to shows another. `…::test_a_duplicated_address_greets_the_same_patient_the_test_flow_resolves`
-pins the agreement rather than the choice. A first invitation has no name and the greeting falls back to the literal `Patient` — but only
-when *both* names are unknown, because "Dear Patient Doe" is not a greeting. That makes the greeting a
+pins the agreement rather than the choice. A first invitation has no name and the greeting falls back to the literal `Test Taker` (`UNKNOWN_PATIENT_NAME`, `TestInvitationMailer.php:25`; was `Patient` before PR #315) — but only
+when *both* names are unknown, because "Dear Test Taker Doe" is not a greeting. That makes the greeting a
 **three-way** choice, and the third branch is the one to remember: a row with a surname and no first
 name greets by surname alone, `Dear Doe:`. It is a copy decision rather than a consequence of the
 code, so it is pinned by `…::test_a_patient_with_only_a_surname_is_greeted_by_surname` against the
@@ -458,7 +473,7 @@ one, so a `??` chain would stop there and never reach `company_name`.
 
 ☠️☠️ **That lookup must go through `Patient::whereEmail()` — never `where('email', $email)`.**
 `patients.email` is ciphertext with a random IV, so comparing the column encrypts the needle afresh and
-matches **nothing**, silently: every organization is greeted `Dear Patient`, including the re-invite the
+matches **nothing**, silently: every organization is greeted `Dear Test Taker`, including the re-invite the
 feature exists for. `ws-401` carried exactly that bug through **three** review rounds (PR round 3,
 2026-09-21). It survived because those rounds verified the code by extracting functions into standalone
 PHP harnesses, which exercise the string logic and never touch a query — against a database ten tests
@@ -756,7 +771,7 @@ checks neither against the caller's session** — [S-03](../SECURITY.md#s-03--se
 
 ## Cancelling
 
-`POST api/test-invitations/{id}/cancel` (`auth:sanctum`, `API-106`):
+`POST api/test-invitations/{id}/cancel` (`auth:sanctum`, `API-110`):
 - selects only `user_id = auth()->id()`, `is_used = false`, `is_revoked = false` — anyone else's
   invitation is a not-found,
 - ⭐ **claims** the row: `UPDATE … SET is_revoked = true, expires_at = now() WHERE id = ? AND
@@ -841,7 +856,7 @@ refund. (Under impersonation `auth()` is the impersonated owner, so that is corr
 
 ---
 
-## Editable account/system emails & the Email Templates dropdown (2026-10-12, uncommitted)
+## Editable account/system emails & the Email Templates dropdown (2026-10-12, merged: backend PR #315 / frontend PR #445)
 
 **What the platform sends, and where each lives** (SPA: Settings > Email Templates, dropdown in this order):
 
@@ -858,19 +873,31 @@ refund. (Under impersonation `auth()` is the impersonated owner, so that is corr
 There is **no "Welcome" template** anywhere in the backend; "Welcome" only survives in old subject strings.
 
 **API (`routes/api.php`, `auth:sanctum` group, `TestEmailTemplateController`):**
-- `GET api/test-email-templates`: original keys `test_link` / `org_test_link` unchanged, plus `system_templates` (map name -> `{id, subject, body, type, last_modified, placeholders}`) and `available` (ordered `[{key,label,source}]`, only templates whose row exists). Order and labels live in the controller constant `SYSTEM_TEMPLATES`.
+- `GET api/test-email-templates`: original keys `test_link` / `org_test_link` unchanged, plus `system_templates` (map name -> `{id, subject, body, type, last_modified, placeholders}`) and `available` (ordered `[{key,label,source}]`, only templates whose row exists). Account-email order and labels live in the controller constant `SYSTEM_TEMPLATES` (`TestEmailTemplateController.php:35-42`); the two test-invitation labels are hard-coded in `availableTemplates()` (`:97`, `:100`).
 - `PUT api/test-email-templates/system/{id}` (`updateSystem`): registered **before** `/{id}`. **Super Admin only** (403 otherwise, `usertype === User::SUPER_ADMIN`): the group is `auth:sanctum` only, so without the check any customer could rewrite the password-reset email. Edits `subject` and `body` only (header/footer are shared branding, never exposed). Validation reuses `validateRequiredPlaceholders` against `EmailTemplatePlaceholders::catalogue($name)` (required / unknown / padded / markup-broken), re-anchors bare link tokens using `SYSTEM_LINK_LABELS`, and logs `settings.email_template_updated` with before/after.
-- **Updated 2026-10-13, uncommitted:** `PUT /{id}` (`update`) is now **Super Admin only** (403 otherwise): it edits the global admin-default `test_email_templates` rows. Customers/orgs edit their own copies via `user-email-template` (`UserEmailTemplate`); the only SPA caller of `PUT /{id}` is the admin Settings slice. `GET index` returns an empty `system_templates` and omits the account-email entries from `available` for non-Super-Admins (`test_link`/`org_test_link` are still returned to everyone). The old text "`GET index` and `PUT /{id}` remain unscoped" is no longer true.
-- Disabled `email_template` rows silently fall back to `SystemEmailDefaults` (no error, no log), so disabling a row has no visible effect. The `{id}` for `/system/` is an `email_template.id`, a different id space from `test_email_templates.id`.
+- **Updated 2026-10-13, merged PR #315:** `PUT /{id}` (`update`) is now **Super Admin only** (403 otherwise): it edits the global admin-default `test_email_templates` rows. Customers/orgs edit their own copies via `user-email-template` (`UserEmailTemplate`); the only SPA caller of `PUT /{id}` is the admin Settings slice. `GET index` returns an empty `system_templates` and omits the account-email entries from `available` for non-Super-Admins (`test_link`/`org_test_link` are still returned to everyone). The old text "`GET index` and `PUT /{id}` remain unscoped" is no longer true.
+- ☠️ **A disabled (`status != 'enable'`) row behaves differently per email:** `test_link_resent` / `test_resume_link` silently fall back to `SystemEmailDefaults` (`SystemEmailTemplateService.php:28-42`); `organization_test_url` falls back to the hard-coded `MailMessage` (`render(..., false)` returns null, `OrganizationTestUrlNotification.php:43-46`); `password_reset` / `set_password` / `email_verification` **throw** ("…template not found", `ResetPasswordNotification.php:47-54`, `AuthController.php:845-852`), so **no mail is sent**. `index` / `updateSystem` ignore `status`, so a disabled row is still listed and editable but the edit never sends.
+- `updateSystem` runs with no DB transaction and no cache clear (unlike `update`, `:222-243`). Its audit "Template Name" is the dropdown label `SYSTEM_TEMPLATES[$name]` (`:384`). `subject` is `required|string|max:250` on both PUTs (`:414`).
+- ⚠️ Stale code comment at `TestEmailTemplateController.php:316` still says "index()/update() above predate this and are unscoped" — both are now scoped (`:120`, `:178`). Trust the code.
+- ⚠️ `render()` HTML-escapes values (a URL with `&` becomes `&amp;` in `href` — valid). The pre-existing `ResetPasswordNotification` / `AuthController` paths do **not** escape `{{first_name}}` / `{{last_name}}` (`ResetPasswordNotification.php:60-68`); now that Super Admin can place those tokens anywhere, unescaped user names reach the HTML.
+- The `{id}` for `/system/` is an `email_template.id`, a different id space from `test_email_templates.id`.
 - `EmailTemplatePlaceholders::catalogue()` gained the six name-keyed arms above, so `GET api/test-email-templates/placeholders/{type}` also works for them.
 
 **Rows 2, 3 and 7 used to be hard-coded; now data with a fallback.**
 - `App\Support\SystemEmailDefaults::all()` holds each default subject/body: the exact HTML the mailers used to emit, with the dynamic values turned into placeholders. It is the single source for the seeding migration `2026_10_12_000002_seed_editable_system_email_templates` (idempotent: skips a name that already exists, header/footer `''`; `down()` removes only rows still holding the seeded body), for `EmailTemplateSeeder`, and for the fallback.
-- `App\Services\SystemEmailTemplateService::render($name, $values, $fallbackToDefaults = true)` reads the enabled `email_template` row (header + body + footer), replaces `{{name}}` with the **HTML-escaped** value in the body (the subject is plain text, unescaped), runs `EmailContent::linkify`, and returns `['subject','content']`. It deliberately does **not** run `styleAnchors`, so seeded output stays byte-identical to the old mail.
-- Resume and Resent mails: with the seeded row the content equals the old output (tests compare against a copy of the old heredoc / blade render); with the row missing or disabled the service uses `SystemEmailDefaults`, same output. `emails/testLink.blade.php` now just wraps a `$content` variable in the same document shell.
-- Integrated Partner Test URL: `OrganizationTestUrlNotification` renders the row through `emails.dynamic-template` (like reset/set-password). **Visual change:** it previously used Laravel's default markdown mail layout (greeting, button, "Regards" footer, trouble-clicking subcopy). The words and button are reproduced, but the layout shell is now the `dynamic-template` container. ~~With the row missing the notification returns the original `MailMessage` unchanged.~~ 📌 Superseded 2026-10-28 (uncommitted): the hard-coded `MailMessage` is gone; a missing/disabled row falls back to `SystemEmailDefaults` ([below](#2026-10-28-qa-fixes-uncommitted)).
+- `App\Services\SystemEmailTemplateService::render($name, $values, $fallbackToDefaults = true)` reads the enabled `email_template` row (header + body + footer), replaces `{{name}}` with the **HTML-escaped** value in the body (the subject is plain text, unescaped), runs `EmailContent::linkify` **then `EmailContent::styleAnchors`**, and returns `['subject','content']`. `styleAnchors` (added on `fix/protected-routes-03nov`, 2026-11-03) gives every `<a href>` with no authored `color:` the blue underline `color:#007bff;text-decoration:underline`, because Outlook/YOPmail render an unstyled anchor as plain text (Resend Test and the Start / Resume fallback link). Buttons and links with their own colour are left alone. ⚠️ Rendered output is therefore no longer byte-identical to the old mail for an unstyled link; `SystemEmailTemplateMailTest` was adjusted, and 4 of its cases fail with or without the branch's changes.
+- Resume and Resent mails: with the seeded row the content equals the old output except the Resent greeting, now `Dear Test Taker,` (was `Dear Patient,`, terminology commit `bfd55029`; the test's "legacy" copy already carries the new wording); with the row missing or disabled the service uses `SystemEmailDefaults`, same output. `emails/testLink.blade.php` now just wraps a `$content` variable in the same document shell.
+- Integrated Partner Test URL: `OrganizationTestUrlNotification` renders the row through `emails.dynamic-template` (like reset/set-password). **Visual change:** it previously used Laravel's default markdown mail layout (greeting, button, "Regards" footer, trouble-clicking subcopy). The words and button are reproduced apart from the terminology rename (subject `Your Integrated Partner Test URL`, body "Your integrated partner has been created successfully." — was `Organization`), but the layout shell is now the `dynamic-template` container. ~~With the row missing **or disabled** the notification returns the hard-coded `MailMessage`.~~ 📌 Superseded 2026-10-28 (uncommitted): the hard-coded `MailMessage` is gone; a missing/disabled row falls back to `SystemEmailDefaults` ([below](#2026-10-28-qa-fixes-uncommitted)).
 - Editing: bodies pass through Quill in `linkTokens` mode ([FRONTEND](../FRONTEND.md), section "Settings: Super Admin Profile removal & Email Templates dropdown"). The resume button's original inline style (`padding:12px 28px; font-weight:600`) is replaced by the standard editor button style the first time the body is saved from the SPA.
 - Tests: `tests/Feature/Mail/SystemEmailTemplateMailTest.php`, `tests/Feature/Settings/SystemEmailTemplateTest.php`.
+
+🔒 **Public `POST api/test/resume` is unchanged by PR #315.** Only `TestResumeController::dispatchResumeEmail()`
+(`:285`, called by `sendResumeEmail`) changed: subject/body now come from
+`SystemEmailTemplateService::render('test_resume_link', …)` (`:293`) — values `e()`-escaped in the body, not in the
+plain-text subject. `resume()` (`:157`) is untouched. A disabled or missing row falls back to `SystemEmailDefaults`,
+so **disabling the template does not stop resume emails** (same for `test_link_resent`, `TestService.php:243`).
+
+**Fallback link on its own line (2026-11-04, `fix/protected-routes-03nov`, backend `c0986cde`).** In `password_reset`, `set_password` and `organization_test_url` the "copy and paste ... into your browser:" sentence now ends in `<br>` and the link follows inside the same paragraph, the pattern `test_resume_link` already used (the reset/set-password link used to sit in a separate `<p>`; the org URL sat on the same line as the sentence). Expiry wording ("expires in 60 minutes / 48 hours") is unchanged. Three edits in lockstep: `EmailTemplateSeeder` (reset, set-password), `SystemEmailDefaults::ORGANIZATION_TEST_URL_BODY`, and the match-on-fragment migration `2026_11_04_000001_put_email_fallback_link_on_new_line` (replaces only the exact fragment, so rows a Super Admin edited are otherwise kept; `down()` restores it). `ORGANIZATION_TEST_URL_BODY_V1` and migration `2026_10_28_000003`'s `seededBody()` still hold the older markup on purpose, as match values for earlier migrations.
 
 ☠️ **Changing a default body in `SystemEmailDefaults` changes only fresh databases and the fallback.** Existing rows keep their stored text, like every `email_template` row ([AUTH_CONTEXT](AUTH_CONTEXT.md) trap 8).
 

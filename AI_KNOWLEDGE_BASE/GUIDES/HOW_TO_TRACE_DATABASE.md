@@ -5,7 +5,7 @@
 [INDEXES/DATABASE_TABLE_INDEX.md](../INDEXES/DATABASE_TABLE_INDEX.md) — **55 tables**, each with its
 `TABLE-nnn` id, column count, the migration that created it, and a full column list.
 
-> ☠️ **It is a union across 109 migrations, not a live schema.** A column added and later dropped still
+> ☠️ **It is a union across 156 migrations, not a live schema.** A column added and later dropped still
 > appears (the "Dropped later" note under a table lists the ones the extractor caught). **`DESCRIBE` is
 > the only authority** before you write a migration against a column.
 

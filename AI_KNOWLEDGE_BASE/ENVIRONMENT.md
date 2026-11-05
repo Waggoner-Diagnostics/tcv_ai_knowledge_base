@@ -38,7 +38,7 @@ same warning at boot.
 | HubSpot | `HUBSPOT_ACCESS_TOKEN` |
 | Turnstile | `TURNSTILE_SITE_KEY` `TURNSTILE_SECRET_KEY` |
 | **Legacy source DB** (`ws-459`) | `OLD_DB_CONNECTION` `OLD_DB_HOST` `OLD_DB_PORT` `OLD_DB_DATABASE` `OLD_DB_USERNAME` `OLD_DB_PASSWORD` |
-| **Patient export** (PR #291) | `PATIENT_EXPORT_MAX_ROWS` — optional, default 50 000 ([CONFIGURATION.md](CONFIGURATION.md#configexportsphp-2026-09-29)). 🔶 Default **5 000** on unmerged `improve/export-format` (XLSX built in memory); do not set it above that without re-measuring |
+| **Patient export** (PR #291) | `PATIENT_EXPORT_MAX_ROWS` — optional, default **5 000** since 2026-10-05 (PR #298; was 50 000) ([CONFIGURATION.md](CONFIGURATION.md#configexportsphp-2026-09-29)). The XLSX is built in memory; do not set it above that without re-measuring |
 | **Legacy encryption** (`ws-459`) | **`LEGACY_MASTER_KEY`** (or `LEGACY_DEC_KEY`) `LEGACY_ENC_KEY` `LEGACY_DATA_KEY` · `LEGACY_ENCRYPTION_ENABLED` (deliberately **not** in compose) |
 | **Legacy key DB** (`ws-459`) | `ENC_DB_HOST` `ENC_DB_PORT` `ENC_DB_DATABASE` `ENC_DB_USERNAME` `ENC_DB_PASSWORD` `ENC_DB_SSL_CA` |
 | Deploy | `IMAGE_TAG_BACKEND` |
@@ -65,10 +65,10 @@ environment without the key material does not degrade gracefully:
 - ⚠️ **After deploying to a new environment, run `php artisan patients:rebuild-email-index --apply`
   once.** Blind indexes built before the right key was in place match nothing.
 
-⚠️ **`LEGACY_DEC_KEY` and `LEGACY_ENC_KEY` are each listed twice in the same `environment:` block** of
-`docker-compose.yml` (lines 63–64 and again at 120–121). Both occurrences expand the same variable, so
-it is harmless today — but they are duplicate keys in one YAML mapping, and the **last one wins**. Edit
-the wrong copy and the change silently does nothing.
+✅ **Fixed 2026-10-05 (`bab3ff5b`) — `LEGACY_DEC_KEY` and `LEGACY_ENC_KEY` were each listed twice in the
+same `environment:` block** of `docker-compose.yml` (lines 63–64 and again at 120–121). The second copy is
+removed; on `develop` `362547d7` each `LEGACY_*` key appears once (lines 62–65). The lesson stands: duplicate
+keys in one YAML mapping are legal and the **last one wins**, so editing the wrong copy silently does nothing.
 
 ☠️ **`TRUSTED_PROXIES` — the fail-closed default is gone (`ws-449`, 2026-09-14).**
 `bootstrap/app.php` now calls `trustProxies()` on every boot. Unset (or empty, which is what compose

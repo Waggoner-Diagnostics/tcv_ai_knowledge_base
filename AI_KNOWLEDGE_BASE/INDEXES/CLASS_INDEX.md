@@ -1,6 +1,6 @@
 # Class Index
 
-**254 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
+**255 classes/interfaces/traits** under `app/` + `database/`. IDs are stable across regenerations (assigned by sorted name).
 
 | ID | Class | Kind | Extends | File:Line | Methods |
 |---|---|---|---|---|---|
@@ -21,7 +21,7 @@
 | `CTRL-015` | `OrganizationController` | class | Controller | [app/Http/Controllers/OrganizationController.php:37](../../../TCV-Backend/app/Http/Controllers/OrganizationController.php#L37) | 19 |
 | `CTRL-016` | `OrganizationPatientController` | class | Controller | [app/Http/Controllers/OrganizationPatientController.php:17](../../../TCV-Backend/app/Http/Controllers/OrganizationPatientController.php#L17) | 4 |
 | `CTRL-017` | `PasswordController` | class | Controller | [app/Http/Controllers/PasswordController.php:14](../../../TCV-Backend/app/Http/Controllers/PasswordController.php#L14) | 2 |
-| `CTRL-018` | `PatientController` | class | Controller | [app/Http/Controllers/PatientController.php:31](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L31) | 13 |
+| `CTRL-018` | `PatientController` | class | Controller | [app/Http/Controllers/PatientController.php:32](../../../TCV-Backend/app/Http/Controllers/PatientController.php#L32) | 13 |
 | `CTRL-019` | `PaymentController` | class | Controller | [app/Http/Controllers/PaymentController.php:19](../../../TCV-Backend/app/Http/Controllers/PaymentController.php#L19) | 11 |
 | `CTRL-020` | `PriceDetailController` | class | Controller | [app/Http/Controllers/PriceDetailController.php:15](../../../TCV-Backend/app/Http/Controllers/PriceDetailController.php#L15) | 8 |
 | `CTRL-021` | `ProfileController` | class | Controller | [app/Http/Controllers/ProfileController.php:15](../../../TCV-Backend/app/Http/Controllers/ProfileController.php#L15) | 3 |
@@ -40,7 +40,7 @@
 | `CTRL-034` | `TestResumeController` | class | Controller | [app/Http/Controllers/TestResumeController.php:16](../../../TCV-Backend/app/Http/Controllers/TestResumeController.php#L16) | 4 |
 | `CTRL-035` | `TestSectionController` | class | Controller | [app/Http/Controllers/TestSectionController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionController.php#L11) | 5 |
 | `CTRL-036` | `TestSectionPlateController` | class | Controller | [app/Http/Controllers/TestSectionPlateController.php:11](../../../TCV-Backend/app/Http/Controllers/TestSectionPlateController.php#L11) | 5 |
-| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:28](../../../TCV-Backend/app/Http/Controllers/UserController.php#L28) | 11 |
+| `CTRL-037` | `UserController` | class | Controller | [app/Http/Controllers/UserController.php:29](../../../TCV-Backend/app/Http/Controllers/UserController.php#L29) | 12 |
 | `CTRL-038` | `UserEmailTemplateController` | class | Controller | [app/Http/Controllers/UserEmailTemplateController.php:16](../../../TCV-Backend/app/Http/Controllers/UserEmailTemplateController.php#L16) | 4 |
 | `CTRL-039` | `VerificationController` | class | Controller | [app/Http/Controllers/Auth/VerificationController.php:8](../../../TCV-Backend/app/Http/Controllers/Auth/VerificationController.php#L8) | 1 |
 | `MODEL-001` | `AllowedTest` | class | Model | [app/Models/AllowedTest.php:7](../../../TCV-Backend/app/Models/AllowedTest.php#L7) | 0 |
@@ -82,7 +82,7 @@
 | `MODEL-037` | `TestSession` | class | Model | [app/Models/TestSession.php:7](../../../TCV-Backend/app/Models/TestSession.php#L7) | 2 |
 | `MODEL-038` | `Transaction` | class | Model | [app/Models/Transaction.php:8](../../../TCV-Backend/app/Models/Transaction.php#L8) | 4 |
 | `MODEL-039` | `TransactionDetail` | class | Model | [app/Models/TransactionDetail.php:8](../../../TCV-Backend/app/Models/TransactionDetail.php#L8) | 2 |
-| `MODEL-040` | `User` | class | Authenticatable | [app/Models/User.php:18](../../../TCV-Backend/app/Models/User.php#L18) | 20 |
+| `MODEL-040` | `User` | class | Authenticatable | [app/Models/User.php:19](../../../TCV-Backend/app/Models/User.php#L19) | 21 |
 | `MODEL-041` | `UserEmailTemplate` | class | Model | [app/Models/UserEmailTemplate.php:9](../../../TCV-Backend/app/Models/UserEmailTemplate.php#L9) | 2 |
 | `MODEL-042` | `UserStripeDetail` | class | Model | [app/Models/UserStripeDetail.php:8](../../../TCV-Backend/app/Models/UserStripeDetail.php#L8) | 1 |
 | `SVC-001` | `AuditEventCatalog` | class | — | [app/Services/Audit/AuditEventCatalog.php:71](../../../TCV-Backend/app/Services/Audit/AuditEventCatalog.php#L71) | 8 |
@@ -119,7 +119,7 @@
 | `SVC-032` | `SystemEmailTemplateService` | class | — | [app/Services/SystemEmailTemplateService.php:17](../../../TCV-Backend/app/Services/SystemEmailTemplateService.php#L17) | 1 |
 | `SVC-033` | `TestAssignmentService` | class | — | [app/Services/TestAssignmentService.php:14](../../../TCV-Backend/app/Services/TestAssignmentService.php#L14) | 9 |
 | `SVC-034` | `TestExecutionService` | class | — | [app/Services/TestExecutionService.php:16](../../../TCV-Backend/app/Services/TestExecutionService.php#L16) | 8 |
-| `SVC-035` | `TestInvitationMailer` | class | — | [app/Services/TestInvitationMailer.php:22](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L22) | 7 |
+| `SVC-035` | `TestInvitationMailer` | class | — | [app/Services/TestInvitationMailer.php:22](../../../TCV-Backend/app/Services/TestInvitationMailer.php#L22) | 8 |
 | `SVC-036` | `TestResultService` | class | — | [app/Services/TestResultService.php:14](../../../TCV-Backend/app/Services/TestResultService.php#L14) | 2 |
 | `SVC-037` | `TestSectionProgressionService` | class | — | [app/Services/TestSectionProgressionService.php:11](../../../TCV-Backend/app/Services/TestSectionProgressionService.php#L11) | 3 |
 | `SVC-038` | `TestSectionTerminationService` | class | — | [app/Services/TestSectionTerminationService.php:9](../../../TCV-Backend/app/Services/TestSectionTerminationService.php#L9) | 4 |
@@ -133,7 +133,8 @@
 | `MW-001` | `AddRequestId` | class | — | [app/Http/Middleware/AddRequestId.php:20](../../../TCV-Backend/app/Http/Middleware/AddRequestId.php#L20) | 1 |
 | `MW-002` | `FlexibleAuthMiddleware` | class | — | [app/Http/Middleware/FlexibleAuthMiddleware.php:17](../../../TCV-Backend/app/Http/Middleware/FlexibleAuthMiddleware.php#L17) | 7 |
 | `MW-003` | `LmsSessionStatusMiddleware` | class | — | [app/Http/Middleware/LmsSessionStatusMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/LmsSessionStatusMiddleware.php#L9) | 1 |
-| `MW-004` | `RestrictIpMiddleware` | class | — | [app/Http/Middleware/RestrictIpMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L9) | 1 |
+| `MW-004` | `RestrictAccountMiddleware` | class | — | [app/Http/Middleware/RestrictAccountMiddleware.php:41](../../../TCV-Backend/app/Http/Middleware/RestrictAccountMiddleware.php#L41) | 10 |
+| `MW-005` | `RestrictIpMiddleware` | class | — | [app/Http/Middleware/RestrictIpMiddleware.php:9](../../../TCV-Backend/app/Http/Middleware/RestrictIpMiddleware.php#L9) | 1 |
 | `REQ-001` | `AuditLogExportRequest` | class | FormRequest | [app/Http/Requests/AuditLogExportRequest.php:22](../../../TCV-Backend/app/Http/Requests/AuditLogExportRequest.php#L22) | 4 |
 | `REQ-002` | `AuditLogIndexRequest` | class | FormRequest | [app/Http/Requests/AuditLogIndexRequest.php:13](../../../TCV-Backend/app/Http/Requests/AuditLogIndexRequest.php#L13) | 4 |
 | `REQ-003` | `ChangePasswordRequest` | class | FormRequest | [app/Http/Requests/ChangePasswordRequest.php:8](../../../TCV-Backend/app/Http/Requests/ChangePasswordRequest.php#L8) | 4 |
@@ -160,7 +161,7 @@
 | `REQ-024` | `UpdateProfileRequest` | class | FormRequest | [app/Http/Requests/UpdateProfileRequest.php:9](../../../TCV-Backend/app/Http/Requests/UpdateProfileRequest.php#L9) | 4 |
 | `REQ-025` | `UpdateSettingsRequest` | class | FormRequest | [app/Http/Requests/UpdateSettingsRequest.php:7](../../../TCV-Backend/app/Http/Requests/UpdateSettingsRequest.php#L7) | 2 |
 | `REQ-026` | `UpdateUserEmailTemplateRequest` | class | FormRequest | [app/Http/Requests/UpdateUserEmailTemplateRequest.php:11](../../../TCV-Backend/app/Http/Requests/UpdateUserEmailTemplateRequest.php#L11) | 5 |
-| `REQ-027` | `UserRequest` | class | FormRequest | [app/Http/Requests/UserRequest.php:10](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L10) | 3 |
+| `REQ-027` | `UserRequest` | class | FormRequest | [app/Http/Requests/UserRequest.php:13](../../../TCV-Backend/app/Http/Requests/UserRequest.php#L13) | 4 |
 | `REQ-028` | `UserTestsTableRequest` | class | FormRequest | [app/Http/Requests/UserTestsTableRequest.php:17](../../../TCV-Backend/app/Http/Requests/UserTestsTableRequest.php#L17) | 5 |
 | `REQ-029` | `ValidateDiscountCodeRequest` | class | FormRequest | [app/Http/Requests/ValidateDiscountCodeRequest.php:7](../../../TCV-Backend/app/Http/Requests/ValidateDiscountCodeRequest.php#L7) | 2 |
 | `REQ-030` | `ValidatesAuditDateRange` | trait | — | [app/Http/Requests/Concerns/ValidatesAuditDateRange.php:30](../../../TCV-Backend/app/Http/Requests/Concerns/ValidatesAuditDateRange.php#L30) | 1 |
