@@ -16,6 +16,9 @@ Generated view: [INDEXES/WEBSITE_ROUTE_INDEX.md](INDEXES/WEBSITE_ROUTE_INDEX.md)
 
 ### Branch state — indexed from `develop` again (2026-10-13)
 
+⚠️ **Superseded 2026-11-17:** `website-integration` is now **81 commits ahead** of `develop` (0 behind), so the
+table below is stale for website work. See [Test naming](#test-naming--ws-668-2026-11-17-pr-38).
+
 ✅ **All three repos are now indexed from `develop`** (team decision, 2026-10-13). The website exception
 below is retired: `develop` absorbed `website-integration` — merge `4d2c0d4` — so it now carries both
 workflows (`non-prod.yml`, `uat-prod.yml`), the Docker/nginx stack, `c308caf` (signup success view), the
@@ -272,7 +275,7 @@ not re-derive them from page copy:**
 
 | Section | Scored plates | Note |
 |---|---|---|
-| General / adult | **25** | plus **1 demo plate** = **26 delivered**, hence "PiPiC **26**-Plate Edition" |
+| General / adult | **25** | plus **1 demo plate** = **26 delivered**. ⚠️ The "PiPiC 26-Plate Edition" label is being retired (WS-668) — see [Test naming](#test-naming--ws-668-2026-11-17-pr-38) |
 | Protan | 32 | confirmed correct, never changed |
 | Deutan | 32 | confirmed correct, never changed |
 | Tritan | 12 | confirmed correct, never changed |
@@ -287,7 +290,50 @@ left alone because the corrected threshold is a business decision, not arithmeti
 obviously `22/25`. **Do not silently rescale it.** Get the number from QA or the business first.
 
 ⚠️ The earlier `24-Plate Edition` label was not a different edition — it was the same wrong count under
-another name, and is now `26-Plate Edition` everywhere.
+another name, and was changed to `26-Plate Edition`. **2026-11-17 update:** the client's naming decision
+(WS-668) now says the plate set, *if it must be named at all*, is **"PIPIC 24 Plate Edition"** — which
+contradicts the 25 + 1 = 26 figure above. Unresolved; see the next section.
+
+---
+
+## Test naming — WS-668 (2026-11-17, PR #38)
+
+**Client decision:** the specific test is **"Waggoner CCVT - Adult Diagnostic"**; the whole suite is
+**"Waggoner CCVT"**. "Waggoner PIPHRR", "PiPIC 26-Plate Edition" and "26 Plate Edition" are removed; if the
+plate set itself must be named, use "PIPIC 24 Plate Edition".
+
+[PR #38](https://github.com/Waggoner-Diagnostics/TCV-Website/pull/38) (`WS-668` → `website-integration`)
+did only the listed pages:
+
+| Page | File | Change |
+|---|---|---|
+| `/test/faqs` | `views/FaqClient.jsx` | "Waggoner PIPHRR" → "Waggoner CCVT" in the Ishihara, "why prefer online", "valid and reliable" answers and the "comparable to" question. "What does PIPHRR stand for?" is **commented out, not deleted** (kept for future) |
+| `/test/credibility` | `views/TestCredibilityClient.jsx` | title → "Pseudoisochromatic Plate Ishihara Compatible" (edition suffix dropped) |
+| `/test/adult-instructions` | `app/test/adult-instructions/page.jsx` | meta description uses "Waggoner CCVT - Adult Diagnostic" |
+| same | `views/AdultTestInstructionsClient.jsx:36`, `app/test/layout.jsx:37` | subheading uses the same wording |
+
+⚠️ **Deliberately left open — do not "finish" these without confirmation:**
+- `components/TestOverviewClient.jsx` (`/test/overview`) still says "PiPiC 26-Plate Edition" and "1 demo +
+  25 scored (26 total)". The right label is "PIPIC 24 Plate Edition" but the counts conflict with it; the client is
+  confirming. Until then this is the only remaining 26-Plate text.
+- **Suite-name sweep skipped by decision:** `app/layout.jsx`, `app/page.jsx`, `app/pricing/page.jsx`,
+  `app/about/page.jsx`, `views/AboutClient.jsx`, `components/TestingPath.jsx`, `views/TestExamplesClient.jsx`,
+  `app/test/overview/page.jsx`, `app/test/credibility/page.jsx`, `views/HospitalInfoClient.jsx` and
+  `app/test/layout.jsx:11` still say "Waggoner Computerized Color Vision Test". Not an oversight.
+- **Pediatric test naming is undecided** (`views/TestInstructionsClient.jsx:24` "Waggoner Pediatric CCVT",
+  `TestExamplesClient`, `app/advice/parents/page.jsx`). The "Adult Test Instructions" heading, breadcrumb and
+  sidebar label were left as is.
+- The `/faq` JSON-LD in `app/faq/page.jsx` had no PIPHRR text **on `website-integration`**; the PIPHRR
+  wording exists only in the stale `develop` copy.
+
+☠️ **Branch trap found doing this:** on 2026-11-17 `develop` was **0 ahead / 81 behind** `website-integration`
+(local and `origin` agree), contradicting the 2026-10-13 branch note above. `develop` has no
+`/test/faqs` topic split and already says "24 Plate Edition". Wording from the client's change requests
+matched `website-integration`, so WS-668 was cut from it. Confirm the base branch before any website work.
+
+☠️ **Process trap:** the first commit of WS-668 carried an unrelated `.env.example` edit (`API_URL` set to a
+shared dev URL). It was removed by amending and force-pushing with `--force-with-lease`; the PR now lists
+only the five naming files. `.env.example` must keep `API_URL=http://localhost:8000`.
 
 Two more content claims are flagged unverified and still live on the FAQ page: the **"U.S. Army"** and
 **"Kaiser Permanente"** customer references. Treat them as unconfirmed until someone with authority says
