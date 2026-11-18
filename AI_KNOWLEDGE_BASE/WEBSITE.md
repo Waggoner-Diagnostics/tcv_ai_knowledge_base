@@ -295,6 +295,43 @@ otherwise.
 
 ---
 
+## SEO, canonicals and legacy URLs (2026-11-17)
+
+The old PHP site's URLs (`/tcv-protan.php`, `/about-us.php`, …) were never carried over; production
+returned **404** for all of them. Source: the SEO consultant's "Website Migration SEO Recommendations".
+
+| Thing | Where | Behaviour |
+|---|---|---|
+| Canonicals | `alternates.canonical` in each `app/**/page.jsx`; `metadataBase` in `app/layout.jsx` | Self-referencing, absolute on `https://www.testingcolorvision.com` |
+| Title template | `app/layout.jsx` | `'%s \| TestingColorVision'`; the homepage uses `title.absolute` |
+| `robots.txt` | `app/robots.js` | Dynamic by `Host`: `uat`/`dev`/`qa`/`stage`/`staging`/`localhost` → `Disallow: /`; any other host → allow all except `/app/`, `/api/` |
+| `sitemap.xml` | `app/sitemap.js` | Hand-kept list of 34 routes — add new pages here |
+| Old-URL redirects | `lib/legacyUrls.mjs` → spread into `redirects()` in `next.config.mjs` | 44 permanent 301s, old URL → final page, no chains. Matching is case-insensitive |
+
+**Option B was chosen** (new clean URLs + 301s), not "keep the old `.php` URLs". Keep the redirects **at least one year**.
+Rewrites were tested as the alternative: they work (incl. query-string via `has`, and a 301 from new→old does not loop), but
+it would mean ~400 hard-coded `href`s, every `canonical`, and the `pathname === href` active-link checks all changing together.
+
+☠️ **Traps here:**
+- `lib/legacyUrls.mjs` must stay `.mjs` — `next.config.mjs` imports it and `package.json` has no `"type": "module"`.
+- A 301 keeps the query string: `/test-instruction.php?type=sample` lands on `/test/instructions?type=sample`.
+- The three `credibility-article*.php` pages were **rebuilt** as `/test/credibility/cvtme-evaluation`,
+  `/cvtme-testability-special-olympics`, `/neitz-vs-cvtme-intellectual-disabilities` (text in `lib/credibilityArticles.js`),
+  and their old URLs 301 to them. `anamalous-trichromacy.php` 301s to the existing anomalous-trichromacy page, which already holds all its text.
+- **Decided not to rebuild** `tcv-pediatric-test-instruction.php`, `test-listing-visitor.php`, `test-instruction.php?type=sample`
+  and `sample-test-ques.php` (pediatric pages were removed in TCV-13; the others are test-player screens). They 301 to the nearest page
+  (`/test/overview`, `/test/overview`, `/test/instructions`, `/test/examples`) — a guess the SEO owner has not signed off.
+- Old-site content was restored on `/faq` (8 old Q&As in `views/FaqLegacyEntries.jsx`), `/about`, `/colorblindness/interesting-links`
+  and `/colorblindness/anomalous-trichromacy`. The other matched pages were **not** diffed against the old site.
+- The Rabin PowerPoint and "Color Blind Essentials" PDF from Interesting Links are now in `public/downloads/`; the old `/includes/fckeditor/.../file/*` URLs 301 to them (44 redirects total).
+- The old site (`compare.testingcolorvision.com`) has a wrong-name certificate plus HSTS: normal Chrome gives no "Proceed" link; use incognito.
+- `/app/*` is the React SPA behind nginx; a redirect to `/app/login` only works through the edge, not on a bare Next.js server.
+- Production pages send `s-maxage=31536000`; any CDN/cache in front needs a purge after a redirect or metadata change.
+- No analytics / Search Console tag exists anywhere in this repo.
+- **Not done:** content-parity check of the remaining ~26 matched pages, baseline and monitoring (SEO owns those).
+
+---
+
 ## ☠️ Traps
 
 1. **The repo's own `CLAUDE.md` says there are no API routes.** There are four.
