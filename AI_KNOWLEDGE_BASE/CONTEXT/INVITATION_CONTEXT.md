@@ -813,6 +813,24 @@ So the taker sees **two popups**: expired first, then cancelled.
 - **On `develop`, before WS-699:** the same 401 showed "Failed to add test taker. Session has expired." and
   left the taker on the form, where every retry failed.
 
+## Pre-release data step — WS-699 (existing test taker reuse)
+
+Not in the code diff, so it is easy to miss. Source: `.claude/plans/existing-test-taker-prefill-and-dedupe.md` §3.4 and
+`ws-699-review-fixes.md` §3.4. Run on **each environment, before deploying** the backend:
+
+1. `php artisan legacy:check-encryption` — confirm the keys decrypt real legacy rows (the rebuild leaves unreadable rows untouched).
+2. `php artisan patients:rebuild-email-index` — **dry run** (default). Read the counts and any undecryptable rows.
+3. `php artisan patients:rebuild-email-index --apply` — rewrites the case-insensitive blind index (`patients.identification`, `test_invitations.email_ident`). Idempotent, safe to re-run, `--chunk=500`. Already on `develop`; not part of the WS-699 diff.
+4. Deploy backend, then frontend. On QA, invite a mixed-case legacy email in a different case and confirm it reaches the confirm page.
+
+Without it nothing crashes: a legacy mixed-case row simply misses the lookup and a **second patient row is created**.
+Duplicate emails already in production are **not merged** and keep working as separate rows; the resolver and the mail
+greeting use the **oldest** (`orderBy('id')`), In-Office add is blocked for a repeated email with a link to it, and history
+stays split across the rows. One test taker per email per account is the intended behaviour. The planned
+`patients:duplicate-emails --report` command and a DB unique index were **not** shipped.
+
+---
+
 ---
 
 ## ☠️ Traps
