@@ -788,6 +788,31 @@ auth()->id()`, so the caller **is** the owner — a super admin gets a not-found
 refund. (Under impersonation `auth()` is the impersonated owner, so that is correct too.) Compare
 `CreditsController::revokeCredit()`, which credits `$patientTest->patient->user` explicitly.
 
+### What the test taker sees when an invitation is cancelled mid-flow
+
+The scenario: the invitation is cancelled while the taker is already verified, on the add form or the
+confirm page. Their next request (Save Test Taker or Start Test) then fails.
+
+- **Backend:** cancelling only sets `expires_at = now()` on the sessions. It leaves `invalidated_reason`
+  null (only `superseded` exists). So `FlexibleAuthMiddleware` returns the generic **`401
+  session_expired`**. It cannot tell a revoked session from one that timed out after 2 hours.
+- **Frontend** (`src/utils/invitationErrors.js` → `invitationDeadEnd()`, WS-699, frontend PR #492): any
+  `session_*` / 401 shows **"Your session has ended" / "Your session has expired. Enter your verification
+  code again to continue." / Verify again**.
+  - 📌 The message deliberately gives no duration. It first said "sessions end after 2 hours", which was
+    false here. Fixed in `d5b87b7` on 2026-11-19.
+- **Verify page:** "Verify again" lands here. `verify-code` sees `is_revoked` and only then shows the real
+  reason: "Invalid Token — This invitation link has been cancelled…".
+
+So the taker sees **two popups**: expired first, then cancelled.
+
+- **Decided 2026-11-19: wording only.** The rejected alternative would show "Invitation cancelled" directly:
+  - backend: tag the sessions `invalidated_reason = 'cancelled'` on cancel; the middleware returns a
+    distinct `error_type`. The column already exists, so no migration is needed.
+  - frontend: map that `error_type` to the existing 410 "Invitation cancelled" dead end.
+- **On `develop`, before WS-699:** the same 401 showed "Failed to add test taker. Session has expired." and
+  left the taker on the form, where every retry failed.
+
 ---
 
 ## ☠️ Traps
