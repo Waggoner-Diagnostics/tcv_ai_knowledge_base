@@ -116,7 +116,9 @@ Eight shapes. A client cannot key on one field. The SPA copes by checking severa
 — do not add a ninth.
 
 > ⚠️ **The `error_type` family is the one place "just use `ApiResponse`" is wrong.** Five responses put
-> `error_type` at the **top level** — `FlexibleAuthMiddleware` (`session_expired`, `session_superseded`)
+> `error_type` at the **top level** — `FlexibleAuthMiddleware` (`session_expired`, `session_superseded`;
+> `session_expired` also covers a session ended by an invitation **cancel**, so the taker-facing text must
+> not claim a reason or duration — see [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#what-the-test-taker-sees-when-an-invitation-is-cancelled-mid-flow))
 > and `TestResumeController` (`token_invalid`, `token_expired`, and `test_completed` on
 > `tcv-backend-codefix`). `ApiResponse::error()` has no slot for it: anything extra lands under `errors`,
 > so converting these moves the field to `data.errors.error_type` and silently breaks

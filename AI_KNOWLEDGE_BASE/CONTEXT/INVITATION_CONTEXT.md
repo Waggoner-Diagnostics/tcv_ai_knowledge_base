@@ -788,6 +788,49 @@ auth()->id()`, so the caller **is** the owner — a super admin gets a not-found
 refund. (Under impersonation `auth()` is the impersonated owner, so that is correct too.) Compare
 `CreditsController::revokeCredit()`, which credits `$patientTest->patient->user` explicitly.
 
+### What the test taker sees when an invitation is cancelled mid-flow
+
+The scenario: the invitation is cancelled while the taker is already verified, on the add form or the
+confirm page. Their next request (Save Test Taker or Start Test) then fails.
+
+- **Backend:** cancelling only sets `expires_at = now()` on the sessions. It leaves `invalidated_reason`
+  null (only `superseded` exists). So `FlexibleAuthMiddleware` returns the generic **`401
+  session_expired`**. It cannot tell a revoked session from one that timed out after 2 hours.
+- **Frontend** (`src/utils/invitationErrors.js` → `invitationDeadEnd()`, WS-699, frontend PR #492): any
+  `session_*` / 401 shows **"Your session has ended" / "Your session has expired. Enter your verification
+  code again to continue." / Verify again**.
+  - 📌 The message deliberately gives no duration. It first said "sessions end after 2 hours", which was
+    false here. Fixed in `d5b87b7` on 2026-11-19.
+- **Verify page:** "Verify again" lands here. `verify-code` sees `is_revoked` and only then shows the real
+  reason: "Invalid Token — This invitation link has been cancelled…".
+
+So the taker sees **two popups**: expired first, then cancelled.
+
+- **Decided 2026-11-19: wording only.** The rejected alternative would show "Invitation cancelled" directly:
+  - backend: tag the sessions `invalidated_reason = 'cancelled'` on cancel; the middleware returns a
+    distinct `error_type`. The column already exists, so no migration is needed.
+  - frontend: map that `error_type` to the existing 410 "Invitation cancelled" dead end.
+- **On `develop`, before WS-699:** the same 401 showed "Failed to add test taker. Session has expired." and
+  left the taker on the form, where every retry failed.
+
+## Pre-release data step — WS-699 (existing test taker reuse)
+
+Not in the code diff, so it is easy to miss. Source: `.claude/plans/existing-test-taker-prefill-and-dedupe.md` §3.4 and
+`ws-699-review-fixes.md` §3.4. Run on **each environment, before deploying** the backend:
+
+1. `php artisan legacy:check-encryption` — confirm the keys decrypt real legacy rows (the rebuild leaves unreadable rows untouched).
+2. `php artisan patients:rebuild-email-index` — **dry run** (default). Read the counts and any undecryptable rows.
+3. `php artisan patients:rebuild-email-index --apply` — rewrites the case-insensitive blind index (`patients.identification`, `test_invitations.email_ident`). Idempotent, safe to re-run, `--chunk=500`. Already on `develop`; not part of the WS-699 diff.
+4. Deploy backend, then frontend. On QA, invite a mixed-case legacy email in a different case and confirm it reaches the confirm page.
+
+Without it nothing crashes: a legacy mixed-case row simply misses the lookup and a **second patient row is created**.
+Duplicate emails already in production are **not merged** and keep working as separate rows; the resolver and the mail
+greeting use the **oldest** (`orderBy('id')`), In-Office add is blocked for a repeated email with a link to it, and history
+stays split across the rows. One test taker per email per account is the intended behaviour. The planned
+`patients:duplicate-emails --report` command and a DB unique index were **not** shipped.
+
+---
+
 ---
 
 ## ☠️ Traps

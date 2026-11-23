@@ -99,6 +99,38 @@ refresh flow. Long admin sessions get logged out; that is the backend's setting,
 
 ---
 
+## Public auth pages share `AuthSplitLayout` (`ws-688` / client ref `TCV-37`, frontend PR #490)
+
+`src/components/AuthSplitLayout.js` renders the 50/50 split (`LeftPanel` + right panel) for the public auth
+pages. **Use it for any new page of this kind** instead of hand-writing `login-wrapper` / `login-right`.
+
+- **Pages on it:** `Login`, `Register`, `ForgotPassword`, `SetPassword`, `ResetPassword`, `Verification`
+  (the test-taker "Complete Verification" page). `VerifyEmail.js` has no left panel and is **not** on it.
+- **Props:** `showBack` (the "Back to Website" button), `wide` (720px form column instead of 560px; Register),
+  `wrapperClassName` / `rightClassName` (Register passes `register-page` / `register-right` so its own
+  `register.scss` rules keep applying).
+- **"Back to Website":** outlined button, chevron-left, top-right on desktop, **footer on mobile** (`order: 2`
+  inside `.login-right-inner`) so the form stays vertically centred. Shown on **Login, Register, Forgot
+  Password only**; deliberately *not* on Set/Reset Password or Verification (email-link flows).
+- **Both it and the left-panel logo are plain `<a href="/">`, not `NavLink`.** The SPA is mounted at `/app`
+  (`homepage: "/app"` → router `basename`), so `NavLink to="/"` would land on the SPA's own root. `/` is the
+  marketing site, which only exists behind Nginx in production or the Website dev server (`:3001`) —
+  on CRA alone (`:3000`) it does not resolve. `LeftPanel` takes an optional `logoHref`; other callers still
+  get a plain image.
+- **Styles:** everything is under `.login-split` in `scss/login.scss`; no other page is affected.
+
+☠️ **`body { overflow: hidden }` is global** (`styles/main.scss`), so a page can never scroll itself. On mobile
+(≤772px) `.login-split` is therefore exactly `100dvh` and `.login-right` scrolls (`overflow-y: auto`). Letting
+the wrapper grow to its content looks fine in a screenshot but makes tall forms (Register, or Login with
+the email-verification message showing) unscrollable. The mobile breakpoint is **772px**, not 768 —
+`custom.scss` hides `.left-section` at 772 and `login.scss` at 768; the layout uses 772.
+
+Verified in a browser (no backend): desktop Register + Forgot Password; mobile Login, Forgot Password,
+Register (scrolls to the bottom), Set Password "Link Expired". **Not checked:** Reset Password, Verification,
+the Set Password form, tablet width (~800px), Login error states.
+
+---
+
 ## The Patients menu password prompt is client-side only
 
 Clicking **Patients** in the header is not a plain navigation. `handlePatientsClick`

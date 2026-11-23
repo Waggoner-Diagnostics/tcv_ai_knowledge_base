@@ -28,7 +28,7 @@ browser with a Bearer token.
 
 | Feature | Backend (`TCV-Backend/app/`) | SPA (`TCV-Frontend/src/`) | Website | KB pack |
 |---|---|---|---|---|
-| **Login / register** | `AuthController` · `UserRequest` | `pages/Login.js`, `Register.js` · `redux/slices/auth/` · `apis/AxiosInstance.js` | `components/AuthModal.jsx` · `app/api/auth`, `app/api/register` | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
+| **Login / register** | `AuthController` · `UserRequest` | `pages/Login.js`, `Register.js` · `components/AuthSplitLayout.js` (shared split layout + "Back to Website") · `redux/slices/auth/` · `apis/AxiosInstance.js` | `components/AuthModal.jsx` · `app/api/auth`, `app/api/register` | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
 | **Password set / reset** | `AuthController::setOrResetPassword` · `ResetPasswordNotification` | `pages/SetPassword.js`, `ResetPassword.js`, `ForgotPassword.js` | — | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
 | **Email verification** | `AuthController::verifyEmail*` | `pages/VerifyEmail.js` | — | [AUTH_CONTEXT](CONTEXT/AUTH_CONTEXT.md) |
 | **Patients** | `PatientController` · `Patient` · `AuthController::verifyPassword` | `pages/UserPannel/PatientPage/`, `AddPatient/` · `hooks/usePatientForm.js` + `utils/formUtils.js` (two validators, one screen — `ws-407`) · `Header/Header.js` + `components/PasswordVerificationModal.js` (client-only menu gate) · **export**: `PatientPage/ExportPatientModal.js` → `apis/exportPatients.js` (blob, `POST api/patients/export`, XLSX — filters in the body, keep both repos deployed in lockstep) + `constants/patientExport.js`; backend `PatientController::export()` · `Reports/PatientExportService` · `Reports/PatientExportTracker` · `Exports/PatientXlsxExport` | — | [PATIENT_CONTEXT](CONTEXT/PATIENT_CONTEXT.md) |

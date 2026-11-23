@@ -899,6 +899,18 @@ hold real migrated accounts.
 
 ---
 
+### S-23 — `assignTest` trusts a client-supplied `test_invitation_id`
+
+**Severity: medium.** Found 2026-11-19 in review of `feat/WS-699-existing-test-taker-reuse`. Present on `develop`; ✅ fixed on that branch (not yet merged).
+
+`TestController::assignTest` read `$request->input('test_invitation_id')`. `FlexibleAuthMiddleware` overwrites that field only on the TestSession tier, so on the Sanctum, LMS and org-patient tiers it is client input. A caller sending any id was treated as an email invite: the credit check and the charge were skipped, and the new test was stamped with someone else's invitation (which also fed that invitation's scoped active-test lookups). Duplicate-test detection already used the verified `invitationScope()`, so billing and detection disagreed. The PDF signer lookup (`TestController` download path) had the same pattern and now uses `invitationScope()` too.
+
+**Fix:** `$testInvitationId = $this->invitationScope($request)` in `assignTest` and the PDF signer lookup. The SPA never sends `test_invitation_id`. Test: `SessionOwnershipTest::test_a_forged_test_invitation_id_does_not_skip_the_credit_check`.
+
+Related, same branch: `PatientController::update()` now refuses TestSession (invitee) tokens, as `destroy()` does, so an invitee cannot rewrite the clinic's stored patient details (`test_an_invitee_style_session_cannot_edit_its_own_patient_record`). LMS and org-patient session tokens can still reach `update()`.
+
+---
+
 ## Summary table
 | ID | Finding | Severity | Where |
 |---|---|---|---|
@@ -924,6 +936,7 @@ hold real migrated accounts.
 | `S-17` | ✅ **fixed on `develop`** — the five Stripe routes moved inside `auth:sanctum`; public `api/*` fell 20 → 15 | ~~medium~~ | `routes/api.php` · `StripePaymentController` |
 | `S-21` | Patient blind indexes are **unsalted md5 under one global key** (`ws-459`, new on `develop` 2026-09-18). Leaks equality without the key; a dump + the key confirms guessed emails/names for every patient at once. ☠️ The former committed default is **burned**. Net gain overall — the PII itself is now encrypted at rest | **medium** | `config/legacy.php` · `LegacyEncrypter:249` · `Patient::BLIND_INDEXES` |
 | `S-22` | ☠️ **(mitigated on `fix/protected-routes-03nov` 2026-11-04, committed, unmerged)** **`UserController` has no authorization at all.** Any signed-in account lists every user, reads any user, and **promotes itself to super admin** with `PUT api/users/{own id}` `usertype: 1` (reproduced 2026-09-23). The profile screen shares the route, so the fix is a `UserPolicy`, not a blanket gate | **critical** | `routes/api.php:171-174` · `UserController` · `UserRequest::authorize()` |
+| `S-23` | `assignTest` read `test_invitation_id` from request input, forgeable on every tier but TestSession: skips the credit check/charge and stamps another invitation (fixed on `feat/WS-699-existing-test-taker-reuse`, not merged) | **medium** | `TestController::assignTest` · PDF signer lookup |
 
 ---
 

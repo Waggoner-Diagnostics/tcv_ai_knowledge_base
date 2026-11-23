@@ -154,8 +154,11 @@ The scanner has no rule for these and the tests run on SQLite, so this section i
 - [ ] A new page is registered in **all three** places: `protectedRoutes.js`, `routeConfig.js`
       (`parentRoutes` for each role), and `USER_PANEL_WITH_HEADER` in `Router.js` if it's a user-panel
       page. Missing the second = the page silently never renders. [FRONTEND.md](../FRONTEND.md)
-- [ ] A new unauthenticated patient path is added to `isPublicRoute()` in `AxiosInstance.js` **and**
-      `publicRoutes.js` — otherwise the first 401 destroys the session mid-test.
+- [ ] A new unauthenticated patient path is added to `isPublicRoute()` in `AxiosInstance.js`,
+      `publicRoutes.js`, **and** the unauthenticated allow-list in `AuthInit.js` (the `else` branch of `checkAuth`) — otherwise the first
+      401 destroys the session mid-test, and a refresh or reopened tab on the page bounces the invitee to the
+      clinic `/login`. `AuthInit` runs once at load, so in-app navigation hides the bug; test it with an empty
+      `localStorage` (see `AuthInit.test.jsx`). Three places, not two.
 - [ ] New API calls hit endpoints that exist ([CONTRACT_DRIFT.md](../INDEXES/CONTRACT_DRIFT.md)).
 - [ ] Lazy imports use `lazyWithRetry`.
 - [ ] A "has this loaded yet?" gate is **not** derived from a slice's `error`. `pending` clears `error`,
