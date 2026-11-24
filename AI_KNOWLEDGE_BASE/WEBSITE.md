@@ -251,6 +251,7 @@ The image tag is the **8-character commit SHA**. Redeploying the same commit reu
 |---|---|---|
 | `/advice/*` (5) · `/colorblindness/*` (9) | `InfoPageLayout` | props: `breadcrumb`, `badge`, `heading`, `subheading`, `sections[]`, `sidebar` |
 | `/test/*` (9) | `app/test/layout.jsx` + `TestsSidebar` | gradient hero |
+| `/terms-of-service` · `/refund-policy` · `/accessibility` (PR #43, pending) | `InfoPageLayout` | sidebar = `LEGAL_SIDEBAR`; see [Legal pages](#legal-pages--terms-refund-accessibility-2026-11-24-pr-43) |
 | `/`, `/about`, `/faq`, `/pricing`, `/distributors`, `/distributors/signup` | root layout | bespoke |
 
 Two React contexts, no Redux/Zustand:
@@ -284,10 +285,17 @@ not re-derive them from page copy:**
 Pages carrying these figures: `TestOverviewClient.jsx`, `TestCredibilityClient.jsx`,
 `TestExamplesClient.jsx`, `TestInstructionsClient.jsx`. **Change one, change all four.**
 
-☠️ **One sentence was knowingly left wrong.** The Instructions page still says a user *"must correctly
-identify 26 of the 29 plates"* — a pass threshold expressed against the **old** 29-plate count. It was
-left alone because the corrected threshold is a business decision, not arithmetic: `26/29` is not
-obviously `22/25`. **Do not silently rescale it.** Get the number from QA or the business first.
+✅ **Pass threshold resolved (TCV-10).** The Instructions page (`views/TestInstructionsClient.jsx`, the
+`/test/instructions` Waggoner CCVT tab) said a user *"must correctly identify 26 of the 29 plates"* — a
+threshold against the **old** 29-plate count, deliberately left alone in `edc69f8` because the corrected
+figure is a business decision (`26/29` is not `22/25`). The business-confirmed figure is now
+**23 of the 25 plates** (branch `TCV-10-instructions-plate-count`, cut from `website-integration`). Do not
+re-derive it by ratio.
+
+⚠️ TCV-10 was scoped to `/test/instructions` only. `views/AdultTestInstructionsClient.jsx:41`
+(`/test/adult-instructions`) still says "one demo plate and 29 test plates" — a known stale count, left
+alone by decision, not an oversight. Branch note: `develop` is stale for the Website (it still shows 29 and
+`105` on these pages); the base for this work is `website-integration`.
 
 ⚠️ The earlier `24-Plate Edition` label was not a different edition — it was the same wrong count under
 another name, and was changed to `26-Plate Edition`. **2026-11-17 update:** the client's naming decision
@@ -341,6 +349,35 @@ otherwise.
 
 ---
 
+## Legal pages — Terms, Refund, Accessibility (2026-11-24, [PR #43](https://github.com/Waggoner-Diagnostics/TCV-Website/pull/43))
+
+Branch `feat/legal-pages`, cut from and PR'd into `website-integration` (**not** `develop`, which is stale for
+the Website). Content source: the client's "TCV Legal Pages.docx". **Pending merge** — until PR #43 lands, the
+pages and the generated `WEBSITE_ROUTE_INDEX.md` / `FILE_INDEX.md` will not show them; regenerate after merge.
+
+| Route | Files | Notes |
+|---|---|---|
+| `/terms-of-service` | `app/terms-of-service/page.jsx` → `views/TermsClient.jsx`, copy in `lib/legalContent.js` | intro + 18 titled sections; the refund section is rendered from the shared `RefundPolicyBody`. Emails in the copy are auto-linked to `mailto:` by `linkify()` in `TermsClient` |
+| `/refund-policy` | `app/refund-policy/page.jsx` → `views/RefundPolicyClient.jsx` | body is `components/RefundPolicyBody.jsx` (shared with Terms — **edit refund wording there only**) |
+| `/accessibility` | `app/accessibility/page.jsx` → `views/AccessibilityClient.jsx` | "Last Updated: 11 Nov 2026" lives in the sidebar `meta` card, not the heading |
+
+- **One link list:** `lib/legalLinks.js` (`LEGAL_LINKS`, `LEGAL_SIDEBAR`, `LEGAL_CONTACT_EMAIL`) feeds the
+  footer's new **Terms & Policies** column (`components/Footer.jsx`, grid now `lg:grid-cols-5`), the page
+  sidebars, and `app/sitemap.js`. Adding a legal page = add it to `LEGAL_LINKS` + create the route.
+- **`InfoPageLayout` gained a `meta` sidebar widget** — `{ type: 'meta', title, value }` renders a small card with
+  a calendar icon. On mobile the sidebar stacks after the content cards, so it sits just above the in-page links.
+- **Breadcrumb is `Home › Page`.** "Terms & Policies" is a badge only: there is no parent page to link to, so it
+  was removed from the trail rather than shown as dead text.
+- **EULA Terms is not built.** Add `{ label: 'EULA Terms', href: '/eula' }` to `LEGAL_LINKS` when its content arrives.
+- ⚠️ **Content left as supplied, needs client confirmation:** the Accessibility text claims the **UserWay
+  widget** is installed — nothing in this repo loads it (only the in-house Vision Mode panel). The docx email
+  `waggonerdiagostics.com` was a typo and is `waggonerdiagnostics.com` here. Terms and Refund show no
+  "Last Updated" date.
+- Legal emails are `sales@waggonerdiagnostics.com`; the one plain-text email left on the site is
+  `sales@testingcolorvision.com` inside the distributor-signup error string (`DistributorSignupClient.jsx:33`).
+
+---
+
 ## ☠️ Traps
 
 1. **The repo's own `CLAUDE.md` says there are no API routes.** There are four.
@@ -363,8 +400,8 @@ otherwise.
    image does nothing. Only `API_URL` and friends are live at runtime through compose.
 10. ⚠️ **The deployed container listens on `3000`, not `3001`.** `3001` is a dev-only convention that
     keeps `3000` free for the SPA locally.
-11. ☠️ **Plate counts appear on four pages and one of them is knowingly still wrong** — the Instructions
-    page's `26 of the 29` pass threshold. See the plate-count section; do not rescale it yourself.
+11. ☠️ **Plate counts appear on four pages, plus a stale 29 on `/test/adult-instructions`.** The
+    Instructions page's pass threshold is now `23 of the 25` (TCV-10). See the plate-count section.
 12. ☠️ **`AuthModal`'s top gradient strip is a *background*, not a child element** — `ws-website-373`
     (2026-09-09, merged as PR #7 `05e66ce`, on `develop` via `4d2c0d4`). See below; do not "simplify" it back into a child `<div>`.
 
