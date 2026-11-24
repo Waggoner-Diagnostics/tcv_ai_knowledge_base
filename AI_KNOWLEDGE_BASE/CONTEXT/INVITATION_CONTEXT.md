@@ -738,6 +738,9 @@ POST api/test-invitation/verify-code  { token, code }     ← PUBLIC
   ├─ expire any other live TestSession for this invitation   ← one active session at a time
   └─ create TestSession(session_token = Str::random(32), expires_at = now + 2h)
         → returned to the SPA, stored in localStorage as `test_invitation_session_token`
+  response data: email, token, session_token, active_unique_test_id, existing_patient,
+                 expires_at  (UTC ISO 8601 — the confirm popups say "expires today/tomorrow/in N days", see
+                              "Confirm Changes / Start Test popups" below)
 ```
 
 `POST api/test-invitation/check-validity` is the read-only pre-check the SPA calls before showing the
@@ -831,6 +834,66 @@ stays split across the rows. One test taker per email per account is the intende
 
 ---
 
+## Confirm Changes / Start Test popups — WS-699 follow-up (2026-11-24)
+
+**Branch / PRs:** frontend `feat/WS-699-confirm-changes-popup` → [TCV-Frontend#494](https://github.com/Waggoner-Diagnostics/TCV-Frontend/pull/494),
+backend `feat/WS-699-invitation-expiry-days` → [TCV-Backend#376](https://github.com/Waggoner-Diagnostics/TCV-Backend/pull/376). Both
+target `develop`, on top of WS-699 (#492 / #374). **Merge the backend first.** Not merged at the time of writing.
+
+A popup with **Cancel** (stays on the page) / **Confirm** (runs the existing flow) before a test starts. Button labels on the
+pages are unchanged ("Next", "Save Test Taker", "Submit & Start Test", "Start Test").
+
+| Flow | Page | Title | Message |
+|---|---|---|---|
+| User panel → Start Test → Add Test Taker (**new**) | `AddPatient.js` | Confirm Changes | "You're about to start the **{test}** test. Please check that the details you entered are correct. Do you want to save them and continue?" |
+| Send Test → Verify → Add details (**new**) | `AddPatient.js`, invitation route | Confirm Changes | "Please check that the details you entered are correct. Do you want to save them and continue to the test?" + smaller line "Note: This test link will expire today / tomorrow / in N days." |
+| LMS launch URL → Add details | `VerifiedDefaultUser.js` | Confirm Changes | Same check text, no note. Opens **after validation, before** Turnstile + submit |
+| Send Test → **existing** test taker | `InvitationConfirmPage.jsx` | Start Test | "Do you want to continue to the test?" + the expiry note |
+| Start Test → **existing** test taker | `StartTestConfirmPage.jsx` | Start Test | "You're about to start the **{test}** test. Do you want to continue to the test?" |
+
+No popup for Edit patient or Patients → Add (no test starts). The read-only pages are titled "Start Test", not "Confirm
+Changes", because nothing was changed. The existing-taker popup on `StartTestConfirmPage` opens only after the eye /
+occupational checks pass (`validateStart()`), so it never sits over an invalid form.
+
+**Where the code is** (frontend): wording in `src/utils/confirmChanges.jsx` (`*Parts()` return plain strings and are what
+tests assert on; `*Message()` wrap them for `showPopup` — body on top, note as `.popup-message-secondary`, test name in
+`<strong>`); the guard in `src/hooks/useConfirmPopup.js`; the act-once check in `src/components/showPopup.js`.
+
+### Expiry wording is computed in the browser, from `expires_at`
+
+`verifyCode()` returns `expires_at` (UTC ISO 8601). `Verification.js` passes it in `navigate(..., { state: { expiresAt } })` to
+both the add-details page and the confirm page; it is **not** personal data, so it is fine in history state (the patient record
+still is not — only the id is in the URL). `expiryNote()` counts the **taker's own calendar days**: same local date →
+"today", next local date → "tomorrow", otherwise "in N days"; missing/invalid/already-passed → no note at all.
+
+- 📌 **Decided 2026-11-24:** an earlier version returned a server-computed `expires_in_days` (UTC-midnight day count). It said
+  "1 day" with only hours left, and for a taker in New York or Tokyo the UTC date was the wrong day entirely. Removed; do not
+  reintroduce a server-side day count.
+- 📌 A link expiring at 01:00 tomorrow with 3 hours left says "tomorrow" (it is tomorrow's date) — accepted, which is why the
+  1-day wording is "tomorrow", not "in 1 day".
+- A page opened without going through verification (no `location.state`) simply shows no note.
+
+### Double-click safety (review finding, fixed in #494)
+
+Without a guard, a double-click on **Confirm** ran the action twice (the popup stays clickable ~200 ms while it fades): on Start
+Test the 2nd `POST /patients` 422s ("Test taker already exists" over the instructions page); on the invitation flow the test was
+assigned twice and the rejected 2nd attempt could bounce the taker back to verification. Double-clicking **Next** opened two popups.
+Two layers:
+
+1. `useConfirmPopup()` → `ask(content, onConfirm)` allows one open popup and runs `onConfirm` through `guard()` (a `running`
+   ref); `guard(fn)` is also used for submits that skip the popup. **Use it for any new confirm-then-act button.**
+2. `showPopup` buttons act once: `handled` must be a **`useRef`** — a local `let` inside `PopupComponent` is reset by the
+   re-render that closing triggers (found in review; the original `dblClick` test missed it because both clicks fired before a
+   re-render). This protects every popup in the app, not just WS-699.
+
+### Verifying (manual)
+
+Local/non-prod only. To see "today / tomorrow / in N days", change **one** invitation's `expires_at` by id (note the original
+first), then verify the code again — the note is computed on each verify. Each flow: Cancel stays, Confirm proceeds, double-clicking
+Next / Confirm acts once; LMS: Turnstile fires only after Confirm.
+
+---
+
 ---
 
 ## ☠️ Traps
@@ -895,6 +958,13 @@ stays split across the rows. One test taker per email per account is the intende
     list that ever mixed senders would mail one organization's branding, sign-off and patient name to
     another's invitee, not merely charge the wrong account. A defensive scope on the query is cheap.
     **Not part of `ws-401`** — raised in its round-2 review (2026-09-17) and left for its own ticket.
+15. ☠️ **A confirm popup's button can be clicked twice.** `showPopup` keeps its buttons clickable for the ~200 ms fade-out.
+    Any "confirm, then create/assign" action must go through `useConfirmPopup().ask()` (WS-699 follow-up, see "Confirm
+    Changes / Start Test popups"), or Confirm runs it twice: duplicate assign, a 422 "Test taker already exists" over the
+    instructions page, or a bounce back to verification with the test already assigned. `showPopup`'s own act-once flag is a
+    `useRef` — as a local `let` it resets on the closing re-render.
+16. ⚠️ **Do not compute "days left" on the server in UTC.** `expires_at` is returned raw and the SPA counts the taker's own
+    calendar days. A UTC-midnight count said "1 day" with hours left and the wrong day for takers east/west of UTC.
 
 
 ---
