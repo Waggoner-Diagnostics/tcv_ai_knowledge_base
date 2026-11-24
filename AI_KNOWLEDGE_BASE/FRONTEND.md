@@ -308,6 +308,14 @@ until its first API call returns `IP_RESTRICTED`.
 `AUTHORIZATION` branch is largely unreachable in practice. Do not add client logic that depends on
 receiving a 403.
 
+### ☠️ A popup button can run twice — use `useConfirmPopup` (WS-699 follow-up, 2026-11-24)
+
+`showPopup` buttons stay clickable for the ~200 ms the modal fades out, so a double-click on **Confirm** used to run the
+action twice. Two layers now: `showPopup` runs each popup's button once (a `useRef` flag — a local `let` inside
+`PopupComponent` is reset by the closing re-render), and `src/hooks/useConfirmPopup.js` gives pages `ask(content, onConfirm)`
+(one open popup, `onConfirm` through a running-guard) and `guard(fn)`. Wording for the pre-test popups lives in
+`src/utils/confirmChanges.jsx`. Full flow table and the expiry rule: [INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md#confirm-changes--start-test-popups--ws-699-follow-up-2026-11-24).
+
 ### ☠️ Two popups for one error — the `skipErrorPopup` trap
 
 `showPopup` is **not** a singleton. Every call appends a new `div.popup-container` to `document.body`
