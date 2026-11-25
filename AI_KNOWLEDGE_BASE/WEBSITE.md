@@ -276,7 +276,7 @@ not re-derive them from page copy:**
 
 | Section | Scored plates | Note |
 |---|---|---|
-| General / adult | **25** | plus **1 demo plate** = **26 delivered**. ⚠️ The "PiPiC 26-Plate Edition" label is being retired (WS-668) — see [Test naming](#test-naming--ws-668-2026-11-17-pr-38) |
+| General / adult | **25** | plus **1 demo plate** = **26 delivered**. ⚠️ The "PiPiC 26-Plate Edition" label is retired — now "PIPIC 24 Plate Edition" (WS-668 decision, applied in WS-688/TCV-15) — see [Test naming](#test-naming--ws-668-2026-11-17-pr-38) |
 | Protan | 32 | confirmed correct, never changed |
 | Deutan | 32 | confirmed correct, never changed |
 | Tritan | 12 | confirmed correct, never changed |
@@ -316,14 +316,25 @@ did only the listed pages:
 | Page | File | Change |
 |---|---|---|
 | `/test/faqs` | `views/FaqClient.jsx` | "Waggoner PIPHRR" → "Waggoner CCVT" in the Ishihara, "why prefer online", "valid and reliable" answers and the "comparable to" question. "What does PIPHRR stand for?" is **commented out, not deleted** (kept for future) |
-| `/test/credibility` | `views/TestCredibilityClient.jsx` | title → "Pseudoisochromatic Plate Ishihara Compatible" (edition suffix dropped) |
+| `/test/credibility` | `views/TestCredibilityClient.jsx` | title → "Pseudoisochromatic Plate Ishihara Compatible" (edition suffix dropped; superseded by WS-688/TCV-15 below) |
 | `/test/adult-instructions` | `app/test/adult-instructions/page.jsx` | meta description uses "Waggoner CCVT - Adult Diagnostic" |
 | same | `views/AdultTestInstructionsClient.jsx:36`, `app/test/layout.jsx:37` | subheading uses the same wording |
 
+### WS-688 / TCV-15 — PIPIC 24 Plate Edition naming (2026-11-25)
+
+[PR #44](https://github.com/Waggoner-Diagnostics/TCV-Website/pull/44) (`WS-688/TCV-15` → `website-integration`):
+
+| Page | File | Change |
+|---|---|---|
+| `/test/overview` | `components/TestOverviewClient.jsx` | "PiPiC 26-Plate Edition" → **"PIPIC 24 Plate Edition"** |
+| `/test/credibility` | `views/TestCredibilityClient.jsx` | title → **"Pseudoisochromatic Plate Ishihara Compatible (PIPIC) 24 Plate Edition"** |
+
+Only labels changed; the overview's "26 total" description sentence is intentionally untouched (see below).
+
 ⚠️ **Deliberately left open — do not "finish" these without confirmation:**
-- `components/TestOverviewClient.jsx` (`/test/overview`) still says "PiPiC 26-Plate Edition" and "1 demo +
-  25 scored (26 total)". The right label is "PIPIC 24 Plate Edition" but the counts conflict with it; the client is
-  confirming. Until then this is the only remaining 26-Plate text.
+- `components/TestOverviewClient.jsx` (`/test/overview`): the heading was renamed in WS-688/TCV-15 (below), but
+  the description still says "1 demo + 25 scored (26 total)", which conflicts with "24 Plate". The client is
+  confirming the counts; do not change that sentence until they do.
 - **Suite-name sweep skipped by decision:** `app/layout.jsx`, `app/page.jsx`, `app/pricing/page.jsx`,
   `app/about/page.jsx`, `views/AboutClient.jsx`, `components/TestingPath.jsx`, `views/TestExamplesClient.jsx`,
   `app/test/overview/page.jsx`, `app/test/credibility/page.jsx`, `views/HospitalInfoClient.jsx` and
