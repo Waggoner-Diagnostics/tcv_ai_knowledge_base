@@ -397,6 +397,25 @@ add an `amount` or `original_amount` parameter to it.
 
 ---
 
+## Legal consent line on checkout — WS-663 (2026-11-25, **not merged**)
+
+Branch `WS-663-checkout-legal-links` in TCV-Frontend, cut from `develop` (`cf72722`), pushed with its own
+upstream, **no PR opened on purpose** so it cannot reach `develop`/QA yet. Pair of the website's legal pages
+([WEBSITE.md → Legal pages](../WEBSITE.md), PR #43).
+
+- **What:** `components/PaymentForm/PaymentForm.js` renders `<p className="payment-legal-note">` straight under
+  the submit button: *"By completing this purchase you agree to our Terms of Service and Refund Policy."*
+  Styled in `PaymentForm.scss`. `PaymentForm` is used only by `Checkout.js`, so this is the single checkout spot.
+- **Also shows on free orders** (`isFreeOrder`, button "Complete Order") — still a purchase, left on purpose.
+- **URLs** live in `src/constants/legalLinks.js` (`terms`, `refund`, `accessibility`; only the first two are used).
+- ☠️ **Links must be plain `<a href target="_blank" rel="noopener noreferrer">`, never react-router `<Link>`.**
+  The legal pages are on the marketing site at the root; the SPA is under the `/app` basename. A new tab also
+  keeps the Stripe form and entered card details.
+- ☠️ **Release order:** the links 404 until website PR #43 is deployed. Merge/deploy that first.
+- Deliberately **not** done: links in the Order Summary panel, and the Accessibility link on checkout.
+
+---
+
 ## Credit history
 
 `GET api/user/credit-history` → `PaymentController::getCreditHistory()` merges three sources into one

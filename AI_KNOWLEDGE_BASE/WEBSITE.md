@@ -364,6 +364,8 @@ pages and the generated `WEBSITE_ROUTE_INDEX.md` / `FILE_INDEX.md` will not show
 - **One link list:** `lib/legalLinks.js` (`LEGAL_LINKS`, `LEGAL_SIDEBAR`, `LEGAL_CONTACT_EMAIL`) feeds the
   footer's new **Terms & Policies** column (`components/Footer.jsx`, grid now `lg:grid-cols-5`), the page
   sidebars, and `app/sitemap.js`. Adding a legal page = add it to `LEGAL_LINKS` + create the route.
+- **Renaming/moving a legal route also breaks the SPA checkout** — TCV-Frontend hardcodes these paths in
+  `src/constants/legalLinks.js` (WS-663, see [BILLING_CONTEXT](CONTEXT/BILLING_CONTEXT.md)).
 - **`InfoPageLayout` gained a `meta` sidebar widget** — `{ type: 'meta', title, value }` renders a small card with
   a calendar icon. On mobile the sidebar stacks after the content cards, so it sits just above the in-page links.
 - **Breadcrumb is `Home › Page`.** "Terms & Policies" is a badge only: there is no parent page to link to, so it
