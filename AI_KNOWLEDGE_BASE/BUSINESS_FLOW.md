@@ -121,12 +121,17 @@ Non-LMS tests are a no-op — the listener finds no `LmsSession` and returns.
 ```
 POST api/patient-tests/{identifier}/revoke-credit
    ├─ requires at least one test in the group to be 'inprogress'
+   ├─ WS-692: refused (422 TEST_IN_PROGRESS) if the taker started and can still continue
+   │          → in practice only migrated no-plates tests pass
    ├─ grants 1 credit back (source = 2, REVOKED) to the test OWNER
    ├─ every test in the group → 'abandoned'
    └─ the invitation's expires_at = now()   (the patient's link stops working)
 ```
 
 Always **one** credit, even for a two-row monocular pair.
+
+Once a test is started, Revoke (all flows) and Resend (Send Test / LMS) are refused, and an In-Office test left
+unfinished shows **Resume Test** on the Test Taker page instead — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
 
 ☠️ Cancelling an *unregistered invitation* refunds `auth()->user()` instead of the invitation's owner —
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).

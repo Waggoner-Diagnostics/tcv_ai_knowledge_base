@@ -97,6 +97,16 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
+## In Progress tests — Revoke / Resend / Resume (WS-692, PRs #382 / #499)
+
+| Change | Also check |
+|---|---|
+| `PatientTest::groupIsInProgress()` / `takeableUniqueTestIds()` | ☠️ Decides Revoke, Resend, the list flags and Resume at once. "Started" alone is not enough: dropping the *takeable* half locks migrated no-plates tests' credit forever. `InProgressRevokeResendTest` |
+| `PatientTest::groupOrigin()` | Send Test = `test_invitation_id`/`is_email_invite`, LMS = an `lms_sessions` row, else In-Office. Getting it wrong flips Resume vs Resend. The list passes a pre-loaded LMS id set — keep it one query per list |
+| `PatientTestTransformer::actionFlags()` | The SPA trusts `can_*` only when `=== false`; `resume_unique_test_id` must be the takeable open eye, `inprogress` before `pending` (same as `findActiveTest()`) |
+| `assignTest()`'s invitation lock and 410 | Pairs with the cancel's lock — remove either and Start vs Cancel can both win. The taker SPA maps status codes (`invitationErrors.js`), so 409 here would read "Test already completed" |
+| `ApiResponse::error()`'s `error_code` | `isTestInProgressError()` keys on `error_code === 'TEST_IN_PROGRESS'` to reload stale lists |
+
 ## Invitation delivery (`ws-404`, on `develop` since 2026-09-15)
 
 | Change | Also check |
@@ -105,7 +115,7 @@ Read the row for the thing you are about to change **before** you change it.
 | `mail.invitation_max_deferrals` (default 36) / `countDeferral()` | ☠️ A **downtime tolerance** — read it against the 10-minute schedule (36 ≈ 6h). Lowering it makes ordinary SES incidents irreversibly revoke and refund in-flight invitations. The comparison is `>` (36 deferrals allowed). The increment and any write-off must happen **before** `releaseClaim()` |
 | `markFailed()`'s `WHERE email_status='sending' AND is_revoked=false` | The only thing stopping a delivered row being revoked, or a cancelled row refunded twice. An unconditional update reintroduces both |
 | `SendPendingInvitations::expireStaleInvitations()` | The only refund for rows that expired undelivered — `awaitingDelivery()` excludes them from everything else. Its `is_revoked = false` guard (select **and** update) is what stops it double-refunding a cancel; its `--limit` bound is what keeps a backlog from holding the 20-minute overlap lock |
-| `cancelUnregisteredInvitation()`'s claim + 409 | The third settle path. The 409 is new client-visible behaviour with no dedicated SPA arm: `InvitedPatientsTab.js` shows `err?.message || "Failed to cancel invitation."` in an "Error" popup, so whether the user sees "already cancelled" depends on the `cancelUnregisteredInvitation` thunk rejecting with the server message [not traced] |
+| `cancelUnregisteredInvitation()`'s claim + 409 | The third settle path. Since WS-692 the SPA has an arm for it: `InvitedPatientsTab.js` → `showActionError()` shows the server message for 409 / 404 (title "Test In Progress" for `TEST_IN_PROGRESS`) and reloads the list. The method now also refuses a started invitation (409 `TEST_IN_PROGRESS`) under the invitation row lock |
 | `config/queue.php` `database.retry_after` (360) vs `backend-queue --timeout=300` vs job `$timeout` (180) | ☠️ Must stay ordered `$timeout < --timeout < retry_after`. Below the worker timeout, a running batch is re-reserved and sent twice |
 | `dispatchEmailBatch()` queue-mode budget | Pass a **duration** (`invitation_queue_batch_budget`) and resolve it in `handle()`. A timestamp computed at dispatch expires for every batch but the first few |
 | Compose `profiles: ["workers"]` on `backend-queue` / `backend-scheduler` | Removing it starts both on the next deploy of **every** environment and drains months of LMS deliveries and stranded invitations. Follow the runbook in [DEPLOYMENT.md](DEPLOYMENT.md) instead |

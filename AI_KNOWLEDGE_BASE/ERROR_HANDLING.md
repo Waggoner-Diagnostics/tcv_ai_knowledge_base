@@ -102,7 +102,7 @@ the response, not in the response.
 | Source | Shape |
 |---|---|
 | `ApiResponse::success()` | `{success, status_code, message, data?}` |
-| `ApiResponse::error()` | `{success, status_code, message, errors?}` |
+| `ApiResponse::error()` | `{success, status_code, message, error_code?, errors?}` — `error_code` via the optional 5th argument (WS-692; e.g. `TEST_IN_PROGRESS`, `INVITATION_CANCELLED`, `TEST_COMPLETED`) |
 | `Handler` (auth) | `{success, message}` — **no `status_code`** |
 | `Handler` (validation) | `{success, message, errors}` — **no `status_code`** |
 | `AuthController::login()` | `{access_token, token_type, user}` or `{status, message, has_existing_token}` |

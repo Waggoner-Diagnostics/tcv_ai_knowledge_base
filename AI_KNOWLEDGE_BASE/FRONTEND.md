@@ -316,6 +316,14 @@ action twice. Two layers now: `showPopup` runs each popup's button once (a `useR
 (one open popup, `onConfirm` through a running-guard) and `guard(fn)`. Wording for the pre-test popups lives in
 `src/utils/confirmChanges.jsx`. Full flow table and the expiry rule: [INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md#confirm-changes--start-test-popups--ws-699-follow-up-2026-11-24).
 
+### Disabled actions with a reason — `DisabledActionButton` (WS-692, 2026-11-25)
+
+`src/components/DisabledActionButton.js` renders an action that is shown but unavailable: `aria-disabled="true"` (not
+`disabled`, so it stays focusable), the reason as a tooltip on hover and keyboard focus (`aria-describedby`), Esc closes
+it, touch screens get helper text. Use it instead of hiding a button when the user should learn *why* they cannot act.
+First used for Revoke / Resend on started tests (`PatientTestList.js`), with the messages in
+`src/utils/testActionAvailability.js`. Rule and flags: [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+
 ### ☠️ Two popups for one error — the `skipErrorPopup` trap
 
 `showPopup` is **not** a singleton. Every call appends a new `div.popup-container` to `document.body`
