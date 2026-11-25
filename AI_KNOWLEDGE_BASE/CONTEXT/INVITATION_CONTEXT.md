@@ -896,6 +896,114 @@ Next / Confirm acts once; LMS: Turnstile fires only after Confirm.
 
 ---
 
+## In Progress tests: no Revoke / Resend, Resume for In-Office — WS-692 (2026-11-25)
+
+**Branch / PRs:** `fix/WS-692-revoke-inprogress` in both repos → [TCV-Backend#382](https://github.com/Waggoner-Diagnostics/TCV-Backend/pull/382),
+[TCV-Frontend#499](https://github.com/Waggoner-Diagnostics/TCV-Frontend/pull/499), both against `develop`. **Merge the backend first**
+(without it the SPA falls back to the old buttons). Not merged at the time of writing. Plan: `.claude/plans/ws-692-revoke-inprogress.md`.
+
+**The bug:** the account could revoke the credit of, or resend, a test the taker had already started. Revoke abandoned the
+test and expired the link under a taker mid-test, so they hit a technical error popup.
+
+📌 **History.** A first attempt (`4a0b0e28`, "Bug 692") also changed Credit History / Manage Test Credits to keep revoked
+grants ("Part B"). It was merged to `develop` and **reverted** (TCV-Backend #379; also reverted on `QA` by #381). WS-692 is
+Part A only, re-applied on a fresh branch. Part B is **parked** pending client discussion on `fix/692-revoke-inprogress` in
+both repos: `Credits::revokeGrant()` keeping rows, the `revoked_at` column, the `credits_revoked` / `credits_already_revoked`
+messages, `AddCredits.js` / `CreditPage` / `addCreditsColumns`. **None of that is on `develop`.** Because `4a0b0e28` counts
+as merged, re-merging the old branch brings nothing back; reverting the revert brings Part B back.
+
+### The rule
+
+"In Progress" = a `patient_tests` row exists (created `inprogress` by `POST api/tests/assign` when the taker clicks
+Start / Submit and Start; a both-eyes pair's second eye waits as `pending`) **and** the test can still be taken.
+One function decides it: `PatientTest::groupIsInProgress($group)` — an open row (`pending`/`inprogress`) whose
+`unique_test_id` has `testanswers` rows (`takeableUniqueTestIds()`).
+
+| Test type | How the backend tells (`PatientTest::groupOrigin()`) | Revoke | Resend | Resume |
+|---|---|---|---|---|
+| Send Test | any row has `test_invitation_id` (or `is_email_invite`) | refused | refused | — (taker uses their link) |
+| LMS / Test URL | an `lms_sessions` row for any `unique_test_id` in the group | refused | refused | — (taker uses the launch URL) |
+| Start Test / In-Office | neither | refused | **not offered** | **offered** |
+
+- The Test URL always mints an `LmsSession` (`verifySignature()`), so it follows the LMS rules.
+- **Legacy exception (kept on purpose):** a migrated unfinished test has no `testanswers` rows, so it is not "in progress".
+  Its credit can still be revoked (otherwise it is locked forever) and it never offers Resume. It is listed on the
+  **Invited** tab, not the Test Taker page (`scopeOpenInvitation()`), and that tab's Revoke calls the same `revokeCredit()`.
+- Cancelling an invitation **before** the taker starts works as before (refund 1 credit).
+- 📌 **Signed off 2026-11-25:** if the taker never finishes and the 7-day link expires, the test stays In Progress and the
+  credit is **not** returned — nobody can revoke or resend it. Marking such tests Expired is a follow-up. Do not "fix" it
+  by counting expired tests as not in progress without a product decision.
+
+### Backend
+
+| Where | Behaviour |
+|---|---|
+| `CreditsController::revokeCredit()` | in progress → **422** `error_code: TEST_IN_PROGRESS`, `api.test_in_progress_cannot_revoke` ("Test is in progress. You cannot revoke this credit."). Unknown id → readable **404** `api.invalid_unique_test_id` (was `firstOrFail()` → "No query results for model") |
+| `PatientController::resendTestLink()` | Send Test / LMS in progress → **422** `TEST_IN_PROGRESS`, `api.test_in_progress_cannot_resend` ("… You cannot resend this test."). **In-Office is not blocked here** — the UI offers Resume instead, and the ticket restricts only Revoke for that flow |
+| `TestInvitationController::cancelUnregisteredInvitation()` / `resendUnregisteredInvitation()` (Invited tab) | via `ownInvitationOrRefusal()` → `startedInvitationRefusal()`: taker already started → **409** `TEST_IN_PROGRESS`; completed → 409 `TEST_COMPLETED`; already cancelled → 409 `INVITATION_CANCELLED`; unknown / not yours → **404** `api.invitation_not_found`. Cancel re-checks under `lockForUpdate()` on the invitation row |
+| `TestController::assignTest()` (taker's Start) | for an email invite, locks the invitation row and refuses a cancelled one with **410** `INVITATION_CANCELLED`. With the cancel's lock, Start vs Cancel at the same moment has exactly one winner |
+| `PatientTestTransformer::actionFlags()` (Test Taker list, `GET api/patients/{id}/tests`) | per row / both-eyes pair: `origin`, `in_progress`, `can_revoke`, `can_resend`, `can_resume`, `resume_unique_test_id`, `invitation_expires_at`. LMS and takeable ids are loaded **once per list**, not per row |
+| `TestExecutionService::getSessionDetails()` (`GET api/test-session/{id}`) | adds `invitation_expires_at` (Send Test only, else null) for the taker's instruction screen |
+| `ApiResponse::error()` | new optional 5th argument `?string $errorCode` → top-level `error_code` ([ERROR_HANDLING](../ERROR_HANDLING.md#response-shapes)) |
+
+Flags: `can_revoke` = not in progress && some row `inprogress` (so only the legacy case passes); `can_resend` = some open
+row && not in progress; `can_resume` = in progress && origin `in_office`. `resume_unique_test_id` = the takeable open eye,
+**`inprogress` before `pending`** — the same choice as `TestAssignmentService::findActiveTest()`. When the left eye is
+submitted, the backend flips the right eye `pending → inprogress` in the same transaction
+(`TestExecutionService.php:164`), so "left done, right pending" only exists mid-flight.
+
+### Frontend
+
+- **`PatientTestList.js`** (Test Taker page): `can_revoke === false` / `can_resend === false` render a
+  `DisabledActionButton` with the reason. `=== false`, not falsy: an older API without the flags keeps the old buttons.
+  `can_resume && resume_unique_test_id` → **Resume Test** in place of "Resend Test Email", which does
+  `navigate('/user-panel/start-test/instruction/' + resume_unique_test_id)` — the page Start Test → pick taker → Start
+  already lands on (`StartTestConfirmPage.jsx` → `checkActiveTest`). No new endpoint. On a `TEST_IN_PROGRESS` refusal the
+  list reloads (`fetchPatientTests`).
+  - 📌 **`src/pages/ResumeTest/ResumeTest.js` is not used for this.** That is the public `/test/resume/:token` page for the
+    taker's emailed resume token: it stores an invitation session token and goes to `/test-invitation/...`. Wrong flow for
+    a signed-in user.
+  - 📌 **Dropped 2026-11-25:** a "Link expires <date>" line on the In Progress Send Test card (too cluttered). The backend
+    still sends `invitation_expires_at` on the row; the SPA does not show it.
+- **`InvitedPatientsTab.js`:** `showActionError()` — 409 / 404 / `TEST_IN_PROGRESS` shows the server message
+  ("Test In Progress" title for the latter) and **reloads the list**; 5xx does not reload.
+- **`InstructionPage.js`:** on the Send Test taker route only (`/test-invitation/test/...`) with `invitation_expires_at`:
+  "You have until <MM/DD/YYYY hh:mm A> to finish this test using the link in your email." Not on LMS
+  (`/organization/instruction/...`) or In-Office.
+- **Taker's start screen:** `invitationErrors.js` maps **410 → "Invitation cancelled"** and **409 → "Test already
+  completed"** — hence `assignTest()`'s 410 (trap 18).
+- New: `src/components/DisabledActionButton.{js,scss}` ([FRONTEND](../FRONTEND.md#disabled-actions-with-a-reason--disabledactionbutton-ws-692-2026-11-25)),
+  `src/utils/testActionAvailability.js` (`TEST_IN_PROGRESS`, the two messages, `isTestInProgressError()`).
+  `patientTestSlice` / `sendTestSlice` pass `skipErrorPopup` for these calls so the page's popup is the only one.
+
+### Tests
+
+Backend `tests/Feature/TestInvitations/InProgressRevokeResendTest.php` (20). Frontend `PatientTestList.test.js`,
+`InvitedPatientsTab.test.js`, `InstructionPage.test.js` (new), `DisabledActionButton.test.js`.
+⚠️ CRA's Jest runs with `resetMocks`: a `jest.fn()` implementation set in a `jest.mock` factory is wiped before each test.
+These tests use plain functions with a mutable override object (`mockThunks.revoke = …`) instead.
+
+### Verifying (manual, QA MySQL)
+
+1. Send Test, LMS / Test URL, In-Office: have the taker start each, then Revoke / Resend from a page loaded **before** they
+   started → readable message, list refreshes, taker carries on with no popup.
+2. Start and Cancel at the same moment on one invitation (two browsers). Exactly one wins. **SQLite cannot test the lock.**
+3. In-Office both-eyes: finish the left eye, close the tab → Test Taker page shows Resume Test + disabled Revoke, no
+   Resend → Resume opens the **right** eye. Repeat closing mid-left-eye → continues the left eye.
+
+### Not covered (pre-existing, follow-ups)
+
+- Resumes write **no audit event** in any flow (Resume button, Start Test re-entry, verify-code, `/test/resume`, LMS
+  relaunch); only `test.started` (on create) and `test.completed` exist. Considered 2026-11-25 and left out of WS-692.
+- `GET api/test-session/{id}` has no ownership check ([S-02](../SECURITY.md#s-02--test-session-endpoints-never-check-that-the-caller-owns-the-test)). Resume only links to the caller's own
+  tests (random UUIDs), so WS-692 does not widen it. If it fails, `InstructionPage` sends the user to `/user-panel` with
+  no message.
+- `revokeCredit()` checks and refunds without a row lock, so two simultaneous revokes could refund twice. After WS-692
+  only legacy no-plates tests reach that path.
+- Resend on the Invited tab is not locked against Start: at worst one extra email with the same link and code.
+
+---
+
 ## ☠️ Traps
 
 1. ~~**`POST api/test-invitations/send` is public and spends someone else's credits.**~~ ✅ **Fixed 2026-08-26** — route is `auth:sanctum` and the body `user_id` is gone ([S-13](../SECURITY.md#s-13--public-test-invitationssend-spends-any-users-credits-500-emails-at-a-time)). Throttled 2026-09-02 (`throttle:bulk-invitations`, 5/min). `set_time_limit(0)` moved to `SendTestInvitationEmailsJob::handle()` (`ws-404`).
@@ -965,7 +1073,14 @@ Next / Confirm acts once; LMS: Turnstile fires only after Confirm.
     `useRef` — as a local `let` it resets on the closing re-render.
 16. ⚠️ **Do not compute "days left" on the server in UTC.** `expires_at` is returned raw and the SPA counts the taker's own
     calendar days. A UTC-midnight count said "1 day" with hours left and the wrong day for takers east/west of UTC.
-
+17. ☠️ **"In progress" means started *and* takeable — one function, `PatientTest::groupIsInProgress()`** (WS-692). The
+    Revoke / Resend refusals, the list flags and Resume all go through it. A new action on a started test should too.
+    Checking `status === 'inprogress'` alone locks migrated no-plates tests' credit forever.
+18. ⚠️ **The taker's SPA reads status codes, not `error_code`.** `invitationErrors.js` → `invitationDeadEnd()` shows 409 as
+    "Test already completed" and 410 as "Invitation cancelled". A taker-facing refusal must use the code whose wording
+    fits (WS-692 review: `assignTest()`'s cancelled-invitation refusal was 409 and showed "already completed"; now 410).
+19. **Part B of Bug 692 is not on `develop`.** Credit History still deletes / counter-entries revoked grants as before.
+    Do not cherry-pick from `fix/692-revoke-inprogress` without the client decision.
 
 ---
 

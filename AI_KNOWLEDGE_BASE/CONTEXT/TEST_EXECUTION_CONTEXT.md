@@ -44,6 +44,15 @@ flips its still-`pending` partner to `inprogress`. **`OS` is always the canonica
 `resolveCanonicalTestId()` maps an `OD` id to its `OS` partner. A binocular test has
 `parent_test_id = null` and is its own canonical id.
 
+### Resuming an unfinished in-office test (WS-692)
+There is no resume endpoint for signed-in users: re-opening `/user-panel/start-test/instruction/{unique_test_id}`
+continues from the next unanswered plate (`getSectionPlates()` returns unanswered plates only). Two ways in:
+Start Test → pick the same taker → Start (`POST api/tests/check-active` finds the open row, picking the `inprogress` eye
+of a pair first), or the **Resume Test** button on the Test Taker page, which navigates straight there with
+`resume_unique_test_id` from the list (same eye rule). Neither writes an audit event. Email / LMS takers resume through
+their own link instead. `getSessionDetails()` also returns `invitation_expires_at` (Send Test only) for the taker's
+instruction screen. [INVITATION_CONTEXT](INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+
 ---
 
 ## The answer loop
