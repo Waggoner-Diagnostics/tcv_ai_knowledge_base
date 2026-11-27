@@ -122,6 +122,7 @@ Non-LMS tests are a no-op — the listener finds no `LmsSession` and returns.
 POST api/patient-tests/{identifier}/revoke-credit
    ├─ requires at least one test in the group to be 'inprogress'
    ├─ WS-692: refused (422 TEST_IN_PROGRESS) if the taker started and can still continue
+   ├─ 2026-11-27: completed → 409 TEST_COMPLETED; already revoked → 409 TEST_CANCELLED (the page reloads)
    │          → in practice only migrated no-plates tests pass
    ├─ grants 1 credit back (source = 2, REVOKED) to the test OWNER
    ├─ every test in the group → 'abandoned'

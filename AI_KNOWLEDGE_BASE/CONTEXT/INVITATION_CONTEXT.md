@@ -969,7 +969,7 @@ One function decides it: `PatientTest::groupIsInProgress($group)` — an open ro
 
 | Where | Behaviour |
 |---|---|
-| `CreditsController::revokeCredit()` | in progress → **422** `error_code: TEST_IN_PROGRESS`, `api.test_in_progress_cannot_revoke` ("Test is in progress. You cannot revoke this credit."). Unknown id → readable **404** `api.invalid_unique_test_id` (was `firstOrFail()` → "No query results for model") |
+| `CreditsController::revokeCredit()` | in progress → **422** `error_code: TEST_IN_PROGRESS`, `api.test_in_progress_cannot_revoke` ("Test is in progress. You cannot revoke this credit."). Unknown id → readable **404** `api.invalid_unique_test_id` (was `firstOrFail()` → "No query results for model"). Completed → **409** `TEST_COMPLETED`; already revoked → **409** `TEST_CANCELLED` (2026-11-27) |
 | `PatientController::resendTestLink()` | ~~Send Test / LMS in progress → 422 `TEST_IN_PROGRESS`~~ — **replaced 2026-11-26**, see the follow-up section. Only an external LMS is still refused. **In-Office is not blocked here** — the UI offers Resume instead |
 | `TestInvitationController::cancelUnregisteredInvitation()` / `resendUnregisteredInvitation()` (Invited tab) | via `ownInvitationOrRefusal()` → `startedInvitationRefusal()`: taker already started → **409** `TEST_IN_PROGRESS`; completed → 409 `TEST_COMPLETED`; already cancelled → 409 `INVITATION_CANCELLED`; unknown / not yours → **404** `api.invitation_not_found`. Cancel re-checks under `lockForUpdate()` on the invitation row. A started invitation is resent from the **Test Takers** page instead |
 | `TestController::assignTest()` (taker's Start) | for an email invite, locks the invitation row and refuses a cancelled one with **410** `INVITATION_CANCELLED`. With the cancel's lock, Start vs Cancel at the same moment has exactly one winner |
@@ -1095,7 +1095,7 @@ Plan: `.claude/plans/ws-692-resend-link-state-rules.md`.
     cooldown message, else the old "Test is in progress…".
   - Success popup: `result.data.extended` → "The test taker's link had expired. It has been renewed and resent to their
     email."; else "Test link has been resent to the test taker's email." The list always reloads quietly afterwards.
-  - `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT`, `LMS_MANAGED_TEST` and `TEST_IN_PROGRESS` count as refusals
+  - `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT`, `LMS_MANAGED_TEST`, `TEST_IN_PROGRESS`, `TEST_COMPLETED` and `TEST_CANCELLED` count as refusals
     (`isResendRefusedError()`): title "Cannot Resend Test", quiet reload.
   - **Hold timer:** a `useEffect` on `patientTests` waits the smallest `resend_available_in` (seconds from the server,
     so a wrong browser clock does not matter; falls back to `resend_available_at`) + 1 s, then reloads quietly. It
@@ -1218,6 +1218,43 @@ and Resend in both orders leaving one working link, days-left in the email, both
     The hold itself is `PatientTest::RESEND_COOLDOWN_SECONDS`, on both resend endpoints.
 23. ⚠️ **A both-eyes invitation stays open between eyes.** Check `TestInvitation::isFinished()`, not `is_used`, for
     "nothing left to do": older rows have `is_used = true` with the right eye still open.
+24. ⚠️ **Resend / Revoke on a test that changed under a stale page says so, with a code the page reloads on** (2026-11-27).
+    Completed → **409 `TEST_COMPLETED`**; revoked (every row `abandoned`) → **409 `TEST_CANCELLED`**. Resend used to fall
+    through to 404 "Invalid test identifier." (nothing open in the group) and Revoke to a generic 422. A *pending-only* test
+    refused by Revoke is **not** "cancelled": test "all abandoned", never "no inprogress row".
+25. ⚠️ **`check-validity` is the one place the taker's reason lives** (2026-11-27). Revoke Credit abandons the tests and stamps
+    `expires_at = now()` but leaves `is_revoked = false` and `is_used = false`, so without the all-abandoned check a revoked
+    link read "expired". Order matters: `is_revoked` → all-abandoned → `isFinished()` → expired.
+
+---
+
+## Resend / Revoke on a completed or revoked test; dead-link messages (2026-11-27, `fix/resend-completed-test`: backend #388 / frontend #505)
+
+**Problem.** The Test Takers page was open while the taker finished. Resend Test Email then showed "Invalid test identifier."
+(404 `api.invalid_unique_test_id`) and left the card stale; a taker reopening the link saw "Invalid Token".
+
+**Backend**
+- `PatientController::resendTestLink()`: when nothing in the group is open, completed → 409 `TEST_COMPLETED`
+  (`api.test_already_completed`), else 409 `TEST_CANCELLED` (`api.test_already_cancelled`). Unknown id is still the
+  `exists:` validation 422.
+- `CreditsController::revokeCredit()`: completed (and nothing in progress) → 409 `TEST_COMPLETED`; every row `abandoned` →
+  409 `TEST_CANCELLED`. Pending-only keeps the old 422 `api.error`.
+- `TestInvitationController::checkTokenStatus()` now sends `error_code`: `INVITATION_NOT_FOUND` (404), `INVITATION_CANCELLED`
+  (410; `is_revoked`, **or every test on the invitation abandoned**), `TEST_COMPLETED` (409), `INVITATION_EXPIRED` (409).
+  Messages reworded ("You have already completed this test. Thank you!", "This link has expired. Please ask the person who
+  invited you to send a new link.").
+- `PatientTest::ERROR_TEST_COMPLETED` / `ERROR_TEST_CANCELLED`.
+
+**Frontend**
+- `testActionAvailability.js`: `TEST_COMPLETED`, `TEST_CANCELLED`, `isTestCompletedError()`, `isTestClosedError()`,
+  `closedTestTitle()`; `isResendRefusedError()` includes both. `PatientTestList.js`: popup "Test Already Completed / Cancelled"
+  + quiet reload for Resend and Revoke; Resend also reloads on any 404 / 409.
+- `Verification.js` + `utils/invitationLinkProblem.js`: title from `error_code` (Test Already Completed, Link Expired,
+  Invitation Cancelled, Invalid Link; no code → Invalid Link). The popup has one **OK** button that does
+  `window.location.href = "/"` (marketing site, outside the `/app` basename); no outside-click close.
+
+**Tests.** Backend `CompletedTestRefusalsTest` (new); `ResendTestLinkStatusTest` and `InProgressRevokeResendTest` moved from 404 to 409.
+Frontend `Verification.test.js`, `PatientTestList.test.js`.
 
 ---
 
