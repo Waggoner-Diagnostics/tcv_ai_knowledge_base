@@ -331,6 +331,35 @@ did only the listed pages:
 
 Only labels changed; the overview's "26 total" description sentence is intentionally untouched (see below).
 
+### Hero image + credibility citations (2026-11-27)
+
+Branch `feat/hero-image-credibility-citations` (cut from `website-integration`, **not** from `WS-688/TCV-15`, so it
+does not contain the PIPIC 24 rename above — expect a trivial merge if both land). Commits `5af1a9f`, `adec6b4`.
+
+| Area | File | Change |
+|---|---|---|
+| Home hero carousel, slide `clinically-validated` (array index 0) | `components/HeroCarousel.jsx:12` | image `/images/hero-carousel-1.jpg` → `/images/hero_carousel_3_ishihara_vision_test.webp`; the old jpg was **deleted** (nothing else referenced it). Requested as "the 2nd hero image" but the path given was `hero-carousel-1.jpg`, which is the **first** slide — confirm if the 2nd slide (`hero-carousel-2.jpg`) was meant |
+| `/test/credibility` "Published Research Articles" | `views/TestCredibilityClient.jsx` | the 4 old Cotter/Barnhardt/preliminary-validation entries replaced by **8 APA citations** (Almustanyir 2025, Cole 2004, Gao 2023, Jung 2025, Ng 2015, Simunovic 2016, Walsh 2016, Zhang 2025), each with a doi.org link |
+
+Citation data lives in the `ARTICLES` array (`authors, year, title, journal, volume, issue?, pages, doi`);
+`SORTED_ARTICLES` sorts **newest first**, ties alphabetical by first author. Add a paper by appending an object.
+
+Citation card UI (decided with the client contact, friendly rather than strict APA):
+- number (`1.`) bold in `theme.hex`, no background circle;
+- bold title (`text-base`, trailing period stripped) → italic journal, *volume*(issue), pages + year pill →
+  `By:` line listing **all** authors (no "et al.") → "View article ↗" link (`theme.hex`, semibold, underline on
+  hover — same style as other in-content links, e.g. `Pricing.jsx`) + `doi:` text in `text-gray-600`;
+- the `doi:` text is `hidden sm:inline` — **hidden on mobile** to avoid ugly wrapping.
+
+Notes: the three `/test/credibility/*` sub-pages (`cvtme-evaluation`, `cvtme-testability-special-olympics`,
+`neitz-vs-cvtme-intellectual-disabilities`, data in `lib/credibilityArticles`) still exist but, on
+`website-integration`, were not linked from the list — nothing was removed. The 3 product cards in "About Dr.
+Terrace L. Waggoner" keep their indigo number circles (only the citation numbers were restyled).
+
+⚠️ **Local dev trap (Windows):** starting `yarn dev` from Git Bash (`/d/...`, lowercase drive) makes webpack load
+Next twice (`d:\` vs `D:\`) and every page throws "invariant expected app router to be mounted" from
+`Header.js` `useRouter()`. Start from an uppercase `D:\` path (PowerShell/cmd) and clear `.next`.
+
 ⚠️ **Deliberately left open — do not "finish" these without confirmation:**
 - `components/TestOverviewClient.jsx` (`/test/overview`): the heading was renamed in WS-688/TCV-15 (below), but
   the description still says "1 demo + 25 scored (26 total)", which conflicts with "24 Plate". The client is
