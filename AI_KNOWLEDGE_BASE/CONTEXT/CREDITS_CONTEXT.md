@@ -185,11 +185,12 @@ always **1 credit**, even for a both-eyes (two-row) test, because a monocular pa
 `revokeCredit()` also sets every test in the group to `abandoned` and expires the invitation so the
 patient's link stops working.
 
-**WS-692 (PRs TCV-Backend #382 / TCV-Frontend #499, not merged at the time of writing):** neither refund path runs once
+**WS-692 (PRs TCV-Backend #382 / TCV-Frontend #499, merged to `develop`):** neither refund path runs once
 the taker has **started** the test (`PatientTest::groupIsInProgress()`): `revokeCredit()` → 422 `TEST_IN_PROGRESS`,
 `cancelUnregisteredInvitation()` → 409 `TEST_IN_PROGRESS`. Since every new test is created `inprogress` with its plates,
 `revokeCredit()` now effectively refunds only **migrated no-plates** tests. 📌 Signed off: a started Send Test / LMS test
-whose link expires unfinished keeps its credit consumed. Details: [INVITATION_CONTEXT](INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+whose link expires unfinished keeps its credit consumed; since 2026-11-26 the account can Resend it for 7 more days
+on the same credit (no charge, no refund). Details: [INVITATION_CONTEXT](INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
 
 **`ws-402` (merged 2026-09-07) adds provenance to that refund row.** Both methods now call
 `Credits::traceConsumedOrigin($user, $eventType, $candidateRefIds)` before granting the refund, and store

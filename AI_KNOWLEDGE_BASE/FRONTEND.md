@@ -290,8 +290,9 @@ never reach a healthy later session in the same tab. The backend half is in [MID
 both callers (`VerifiedDefaultUser.js`, and `AddPatient.js` on the email-invite path) fire it in
 the background while the test starts, so a 404 or a `send-resume-email`
 429 must not pop up over "Test Taker added successfully!". Failures are `console.warn`ed. `AddPatient`
-sends it only on a **fresh** assignment — each send revokes the previous resume link, so a re-submitted
-form must not break the email already delivered. (`VerifiedDefaultUser` still sends on every submit.)
+sends it only on a **fresh** assignment. 📌 Since 2026-11-26 (WS-692 follow-up) a send no longer revokes the
+previous resume link: it mails the pair's existing link (`TestLinkRenewalService::issueResumeLink()`), so a repeat
+send is just a duplicate email, not a broken one. (`VerifiedDefaultUser` still sends on every submit.)
 ☠️ **Not from the dashboard start-test path, on purpose.** There the clinic runs the test on its own
 device: the emailed link would open a second, unsupervised way into the same test (`resume()` supersedes
 only test-taker `TestSession`s, not the clinic's Sanctum session), and a two-eye (`both`) assignment

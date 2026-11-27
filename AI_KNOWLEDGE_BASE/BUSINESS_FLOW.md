@@ -130,8 +130,11 @@ POST api/patient-tests/{identifier}/revoke-credit
 
 Always **one** credit, even for a two-row monocular pair.
 
-Once a test is started, Revoke (all flows) and Resend (Send Test / LMS) are refused, and an In-Office test left
-unfinished shows **Resume Test** on the Test Taker page instead — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+Once a test is started, Revoke is refused (all flows), and an In-Office test left unfinished shows **Resume Test** on
+the Test Taker page instead — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+Resend on a started Send Test / plain Test URL test mails the **same** link: its expiry is unchanged while it is valid,
+and moves to 7 days from the resend once it has expired. External LMS tests cannot be resent. One minute between
+resends — [INVITATION_CONTEXT](CONTEXT/INVITATION_CONTEXT.md#resend-on-started-tests-same-link-expiry-moves-only-once-expired--ws-692-follow-up-2026-11-26).
 
 ☠️ Cancelling an *unregistered invitation* refunds `auth()->user()` instead of the invitation's owner —
 [CONTEXT/INVITATION_CONTEXT.md](CONTEXT/INVITATION_CONTEXT.md).
