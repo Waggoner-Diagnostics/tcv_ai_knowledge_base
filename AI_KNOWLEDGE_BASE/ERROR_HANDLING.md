@@ -102,7 +102,7 @@ the response, not in the response.
 | Source | Shape |
 |---|---|
 | `ApiResponse::success()` | `{success, status_code, message, data?}` |
-| `ApiResponse::error()` | `{success, status_code, message, error_code?, errors?}` — `error_code` via the optional 5th argument (WS-692; e.g. `TEST_IN_PROGRESS`, `INVITATION_CANCELLED`, `TEST_COMPLETED`; WS-692 follow-up: `LMS_MANAGED_TEST`, `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT`, `INVITATION_ALREADY_STARTED`) |
+| `ApiResponse::error()` | `{success, status_code, message, error_code?, errors?}` — `error_code` via the optional 5th argument (WS-692; e.g. `TEST_IN_PROGRESS`, `INVITATION_CANCELLED`, `TEST_COMPLETED`; WS-692 follow-up: `LMS_MANAGED_TEST`, `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT`, `INVITATION_ALREADY_STARTED`; 2026-11-27: `TEST_COMPLETED` / `TEST_CANCELLED` from Resend and Revoke, and `check-validity` adds `INVITATION_NOT_FOUND`, `INVITATION_CANCELLED`, `TEST_COMPLETED`, `INVITATION_EXPIRED`) |
 | `Handler` (auth) | `{success, message}` — **no `status_code`** |
 | `Handler` (validation) | `{success, message, errors}` — **no `status_code`** |
 | `AuthController::login()` | `{access_token, token_type, user}` or `{status, message, has_existing_token}` |
