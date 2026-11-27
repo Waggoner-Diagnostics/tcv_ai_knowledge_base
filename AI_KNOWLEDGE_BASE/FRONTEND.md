@@ -112,11 +112,19 @@ pages. **Use it for any new page of this kind** instead of hand-writing `login-w
 - **"Back to Website":** outlined button, chevron-left, top-right on desktop, **footer on mobile** (`order: 2`
   inside `.login-right-inner`) so the form stays vertically centred. Shown on **Login, Register, Forgot
   Password only**; deliberately *not* on Set/Reset Password or Verification (email-link flows).
-- **Both it and the left-panel logo are plain `<a href="/">`, not `NavLink`.** The SPA is mounted at `/app`
-  (`homepage: "/app"` → router `basename`), so `NavLink to="/"` would land on the SPA's own root. `/` is the
-  marketing site, which only exists behind Nginx in production or the Website dev server (`:3001`) —
-  on CRA alone (`:3000`) it does not resolve. `LeftPanel` takes an optional `logoHref`; other callers still
-  get a plain image.
+- **It, the left-panel logo and the mobile logo are all plain `<a href="/">`, not `NavLink`.** The SPA is
+  mounted at `/app` (`homepage: "/app"` → router `basename`), so `NavLink to="/"` would land on the SPA's own
+  root. `/` is the marketing site, which only exists behind Nginx in production or the Website dev server
+  (`:3001`) — on CRA alone (`:3000`) it does not resolve. `LeftPanel` takes an optional `logoHref`; other
+  callers still get a plain image.
+- ⚠️ **There are two logos per page, one per breakpoint.** Desktop shows `LeftPanel`'s logo; at ≤772px the
+  left panel is hidden and each page's own `.logo-wrap` > `img.logo-right` (`assets/images/login-logo.png`,
+  imported as `RightLogo`) shows above the form instead. That second one is markup **in each page file**, not
+  in `AuthSplitLayout`, so a change to the logo (link, image, alt text) has to be made in both places — and
+  in all three states of `ResetPassword` / `SetPassword`. Until frontend PR #507 (`fix/mobile-logo-link`,
+  2026-11-27) the mobile logo was an unlinked `<img>`, so "logo → marketing site" worked on desktop only. It
+  is now `<a href="/" className="logo-link">` with alt "Testing Color Vision home". The logged-in header
+  logo (`UserPannel/Header`) is a different thing and goes to `/user-panel` on purpose.
 - **Styles:** everything is under `.login-split` in `scss/login.scss`; no other page is affected.
 
 ☠️ **`body { overflow: hidden }` is global** (`styles/main.scss`), so a page can never scroll itself. On mobile
