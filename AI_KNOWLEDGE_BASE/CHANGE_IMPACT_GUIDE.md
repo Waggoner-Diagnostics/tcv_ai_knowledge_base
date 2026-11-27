@@ -97,7 +97,7 @@ Read the row for the thing you are about to change **before** you change it.
 
 ---
 
-## In Progress tests — Revoke / Resend / Resume (WS-692, PRs #382 / #499)
+## In Progress tests — Revoke / Resend / Resume (WS-692, PRs #382 / #499; Resend follow-up #386 / #503)
 
 | Change | Also check |
 |---|---|
@@ -105,7 +105,12 @@ Read the row for the thing you are about to change **before** you change it.
 | `PatientTest::groupOrigin()` | Send Test = `test_invitation_id`/`is_email_invite`, LMS = an `lms_sessions` row, else In-Office. Getting it wrong flips Resume vs Resend. The list passes a pre-loaded LMS id set — keep it one query per list |
 | `PatientTestTransformer::actionFlags()` | The SPA trusts `can_*` only when `=== false`; `resume_unique_test_id` must be the takeable open eye, `inprogress` before `pending` (same as `findActiveTest()`) |
 | `assignTest()`'s invitation lock and 410 | Pairs with the cancel's lock — remove either and Start vs Cancel can both win. The taker SPA maps status codes (`invitationErrors.js`), so 409 here would read "Test already completed" |
-| `ApiResponse::error()`'s `error_code` | `isTestInProgressError()` keys on `error_code === 'TEST_IN_PROGRESS'` to reload stale lists |
+| `ApiResponse::error()`'s `error_code` | `isTestInProgressError()` keys on `error_code === 'TEST_IN_PROGRESS'` to reload stale lists; `isResendRefusedError()` adds `LMS_MANAGED_TEST`, `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT` |
+| `TestLinkRenewalService::resendResumeLink()` / `issueResumeLink()` (WS-692 follow-up, #386) | ☠️ One resume link per pair, shared by Resend and the Test URL start email under lock `resume-link:{parent_test_id ?? unique_test_id}`. Minting a new token or expiring the others on send kills a link just emailed. Pin with `InProgressRevokeResendTest` (start email ↔ Resend in both orders) |
+| `TestLinkRenewalService::renewInvitation($extend)` | `$extend` must be `isExpired()` for a started test (valid link: expiry unchanged) and `true` on the Invited tab. Mails first, saves after |
+| `PatientTest::RESEND_COOLDOWN_SECONDS` / `groupResendAvailableAt()` | One hold for both resend endpoints and the `resend_available_in` flag the SPA's timer waits on. Change it in one place |
+| `TestResumeController::resume()` open-eye switch | Resend mails the first eye's link for a pair; without the switch the taker is stuck once the left eye is done |
+| `markTestInvitationAsUsed()` / `TestInvitation::isFinished()` | A both-eyes invitation stays open until both eyes finish; `verifyCode()` / `checkTokenStatus()` read `isFinished()`. `assignTest()` 409 `INVITATION_ALREADY_STARTED` → the SPA's "Test already started" arm (`invitationErrors.js`) |
 
 ## Invitation delivery (`ws-404`, on `develop` since 2026-09-15)
 

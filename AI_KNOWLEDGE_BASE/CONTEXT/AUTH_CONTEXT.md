@@ -84,8 +84,8 @@ Expired sessions in any tier return `401 {error_type: 'session_expired'}`; no ma
 - ☠️ **"A DB read no longer yields usable tokens" is not true yet — the hashing is partial.** It
   covers `test_sessions.session_token` and `organization_patient_sessions.token`. The credentials that
   *mint* those sessions are still plaintext:
-  `test_resume_tokens.token` (a **7-day** credential — written raw at `TestResumeController:79` and
-  looked up raw at `:163`), `test_invitations.token`, and `test_invitations.verification_code`.
+  `test_resume_tokens.token` (a **7-day** credential — written raw by `TestLinkRenewalService::mailPairLink()` and
+  looked up raw in `TestResumeController::resume()`), `test_invitations.token`, and `test_invitations.verification_code`.
   A database read still hands over everything needed to mint a session, so the threat model the
   hashing was adopted for is only half closed. Finishing it is the obvious follow-up; do not cite the
   hashing as if it already covers the whole chain.

@@ -750,22 +750,47 @@ code form.
 `TestExecutionService::finalizeTestIfCompleted()` → `markTestInvitationAsUsed()`. So an abandoned test
 leaves `is_used = false` and the invitation remains redeemable until it expires.
 
+**Both-eyes (WS-692 follow-up, 2026-11-26):** the invitation is marked used only when **both** eyes are done.
+`markTestInvitationAsUsed()` returns early while the other eye is still `pending`/`inprogress`. Older rows
+had `is_used = true` after the first eye, so `verifyCode()` / `checkTokenStatus()` now ask
+`TestInvitation::isFinished()` (`is_used` **and** no open `patient_tests` row on it). Without that, a taker
+between eyes got "already been completed" and could never finish the right eye.
+
+`assignTest()` refuses a second assignment on an invitation that already has a test: **409
+`INVITATION_ALREADY_STARTED`** (`api.invitation_already_started`). The taker continues through
+`verify-code`, which hands back `active_unique_test_id`. One invitation is paid for once.
+
 ---
 
 ## Resume flow
 
 ```
 POST api/test/send-resume-email   ← FlexibleAuthMiddleware. { unique_test_id, email }
-  ├─ test must be pending|inprogress
-  ├─ expire all still-live resume tokens for this test    ← only the newest link works
-  ├─ token = Str::random(64), expires_at = now + 7d
-  └─ mail the link  (heredoc HTML via emails.dynamic-template)
+  ├─ test must be pending|inprogress, and the caller must own it
+  └─ TestLinkRenewalService::issueResumeLink()   (WS-692 follow-up, on develop since 2026-11-26)
+       → resendResumeLink(): one link per test taker per test, both eyes share it,
+         under the cache lock  resume-link:{parent_test_id ?? unique_test_id}
+         ├─ a link exists, still valid → mail that same token, expiry unchanged
+         ├─ a link exists, expired     → mail that same token, expires_at = now + 7d
+         └─ none yet                   → token = Str::random(64), expires_at = now + 7d
+       mailed first, saved after (a failed send records nothing)
+       email = the `test_resume_link` system template: {{expiry_days}} = days actually left
+         (rounded up, min 1), {{expires_at}} = the link's real expiry (m/d/Y)
 
 POST api/test/resume   ← PUBLIC. { token (size:64) }
   ├─ missing → 404 token_invalid ·  expired → 410 token_expired
+  ├─ token's eye no longer open and it is a both-eyes test → open the pair's open eye
+  │   (inprogress before pending); response unique_test_id = the eye actually opened
+  ├─ nothing open → 409 test_completed
   ├─ expire other live TestSessions for the same invitation
   └─ create a fresh 2-hour TestSession → { session_token, unique_test_id, test_status }
 ```
+
+📌 **Before 2026-11-26** every send expired the previous resume links and minted a new one ("only the newest
+link works"). Now the start email and the Test Takers page's Resend both reuse the pair's link, so neither
+can kill a link the other just mailed. Do not reintroduce "expire on send" there. `expireResumeLinks()`
+still exists and is used in one place: a Send Test Resend that **renews** an expired invitation, since the
+invitation is then the taker's only link.
 
 ☠️ **`sendResumeEmail` takes both the test id and the destination address from the request body and
 checks neither against the caller's session** — [S-03](../SECURITY.md#s-03--sendresumeemail-mails-a-resume-link-for-any-test-to-any-address).
@@ -899,8 +924,12 @@ Next / Confirm acts once; LMS: Turnstile fires only after Confirm.
 ## In Progress tests: no Revoke / Resend, Resume for In-Office — WS-692 (2026-11-25)
 
 **Branch / PRs:** `fix/WS-692-revoke-inprogress` in both repos → [TCV-Backend#382](https://github.com/Waggoner-Diagnostics/TCV-Backend/pull/382),
-[TCV-Frontend#499](https://github.com/Waggoner-Diagnostics/TCV-Frontend/pull/499), both against `develop`. **Merge the backend first**
-(without it the SPA falls back to the old buttons). Not merged at the time of writing. Plan: `.claude/plans/ws-692-revoke-inprogress.md`.
+[TCV-Frontend#499](https://github.com/Waggoner-Diagnostics/TCV-Frontend/pull/499), both **merged to `develop`**. Plan: `.claude/plans/ws-692-revoke-inprogress.md`.
+
+⚠️ **The Resend half of this section is superseded.** Since the follow-up (TCV-Backend #386 / TCV-Frontend #503, merged
+2026-11-26), a started Send Test or Test URL test **can** be resent: the same link, its expiry moved only if it has
+expired. Read [Resend on started tests](#resend-on-started-tests-same-link-expiry-moves-only-once-expired--ws-692-follow-up-2026-11-26)
+for Resend; Revoke and Resume below are unchanged.
 
 **The bug:** the account could revoke the credit of, or resend, a test the taker had already started. Revoke abandoned the
 test and expired the link under a taker mid-test, so they hit a technical error popup.
@@ -921,8 +950,9 @@ One function decides it: `PatientTest::groupIsInProgress($group)` — an open ro
 
 | Test type | How the backend tells (`PatientTest::groupOrigin()`) | Revoke | Resend | Resume |
 |---|---|---|---|---|
-| Send Test | any row has `test_invitation_id` (or `is_email_invite`) | refused | refused | — (taker uses their link) |
-| LMS / Test URL | an `lms_sessions` row for any `unique_test_id` in the group | refused | refused | — (taker uses the launch URL) |
+| Send Test | any row has `test_invitation_id` (or `is_email_invite`) | refused | ~~refused~~ same link, see follow-up | — (taker uses their link) |
+| Plain Test URL (`generic_webhook`) | an `lms_sessions` row for any `unique_test_id` in the group | refused | ~~refused~~ same resume link, see follow-up | — (taker uses their resume link) |
+| External LMS (any other provider) | same, provider ≠ `generic_webhook` | refused | refused (422 `LMS_MANAGED_TEST`) | — (relaunch from the LMS) |
 | Start Test / In-Office | neither | refused | **not offered** | **offered** |
 
 - The Test URL always mints an `LmsSession` (`verifySignature()`), so it follows the LMS rules.
@@ -931,23 +961,24 @@ One function decides it: `PatientTest::groupIsInProgress($group)` — an open ro
   **Invited** tab, not the Test Taker page (`scopeOpenInvitation()`), and that tab's Revoke calls the same `revokeCredit()`.
 - Cancelling an invitation **before** the taker starts works as before (refund 1 credit).
 - 📌 **Signed off 2026-11-25:** if the taker never finishes and the 7-day link expires, the test stays In Progress and the
-  credit is **not** returned — nobody can revoke or resend it. Marking such tests Expired is a follow-up. Do not "fix" it
-  by counting expired tests as not in progress without a product decision.
+  credit is **not** returned — nobody can revoke it. Since 2026-11-26 the account **can** Resend it, which gives the same
+  link 7 more days. Marking such tests Expired is a follow-up. Do not "fix" it by counting expired tests as not in
+  progress without a product decision.
 
 ### Backend
 
 | Where | Behaviour |
 |---|---|
 | `CreditsController::revokeCredit()` | in progress → **422** `error_code: TEST_IN_PROGRESS`, `api.test_in_progress_cannot_revoke` ("Test is in progress. You cannot revoke this credit."). Unknown id → readable **404** `api.invalid_unique_test_id` (was `firstOrFail()` → "No query results for model") |
-| `PatientController::resendTestLink()` | Send Test / LMS in progress → **422** `TEST_IN_PROGRESS`, `api.test_in_progress_cannot_resend` ("… You cannot resend this test."). **In-Office is not blocked here** — the UI offers Resume instead, and the ticket restricts only Revoke for that flow |
-| `TestInvitationController::cancelUnregisteredInvitation()` / `resendUnregisteredInvitation()` (Invited tab) | via `ownInvitationOrRefusal()` → `startedInvitationRefusal()`: taker already started → **409** `TEST_IN_PROGRESS`; completed → 409 `TEST_COMPLETED`; already cancelled → 409 `INVITATION_CANCELLED`; unknown / not yours → **404** `api.invitation_not_found`. Cancel re-checks under `lockForUpdate()` on the invitation row |
+| `PatientController::resendTestLink()` | ~~Send Test / LMS in progress → 422 `TEST_IN_PROGRESS`~~ — **replaced 2026-11-26**, see the follow-up section. Only an external LMS is still refused. **In-Office is not blocked here** — the UI offers Resume instead |
+| `TestInvitationController::cancelUnregisteredInvitation()` / `resendUnregisteredInvitation()` (Invited tab) | via `ownInvitationOrRefusal()` → `startedInvitationRefusal()`: taker already started → **409** `TEST_IN_PROGRESS`; completed → 409 `TEST_COMPLETED`; already cancelled → 409 `INVITATION_CANCELLED`; unknown / not yours → **404** `api.invitation_not_found`. Cancel re-checks under `lockForUpdate()` on the invitation row. A started invitation is resent from the **Test Takers** page instead |
 | `TestController::assignTest()` (taker's Start) | for an email invite, locks the invitation row and refuses a cancelled one with **410** `INVITATION_CANCELLED`. With the cancel's lock, Start vs Cancel at the same moment has exactly one winner |
 | `PatientTestTransformer::actionFlags()` (Test Taker list, `GET api/patients/{id}/tests`) | per row / both-eyes pair: `origin`, `in_progress`, `can_revoke`, `can_resend`, `can_resume`, `resume_unique_test_id`, `invitation_expires_at`. LMS and takeable ids are loaded **once per list**, not per row |
 | `TestExecutionService::getSessionDetails()` (`GET api/test-session/{id}`) | adds `invitation_expires_at` (Send Test only, else null) for the taker's instruction screen |
 | `ApiResponse::error()` | new optional 5th argument `?string $errorCode` → top-level `error_code` ([ERROR_HANDLING](../ERROR_HANDLING.md#response-shapes)) |
 
 Flags: `can_revoke` = not in progress && some row `inprogress` (so only the legacy case passes); `can_resend` = some open
-row && not in progress; `can_resume` = in progress && origin `in_office`. `resume_unique_test_id` = the takeable open eye,
+row && no `resend_blocked_reason` (changed 2026-11-26, see the follow-up section); `can_resume` = in progress && origin `in_office`. `resume_unique_test_id` = the takeable open eye,
 **`inprogress` before `pending`** — the same choice as `TestAssignmentService::findActiveTest()`. When the left eye is
 submitted, the backend flips the right eye `pending → inprogress` in the same transaction
 (`TestExecutionService.php:164`), so "left done, right pending" only exists mid-flight.
@@ -971,7 +1002,8 @@ submitted, the backend flips the right eye `pending → inprogress` in the same 
   "You have until <MM/DD/YYYY hh:mm A> to finish this test using the link in your email." Not on LMS
   (`/organization/instruction/...`) or In-Office.
 - **Taker's start screen:** `invitationErrors.js` maps **410 → "Invitation cancelled"** and **409 → "Test already
-  completed"** — hence `assignTest()`'s 410 (trap 18).
+  completed"** — hence `assignTest()`'s 410 (trap 18). Since 2026-11-26 one 409 is told apart by `error_code`:
+  `INVITATION_ALREADY_STARTED` → "Test already started" / Verify again (follow-up section).
 - New: `src/components/DisabledActionButton.{js,scss}` ([FRONTEND](../FRONTEND.md#disabled-actions-with-a-reason--disabledactionbutton-ws-692-2026-11-25)),
   `src/utils/testActionAvailability.js` (`TEST_IN_PROGRESS`, the two messages, `isTestInProgressError()`).
   `patientTestSlice` / `sendTestSlice` pass `skipErrorPopup` for these calls so the page's popup is the only one.
@@ -1001,8 +1033,101 @@ These tests use plain functions with a mutable override object (`mockThunks.revo
 - `revokeCredit()` checks and refunds without a row lock, so two simultaneous revokes could refund twice. After WS-692
   only legacy no-plates tests reach that path.
 - Resend on the Invited tab is not locked against Start: at worst one extra email with the same link and code.
+  (Since 2026-11-26 it is locked against a second Resend of the same invitation, not against Start.)
 
 ---
+
+## Resend on started tests: same link, expiry moves only once expired — WS-692 follow-up (2026-11-26)
+
+**PRs:** `fix/WS-692-resend-expired-reapply` → [TCV-Backend#386](https://github.com/Waggoner-Diagnostics/TCV-Backend/pull/386),
+[TCV-Frontend#503](https://github.com/Waggoner-Diagnostics/TCV-Frontend/pull/503), **merged to `develop` 2026-11-26**.
+Plan: `.claude/plans/ws-692-resend-link-state-rules.md`.
+
+📌 **History.** A first version ("Resend only once the link has expired", #384 / #501) was merged and **reverted**
+(#385 / #502). #386 / #503 re-apply it and replace the rule with the one below.
+
+### The rule (signed off 2026-11-26)
+
+| Test state | Resend | Expiry |
+|---|---|---|
+| Not started (Invited tab), link active or expired | enabled | **7 days from the resend**, every time |
+| Started Send Test, link still valid | enabled, **same** token + code | **unchanged** (sent 2 Nov, resent 4 Nov → still 9 Nov) |
+| Started Send Test, link expired | enabled, same token + code | **7 days from the resend**; any older resume link is expired (`expireResumeLinks()`) so the invitation is the one link |
+| Started plain Test URL, resume link valid | enabled, the **same** resume token | unchanged |
+| Started plain Test URL, resume link expired | enabled, the same resume token | 7 days from the resend |
+| Started plain Test URL, no resume link ("Send Test Email to Test Takers" off) | enabled | a **first** link, 7 days from the resend |
+| Started via external LMS | **disabled** | — (relaunch from the LMS) |
+| Started In-Office | not offered | — (Resume Test instead, unchanged) |
+| Test taker has no email | disabled | — |
+| Within 60 s of the last send | disabled | — |
+
+- **Test URL expiry means the resume token's 7 days**, not the 2-hour `LmsSession`. A Test URL test with no
+  emailed link counts as expired once every `LmsSession` has expired (`groupLinkExpired()`).
+- **Both-eyes:** one link for the pair. `groupLink()` takes the longest-lasting resume token across both eyes,
+  finished eyes included, and `/test/resume` opens the eye still open (see Resume flow).
+- **Emails:** the Test URL email states the days actually left and the real date (2 days into a 7-day link: "5 days",
+  original date). A renewed or first link says 7 days. The Send Test email is mailed with the invitation's real
+  `expires_at` (unchanged or renewed).
+- **No expiry in the app UI.** The success popup says whether the link was renewed; the date is in the API response,
+  the audit log and the email only. Help documents will explain the rule.
+- Test takers have **no** self-service "email me a resume link". Only the account (or a super admin impersonating it)
+  can resend.
+
+### Backend
+
+| Where | Behaviour |
+|---|---|
+| `PatientController::resendTestLink()` | Lock `resend-test-link:{parent_test_id ?? unique_test_id}` (60 s; held → **409 `RESEND_IN_FLIGHT`**). Then: external LMS started → **422 `LMS_MANAGED_TEST`** (`api.test_in_progress_cannot_resend_lms`); within the hold → **409 `RESEND_COOLDOWN`** (`api.test_link_resend_cooldown`); Send Test started → `renewInvitation($invitation, $actor, $extend = $invitation->isExpired())`; Test URL started → `resendResumeLink()` for the open eye; anything else (In-Office, not started) → `generateAndSendTestLink()` as before. No email → 422 `api.patient_no_email` |
+| its response | message `api.test_link_renewed` when extended, else `api.test_link_resent`; data `resend_count`, `last_resent_at`, `extended`, `link_expires_at` |
+| its audit (`test.link_resent`) | adds `Reason` ("Link still valid, expiry unchanged" / "Link expired, renewed for 7 days" / "First link issued for 7 days") and `Link Expires` |
+| `TestInvitationController::resendUnregisteredInvitation()` (Invited tab) | Lock `resend-invitation:{id}` (held → 409 `RESEND_IN_FLIGHT`); the row is re-read **inside** the lock, then the 60 s hold on `email_sent_at` (409 `RESEND_COOLDOWN`), then `renewInvitation()` (always extends) |
+| `App\Services\TestLinkRenewalService` (new) | `renewInvitation()` — keeps token + code, mails first, saves after; `resendResumeLink()` / `issueResumeLink()` — one link per pair under lock `resume-link:{parent_test_id ?? unique_test_id}` (`block(10)`); `expireResumeLinks()` |
+| `TestResumeController` | `sendResumeEmail()` → `issueResumeLink()` (reuses the link, no longer expires others); `resume()` opens the pair's open eye |
+| `PatientTest` | `RESEND_COOLDOWN_SECONDS = 60`; `ERROR_LMS_MANAGED`, `ERROR_RESEND_IN_FLIGHT`, `ERROR_RESEND_COOLDOWN`; `linkInfo()` (LMS + resume tokens, once per list), `groupLink()`, `groupLinkExpired()`, `groupResendAvailableAt()` (latest `last_resent_at` + 60 s), `groupIsExternalLms()` |
+| `PatientTestTransformer::actionFlags()` | adds `link_expired`, `resend_blocked_reason` (`in_progress` for In-Office · `external_lms` · `no_email` · `cooldown`), `resend_available_at`, `resend_available_in` (seconds, ≥ 1) |
+| `TestController::assignTest()` | 409 `INVITATION_ALREADY_STARTED` for a second assignment on one invitation |
+| `TestExecutionService::markTestInvitationAsUsed()` / `TestInvitation::isFinished()` | invitation used only when both eyes are done (see Redeem flow) |
+
+### Frontend
+
+- **`PatientTestList.js`:**
+  - Disabled Resend shows `resendBlockedMessage(pt)` (`testActionAvailability.js`): the LMS, no-email or
+    cooldown message, else the old "Test is in progress…".
+  - Success popup: `result.data.extended` → "The test taker's link had expired. It has been renewed and resent to their
+    email."; else "Test link has been resent to the test taker's email." The list always reloads quietly afterwards.
+  - `RESEND_COOLDOWN`, `RESEND_IN_FLIGHT`, `LMS_MANAGED_TEST` and `TEST_IN_PROGRESS` count as refusals
+    (`isResendRefusedError()`): title "Cannot Resend Test", quiet reload.
+  - **Hold timer:** a `useEffect` on `patientTests` waits the smallest `resend_available_in` (seconds from the server,
+    so a wrong browser clock does not matter; falls back to `resend_available_at`) + 1 s, then reloads quietly. It
+    re-arms after every load.
+  - **Link Active / Link Expired badge** on In Progress rows, now for Send Test **and** plain Test URL (from
+    `link_expired`); not for external LMS.
+- **`patientTestSlice` `fetchPatientTests({ patientId, silent: true })`** passes `{ skipErrorPopup, skipAuthRedirect }`:
+  a background reload never pops the global error or logs an idle user out.
+- **`invitationErrors.js`:** `errorCodeOf(err)`; `INVITATION_ALREADY_STARTED` → title "Test already started", "You have
+  already started this test. Enter your verification code again to continue where you left off.", action Verify again.
+- **`InstructionPage.js`:** keeps the loader up for a completed test until the redirect to its result lands (no flash of
+  the instructions).
+
+### Tests
+
+Backend `InProgressRevokeResendTest.php` (53 tests, was 20): the 2 Nov → 9 Nov → 19 Nov example, the cooldown on both
+pages and its seconds left, the in-flight lock on the Invited tab, Test URL keeping one link and reviving it, start email
+and Resend in both orders leaving one working link, days-left in the email, both-eyes link opening the right eye.
+`ResendTestLinkStatusTest` travels `RESEND_COOLDOWN_SECONDS + 1` between resends. Frontend: `PatientTestList.test.js`
+(timer with a skewed clock, re-arm after reload, popups, badge), `patientTestSlice.test.js` (new: silent flags),
+`invitationErrors.test.js`, `InstructionPage.test.js`.
+
+### Support / QA notes
+
+- "My test taker's link still says the old date after Resend" — expected while the link is still valid.
+- "Resend is greyed out" — check the tooltip: LMS-launched, no email on file, or sent within the last minute (it comes
+  back by itself).
+- The resend that issues a **first** Test URL link shows the "had expired… renewed" popup, though nothing expired.
+  Known wording quirk, accepted.
+- To test expiry on QA: change **one** row's `test_invitations.expires_at` or `test_resume_tokens.expires_at` by id,
+  then Resend. Wait 60 s between resends. **The locks are cache locks** on the default store (`CACHE_STORE`, default `database`), so
+  they hold across PHP workers. With the `array` store (the test suite) they hold within one process only.
 
 ## ☠️ Traps
 
@@ -1079,8 +1204,20 @@ These tests use plain functions with a mutable override object (`mockThunks.revo
 18. ⚠️ **The taker's SPA reads status codes, not `error_code`.** `invitationErrors.js` → `invitationDeadEnd()` shows 409 as
     "Test already completed" and 410 as "Invitation cancelled". A taker-facing refusal must use the code whose wording
     fits (WS-692 review: `assignTest()`'s cancelled-invitation refusal was 409 and showed "already completed"; now 410).
+    The one exception (2026-11-26): `INVITATION_ALREADY_STARTED` is read by `error_code` first. A new 409 the taker can
+    see needs its own `error_code` arm there, or it reads "Test already completed".
 19. **Part B of Bug 692 is not on `develop`.** Credit History still deletes / counter-entries revoked grants as before.
     Do not cherry-pick from `fix/692-revoke-inprogress` without the client decision.
+20. ☠️ **Never mint a new resume link on a send** (WS-692 follow-up). The start email and Resend both go through
+    `TestLinkRenewalService::resendResumeLink()` under one lock per pair, so whichever runs second mails the first one's
+    link. A path that creates a token and expires the others kills a link the taker was just emailed.
+21. ⚠️ **Resend on a started test must not move a valid link's expiry.** `renewInvitation(..., $extend)` and
+    `mailPairLink()` extend only when the link has already expired. The Invited tab (not started) always extends.
+22. ⚠️ **The resend hold is read from the server's seconds, not its timestamp.** The SPA waits
+    `resend_available_in`; comparing `resend_available_at` with the browser clock stuck the button on a skewed clock.
+    The hold itself is `PatientTest::RESEND_COOLDOWN_SECONDS`, on both resend endpoints.
+23. ⚠️ **A both-eyes invitation stays open between eyes.** Check `TestInvitation::isFinished()`, not `is_used`, for
+    "nothing left to do": older rows have `is_used = true` with the right eye still open.
 
 ---
 

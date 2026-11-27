@@ -119,10 +119,13 @@ patients with **no real name**, which is exactly what `index()` keys off to comp
    [DATA_MIGRATION_CONTEXT](DATA_MIGRATION_CONTEXT.md).
 6. **`resendTestLink()` lives here, not in `TestInvitationController`** — `POST api/resend-test-link`
    (`auth:sanctum`). If you are changing invitation resend behaviour, there are two places.
-   WS-692: it refuses a started Send Test / LMS test (422 `TEST_IN_PROGRESS`); In-Office is not blocked here, the
-   Test Taker page shows Resume Test instead. `getPatientTests()` rows now carry `origin`, `in_progress`,
-   `can_revoke`, `can_resend`, `can_resume`, `resume_unique_test_id`, `invitation_expires_at`
-   (`PatientTestTransformer::actionFlags()`) — [INVITATION_CONTEXT](INVITATION_CONTEXT.md#in-progress-tests-no-revoke--resend-resume-for-in-office--ws-692-2026-11-25).
+   WS-692 follow-up (2026-11-26): a started Send Test / plain Test URL test is resent with its **same** link, the
+   expiry moved only if it has expired (`TestLinkRenewalService`); an external LMS test is refused (422
+   `LMS_MANAGED_TEST`); 60 s between resends (409 `RESEND_COOLDOWN`). In-Office is not blocked here, the Test Taker
+   page shows Resume Test instead. `getPatientTests()` rows carry `origin`, `in_progress`, `link_expired`,
+   `can_revoke`, `can_resend`, `resend_blocked_reason`, `resend_available_at`, `resend_available_in`, `can_resume`,
+   `resume_unique_test_id`, `invitation_expires_at` (`PatientTestTransformer::actionFlags()`) —
+   [INVITATION_CONTEXT](INVITATION_CONTEXT.md#resend-on-started-tests-same-link-expiry-moves-only-once-expired--ws-692-follow-up-2026-11-26).
 7. **The SPA holds `gender` in two different shapes.** The fallback selector (`AddPatient.js`) stores the
    *label* — `form.gender === "Male"` — and `usePatientForm.buildPayload()` converts it with
    `getGenderValue()`. The org/field-rules selector (`PatientFormFields.jsx`) stores the *stringified id*
